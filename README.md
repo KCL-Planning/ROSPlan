@@ -4,7 +4,7 @@ ROSPlan Framework
 ### About
 
 The ROSPlan framework provides a generic method for task planning in a ROS system.
-![Overview of the ROSPlan framework in a system](/overview.png)
+![Overview of the ROSPlan framework in a system](/https://raw.githubusercontent.com/KCL-Planning/ROSPlan/master/readme/overview.png)
 The ROSPlan framework performs three major tasks:
 
 #### representing the environment
@@ -33,7 +33,7 @@ Sensor data can be continually parsed and passed to ROSPlan. This is used to det
 
 ### Usage
 
-![Diagram of the ROSPlan framework](/framework.png)
+![Diagram of the ROSPlan framework](https://raw.githubusercontent.com/KCL-Planning/ROSPlan/master/readme/framework.png)
 
 #### (A) Planning domain
 
