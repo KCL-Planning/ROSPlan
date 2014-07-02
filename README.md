@@ -4,7 +4,7 @@ ROSPlan Framework
 ### About
 
 The ROSPlan framework provides a generic method for task planning in a ROS system.
-![Overview of the ROSPlan framework in a system](/https://raw.githubusercontent.com/KCL-Planning/ROSPlan/master/readme/overview.png)
+![Overview of the ROSPlan framework in a system](https://raw.githubusercontent.com/KCL-Planning/ROSPlan/master/readme/overview.png)
 The ROSPlan framework performs three major tasks:
 
 #### representing the environment
