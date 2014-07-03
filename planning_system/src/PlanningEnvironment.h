@@ -15,21 +15,16 @@
 #include "VALfiles/ptree.h"
 #include "FlexLexer.h"
 
-#include "planning_knowledge_msgs/GetInstancesOfType.h"
-#include "planning_knowledge_msgs/GetAttributesOfInstance.h"
+#include "planning_knowledge_msgs/InstanceService.h"
+#include "planning_knowledge_msgs/AttributeService.h"
 
 extern int yyparse();
 extern int yydebug;
 
 namespace VAL {
-//	parse_category* top_thing=NULL;
 	extern analysis an_analysis;
-//	analysis* current_analysis;
 	extern yyFlexLexer* yfl;
 };
-
-// Global var needed for VALfile/parse_error.h :(
-// char * current_filename;
 
 namespace KCL_rosplan
 {
@@ -61,6 +56,7 @@ namespace KCL_rosplan
 	std::map<std::string,std::vector<string> > typeObjectMap;
 	std::map<std::string,std::string> objectTypeMap;
 	std::vector<planning_knowledge_msgs::KnowledgeItem> instanceAttributes;
+	std::vector<planning_knowledge_msgs::KnowledgeItem> domainAttributes;
 	std::vector<planning_knowledge_msgs::KnowledgeItem> goalAttributes;
 
 	/*----------------*/
@@ -196,8 +192,6 @@ namespace KCL_rosplan
 		}
 		domainFile.close();
 
-		// Output the errors from all input files
-		// VAL::current_analysis->error_list.report();
 		delete VAL::yfl;
 	}
 
@@ -216,15 +210,16 @@ namespace KCL_rosplan
 		goalAttributes.clear();
 
 		// setup service calls
-		ros::ServiceClient GetInstancesClient = nh.serviceClient<planning_knowledge_msgs::GetInstancesOfType>("/kcl_rosplan/get_type_instances");
-		ros::ServiceClient GetInstanceAttrsClient = nh.serviceClient<planning_knowledge_msgs::GetAttributesOfInstance>("/kcl_rosplan/get_instance_attributes");
-		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<planning_knowledge_msgs::GetAttributesOfInstance>("/kcl_rosplan/get_current_goals");
+		ros::ServiceClient GetInstancesClient = nh.serviceClient<planning_knowledge_msgs::InstanceService>("/kcl_rosplan/get_instances");
+		ros::ServiceClient GetInstanceAttrsClient = nh.serviceClient<planning_knowledge_msgs::AttributeService>("/kcl_rosplan/get_instance_attributes");
+		ros::ServiceClient GetDomainAttrsClient = nh.serviceClient<planning_knowledge_msgs::AttributeService>("/kcl_rosplan/get_domain_attributes");
+		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<planning_knowledge_msgs::AttributeService>("/kcl_rosplan/get_current_goals");
 
 		// for each type fetch instances
 		for(size_t t=0; t<domainTypes.size(); t++) {
 
-			planning_knowledge_msgs::GetInstancesOfType instanceSrv;
-			instanceSrv.request.name = domainTypes[t];
+			planning_knowledge_msgs::InstanceService instanceSrv;
+			instanceSrv.request.type_name = domainTypes[t];
 			KCL_rosplan::typeObjectMap[domainTypes[t]];
 
 			if (GetInstancesClient.call(instanceSrv)) {
@@ -237,7 +232,7 @@ namespace KCL_rosplan
 					KCL_rosplan::objectTypeMap[name] = domainTypes[t];
 
 					// get instance attributes
-					planning_knowledge_msgs::GetAttributesOfInstance instanceAttrSrv;
+					planning_knowledge_msgs::AttributeService instanceAttrSrv;
 					instanceAttrSrv.request.instance_name = name;
 					instanceAttrSrv.request.type_name = domainTypes[t];
 					if (GetInstanceAttrsClient.call(instanceAttrSrv)) {
@@ -250,29 +245,45 @@ namespace KCL_rosplan
 								instanceAttributes.push_back(attr);
 						}
 					} else {
-						ROS_ERROR("KCL: Failed to call service get_instance_attributes %s %s",
-							instanceAttrSrv.request.type_name.c_str(), instanceAttrSrv.request.instance_name.c_str());
-					}
-
-					// get current goals as attributes
-					if (GetCurrentGoalsClient.call(instanceAttrSrv)) {
-						for(size_t j=0;j<instanceAttrSrv.response.attributes.size();j++) {
-							// if knowledge item corresponds to an attribute of this object, then store it.
-							planning_knowledge_msgs::KnowledgeItem attr = instanceAttrSrv.response.attributes[j];
-							if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE
-									&& attr.instance_type.compare(domainTypes[t])==0
-									&& attr.instance_name.compare(name)==0)
-								goalAttributes.push_back(attr);
-						}
-					} else {
-						ROS_ERROR("KCL: Failed to call service get_current_goals %s %s",
+						ROS_ERROR("KCL: Failed to call service /kcl_rosplan/get_instance_attributes: %s %s",
 							instanceAttrSrv.request.type_name.c_str(), instanceAttrSrv.request.instance_name.c_str());
 					}
 				}
 			} else {
-				ROS_ERROR("KCL: Failed to call service get_instances %s", instanceSrv.request.name.c_str());
+				ROS_ERROR("KCL: Failed to call service /kcl_rosplan/get_instances: %s", instanceSrv.request.type_name.c_str());
 			}
 		}
+
+
+		// get domain attributes
+		std::map<std::string,std::vector<std::string> >::iterator ait;
+		for(ait = domainPredicates.begin(); ait != domainPredicates.end(); ait++) {
+			planning_knowledge_msgs::AttributeService domainAttrSrv;
+			domainAttrSrv.request.predicate_name = ait->first;
+			if (GetDomainAttrsClient.call(domainAttrSrv)) {
+				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
+					planning_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
+					if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE
+							&& attr.attribute_name.compare(ait->first)==0)
+						domainAttributes.push_back(attr);
+				}
+			} else {
+				ROS_ERROR("KCL: Failed to call service /kcl_rosplan/get_domain_attributes %s", domainAttrSrv.request.predicate_name.c_str());
+			}
+		}
+
+		// get current goals
+		planning_knowledge_msgs::AttributeService currentGoalSrv;
+		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
+			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
+				planning_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[j];
+				if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE)
+					goalAttributes.push_back(attr);
+			}
+		} else {
+			ROS_ERROR("KCL: Failed to call service /kcl_rosplan/get_current_goals");
+		}
+
 	}
 } // close namespace
 

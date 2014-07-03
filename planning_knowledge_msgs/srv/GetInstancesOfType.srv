@@ -1,5 +1,0 @@
-# PDDL problem generation; service(1/2):
-# Get all instances of the type with the name 'name'.
-string name
----
-string[] instances

@@ -22,8 +22,8 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  GetAttributesOfInstance.srv
-  GetInstancesOfType.srv
+  AttributeService.srv
+  InstanceService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

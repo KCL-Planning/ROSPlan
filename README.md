@@ -42,16 +42,16 @@ The following is an example of how to start the ROSPlan framework from a launch 
 
 ```xml
 <!-- planning system -->
-<node name="planning_ros_system" pkg="planning_ros_system" type="planner" respawn="false" output="screen">
+<node name="planning_system" pkg="planning_system" type="planner" respawn="false" output="screen">
 
 	<!-- path to domain file -->
-	<param name="domain_path" value="$(find planning_ros_system)/data/domain.pddl" />
+	<param name="domain_path" value="$(find planning_system)/data/domain.pddl" />
 	
 	<!-- location to generate problem file -->
-	<param name="problem_path" value="$(find planning_ros_system)/data/problem.pddl" />
+	<param name="problem_path" value="$(find planning_system)/data/problem.pddl" />
 	
 	<!-- directory for other generated files -->
-	<param name="data_path" value="$(find planning_ros_system)/data/" />
+	<param name="data_path" value="$(find planning_system)/data/" />
 
 </node>
 ```
@@ -60,26 +60,28 @@ The following is an example of how to start the ROSPlan framework from a launch 
 
 **2 ROS services:**
 
-- planning_system/get_type_instances
-- planning_system/get_instance_attributes
+- /kcl_rosplan/get_instances
+- /kcl_rosplan/get_instance_attributes
+- /kcl_rosplan/get_domain_attributes
+- /kcl_rosplan/get_current_goals
 
 #### (C) Updating the environment
 
 **2 ROS topics:**
 
-- planning_system/filter
-- planning_system/notification
+- /kcl_rosplan/filter
+- /kcl_rosplan/notification
 
 #### (D) Action dispatch and feedback
 
 **2 ROS topics:**
 
-- planning_system/actionDispatch
-- planning_system/actionFeedback
+- /kcl_rosplan/actionDispatch
+- /kcl_rosplan/actionFeedback
 
 #### (E) [optional] Actionlib interface
 
 **2 ROS topics:**
 
-- planning_system/actionDispatch
-- planning_system/actionFeedback
+- /kcl_rosplan/actionDispatch
+- /kcl_rosplan/actionFeedback
