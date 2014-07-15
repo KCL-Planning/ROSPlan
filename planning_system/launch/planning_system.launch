@@ -1,5 +1,10 @@
 <launch>
 
+	<!-- knowledge base -->
+	<node name="knowledge_base" pkg="knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+	</node>
+
+
 	<!-- planning system -->
 	<node name="planning_system" pkg="planning_system" type="planner" respawn="false" output="screen">
 
@@ -7,11 +12,10 @@
 	    <param name="data_path" value="$(find planning_system)/data/" />
 
 		<!-- path to domain file -->
-	    <param name="domain_path" value="$(find planning_system)/data/domain.pddl" />
+	    <param name="domain_path" value="$(find planning_system)/data/domain_squirrel.pddl" />
 
 		<!-- location to generate problem file -->
 	    <param name="problem_path" value="$(find planning_system)/data/problem.pddl" />
-
 	</node>
 
 </launch>

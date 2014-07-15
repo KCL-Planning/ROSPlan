@@ -239,7 +239,7 @@ namespace KCL_rosplan
 						for(size_t j=0;j<instanceAttrSrv.response.attributes.size();j++) {
 							// if knowledge item corresponds to an attribute of this object, then store it.
 							planning_knowledge_msgs::KnowledgeItem attr = instanceAttrSrv.response.attributes[j];
-							if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE
+							if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::INSTANCE_ATTRIBUTE
 									&& attr.instance_type.compare(domainTypes[t])==0
 									&& attr.instance_name.compare(name)==0)
 								instanceAttributes.push_back(attr);
@@ -263,7 +263,7 @@ namespace KCL_rosplan
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					planning_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
-					if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE
+					if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE
 							&& attr.attribute_name.compare(ait->first)==0)
 						domainAttributes.push_back(attr);
 				}
@@ -277,7 +277,7 @@ namespace KCL_rosplan
 		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
 				planning_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[j];
-				if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE)
+				if(attr.knowledge_type == planning_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE)
 					goalAttributes.push_back(attr);
 			}
 		} else {

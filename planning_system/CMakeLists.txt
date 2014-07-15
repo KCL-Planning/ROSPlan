@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  INCLUDE_DIRS include
   LIBRARIES planning_system
   CATKIN_DEPENDS roscpp rospy std_msgs planning_dispatch_msgs planning_knowledge_msgs
   DEPENDS system_lib
@@ -73,7 +72,6 @@ set(VAL_SOURCES
 ## Declare cpp executables
 add_executable(planner src/PlanningLoop.cpp	${VAL_SOURCES})
 add_executable(listener src/util/Listener.cpp)
-add_executable(testHarness src/util/TestHarness.cpp)
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner
@@ -81,9 +79,5 @@ target_link_libraries(planner
 )
 
 target_link_libraries(listener
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(testHarness
   ${catkin_LIBRARIES}
 )

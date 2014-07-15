@@ -200,6 +200,16 @@ namespace KCL_rosplan {
 			while (ros::ok() && !KCL_rosplan::actionCompleted[KCL_rosplan::currentAction]) {
 				ros::spinOnce();
 				loop_rate.sleep();
+
+				if(replanRequested) {
+					// cancel current action
+					ROS_INFO("KCL: Cancelling action: [%i, %s]", currentMessage.action_id, currentMessage.name.c_str());
+					planning_dispatch_msgs::ActionDispatch cancelMessage;
+					cancelMessage.action_id = KCL_rosplan::currentAction;
+					cancelMessage.name = "cancel_action";
+					actionPublisher.publish(currentMessage);
+					KCL_rosplan::actionCompleted[KCL_rosplan::currentAction] = true;
+				}
 			}
 
 			// get ready for next action

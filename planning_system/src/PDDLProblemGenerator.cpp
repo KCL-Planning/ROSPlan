@@ -46,6 +46,33 @@ namespace KCL_rosplan {
 		pFile << "(:init" << std::endl;
 
 		// add knowledge to the initial state
+		for(size_t i=0; i<domainAttributes.size(); i++) {
+			
+			std::stringstream ss;			
+			ss << "    (" + domainAttributes[i].attribute_name;
+
+			// fetch the corresponding symbols from domain
+			std::map<std::string,std::vector<std::string> >::iterator ait;
+			ait = domainPredicates.find(domainAttributes[i].attribute_name);
+			if(ait == domainPredicates.end()) continue;
+
+			// find the PDDL parameters in the KnowledgeItem
+			bool writeAttribute = true;
+			for(size_t j=0; j<ait->second.size(); j++) {
+				bool found = false;
+				for(size_t k=0; k<domainAttributes[i].values.size(); k++) {
+					if(0 == domainAttributes[i].values[k].key.compare(ait->second[j])) {
+						ss << " " << domainAttributes[i].values[k].value;
+						found = true;
+					}
+				}
+				if(!found) writeAttribute = false;
+			};
+			ss << ")";
+			if(writeAttribute) pFile << ss.str() << std::endl;
+		}
+
+		// add knowledge to the initial state
 		for(size_t i=0; i<instanceAttributes.size(); i++) {
 
 			std::stringstream ss;

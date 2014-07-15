@@ -35,7 +35,7 @@ namespace KCL_rosplan
 		// TODO ONLY STATICS! Not all preconditions.
 		for(size_t i=0; i<KCL_rosplan::filterAttributes.size(); i++) {
 			planning_knowledge_msgs::KnowledgeItem filterItem;
-			filterItem.knowledge_type = planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE;
+			filterItem.knowledge_type = planning_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
 			filterItem.attribute_name = KCL_rosplan::filterAttributes[i][0];
 			filterItem.instance_type = KCL_rosplan::objectTypeMap[KCL_rosplan::filterAttributes[i][1]];
 			filterItem.instance_name = KCL_rosplan::filterAttributes[i][1];
@@ -96,8 +96,7 @@ namespace KCL_rosplan
 				pit = domainPredicates.find(ait->second[i]);
 				for(size_t j=0; j<KCL_rosplan::instanceAttributes.size(); j++) {
 					// TODO have knowledge items be passed more cleanly in dispatch
-					if(0==KCL_rosplan::instanceAttributes[j].instance_name.compare(params[i])
-							&& KCL_rosplan::instanceAttributes[j].knowledge_type == planning_knowledge_msgs::KnowledgeItem::ATTRIBUTE) {
+					if(0==KCL_rosplan::instanceAttributes[j].instance_name.compare(params[i])) {
 						for(size_t k=0; k<instanceAttributes[j].values.size(); k++) {
 							diagnostic_msgs::KeyValue pair;
 							pair.key = instanceAttributes[j].instance_name + "_" + instanceAttributes[j].attribute_name + "_" + instanceAttributes[j].values[k].key;
