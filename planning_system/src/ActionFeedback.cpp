@@ -21,7 +21,7 @@ namespace KCL_rosplan {
 	 * This method serves as the hook for defining more interesting behaviour on action feedback.
 	 */
 	void actionFeedback(const planning_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
-		ROS_INFO("KCL: Feedback received [%i,%s]", msg->action_id, msg->status.c_str());
+	
 	}
 
 	/*------------------*/
@@ -33,8 +33,9 @@ namespace KCL_rosplan {
 	 */
 	void feedbackCallback(const planning_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
 
-		// create error if the action is unrecognised
 		ROS_INFO("KCL: Feedback received [%i,%s]", msg->action_id, msg->status.c_str());
+
+		// create error if the action is unrecognised
 		if(KCL_rosplan::currentAction != (unsigned int)msg->action_id)
 			ROS_INFO("KCL: Unexpected action ID: %d; current action: %zu", msg->action_id, KCL_rosplan::currentAction);
 

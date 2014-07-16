@@ -10,8 +10,24 @@
 
 namespace KCL_rosplan {
 
+	/**
+	 * returns true is the knowledge item contains the instance, as instance or attribute parameter.
+	 */
+	bool KnowledgeBase::containsInstance(const planning_knowledge_msgs::KnowledgeItem &a, std::string &name) {
+
+		if(0==a.instance_name.compare(name))
+			return true;
+
+		for(size_t i=0;i<a.values.size();i++) {
+			if(0==a.values[i].value.compare(name))
+				return true;
+		}
+
+		return false;
+	}
+
 	/** 
-	 * returns true iff the two knowledge items contain exactly the same knowledge.
+	 * returns true iff a is the same knowledge as b.
 	 */
 	bool KnowledgeBase::sameKnowledge(const planning_knowledge_msgs::KnowledgeItem &a, const planning_knowledge_msgs::KnowledgeItem &b) {
 
@@ -30,6 +46,65 @@ namespace KCL_rosplan {
 		}
 
 		return true;
+	}
+
+	/** 
+	 * returns true iff b is in the filter of a.
+	 */
+	bool KnowledgeBase::isInFilter(const planning_knowledge_msgs::KnowledgeItem &a, const planning_knowledge_msgs::KnowledgeItem &b) {
+
+		if(a.knowledge_type != b.knowledge_type) return false;
+	
+		if(a.knowledge_type == planning_knowledge_msgs::KnowledgeItem::INSTANCE) {
+			if(0!=a.instance_type.compare(b.instance_type)) return false;
+			if(0==a.instance_name.compare("")) return true;
+			if(0!=a.instance_name.compare(b.instance_name)) return false;
+		} else {
+			if(0!=a.attribute_name.compare(b.attribute_name)) return false;
+			if(a.values.size() != b.values.size()) return false;
+			for(size_t i=0;i<a.values.size();i++) {
+				if(0!=a.values[i].key.compare(b.values[i].key)) return false;
+				if(0!=a.values[i].value.compare(b.values[i].value)) return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * check filter
+	 */
+	void KnowledgeBase::checkFilters(const planning_knowledge_msgs::KnowledgeItem &a, bool added) {
+
+		bool filterViolated = false;
+
+		if(added) {
+			for(size_t i=0;i<missionFilter.size();i++) {
+				if(isInFilter(missionFilter[i], a)) {
+					filterViolated = true;
+					break;
+				}
+			}
+		}
+
+		if(!added) {
+			for(size_t i=0;i<planningFilter.size();i++) {
+				if(isInFilter(planningFilter[i], a)) {
+					filterViolated = true;
+					break;
+				}
+			}
+		}
+
+		if(filterViolated) {
+			ROS_INFO("KCL: (KB) Filter violated, sending notification");	
+
+			planning_knowledge_msgs::Notification msg;
+			if(added) msg.function = planning_knowledge_msgs::Notification::ADDED;
+			else msg.function = planning_knowledge_msgs::Notification::REMOVED;
+			msg.knowledge_item = a;
+			notificationPublisher.publish(msg);
+		}
 	}
 
 	/**

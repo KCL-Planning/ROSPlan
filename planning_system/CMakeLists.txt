@@ -71,13 +71,8 @@ set(VAL_SOURCES
 
 ## Declare cpp executables
 add_executable(planner src/PlanningLoop.cpp	${VAL_SOURCES})
-add_executable(listener src/util/Listener.cpp)
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(listener
   ${catkin_LIBRARIES}
 )

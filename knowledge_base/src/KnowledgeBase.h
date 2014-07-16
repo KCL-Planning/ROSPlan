@@ -18,7 +18,11 @@ namespace KCL_rosplan {
 	{
 	private:
 
+		// checking if filters are violated
+		bool containsInstance(const planning_knowledge_msgs::KnowledgeItem &a, std::string &name);
 		bool sameKnowledge(const planning_knowledge_msgs::KnowledgeItem &a, const planning_knowledge_msgs::KnowledgeItem &b);
+		bool isInFilter(const planning_knowledge_msgs::KnowledgeItem &a, const planning_knowledge_msgs::KnowledgeItem &b);
+		void checkFilters(const planning_knowledge_msgs::KnowledgeItem &a, bool added);
 
 	public:
 
@@ -29,29 +33,24 @@ namespace KCL_rosplan {
 		std::vector<planning_knowledge_msgs::KnowledgeItem> domainGoals;
 		std::map<std::string, std::vector<planning_knowledge_msgs::KnowledgeItem> > instanceAttributes;
 
-		// planning filter
+		// planning and mission filter
 		std::vector<planning_knowledge_msgs::KnowledgeItem> planningFilter;
 		std::vector<planning_knowledge_msgs::KnowledgeItem> missionFilter;
 
-		// topic methods for planning_system notification
+		// planning_system notification
 		void planningFilterCallback(const planning_knowledge_msgs::Filter::ConstPtr& msg);
 		ros::Publisher notificationPublisher;
 
-		// service methods for fetching the symbolic model
-		ros::ServiceServer attributeServer;
-		ros::ServiceServer instanceServer;
-		ros::ServiceServer domainServer;
-		ros::ServiceServer goalServer;
-
+		// fetching the symbolic model
 		bool getInstances(planning_knowledge_msgs::InstanceService::Request  &req, planning_knowledge_msgs::InstanceService::Response &res);
 		bool getInstanceAttr(planning_knowledge_msgs::AttributeService::Request  &req, planning_knowledge_msgs::AttributeService::Response &res);
 		bool getDomainAttr(planning_knowledge_msgs::AttributeService::Request  &req, planning_knowledge_msgs::AttributeService::Response &res);
 		bool getCurrentGoals(planning_knowledge_msgs::AttributeService::Request  &req, planning_knowledge_msgs::AttributeService::Response &res);
 
-		// adding items to the knowledge base
-		void addInstance(const planning_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
+		// adding and removing items to and from the knowledge base
 		void addKnowledge(const planning_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
 		void addMissionGoal(const planning_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
+		void removeKnowledge(const planning_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
 	};
 }
 #endif
