@@ -1,1 +1,7 @@
+<<<<<<< HEAD
 Hello, AtIf
+=======
+Hello, Atif, it is I
+
+Hello, Michael, It is Atif
+>>>>>>> babb45eb1635508a993a13ed2f1510154f1b3705
