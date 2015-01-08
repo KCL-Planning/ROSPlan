@@ -1,8 +1,0 @@
-# PDDL problem generation; service(2/2):
-# Get all attributes of an instance or domain predicate.
-# The results is passed as name/value pairs, where the values need to be parsed by the program.
-string type_name
-string instance_name
-string predicate_name
----
-planning_knowledge_msgs/KnowledgeItem[] attributes
