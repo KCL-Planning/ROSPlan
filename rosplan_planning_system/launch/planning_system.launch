@@ -1,15 +1,15 @@
 <launch>
 
 	<!-- planning system -->
-	<node name="planning_system" pkg="squirrel_planning_system" type="planner" respawn="false" output="screen">
+	<node name="planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 
 		<!-- directory for generated files -->
-	    <param name="data_path" value="$(find squirrel_planning_system)/common/" />
-	    <param name="domain_path" value="$(find squirrel_planning_system)/common/domain_push.pddl" />
-	    <param name="problem_path" value="$(find squirrel_planning_system)/common/problem.pddl" />
+	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
+	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain_push.pddl" />
+	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
 
 		<!-- to run the planner -->
-	    <param name="planner_command" value="timeout 10 $(find squirrel_planning_system)/common/bin/popf -n" />
+	    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />
 	</node>
 
 </launch>
