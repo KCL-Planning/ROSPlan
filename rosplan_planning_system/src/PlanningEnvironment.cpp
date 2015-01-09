@@ -1,4 +1,4 @@
-#include "PlanningEnvironment.h"
+#include "rosplan_planning_system/PlanningEnvironment.h"
 #include "rosplan_knowledge_msgs/InstanceService.h"
 #include "rosplan_knowledge_msgs/AttributeService.h"
 #include "VALfiles/ptree.h"

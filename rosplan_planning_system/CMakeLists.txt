@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES planning_system
+  LIBRARIES rosplan_planning_system
   CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS system_lib
 )
@@ -30,6 +30,7 @@ catkin_package(
 ## include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include
 )
 
 ## visualisation
