@@ -1,12 +1,3 @@
-/**
- * This file contains the parsing of the ActionFeedback topic.
- * The feedback from actions can be verbose, and it is here that the data is parsed.
- * 
- * However: the discovery of new information, and consequent reasoning, should be
- * passed through knowledge messages (see the Plan Filter.)  In this way reasoning does
- * not need to wait for actions to be terminated, but can continue in parallel and
- * possibly interrupt action execution.
- */
 #include "PlanDispatcher.h"
 
 namespace KCL_rosplan {
@@ -53,7 +44,7 @@ namespace KCL_rosplan {
 
 			// dispatch action
 			ROS_INFO("KCL: Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
-			actionPublisher.publish(currentMessage);
+			action_publisher.publish(currentMessage);
 			double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
 			if(late_print>0.1) ROS_INFO("KCL: Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
@@ -68,7 +59,7 @@ namespace KCL_rosplan {
 					rosplan_dispatch_msgs::ActionDispatch cancelMessage;
 					cancelMessage.action_id = currentMessage.action_id;
 					cancelMessage.name = "cancel_action";
-					actionPublisher.publish(cancelMessage);
+					action_publisher.publish(cancelMessage);
 				}
 			}
 

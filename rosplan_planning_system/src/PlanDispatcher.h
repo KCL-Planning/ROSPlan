@@ -1,15 +1,12 @@
 /**
- * This file defines the data used in the storing and dispatch of a plan.
- * This is intended for use with the popf temporal planner (v1.2), however
- * it should be flexible enough to allow for different planners.
+ * This file dispatches a plan. TODO document
  */
-
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
 
-#ifndef KCL_plan_dispatcher
-#define KCL_plan_dispatcher
+#ifndef KCL_dispatcher
+#define KCL_dispatcher
 
 namespace KCL_rosplan
 {
@@ -40,7 +37,7 @@ namespace KCL_rosplan
 		void actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
 
 		/* ROS interface */
-		ros::Publisher actionPublisher;
+		ros::Publisher action_publisher;
 	};
 }
 

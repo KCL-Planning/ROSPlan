@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  std_srvs
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
 )
@@ -18,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES planning_system
-  CATKIN_DEPENDS roscpp rospy std_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS system_lib
 )
 
@@ -73,7 +74,8 @@ set(VAL_SOURCES
 ## planning system sources
 set(PLANNING_SOURCES
 	src/PlanningSystem.cpp
-	src/PlanDispatcher.cpp)
+	src/PlanDispatcher.cpp
+	src/PlanningEnvironment.cpp)
 
 ## Declare cpp executables
 add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})

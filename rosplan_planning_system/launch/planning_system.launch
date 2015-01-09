@@ -5,7 +5,7 @@
 
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
-	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain_push.pddl" />
+	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
 	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
 
 		<!-- to run the planner -->

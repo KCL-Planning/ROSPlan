@@ -16,7 +16,7 @@
 
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
-	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain_push.pddl" />
+	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
 	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
 
 		<!-- to run the planner -->
@@ -27,6 +27,6 @@
 	<node name="roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen"></node>
 
 	<!-- action interfaces -->
-	<node name="movebase_server" pkg="rosplan_planning_system" type="rpmovebase" respawn="false" output="screen"></node>
+	<node name="movebase_server" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen"></node>
 
 </launch>

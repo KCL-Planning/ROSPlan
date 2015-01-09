@@ -1,15 +1,4 @@
-/**
- * This file includes the main loop of the planning node.
- * Three methods define the loop.  The first "runPlanningServer" iterates through actions and dispatches them.
- * Within this loop there are calls to "generatePlanningProblem" and "runPlanner".
- * Also in this file are the methods for pushing the planning filter (a list of objects and facts that the plan relies
- * upon) and the callback for notifications (when something in the filter changes, or new information becomes available.)
- * The latter is a hook to add domain-specific reasoning to the system.
- */
-
 #include "PlanningSystem.h"
-#include "PlanningEnvironment.h"
-
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -52,13 +41,13 @@ namespace KCL_rosplan {
 		// clear the old filter
 		rosplan_knowledge_msgs::Filter filterMessage;
 		filterMessage.function = rosplan_knowledge_msgs::Filter::CLEAR;
-		filterPublisher.publish(filterMessage);
+		filter_publisher.publish(filterMessage);
 
 		// push the new filter
 		ROS_INFO("KCL: Clean and update knowledge filter");
 		filterMessage.function = rosplan_knowledge_msgs::Filter::ADD;
-		filterMessage.knowledge_items = knowledgeFilter;
-		filterPublisher.publish(filterMessage);
+		filterMessage.knowledge_items = knowledge_filter;
+		filter_publisher.publish(filterMessage);
 	}
 
 	/*----------*/
@@ -104,7 +93,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: Post processing plan");
 
 		// trim the end of any existing plan
-		free_action_ID = planDispatcher.getCurrentAction();
+		free_action_ID = plan_dispatcher.getCurrentAction();
 
 		// Convert plan into message list for dispatch
 		// preparePlan(data_path);
@@ -122,7 +111,7 @@ namespace KCL_rosplan {
 	{
 		// update the environment from the ontology
 		ROS_INFO("KCL: Fetching objects");
-		updateEnvironment(nh);
+		environment.update(nh);
 
 		// generate PDDL problem
 		// generatePDDLProblemFile(problemPath);
@@ -133,30 +122,31 @@ namespace KCL_rosplan {
 	/**
 	 * sets up the ROS node; prepares planning; main loop.
 	 */
-	void PlanningSystem::runPlanningServer()
+	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 	{
 		ros::NodeHandle nh("~");
 
 		// setup environment
+		ROS_INFO("KCL: Setup domain");
 		nh.param("data_path", data_path, std::string("common/"));
 		nh.param("domain_path", domain_path, std::string("common/domain.pddl"));
 		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
 		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
-		KCL_rosplan::parseDomain(domain_path);
+		environment.parseDomain(domain_path);
 	
 		// dispatch plan
 		bool planSucceeded = false;
 		if(!planSucceeded) {
 
 			// generate PDDL problem and run planner
+			ROS_INFO("KCL: Generate problem");
 			// generatePlanningProblem(nh, dataPath);
 			// runPlanner(dataPath, domainPath, problemPath);
 
 			// dispatch plan
-			planDispatcher.dispatchPlan(action_list, mission_start_time, plan_start_time);
+			ROS_INFO("KCL: Dispatch plan");
+			plan_dispatcher.dispatchPlan(action_list, mission_start_time, plan_start_time);
 		}
-
-
 		ROS_INFO("KCL: Planning System Finished");
 	}
 
@@ -176,14 +166,17 @@ namespace KCL_rosplan {
 		KCL_rosplan::PlanningSystem planningSystem;
 
 		// publishing "action_dispatch"; listening "action_feedback"
-		planningSystem.planDispatcher.actionPublisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
-		nh.subscribe("/kcl_rosplan/action_feedback", 100, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.planDispatcher);
+		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
+		nh.subscribe("/kcl_rosplan/action_feedback", 100, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
 
 		// publishing "/kcl_rosplan/filter"; listening "/kcl_rosplan/notification"
-		planningSystem.filterPublisher = nh.advertise<rosplan_knowledge_msgs::Filter>("/kcl_rosplan/filter", 10, true);
+		planningSystem.filter_publisher = nh.advertise<rosplan_knowledge_msgs::Filter>("/kcl_rosplan/filter", 10, true);
 		nh.subscribe("/kcl_rosplan/notification", 100, &KCL_rosplan::PlanningSystem::notificationCallBack, &planningSystem);
 
-		planningSystem.runPlanningServer();
+		// start te planning service
+		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
+		ROS_INFO("KCL: Ready to receive");
+		ros::spin();
 
 		return 0;
 	}

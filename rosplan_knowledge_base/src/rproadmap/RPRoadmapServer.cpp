@@ -25,9 +25,9 @@ namespace KCL_rosplan {
 
 		add_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/add_knowledge", 10, true);
 		remove_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/remove_knowledge", 10, true);
-		map_client = nh.serviceClient<nav_msgs::GetMap>("/static_map");
 		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
 		edges_pub = nh.advertise<visualization_msgs::Marker>("/kcl_rosplan/viz/edges", 10, true);
+		map_client = nh.serviceClient<nav_msgs::GetMap>("/static_map");
 	}
 
 	/* update position of the robot */

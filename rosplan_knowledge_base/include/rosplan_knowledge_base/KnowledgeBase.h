@@ -33,14 +33,6 @@ namespace KCL_rosplan {
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> domainGoals;
 		std::map<std::string, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > instanceAttributes;
 
-		// planning and mission filter
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> planningFilter;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> missionFilter;
-
-		// planning_system notification
-		void planningFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
-		ros::Publisher notificationPublisher;
-
 		// fetching the symbolic model
 		bool getInstances(rosplan_knowledge_msgs::InstanceService::Request  &req, rosplan_knowledge_msgs::InstanceService::Response &res);
 		bool getInstanceAttr(rosplan_knowledge_msgs::AttributeService::Request  &req, rosplan_knowledge_msgs::AttributeService::Response &res);
@@ -51,6 +43,14 @@ namespace KCL_rosplan {
 		void addKnowledge(const rosplan_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
 		void addMissionGoal(const rosplan_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
 		void removeKnowledge(const rosplan_knowledge_msgs::KnowledgeItem::ConstPtr& msg);
+
+		// planning and mission filter
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> planningFilter;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> missionFilter;
+
+		// planning_system notification
+		void planningFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
+		ros::Publisher notificationPublisher;
 	};
 }
 #endif
