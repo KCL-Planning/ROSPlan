@@ -33,8 +33,10 @@ generate_messages(
    std_msgs
 )
 
-## Declare a catkin package
-catkin_package()
+## Declare things to be passed to dependent projects
+catkin_package(
+  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs roscpp rospy std_msgs genmsg
+)
 
 ###########
 ## Build ##

@@ -62,4 +62,3 @@ target_link_libraries(rproadmapServer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 ## Test ##
 ##########
 # please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
-# see test documentation: http://wiki.ros.org/gtest

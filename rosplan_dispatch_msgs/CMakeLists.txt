@@ -26,7 +26,9 @@ generate_messages(
 )
 
 ## Declare a catkin package
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs roscpp rospy std_msgs genmsg
+)
 
 ###########
 ## Build ##

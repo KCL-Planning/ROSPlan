@@ -7,13 +7,13 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   std_srvs
-  actionlib
+  diagnostic_msgs
+  geometry_msgs
+  move_base_msgs
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
-  move_base_msgs
+  actionlib
   mongodb_store
-  geometry_msgs
-  diagnostic_msgs
 )
 
 find_package(Boost REQUIRED COMPONENTS

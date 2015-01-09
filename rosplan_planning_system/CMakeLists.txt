@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   std_srvs
+  diagnostic_msgs
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
 )
@@ -19,8 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES rosplan_planning_system
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_dispatch_msgs rosplan_knowledge_msgs
-  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
 )
 
 ###########
