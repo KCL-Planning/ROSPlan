@@ -1,12 +1,12 @@
 <launch>
 
 	<!-- knowledge base -->
-	<node name="knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
 
 
 	<!-- scene database (MongoDB) -->
-	<node name="scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="screen">
+	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="screen">
 	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
 	</node>
 	<node name="scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="screen">
@@ -14,7 +14,7 @@
 
 
 	<!-- planning system -->
-	<node name="planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
@@ -25,7 +25,7 @@
 
 
 	<!-- knowledge interfaces -->
-	<node name="roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen">
+	<node name="rosplan_roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen">
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="cost_map_topic" value="/move_base/local_costmap/costmap" />
 	    <param name="odom_topic" value="/odom" />
@@ -35,7 +35,7 @@
 
 
 	<!-- action interfaces -->
-	<node name="movebase_server" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
+	<node name="rosplan_movebase_interface" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
 	</node>
 
 </launch>

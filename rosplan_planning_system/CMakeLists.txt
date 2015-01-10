@@ -76,6 +76,7 @@ set(VAL_SOURCES
 set(PLANNING_SOURCES
 	src/PlanningSystem.cpp
 	src/PlanDispatcher.cpp
+	src/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp)
 
 ## Declare cpp executables

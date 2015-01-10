@@ -29,8 +29,8 @@ namespace KCL_rosplan {
 	 * It is here that the real reasoning takes place.
 	 */
 	void PlanningSystem::notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg) {
-		ROS_INFO("KCL: Notification received; plan invalidated; replanning.");
-		// replanRequested = true;
+		ROS_INFO("KCL: (PS) Notification received; plan invalidated; replanning.");
+		plan_dispatcher.replan_requested = true;
 	}
 
 	/**
@@ -44,53 +44,88 @@ namespace KCL_rosplan {
 		filter_publisher.publish(filterMessage);
 
 		// push the new filter
-		ROS_INFO("KCL: Clean and update knowledge filter");
+		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
 		filterMessage.function = rosplan_knowledge_msgs::Filter::ADD;
 		filterMessage.knowledge_items = knowledge_filter;
 		filter_publisher.publish(filterMessage);
 	}
 
-	/*----------*/
-	/* Planning */
-	/*----------*/
+	/*----------------------*/
+	/* Planning system loop */
+	/*----------------------*/
+
+	/**
+	 * planning system service method; prepares planning; main loop.
+	 */
+	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+		ros::NodeHandle nh("~");
+
+		// setup environment
+		nh.param("data_path", data_path, std::string("common/"));
+		nh.param("domain_path", domain_path, std::string("common/domain.pddl"));
+		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
+		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
+		environment.parseDomain(domain_path);
+	
+		// dispatch plan
+		bool planSucceeded = false;
+		if(!planSucceeded) {
+
+			// update the environment from the ontology
+			environment.update(nh);
+
+			// generate PDDL problem
+			pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+
+			// run planner; generate a plan
+			runPlanner();
+
+			// dispatch plan
+			plan_dispatcher.dispatchPlan(action_list, mission_start_time, plan_start_time);
+		}
+		ROS_INFO("KCL: (PS) Planning System Finished");
+	}
+
+	/*------------------*/
+	/* Plan and process */
+	/*------------------*/
 
 	/**
 	 * passes the problem to the Planner; the plan to post-processing.
 	 * This method is popf-specific.
 	 */
-	bool PlanningSystem::runPlanner()
-	{
+	bool PlanningSystem::runPlanner() {
+
 		// save previous plan
-		planningAttempts = planningAttempts + 1;
+		planning_attempts++;
 		if(action_list.size() > 0) {
 			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(action_list);
 			plan_list.push_back(oldplan);
 		}
 
-		// run the planner
-		std::string commandString = planner_command + " "
-			 + domain_path + " " + problem_path + " > "
-			 + data_path + "plan.pddl";
-
-		ROS_INFO("KCL: Running: %s", commandString.c_str());
+		// run the planner (TODO standardised PDDL2.1 input)
+		std::string commandString = planner_command
+				+ " " + domain_path + " " + problem_path
+				 + " > " + data_path + "plan.pddl";
+		ROS_INFO("KCL: (PS) Running: %s", commandString.c_str());
 		std::string plan = runCommand(commandString.c_str());
-		ROS_INFO("KCL: Planning complete");
+		ROS_INFO("KCL: (PS) Planning complete");
 
 		// check the planner solved the problem (TODO standardised PDDL2.1 output)
 		std::ifstream planfile;
 		planfile.open((data_path + "plan.pddl").c_str());
 		std::string line;
-		while(!planfile.eof()) {
+		bool solved = false;
+		while(!planfile.eof() && !solved) {
 			getline(planfile, line);
-			if (line.substr(0,22).compare(";; Problem unsolvable!")==0) { 
-				planfile.close();
-				ROS_INFO("Plan was unsolvable. Trying again.");
-				return false;
-			}
+			if (line.find("; Time", 0) != std::string::npos)
+				solved = true;
 		}
-		planfile.close();
-		
-		ROS_INFO("KCL: Post processing plan");
+		if(!solved) {
+				planfile.close();
+				ROS_INFO("KCL: (PS) Plan was unsolvable! Try again?");
+				return false;
+		}		
 
 		// trim the end of any existing plan
 		free_action_ID = plan_dispatcher.getCurrentAction();
@@ -102,52 +137,6 @@ namespace KCL_rosplan {
 		publishFilter();
 
 		return true;
-	}
-
-	/**
-	 * requests objects; generates the PDDL problem.
-	 */
-	bool PlanningSystem::generatePlanningProblem(ros::NodeHandle nh, std::string &problemPath)
-	{
-		// update the environment from the ontology
-		ROS_INFO("KCL: Fetching objects");
-		environment.update(nh);
-
-		// generate PDDL problem
-		// generatePDDLProblemFile(problemPath);
-
-		return true;
-	}
-
-	/**
-	 * sets up the ROS node; prepares planning; main loop.
-	 */
-	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
-	{
-		ros::NodeHandle nh("~");
-
-		// setup environment
-		ROS_INFO("KCL: Setup domain");
-		nh.param("data_path", data_path, std::string("common/"));
-		nh.param("domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
-		environment.parseDomain(domain_path);
-	
-		// dispatch plan
-		bool planSucceeded = false;
-		if(!planSucceeded) {
-
-			// generate PDDL problem and run planner
-			ROS_INFO("KCL: Generate problem");
-			// generatePlanningProblem(nh, dataPath);
-			// runPlanner(dataPath, domainPath, problemPath);
-
-			// dispatch plan
-			ROS_INFO("KCL: Dispatch plan");
-			plan_dispatcher.dispatchPlan(action_list, mission_start_time, plan_start_time);
-		}
-		ROS_INFO("KCL: Planning System Finished");
 	}
 
 } // close namespace
@@ -175,7 +164,7 @@ namespace KCL_rosplan {
 
 		// start te planning service
 		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
-		ROS_INFO("KCL: Ready to receive");
+		ROS_INFO("KCL: (PS) Ready to receive");
 		ros::spin();
 
 		return 0;

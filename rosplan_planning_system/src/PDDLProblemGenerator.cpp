@@ -1,7 +1,4 @@
-/**
- * This file is responsible for generating the PDDL instance.
- * This is done by using the objects already retrieved and stored (see PlanningEnvironment.h).
- */
+#include "rosplan_planning_system/PlanningSystem.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -12,25 +9,31 @@ namespace KCL_rosplan {
 
 	/**
 	 * generates a PDDL problem file.
-	 * This file is later read by the planner, and the result saved in dataPath/plan.pddl.
+	 * This file is later read by the planner.
 	 */
-	void generatePDDLProblemFile(std::string &problemPath)
-	{
-		/*--------*/
-		/* header */
-		/*--------*/
+	void PDDLProblemGenerator::generatePDDLProblemFile(PlanningEnvironment &environment, std::string &problemPath) {
 
-		ROS_INFO("KCL: Generating PDDL problem file");
+		ROS_INFO("KCL: (PS) Generating PDDL problem file");
 		std::ofstream pFile;
 		pFile.open((problemPath).c_str());
 
-		pFile << "(define (problem " << KCL_rosplan::domainName << "task)" << std::endl;
-		pFile << "(:domain " << KCL_rosplan::domainName << ")" << std::endl;
+		makeHeader(environment, pFile);
+		makeInitialState(environment, pFile);
+		makeGoals(environment, pFile);
+	}
+
+	/*--------*/
+	/* header */
+	/*--------*/
+
+	void PDDLProblemGenerator::makeHeader(PlanningEnvironment environment, std::ofstream &pFile) {
+
+		pFile << "(define (problem " << environment.domainName << "_task)" << std::endl;
+		pFile << "(:domain " << environment.domainName << ")" << std::endl;
 
 		/* objects */
 		pFile << "(:objects" << std::endl;
-		for (std::map<std::string,std::vector<std::string> >::iterator iit=KCL_rosplan::typeObjectMap.begin();
-				iit!=KCL_rosplan::typeObjectMap.end(); ++iit) {
+		for (std::map<std::string,std::vector<std::string> >::iterator iit=environment.typeObjectMap.begin(); iit!=environment.typeObjectMap.end(); ++iit) {
 			if(iit->second.size()>0) {
 				pFile << "    ";
 				for(size_t i=0;i<iit->second.size();i++) pFile << iit->second[i] << " ";
@@ -38,31 +41,34 @@ namespace KCL_rosplan {
 			}
 		}
 		pFile << ")" << std::endl;
+	}
 
-		/*---------------*/
-		/* initial state */
-		/*---------------*/
+	/*---------------*/
+	/* initial state */
+	/*---------------*/
+
+	void PDDLProblemGenerator::makeInitialState(PlanningEnvironment environment, std::ofstream &pFile) {
 
 		pFile << "(:init" << std::endl;
 
 		// add knowledge to the initial state
-		for(size_t i=0; i<domainAttributes.size(); i++) {
+		for(size_t i=0; i<environment.domainAttributes.size(); i++) {
 			
 			std::stringstream ss;			
-			ss << "    (" + domainAttributes[i].attribute_name;
+			ss << "    (" + environment.domainAttributes[i].attribute_name;
 
 			// fetch the corresponding symbols from domain
 			std::map<std::string,std::vector<std::string> >::iterator ait;
-			ait = domainPredicates.find(domainAttributes[i].attribute_name);
-			if(ait == domainPredicates.end()) continue;
+			ait = environment.domainPredicates.find(environment.domainAttributes[i].attribute_name);
+			if(ait == environment.domainPredicates.end()) continue;
 
 			// find the PDDL parameters in the KnowledgeItem
 			bool writeAttribute = true;
 			for(size_t j=0; j<ait->second.size(); j++) {
 				bool found = false;
-				for(size_t k=0; k<domainAttributes[i].values.size(); k++) {
-					if(0 == domainAttributes[i].values[k].key.compare(ait->second[j])) {
-						ss << " " << domainAttributes[i].values[k].value;
+				for(size_t k=0; k<environment.domainAttributes[i].values.size(); k++) {
+					if(0 == environment.domainAttributes[i].values[k].key.compare(ait->second[j])) {
+						ss << " " << environment.domainAttributes[i].values[k].value;
 						found = true;
 					}
 				}
@@ -73,24 +79,24 @@ namespace KCL_rosplan {
 		}
 
 		// add knowledge to the initial state
-		for(size_t i=0; i<instanceAttributes.size(); i++) {
+		for(size_t i=0; i<environment.instanceAttributes.size(); i++) {
 
 			std::stringstream ss;
 			bool writeAttribute = false;
 			
 			// check if attribute is a PDDL predicate
 			std::map<std::string,std::vector<std::string> >::iterator ait;
-			ait = domainPredicates.find(instanceAttributes[i].attribute_name);
-			if(ait != domainPredicates.end()) {
+			ait = environment.domainPredicates.find(environment.instanceAttributes[i].attribute_name);
+			if(ait != environment.domainPredicates.end()) {
 				writeAttribute = true;
-				ss << "    (" + instanceAttributes[i].attribute_name;
+				ss << "    (" + environment.instanceAttributes[i].attribute_name;
 
 				// find the PDDL parameters in the KnowledgeItem
 				for(size_t j=0; j<ait->second.size(); j++) {
 					bool found = false;
-					for(size_t k=0; k<instanceAttributes[i].values.size(); k++) {
-						if(0 == instanceAttributes[i].values[k].key.compare(ait->second[j])) {
-							ss << " " << instanceAttributes[i].values[k].value;
+					for(size_t k=0; k<environment.instanceAttributes[i].values.size(); k++) {
+						if(0 == environment.instanceAttributes[i].values[k].key.compare(ait->second[j])) {
+							ss << " " << environment.instanceAttributes[i].values[k].value;
 							found = true;
 						}
 					}
@@ -101,18 +107,18 @@ namespace KCL_rosplan {
 
 			// check if attribute is a PDDL function
 			std::map<std::string,std::vector<std::string> >::iterator fit;
-			fit = domainFunctions.find(instanceAttributes[i].attribute_name);
-			if(fit != domainFunctions.end()) {
+			fit = environment.domainFunctions.find(environment.instanceAttributes[i].attribute_name);
+			if(fit != environment.domainFunctions.end()) {
 
 				writeAttribute = true;
-				ss << "    (= (" + instanceAttributes[i].attribute_name;
+				ss << "    (= (" + environment.instanceAttributes[i].attribute_name;
 
 				// find the PDDL parameters in the KnowledgeItem
 				for(size_t j=0; j<fit->second.size(); j++) {
 					bool found = false;
-					for(size_t k=0; k<instanceAttributes[i].values.size(); k++) {
-						if(0 == instanceAttributes[i].values[k].key.compare(fit->second[j])) {
-							ss << " " << instanceAttributes[i].values[k].value;
+					for(size_t k=0; k<environment.instanceAttributes[i].values.size(); k++) {
+						if(0 == environment.instanceAttributes[i].values[k].key.compare(fit->second[j])) {
+							ss << " " << environment.instanceAttributes[i].values[k].value;
 							found = true;
 						}
 					}
@@ -122,9 +128,9 @@ namespace KCL_rosplan {
 
 				// find the PDDL function value in the KnowledgeItem
 				bool found = false;
-				for(size_t k=0; k<instanceAttributes[i].values.size(); k++) {
-					if(0 == instanceAttributes[i].values[k].key.compare("function_value")) {
-						ss << instanceAttributes[i].values[k].value;
+				for(size_t k=0; k<environment.instanceAttributes[i].values.size(); k++) {
+					if(0 == environment.instanceAttributes[i].values[k].key.compare("function_value")) {
+						ss << environment.instanceAttributes[i].values[k].value;
 						found = true;
 					}
 				}
@@ -135,32 +141,35 @@ namespace KCL_rosplan {
 			if(writeAttribute) pFile << ss.str() << std::endl;
 		}
 		pFile << ")" << std::endl;
+	}
 
-		/*-------*/
-		/* goals */
-		/*-------*/
+	/*-------*/
+	/* goals */
+	/*-------*/
+
+	void PDDLProblemGenerator::makeGoals(PlanningEnvironment environment, std::ofstream &pFile) {
 
 		pFile << "(:goal (and" << std::endl;
 			
 		// propositions in the initial state
-		for(size_t i=0; i<goalAttributes.size(); i++) {
+		for(size_t i=0; i<environment.goalAttributes.size(); i++) {
 
 			std::stringstream ss;
 			bool writeAttribute = true;
 			
 			// check if attribute belongs in the PDDL model
 			std::map<std::string,std::vector<std::string> >::iterator ait;
-			ait = domainPredicates.find(goalAttributes[i].attribute_name);
-			if(ait != domainPredicates.end()) {
+			ait = environment.domainPredicates.find(environment.goalAttributes[i].attribute_name);
+			if(ait != environment.domainPredicates.end()) {
 
-				ss << "    (" + goalAttributes[i].attribute_name;
+				ss << "    (" + environment.goalAttributes[i].attribute_name;
 
 				// find the PDDL parameters in the KnowledgeItem
 				bool found = false;
 				for(size_t j=0; j<ait->second.size(); j++) {
-				for(size_t k=0; k<goalAttributes[i].values.size(); k++) {
-					if(0 == goalAttributes[i].values[k].key.compare(ait->second[j])) {
-						ss << " " << goalAttributes[i].values[k].value;
+				for(size_t k=0; k<environment.goalAttributes[i].values.size(); k++) {
+					if(0 == environment.goalAttributes[i].values[k].key.compare(ait->second[j])) {
+						ss << " " << environment.goalAttributes[i].values[k].value;
 						found = true;
 					}
 				}};

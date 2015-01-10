@@ -28,9 +28,16 @@ namespace KCL_rosplan
 	{
 	private:
 
+		std::string toLowerCase(const std::string& str);
+
+		/* domain parsing */
+		void clearDomain();
+		void parsePrecondition(const std::string &opName, const VAL::goal* goal, bool negative);
+		
+	public:
+
 		/* PDDL to Knowledge Base naming map */
 		std::map<std::string,std::string> name_map;
-		std::string toLowerCase(const std::string& str);
 
 		/* domain information */
 		std::string domainName;
@@ -53,12 +60,6 @@ namespace KCL_rosplan
 
 		// maps instance name to type name
 		std::map<std::string,std::string> objectTypeMap;
-
-		/* domain parsing */
-		void clearDomain();
-		void parsePrecondition(const std::string &opName, const VAL::goal* goal, bool negative);
-		
-		public:
 
 		/* domain parsing */		
 		void parseDomain(const std::string domainPath);

@@ -20,10 +20,9 @@ namespace KCL_rosplan
 		size_t current_action;
 
 		/* dispatch state */
-		std::map<int,bool> actionReceived;
-		std::map<int,bool> actionCompleted;
-		bool replanRequested;
-		bool dispatchPaused;
+		std::map<int,bool> action_received;
+		std::map<int,bool> action_completed;
+		bool dispatch_paused;
 
 	public:
 
@@ -31,6 +30,7 @@ namespace KCL_rosplan
 
 		/* action dispatch methods */
 		bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart);
+		bool replan_requested;
 
 		/* action feedback methods */
 		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
