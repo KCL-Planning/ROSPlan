@@ -20,14 +20,35 @@
 namespace KCL_rosplan {
 
 	/* constructor */
-	RPRoadmapServer::RPRoadmapServer(ros::NodeHandle &nh, std::string &dp)
-	 : message_store(nh), dataPath(dp) {
+	RPRoadmapServer::RPRoadmapServer(ros::NodeHandle &nh)
+	 : message_store(nh) {
 
+		// config
+		std::string dataPath("common/");
+		std::string staticMapService("/static_map");
+		nh.param("data_path", data_path, dataPath);
+		nh.param("static_map_service", static_map_service, staticMapService);
+		nh.param("use_static_map", use_static_map, false);
+
+		// knowledge interface
 		add_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/add_knowledge", 10, true);
 		remove_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/remove_knowledge", 10, true);
+
+		// visualisation
 		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
 		edges_pub = nh.advertise<visualization_msgs::Marker>("/kcl_rosplan/viz/edges", 10, true);
-		map_client = nh.serviceClient<nav_msgs::GetMap>("/static_map");
+
+		// map interface
+		map_client = nh.serviceClient<nav_msgs::GetMap>(static_map_service);
+	}
+
+	/*------------------*/
+	/* callback methods */
+	/*------------------*/
+
+	/* update the costmap */
+	void RPRoadmapServer::costMapCallback( const nav_msgs::OccupancyGridConstPtr& msg ) {
+		cost_map = *msg;
 	}
 
 	/* update position of the robot */
@@ -37,6 +58,10 @@ namespace KCL_rosplan {
 		base_odom.pose.position = msg->pose.pose.position;
 		base_odom.pose.orientation = msg->pose.pose.orientation;
 	}
+
+	/*-----------*/
+	/* build PRM */
+	/*-----------*/
 
 	/**
 	 * Generates waypoints and stores them in the knowledge base and scene database
@@ -65,17 +90,22 @@ namespace KCL_rosplan {
 		clearMarkerArrays(nh);
  
 		// read map
-		ROS_INFO("KCL: (RPRoadmapServer) Reading in map");
-		nav_msgs::GetMap mapSrv;
-		map_client.call(mapSrv);
-		nav_msgs::OccupancyGrid map = mapSrv.response.map;
+		nav_msgs::OccupancyGrid map;
+		if(use_static_map) {
+			ROS_INFO("KCL: (RPRoadmapServer) Reading in map");
+			nav_msgs::GetMap mapSrv;
+			map_client.call(mapSrv);
+			map = mapSrv.response.map;
+		} else {
+			map = cost_map;
+		}
 
 		// generate waypoints
 		ROS_INFO("KCL: (RPRoadmapServer) Generating roadmap");
-		// K, number of seed waypoints
-		// D, distance of random motions
-		// R, radius of random connections
-		// M, max number of waypoints
+		/* K, number of seed waypoints
+		 * D, distance of random motions
+		 * R, radius of random connections
+		 * M, max number of waypoints */
 		createPRM(map, 1, 1, 5, 10);
 
 		// publish visualization
@@ -298,13 +328,16 @@ namespace KCL_rosplan {
 		ros::init(argc, argv, "rosplan_roadmap_server");
 		ros::NodeHandle nh("~");
 
-		// default config
-		std::string dataPath = "common/";
-		nh.param("data_path", dataPath, dataPath);
+		// params
+		std::string costMapTopic("/move_base/local_costmap/costmap");
+		nh.param("cost_map_topic", costMapTopic, costMapTopic);
+		std::string odomTopic("/odom");
+		nh.param("odom_topic", odomTopic, odomTopic);
 
-		// init services
-		KCL_rosplan::RPRoadmapServer rms(nh, dataPath);
-		ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>("/odom", 1, &KCL_rosplan::RPRoadmapServer::odomCallback, &rms);
+		// init
+		KCL_rosplan::RPRoadmapServer rms(nh);
+		ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>(odomTopic, 1, &KCL_rosplan::RPRoadmapServer::odomCallback, &rms);
+		ros::Subscriber map_sub = nh.subscribe<nav_msgs::OccupancyGrid>(costMapTopic, 1, &KCL_rosplan::RPRoadmapServer::costMapCallback, &rms);
 		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/roadmap_server", &KCL_rosplan::RPRoadmapServer::generateRoadmap, &rms);
 
 		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive");

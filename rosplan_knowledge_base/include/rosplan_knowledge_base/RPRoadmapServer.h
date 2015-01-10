@@ -5,6 +5,7 @@
 #include <tf/transform_listener.h>
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "mongodb_store/message_store.h"
+#include "nav_msgs/OccupancyGrid.h"
 #include "geometry_msgs/Pose.h"
 #include "nav_msgs/Odometry.h"
 #include "nav_msgs/GetMap.h"
@@ -56,9 +57,12 @@ namespace KCL_rosplan {
 
 	private:
 		
-		std::string dataPath;
+		std::string data_path;
+		std::string static_map_service;
+		bool use_static_map;
 
 		// odometry
+		nav_msgs::OccupancyGrid cost_map;
 		geometry_msgs::PoseStamped base_odom;
 		tf::TransformListener tf;
 
@@ -85,7 +89,7 @@ namespace KCL_rosplan {
 	public:
 
 		/* constructor */
-		RPRoadmapServer(ros::NodeHandle &nh, std::string &dp);
+		RPRoadmapServer(ros::NodeHandle &nh);
 
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
@@ -94,6 +98,7 @@ namespace KCL_rosplan {
 		void connectRecurse(std::map<std::string,bool> &connected, Waypoint &waypoint);
 		bool makeConnections(unsigned int R);
 		void odomCallback( const nav_msgs::OdometryConstPtr& msg );
+		void costMapCallback( const nav_msgs::OccupancyGridConstPtr& msg );
 	};
 }
 #endif

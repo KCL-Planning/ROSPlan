@@ -4,6 +4,7 @@
 	<node name="knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
 
+
 	<!-- scene database (MongoDB) -->
 	<node name="scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="screen">
 	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
@@ -11,22 +12,30 @@
 	<node name="scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="screen">
 	</node>
 
+
 	<!-- planning system -->
 	<node name="planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
-
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
 	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
-
 		<!-- to run the planner -->
 	    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />
 	</node>
 
+
 	<!-- knowledge interfaces -->
-	<node name="roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen"></node>
+	<node name="roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen">
+	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
+	    <param name="cost_map_topic" value="/move_base/local_costmap/costmap" />
+	    <param name="odom_topic" value="/odom" />
+	    <param name="use_static_map" value="false" />
+	    <param name="static_map_service" value="/static_map" />
+	</node>
+
 
 	<!-- action interfaces -->
-	<node name="movebase_server" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen"></node>
+	<node name="movebase_server" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
+	</node>
 
 </launch>
