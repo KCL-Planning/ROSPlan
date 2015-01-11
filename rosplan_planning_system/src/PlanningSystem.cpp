@@ -46,7 +46,7 @@ namespace KCL_rosplan {
 		// push the new filter
 		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
 		filterMessage.function = rosplan_knowledge_msgs::Filter::ADD;
-		filterMessage.knowledge_items = knowledge_filter;
+		filterMessage.knowledge_items = plan_parser.knowledge_filter;
 		filter_publisher.publish(filterMessage);
 	}
 
@@ -68,8 +68,11 @@ namespace KCL_rosplan {
 		environment.parseDomain(domain_path);
 	
 		// dispatch plan
+		plan_parser.reset();
+		plan_dispatcher.reset();
 		bool planSucceeded = false;
-		if(!planSucceeded) {
+		mission_start_time = ros::WallTime::now().toSec();
+		while(!planSucceeded) {
 
 			// update the environment from the ontology
 			environment.update(nh);
@@ -81,7 +84,8 @@ namespace KCL_rosplan {
 			runPlanner();
 
 			// dispatch plan
-			plan_dispatcher.dispatchPlan(action_list, mission_start_time, plan_start_time);
+			plan_start_time = ros::WallTime::now().toSec();
+			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
 		}
 		ROS_INFO("KCL: (PS) Planning System Finished");
 	}
@@ -98,8 +102,8 @@ namespace KCL_rosplan {
 
 		// save previous plan
 		planning_attempts++;
-		if(action_list.size() > 0) {
-			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(action_list);
+		if(plan_parser.action_list.size() > 0) {
+			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(plan_parser.action_list);
 			plan_list.push_back(oldplan);
 		}
 
@@ -125,13 +129,10 @@ namespace KCL_rosplan {
 				planfile.close();
 				ROS_INFO("KCL: (PS) Plan was unsolvable! Try again?");
 				return false;
-		}		
-
-		// trim the end of any existing plan
-		free_action_ID = plan_dispatcher.getCurrentAction();
+		}			
 
 		// Convert plan into message list for dispatch
-		// preparePlan(data_path);
+		plan_parser.preparePlan(data_path, environment, plan_dispatcher.getCurrentAction());
 
 		// publish the filter to the knowledge base
 		publishFilter();
@@ -156,13 +157,13 @@ namespace KCL_rosplan {
 
 		// publishing "action_dispatch"; listening "action_feedback"
 		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
-		nh.subscribe("/kcl_rosplan/action_feedback", 100, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
+		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
 
 		// publishing "/kcl_rosplan/filter"; listening "/kcl_rosplan/notification"
 		planningSystem.filter_publisher = nh.advertise<rosplan_knowledge_msgs::Filter>("/kcl_rosplan/filter", 10, true);
-		nh.subscribe("/kcl_rosplan/notification", 100, &KCL_rosplan::PlanningSystem::notificationCallBack, &planningSystem);
+		ros::Subscriber notification_sub = nh.subscribe("/kcl_rosplan/notification", 10, &KCL_rosplan::PlanningSystem::notificationCallBack, &planningSystem);
 
-		// start te planning service
+		// start the planning service
 		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
 		ROS_INFO("KCL: (PS) Ready to receive");
 		ros::spin();

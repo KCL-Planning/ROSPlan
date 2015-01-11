@@ -9,6 +9,7 @@
 #include "std_srvs/Empty.h"
 #include "PlanningEnvironment.h"
 #include "PDDLProblemGenerator.h"
+#include "PlanParser.h"
 #include "PlanDispatcher.h"
 
 #ifndef KCL_planning_system
@@ -33,14 +34,12 @@ namespace KCL_rosplan {
 		std::string data_path;
 
 		/* planning */
-		size_t free_action_ID;
 		double mission_start_time;
 		double plan_start_time;
 		bool runPlanner();
 
 		/* plan list (for remembering previous plans) */
 		std::vector< std::vector<rosplan_dispatch_msgs::ActionDispatch> > plan_list;
-		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
 		size_t planning_attempts;
 
 	public:
@@ -54,9 +53,7 @@ namespace KCL_rosplan {
 
 		/* planning */
 		PDDLProblemGenerator pddl_problem_generator;
-		std::vector<std::string> filter_objects;
-		std::vector<std::vector<std::string> > filter_attributes;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> knowledge_filter;
+		PlanParser plan_parser;
 		void publishFilter();
 	
 		/* dispatch */

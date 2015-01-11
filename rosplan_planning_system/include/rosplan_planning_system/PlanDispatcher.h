@@ -16,7 +16,6 @@ namespace KCL_rosplan
 	private:
 
 		/* action dispatch list (current plan) */
-		double totalPlanDuration;
 		size_t current_action;
 
 		/* dispatch state */
@@ -27,6 +26,7 @@ namespace KCL_rosplan
 	public:
 
 		int getCurrentAction();
+		void reset();
 
 		/* action dispatch methods */
 		bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart);

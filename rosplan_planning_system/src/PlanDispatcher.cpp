@@ -6,6 +6,14 @@ namespace KCL_rosplan {
 		return current_action;
 	}
 
+	void PlanDispatcher::reset() {
+		dispatch_paused = false;
+		current_action = 0;
+		action_received.clear();
+		action_completed.clear();
+		replan_requested = false;
+	}
+
 	/*-----------------*/
 	/* action dispatch */
 	/*-----------------*/
@@ -19,9 +27,8 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 
 		ROS_INFO("KCL: (PS) Dispatching plan");
-
+		replan_requested = false;
 		bool repeatAction = false;
-
 		while (ros::ok() && actionList.size() > current_action) {
 
 			// get next action
@@ -104,6 +111,7 @@ namespace KCL_rosplan {
 
 		// action completed (failed)
 		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+			replan_requested = true;
 			action_completed[msg->action_id] = true;
 		}
 	}
@@ -117,6 +125,6 @@ namespace KCL_rosplan {
 	 * This method serves as the hook for defining more interesting behaviour on action feedback.
 	 */
 	void PlanDispatcher::actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
-		ROS_INFO("KCL: (PS) Feedback received [%i,%s]", msg->action_id, msg->status.c_str());
+		// nothing yet...
 	}
 } // close namespace

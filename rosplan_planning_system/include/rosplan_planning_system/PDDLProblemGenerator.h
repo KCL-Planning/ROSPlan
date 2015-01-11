@@ -3,6 +3,7 @@
  * This is done by using the objects already retrieved and stored (see PlanningEnvironment.h).
  */
 #include <string>
+#include "PlanningEnvironment.h"
 
 #ifndef KCL_PDDLproblemgenerator
 #define KCL_PDDLproblemgenerator

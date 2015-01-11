@@ -28,24 +28,17 @@ namespace KCL_rosplan {
 	/* parsing domain */
 	/*----------------*/
 
-	void PlanningEnvironment::clearDomain() {
-
-		domainTypes.clear();
-		domainPredicates.clear();
-		domainOperators.clear();
-		domainOperatorTypes.clear();
-		domainFunctions.clear();
-	}
-
 	/**
 	 * read domain: used for writing the PDDL problem file and then for constructing the dispatch
 	 * messages.
 	 */
 	void PlanningEnvironment::parseDomain(const std::string domainPath) {
 		
-		// clear old domain
-		clearDomain();
+		// only parse domain once
+		if(domain_parsed)
+			return;
 
+		domain_parsed = true;
 		std::string domainFileName = (domainPath);
 		ROS_INFO("KCL: (PS) Parsing domain: %s.", domainFileName.c_str());
 
@@ -79,7 +72,7 @@ namespace KCL_rosplan {
 			VAL::pddl_type_list* types = domain->types;
 			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 				const VAL::pddl_type* type = *ci;
-				domainTypes.push_back(type->getName());
+				domain_types.push_back(type->getName());
 			}
 
 			// predicates
@@ -88,11 +81,11 @@ namespace KCL_rosplan {
 				for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
 					const VAL::pred_decl* predicate = *ci;
 					// predicate name
-					domainPredicates[predicate->getPred()->symbol::getName()];
+					domain_predicates[predicate->getPred()->symbol::getName()];
 					// parameters
 					for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
 						const VAL::var_symbol* var = *vi;
-						domainPredicates[predicate->getPred()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
+						domain_predicates[predicate->getPred()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
 					}
 				}
 			}
@@ -103,11 +96,11 @@ namespace KCL_rosplan {
 				for (VAL::func_decl_list::const_iterator ci = functions->begin(); ci != functions->end(); ci++) {
 					const VAL::func_decl* function = *ci;
 					// function name
-					domainFunctions[function->getFunction()->symbol::getName()];
+					domain_functions[function->getFunction()->symbol::getName()];
 					// parameters
 					for (VAL::var_symbol_list::const_iterator vi = function->getArgs()->begin(); vi != function->getArgs()->end(); vi++) {
 						const VAL::var_symbol* var = *vi;
-						domainFunctions[function->getFunction()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
+						domain_functions[function->getFunction()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
 					}
 				}
 			}
@@ -117,16 +110,16 @@ namespace KCL_rosplan {
 			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
 				const VAL::operator_* op = *ci;
 				// operator name
-				domainOperators[op->name->symbol::getName()];
+				domain_operators[op->name->symbol::getName()];
 				// parameters
 				for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
 					const VAL::var_symbol* var = *vi;
-					domainOperators[op->name->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
-					domainOperatorTypes[op->name->symbol::getName()].push_back(var->pddl_typed_symbol::type->getName());
+					domain_operators[op->name->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
+					domain_operator_types[op->name->symbol::getName()].push_back(var->pddl_typed_symbol::type->getName());
 				}
 				// preconditions
 				const VAL::goal* precondition = op->precondition;
-				domainOperatorPreconditionMap[op->name->symbol::getName()];
+				domain_operator_precondition_map[op->name->symbol::getName()];
 				parsePrecondition(op->name->symbol::getName(), precondition, false);
 			}
 		}
@@ -136,7 +129,7 @@ namespace KCL_rosplan {
 
 	/**
 	 * parse a precondition recursively.
-	 * The final simple preconditions are stored in domainOperatorPreconditionMap.
+	 * The final simple preconditions are stored in domain_operator_precondition_map.
 	 * TODO: test negative precondition support.
 	 */
 	void PlanningEnvironment::parsePrecondition(const std::string &opName, const VAL::goal* goal, bool negative) {
@@ -156,7 +149,7 @@ namespace KCL_rosplan {
 				const VAL::parameter_symbol* param = *ci;
 				precondition.push_back(param->symbol::getName());
 			}
-			domainOperatorPreconditionMap[opName].push_back(precondition);
+			domain_operator_precondition_map[opName].push_back(precondition);
 			return;
 		}
 
@@ -183,11 +176,11 @@ namespace KCL_rosplan {
 	void PlanningEnvironment::clear() {
 
 		// clear old problem
-		typeObjectMap.clear();
-		objectTypeMap.clear();
-		instanceAttributes.clear();
-		domainAttributes.clear();
-		goalAttributes.clear();
+		type_object_map.clear();
+		object_type_map.clear();
+		instance_attributes.clear();
+		domain_attributes.clear();
+		goal_attributes.clear();
 	}
 
 	/**
@@ -208,11 +201,11 @@ namespace KCL_rosplan {
 		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<rosplan_knowledge_msgs::AttributeService>("/kcl_rosplan/get_current_goals");
 
 		// for each type fetch instances
-		for(size_t t=0; t<domainTypes.size(); t++) {
+		for(size_t t=0; t<domain_types.size(); t++) {
 
 			rosplan_knowledge_msgs::InstanceService instanceSrv;
-			instanceSrv.request.type_name = domainTypes[t];
-			typeObjectMap[domainTypes[t]];
+			instanceSrv.request.type_name = domain_types[t];
+			type_object_map[domain_types[t]];
 
 			if (GetInstancesClient.call(instanceSrv)) {
 				for(size_t i=0;i<instanceSrv.response.instances.size();i++) {
@@ -220,21 +213,21 @@ namespace KCL_rosplan {
 					// add new instance (popf converts names to lowercase)
 					std::string name = instanceSrv.response.instances[i];
 					name_map[KCL_rosplan::toLowerCase(name)] = name;
-					typeObjectMap[domainTypes[t]].push_back(name);
-					objectTypeMap[name] = domainTypes[t];
+					type_object_map[domain_types[t]].push_back(name);
+					object_type_map[name] = domain_types[t];
 
 					// get instance attributes
 					rosplan_knowledge_msgs::AttributeService instanceAttrSrv;
 					instanceAttrSrv.request.instance_name = name;
-					instanceAttrSrv.request.type_name = domainTypes[t];
+					instanceAttrSrv.request.type_name = domain_types[t];
 					if (GetInstanceAttrsClient.call(instanceAttrSrv)) {
 						for(size_t j=0;j<instanceAttrSrv.response.attributes.size();j++) {
 							// if knowledge item corresponds to an attribute of this object, then store it.
 							rosplan_knowledge_msgs::KnowledgeItem attr = instanceAttrSrv.response.attributes[j];
 							if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INSTANCE_ATTRIBUTE
-									&& attr.instance_type.compare(domainTypes[t])==0
+									&& attr.instance_type.compare(domain_types[t])==0
 									&& attr.instance_name.compare(name)==0)
-								instanceAttributes.push_back(attr);
+								instance_attributes.push_back(attr);
 						}
 					} else {
 						ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_instance_attributes: %s %s",
@@ -249,27 +242,27 @@ namespace KCL_rosplan {
 
 		// get domain attributes and functions
 		std::map<std::string,std::vector<std::string> >::iterator ait;
-		for(ait = domainPredicates.begin(); ait != domainPredicates.end(); ait++) {
+		for(ait = domain_predicates.begin(); ait != domain_predicates.end(); ait++) {
 			rosplan_knowledge_msgs::AttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
 					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE && attr.attribute_name.compare(ait->first)==0)
-						domainAttributes.push_back(attr);
+						domain_attributes.push_back(attr);
 				}
 			} else {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_domain_attributes %s", domainAttrSrv.request.predicate_name.c_str());
 			}
 		}
-		for(ait = domainFunctions.begin(); ait != domainFunctions.end(); ait++) {
+		for(ait = domain_functions.begin(); ait != domain_functions.end(); ait++) {
 			rosplan_knowledge_msgs::AttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
 					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION && attr.attribute_name.compare(ait->first)==0)
-						domainAttributes.push_back(attr);
+						domain_attributes.push_back(attr);
 				}
 			} else {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_domain_attributes %s", domainAttrSrv.request.predicate_name.c_str());
@@ -282,7 +275,7 @@ namespace KCL_rosplan {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
 				rosplan_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[j];
 				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE)
-					goalAttributes.push_back(attr);
+					goal_attributes.push_back(attr);
 			}
 		} else {
 			ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_current_goals");
