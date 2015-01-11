@@ -1,15 +1,22 @@
-#include <ros/ros.h>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <tf/transform_listener.h>
-#include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "mongodb_store/message_store.h"
+#include "ros/ros.h"
+#include "std_srvs/Empty.h"
+#include "diagnostic_msgs/KeyValue.h"
+#include "tf/transform_listener.h"
+#include "visualization_msgs/MarkerArray.h"
+#include "visualization_msgs/Marker.h"
 #include "nav_msgs/OccupancyGrid.h"
-#include "geometry_msgs/Pose.h"
 #include "nav_msgs/Odometry.h"
 #include "nav_msgs/GetMap.h"
-#include "std_srvs/Empty.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "mongodb_store/message_store.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <ctime>
+#include <stdlib.h> 
+#include <algorithm> 
 
 #ifndef KCL_roadmap
 #define KCL_roadmap
@@ -64,15 +71,14 @@ namespace KCL_rosplan {
 		// odometry
 		nav_msgs::OccupancyGrid cost_map;
 		geometry_msgs::PoseStamped base_odom;
+		ros::ServiceClient map_client;
 		tf::TransformListener tf;
 
 		// Scene database
 		mongodb_store::MessageStoreProxy message_store;
 
 		// Knowledge base
-		ros::ServiceClient map_client;
-		ros::Publisher add_knowledge_pub;
-		ros::Publisher remove_knowledge_pub;
+		ros::ServiceClient update_knowledge_client;
 
 		// Roadmap
 		std::map<std::string, Waypoint> waypoints;

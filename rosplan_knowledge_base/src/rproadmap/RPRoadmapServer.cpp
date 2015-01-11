@@ -1,22 +1,6 @@
-#include "ros/ros.h"
 #include "rosplan_knowledge_base/RPRoadmapServer.h"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <ctime>
-#include <stdlib.h> 
-#include <algorithm> 
-#include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "mongodb_store/message_store.h"
-#include "nav_msgs/OccupancyGrid.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "nav_msgs/Odometry.h"
-#include "diagnostic_msgs/KeyValue.h"
-#include "visualization_msgs/Marker.h"
-#include "visualization_msgs/MarkerArray.h"
-#include <tf/transform_listener.h>
-#include <nav_msgs/Odometry.h>
 
+/* implementation of rosplan_knowledge_base::RPRoadmapServer */
 namespace KCL_rosplan {
 
 	/* constructor */
@@ -31,9 +15,8 @@ namespace KCL_rosplan {
 		nh.param("use_static_map", use_static_map, false);
 
 		// knowledge interface
-		add_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/add_knowledge", 10, true);
-		remove_knowledge_pub = nh.advertise<rosplan_knowledge_msgs::KnowledgeItem>("/kcl_rosplan/remove_knowledge", 10, true);
-
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		
 		// visualisation
 		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
 		edges_pub = nh.advertise<visualization_msgs::Marker>("/kcl_rosplan/viz/edges", 10, true);
@@ -72,21 +55,13 @@ namespace KCL_rosplan {
 
 		// clear previous roadmap from knowledge base
 		ROS_INFO("KCL: (RPRoadmapServer) Cleaning old roadmap");
-		rosplan_knowledge_msgs::KnowledgeItem clearWP;
-		clearWP.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
-		clearWP.instance_type = "waypoint";
-		remove_knowledge_pub.publish(clearWP);
+		rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
+		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
+		updateSrv.request.knowledge.instance_type = "waypoint";
+		update_knowledge_client.call(updateSrv);
 
-		rosplan_knowledge_msgs::KnowledgeItem clearConn;
-		clearConn.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-		clearConn.attribute_name = "connected";
-		remove_knowledge_pub.publish(clearConn);
-
-		rosplan_knowledge_msgs::KnowledgeItem clearDist;
-		clearDist.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
-		clearDist.attribute_name = "distance";
-		remove_knowledge_pub.publish(clearDist);
-
+		// clear previous roadmap from scene database
 		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit)
 			message_store.deleteID(db_name_map[wit->first]);
 		db_name_map.clear();
@@ -122,50 +97,49 @@ namespace KCL_rosplan {
 		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 
 			// instance
-			rosplan_knowledge_msgs::KnowledgeItem addWP;
-			addWP.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
-			addWP.instance_type = "waypoint";
-			addWP.instance_name = wit->first;
-			add_knowledge_pub.publish(addWP);
+			rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
+			updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+			updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
+			updateSrv.request.knowledge.instance_type = "waypoint";
+			updateSrv.request.knowledge.instance_name = wit->first;
+			update_knowledge_client.call(updateSrv);
 
 			// predicates
 			for (std::vector<std::string>::iterator nit=wit->second.neighbours.begin(); nit!=wit->second.neighbours.end(); ++nit) {
-				rosplan_knowledge_msgs::KnowledgeItem addConn;
-				addConn.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-				addConn.attribute_name = "connected";
+				rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
+				updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+				updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+				updatePredSrv.request.knowledge.attribute_name = "connected";
 				diagnostic_msgs::KeyValue pairFrom;
 				pairFrom.key = "from";
 				pairFrom.value = wit->first;
-				addConn.values.push_back(pairFrom);
+				updatePredSrv.request.knowledge.values.push_back(pairFrom);
 				diagnostic_msgs::KeyValue pairTo;
 				pairTo.key = "to";
 				pairTo.value = *nit;
-				addConn.values.push_back(pairTo);
-				add_knowledge_pub.publish(addConn);			
+				updatePredSrv.request.knowledge.values.push_back(pairTo);
+				update_knowledge_client.call(updatePredSrv);	
 			}
 
 			// functions
 			for (std::vector<std::string>::iterator nit=wit->second.neighbours.begin(); nit!=wit->second.neighbours.end(); ++nit) {
-				rosplan_knowledge_msgs::KnowledgeItem addDist;
-				addDist.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
-				addDist.attribute_name = "distance";
+				rosplan_knowledge_msgs::KnowledgeUpdateService updateFuncSrv;
+				updateFuncSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+				updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+				updateFuncSrv.request.knowledge.attribute_name = "distance";
 				diagnostic_msgs::KeyValue pairFrom;
 				pairFrom.key = "wp1";
 				pairFrom.value = wit->first;
-				addDist.values.push_back(pairFrom);
+				updateFuncSrv.request.knowledge.values.push_back(pairFrom);
 				diagnostic_msgs::KeyValue pairTo;
 				pairTo.key = "wp2";
 				pairTo.value = *nit;
-				addDist.values.push_back(pairTo);
-
-				/* TODO distance, and make optional
+				updateFuncSrv.request.knowledge.values.push_back(pairTo);
 				double dist = sqrt(
-						(wit->second.real_x - nit->second.real_x)*(wit->second.real_x - nit->second.real_x)
-						+ (wit->second.real_y - nit->second.real_y)*(wit->second.real_y - nit->second.real_y));
-				*/
-				addDist.function_value = 1;
-
-				add_knowledge_pub.publish(addDist);
+						(wit->second.real_x - waypoints[*nit].real_x)*(wit->second.real_x - waypoints[*nit].real_x)
+						+ (wit->second.real_y - waypoints[*nit].real_y)*(wit->second.real_y - waypoints[*nit].real_y));
+				updateFuncSrv.request.knowledge.function_value = dist;
+				update_knowledge_client.call(updateFuncSrv);
 			}
 
 			//data
@@ -174,22 +148,27 @@ namespace KCL_rosplan {
 			pose.pose.position.x = wit->second.real_x;
 			pose.pose.position.y = wit->second.real_y;
 			pose.pose.position.z = 0.0;
+			pose.pose.orientation.x = 0.0;;
+			pose.pose.orientation.y = 0.0;;
+			pose.pose.orientation.z = 0.0;
+			pose.pose.orientation.w = 1.0;
 			std::string id(message_store.insertNamed(wit->first, pose));
 			db_name_map[wit->first] = id;
 		}
 
-		// robot start position (TODO name)
-		rosplan_knowledge_msgs::KnowledgeItem addPosition;
-		addPosition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-		addPosition.attribute_name = "robot_at";
+		// robot start position (TODO remove)
+		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+		updateSrv.request.knowledge.attribute_name = "robot_at";
 		diagnostic_msgs::KeyValue pair1, pair2;
 		pair1.key = "v";
 		pair1.value = "kenny";
-		addPosition.values.push_back(pair1);
+		updateSrv.request.knowledge.values.push_back(pair1);
 		pair2.key = "wp";
 		pair2.value = "wp0";
-		addPosition.values.push_back(pair2);
-		add_knowledge_pub.publish(addPosition);
+		updateSrv.request.knowledge.values.push_back(pair2);
+		update_knowledge_client.call(updateSrv);
 
 
 		ROS_INFO("KCL: (RPRoadmapServer) Done");

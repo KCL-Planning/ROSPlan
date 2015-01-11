@@ -2,13 +2,13 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <boost/foreach.hpp>
 #include <actionlib/client/simple_action_client.h>
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
 #include "move_base_msgs/MoveBaseAction.h"
 #include "mongodb_store/message_store.h"
 #include "geometry_msgs/PoseStamped.h"
-
 
 #ifndef KCL_movebase
 #define KCL_movebase

@@ -1,13 +1,6 @@
-#include "ros/ros.h"
 #include "rosplan_knowledge_base/RPRoadmapServer.h"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <ctime>
-#include "visualization_msgs/Marker.h"
-#include "visualization_msgs/MarkerArray.h"
-#include "geometry_msgs/Pose.h"
 
+/* implementation of rosplan_knowledge_base::RPRoadmapServer visualisation */
 namespace KCL_rosplan {
 
 	/* output all waypoints */
