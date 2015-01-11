@@ -22,7 +22,8 @@ namespace KCL_rosplan {
 				if(name.compare(msg->instance_name)==0 || msg->instance_name.compare("")==0) {
 
 					// remove instance from knowledge base
-					ROS_INFO("KCL: (KB) Removing instance (%s, %s)", msg->instance_type.c_str(), msg->instance_name.c_str());
+					ROS_INFO("KCL: (KB) Removing instance (%s, %s)", msg->instance_type.c_str(),
+							(msg->instance_name.compare("")==0) ? "ALL" : msg->instance_name.c_str());
 					checkFilters(*msg, false);
 					domainInstances[msg->instance_type].erase(iit);
 
@@ -125,6 +126,21 @@ namespace KCL_rosplan {
 			ROS_INFO("KCL: (KB) Adding instance attribute (%s, %s)", msg->instance_name.c_str(), msg->attribute_name.c_str());
 			instanceAttributes[msg->instance_name].push_back(*msg);
 			checkFilters(*msg, true);
+		} else if(msg->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
+
+			// add domain function to knowledge base		
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+			for(pit=domainFunctions.begin(); pit!=domainFunctions.end(); pit++) {
+				if(sameKnowledge(*msg, *pit)) {
+					// already added
+					ROS_INFO("KCL: (KB) Updating domain function (%s)", msg->attribute_name.c_str());
+					pit->function_value = msg->function_value;
+					return;
+				}
+			}
+			ROS_INFO("KCL: (KB) Adding domain function (%s)", msg->attribute_name.c_str());
+			domainFunctions.push_back(*msg);
+			checkFilters(*msg, true);
 		}
 	}
 
@@ -178,13 +194,13 @@ namespace KCL_rosplan {
 
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<domainAttributes.size(); i++) {
-			if(req.predicate_name.compare(domainAttributes[i].attribute_name)==0)
+			if(0==req.predicate_name.compare(domainAttributes[i].attribute_name))
 				res.attributes.push_back(domainAttributes[i]);
 		}
 
 		// ...or fetch the knowledgeItems of the correct function
 		for(size_t i=0; i<domainFunctions.size(); i++) {
-			if(req.predicate_name.compare(domainFunctions[i].attribute_name)==0)
+			if(0==req.predicate_name.compare(domainFunctions[i].attribute_name))
 				res.attributes.push_back(domainFunctions[i]);
 		}
 
@@ -200,8 +216,8 @@ namespace KCL_rosplan {
 			res.attributes.push_back(domainGoals[i]);
 		}
 
-		/* TESTING for SQUIRREL integration meeting 1/2
-		...
+		// TESTING
+		// ...
 		// END TESTING */
 
 		return true;
@@ -220,8 +236,21 @@ int main(int argc, char **argv)
 
 	KCL_rosplan::KnowledgeBase kb;
 
-	/* TESTING for SQUIRREL integration meeting 2/2
-	...
+	// TESTING
+	kb.domainInstances["robot"].push_back("kenny");
+
+	rosplan_knowledge_msgs::KnowledgeItem robot_at;
+	robot_at.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+	robot_at.attribute_name = "robot_at";
+	diagnostic_msgs::KeyValue robot_at_pair;
+	robot_at_pair.key = "v";
+	robot_at_pair.value = "kenny";
+	robot_at.values.push_back(robot_at_pair);
+	diagnostic_msgs::KeyValue robot_at_pair1;
+	robot_at_pair1.key = "wp";
+	robot_at_pair1.value = "wp0";
+	robot_at.values.push_back(robot_at_pair1);
+	kb.domainAttributes.push_back(robot_at);
 	// END TESTING */
 
 	// environment services

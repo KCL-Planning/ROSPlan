@@ -82,6 +82,11 @@ namespace KCL_rosplan {
 		clearConn.attribute_name = "connected";
 		remove_knowledge_pub.publish(clearConn);
 
+		rosplan_knowledge_msgs::KnowledgeItem clearDist;
+		clearDist.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+		clearDist.attribute_name = "distance";
+		remove_knowledge_pub.publish(clearDist);
+
 		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit)
 			message_store.deleteID(db_name_map[wit->first]);
 		db_name_map.clear();
@@ -139,6 +144,30 @@ namespace KCL_rosplan {
 				add_knowledge_pub.publish(addConn);			
 			}
 
+			// functions
+			for (std::vector<std::string>::iterator nit=wit->second.neighbours.begin(); nit!=wit->second.neighbours.end(); ++nit) {
+				rosplan_knowledge_msgs::KnowledgeItem addDist;
+				addDist.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+				addDist.attribute_name = "distance";
+				diagnostic_msgs::KeyValue pairFrom;
+				pairFrom.key = "wp1";
+				pairFrom.value = wit->first;
+				addDist.values.push_back(pairFrom);
+				diagnostic_msgs::KeyValue pairTo;
+				pairTo.key = "wp2";
+				pairTo.value = *nit;
+				addDist.values.push_back(pairTo);
+
+				/* TODO distance, and make optional
+				double dist = sqrt(
+						(wit->second.real_x - nit->second.real_x)*(wit->second.real_x - nit->second.real_x)
+						+ (wit->second.real_y - nit->second.real_y)*(wit->second.real_y - nit->second.real_y));
+				*/
+				addDist.function_value = 1;
+
+				add_knowledge_pub.publish(addDist);
+			}
+
 			//data
 			geometry_msgs::PoseStamped pose;
 			pose.header.frame_id = map.header.frame_id;
@@ -148,6 +177,20 @@ namespace KCL_rosplan {
 			std::string id(message_store.insertNamed(wit->first, pose));
 			db_name_map[wit->first] = id;
 		}
+
+		// robot start position (TODO name)
+		rosplan_knowledge_msgs::KnowledgeItem addPosition;
+		addPosition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+		addPosition.attribute_name = "robot_at";
+		diagnostic_msgs::KeyValue pair1, pair2;
+		pair1.key = "v";
+		pair1.value = "kenny";
+		addPosition.values.push_back(pair1);
+		pair2.key = "wp";
+		pair2.value = "wp0";
+		addPosition.values.push_back(pair2);
+		add_knowledge_pub.publish(addPosition);
+
 
 		ROS_INFO("KCL: (RPRoadmapServer) Done");
 		return true;
