@@ -4,11 +4,15 @@
  * The problem instance is fetched from the Knowledge Base.
  */
 #include "ros/ros.h"
-#include "rosplan_knowledge_msgs/InstanceService.h"
-#include "rosplan_knowledge_msgs/AttributeService.h"
+#include "rosplan_knowledge_msgs/GetInstanceService.h"
+#include "rosplan_knowledge_msgs/GetAttributeService.h"
 #include "../../src/VALfiles/ptree.h"
 #include "FlexLexer.h"
+#include <fstream>
+#include <sstream>
 #include <string>
+#include <cstdio>
+#include <iostream>
 
 #ifndef KCL_environment
 #define KCL_environment

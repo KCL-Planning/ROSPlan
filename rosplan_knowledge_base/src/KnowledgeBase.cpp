@@ -280,6 +280,11 @@ int main(int argc, char **argv)
 	kb.notificationPublisher = n.advertise<rosplan_knowledge_msgs::Notification>("/kcl_rosplan/notification", 10, true);
 	ros::Subscriber filterSub = n.subscribe("/kcl_rosplan/filter", 100, &KCL_rosplan::KnowledgeBase::planningFilterCallback, &kb);
 
+	// wait for and clear mongoDB 
+	ROS_INFO("KCL: (KB) Waiting for MongoDB");
+	ros::service::waitForService("/message_store/delete",-1);
+	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
+
 	ROS_INFO("KCL: (KB) Ready to receive");
 	ros::spin();
 

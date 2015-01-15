@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosplan_demos</name>
+  <version>0.0.0</version>
+  <description>Demos for ROSPlan: launch files, scripts, and rviz configs.</description>
+  <maintainer email="michael.cashmore@kcl.ac.uk">Michael Cashmore</maintainer>
+  <license>TODO</license>
+  <url type="website">http://github.com/KCL-Planning/ROSPlan</url>
+  <author email="michael.cashmore@kcl.ac.uk">Michael Cashmore</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+ </export>
+</package>

@@ -1,14 +1,6 @@
 #include "rosplan_planning_system/PlanningEnvironment.h"
-#include "rosplan_knowledge_msgs/InstanceService.h"
-#include "rosplan_knowledge_msgs/AttributeService.h"
-#include "VALfiles/ptree.h"
-#include "FlexLexer.h"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <cstdio>
-#include <iostream>
 
+/* implementation of rosplan_planning_system::PlanningEnvironment */
 namespace KCL_rosplan {
 
 	std::string toLowerCase(const std::string& str) {
@@ -194,16 +186,16 @@ namespace KCL_rosplan {
 		clear();
 
 		// setup service calls
-		ros::ServiceClient GetInstancesClient = nh.serviceClient<rosplan_knowledge_msgs::InstanceService>("/kcl_rosplan/get_instances");
-		ros::ServiceClient GetInstanceAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::AttributeService>("/kcl_rosplan/get_instance_attributes");
-		ros::ServiceClient GetDomainAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::AttributeService>("/kcl_rosplan/get_domain_attributes");
-		ros::ServiceClient GetDomainFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::AttributeService>("/kcl_rosplan/get_domain_functions");
-		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<rosplan_knowledge_msgs::AttributeService>("/kcl_rosplan/get_current_goals");
+		ros::ServiceClient GetInstancesClient = nh.serviceClient<rosplan_knowledge_msgs::GetInstanceService>("/kcl_rosplan/get_instances");
+		ros::ServiceClient GetInstanceAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_instance_attributes");
+		ros::ServiceClient GetDomainAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_domain_attributes");
+		ros::ServiceClient GetDomainFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_domain_functions");
+		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_goals");
 
 		// for each type fetch instances
 		for(size_t t=0; t<domain_types.size(); t++) {
 
-			rosplan_knowledge_msgs::InstanceService instanceSrv;
+			rosplan_knowledge_msgs::GetInstanceService instanceSrv;
 			instanceSrv.request.type_name = domain_types[t];
 			type_object_map[domain_types[t]];
 
@@ -217,7 +209,7 @@ namespace KCL_rosplan {
 					object_type_map[name] = domain_types[t];
 
 					// get instance attributes
-					rosplan_knowledge_msgs::AttributeService instanceAttrSrv;
+					rosplan_knowledge_msgs::GetAttributeService instanceAttrSrv;
 					instanceAttrSrv.request.instance_name = name;
 					instanceAttrSrv.request.type_name = domain_types[t];
 					if (GetInstanceAttrsClient.call(instanceAttrSrv)) {
@@ -243,7 +235,7 @@ namespace KCL_rosplan {
 		// get domain attributes and functions
 		std::map<std::string,std::vector<std::string> >::iterator ait;
 		for(ait = domain_predicates.begin(); ait != domain_predicates.end(); ait++) {
-			rosplan_knowledge_msgs::AttributeService domainAttrSrv;
+			rosplan_knowledge_msgs::GetAttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
@@ -256,7 +248,7 @@ namespace KCL_rosplan {
 			}
 		}
 		for(ait = domain_functions.begin(); ait != domain_functions.end(); ait++) {
-			rosplan_knowledge_msgs::AttributeService domainAttrSrv;
+			rosplan_knowledge_msgs::GetAttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
@@ -270,7 +262,7 @@ namespace KCL_rosplan {
 		}
 
 		// get current goals
-		rosplan_knowledge_msgs::AttributeService currentGoalSrv;
+		rosplan_knowledge_msgs::GetAttributeService currentGoalSrv;
 		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
 				rosplan_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[j];

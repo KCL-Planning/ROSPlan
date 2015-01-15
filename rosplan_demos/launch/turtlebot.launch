@@ -1,0 +1,18 @@
+<!-- ROSPlan turtlebot demo; requires turtlebot_gazebo -->
+<launch>
+
+	<!-- turtlebot simulation -->
+	<include file="$(find turtlebot_gazebo)/launch/turtlebot_playground.launch" >
+	</include>
+	<include file="$(find turtlebot_gazebo)/launch/amcl_demo.launch" >
+	</include>
+
+	<!-- visualisation -->
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find rosplan_demos)/rviz/turtlebot.rviz">
+	</node>
+
+	<!-- ROSPlan -->
+	<include file="$(find rosplan_planning_system)/launch/interfaced_planning_system.launch" >
+	</include>
+
+</launch>
