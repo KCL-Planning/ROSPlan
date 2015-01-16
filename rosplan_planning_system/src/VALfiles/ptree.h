@@ -346,7 +346,7 @@ public :
 		// Create new symbol for name and add to table
 		symbol_class* sym= factory->build(name);
 
-		insert(std::make_pair(name,sym));
+		this->insert(std::make_pair(name,sym));
 		return sym;
 	    }
 	};
@@ -389,7 +389,7 @@ public :
 		log_error( E_WARNING,
 			   "Undeclared symbol: " + name );
 		symbol_class* sym= factory->build(name);
-		insert(std::make_pair(name,sym));
+		this->insert(std::make_pair(name,sym));
 
 		return(sym);
  	    }
@@ -413,7 +413,7 @@ public :
  	    {
 		// add new symbol
 		symbol_class* sym= factory->build(name);
-		insert(std::make_pair(name,sym));
+		this->insert(std::make_pair(name,sym));
 
 		return(sym);
  	    }
