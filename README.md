@@ -30,7 +30,7 @@ source /opt/ros/hydro/setup.bash
 catkin_make -j1
 ```
 
-#### running a demo with the turtlebot
+### Running a demo with the turtlebot
 
 The turtlebot demo is now a simple exploration mission. The turtlebot will visit randomly generated waypoints around a map.
 
