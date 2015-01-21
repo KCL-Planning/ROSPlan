@@ -6,6 +6,7 @@ The ROSPlan framework provides a generic method for task planning in a ROS syste
 ### Installation
 
 Get the prerequisites:
+
 (for Indigo)
 ```sh
 sudo apt-get install ros-indigo-mongodb-store
@@ -35,8 +36,10 @@ The turtlebot demo is now a simple exploration mission. The turtlebot will visit
 
 The domain for this demo is in the `rosplan_planning_system` package, as `common/domain.pddl`.
 
-is run the demo first follow the installation instructions and quick-start guide for the turtlebot simulation:
+To run the demo first follow the installation instructions and quick-start guide for the turtlebot simulation:
+
 http://wiki.ros.org/turtlebot_gazebo (indigo)
+
 http://wiki.ros.org/turtlebot_simulator (hydro)
 
 Then source the ROSPlan workspace and run:
@@ -46,9 +49,10 @@ sh src/rosplan_demos/scripts/turtlebot_explore.bash
 ```
 
 `turtlebot.launch` will start the turtlebot simulation, rviz, and ROSPlan.
-`turtlebot_explore.bash` calls the ROSPlan services to generate a roadmap (you can see in rviz); add the exploration goals; and then call the planning system service.
 
-The turtlebot will move around the waypoints, exploring the environment. You should see the output from the planner, something like:
+`turtlebot_explore.bash` calls a ROSPlan component service to generate a roadmap (you can see in rviz); adds exploration goals; and then calls the planning system service.
+
+The turtlebot will move around the waypoints, exploring the environment. You should output from the planning system, something like:
 ```
 ...
 KCL: (PS) Dispatching plan
