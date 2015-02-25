@@ -52,7 +52,7 @@ sh src/rosplan_demos/scripts/turtlebot_explore.bash
 
 `turtlebot_explore.bash` calls a ROSPlan component service to generate a roadmap (you can see in rviz); adds exploration goals; and then calls the planning system service.
 
-The turtlebot will move around the waypoints, exploring the environment. You should output from the planning system, something like:
+The turtlebot will move around the waypoints, exploring the environment. You should see output from the planning system, something like:
 ```
 ...
 KCL: (PS) Dispatching plan
