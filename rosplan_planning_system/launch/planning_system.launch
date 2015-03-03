@@ -1,7 +1,7 @@
 <launch>
 
 	<!-- planning system -->
-	<node name="planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />

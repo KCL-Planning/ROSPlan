@@ -1,6 +1,6 @@
-#include "rosplan_knowledge_base/RPRoadmapServer.h"
+#include "rosplan_interface_mapping/RPRoadmapServer.h"
 
-/* implementation of rosplan_knowledge_base::RPRoadmapServer visualisation */
+/* implementation of rosplan_interface_mapping::RPRoadmapServer visualisation */
 namespace KCL_rosplan {
 
 	/* output all waypoints */

@@ -9,7 +9,7 @@
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
 	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
 	</node>
-	<node name="scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
+	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
 	</node>
 
 
@@ -25,7 +25,7 @@
 
 
 	<!-- knowledge interfaces -->
-	<node name="rosplan_roadmap_server" pkg="rosplan_knowledge_base" type="rproadmapServer" respawn="false" output="screen">
+	<node name="rosplan_interface_mapping" pkg="rosplan_interface_mapping" type="rproadmapServer" respawn="false" output="screen">
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="cost_map_topic" value="/move_base/local_costmap/costmap" />
 	    <param name="odom_topic" value="/odom" />
@@ -35,7 +35,7 @@
 
 
 	<!-- action interfaces -->
-	<node name="rosplan_movebase_interface" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
+	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
 	</node>
 
 </launch>
