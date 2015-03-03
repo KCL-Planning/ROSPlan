@@ -24,17 +24,9 @@
 	</node>
 
 
-	<!-- knowledge interfaces -->
-	<node name="rosplan_interface_mapping" pkg="rosplan_interface_mapping" type="rproadmapServer" respawn="false" output="screen">
-	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
-	    <param name="cost_map_topic" value="/move_base/local_costmap/costmap" />
-	    <param name="odom_topic" value="/odom" />
-	    <param name="use_static_map" value="false" />
-	    <param name="static_map_service" value="/static_map" />
-	</node>
-
-
-	<!-- action interfaces -->
+	<!-- interfaces -->
+	<include file="$(find rosplan_interface_mapping)/launch/rosplan_roadmap_server.launch" >
+	</include>
 	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
 	</node>
 
