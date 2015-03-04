@@ -34,9 +34,9 @@ include_directories(
 )
 
 ## visualisation
-#find_package(OpenGL REQUIRED)
-#find_package(GLUT REQUIRED)
-#include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
 ## val sources
 set(VAL_SOURCES
