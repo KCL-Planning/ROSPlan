@@ -88,6 +88,8 @@ namespace KCL_rosplan {
 			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
 		}
 		ROS_INFO("KCL: (PS) Planning System Finished");
+
+		return planSucceeded;
 	}
 
 	/*------------------*/
