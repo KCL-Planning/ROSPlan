@@ -53,6 +53,7 @@ namespace KCL_rosplan {
 
 		// planning_system notification
 		void planningFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
+		void missionFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
 		ros::Publisher notificationPublisher;
 	};
 }
