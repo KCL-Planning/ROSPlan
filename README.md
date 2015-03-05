@@ -22,7 +22,7 @@ cd ROSPlan/
 ```
 Get the code:
 ```sh
-git clone https://github.com/clearpathrobotics/occupancy_grid_util
+git clone https://github.com/clearpathrobotics/occupancy_grid_utils
 git clone https://github.com/KCL-Planning/ROSPlan.git src/
 ```
 Compile everything:
