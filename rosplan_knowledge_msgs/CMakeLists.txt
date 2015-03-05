@@ -25,6 +25,7 @@ add_service_files(
   GetAttributeService.srv
   GetInstanceService.srv
   KnowledgeUpdateService.srv
+  CreatePRM.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
