@@ -8,7 +8,7 @@ namespace KCL_rosplan {
 	{
 		visualization_msgs::MarkerArray marker_array;
 		size_t counter = 0;
-		for (std::map<std::string, Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
+		for (std::map<std::string, Waypoint*>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 			visualization_msgs::Marker marker;
 			marker.header.frame_id = "map";
 			marker.header.stamp = ros::Time();
@@ -16,8 +16,8 @@ namespace KCL_rosplan {
 			marker.id = counter; counter++;
 			marker.type = visualization_msgs::Marker::SPHERE;
 			marker.action = visualization_msgs::Marker::MODIFY;
-			marker.pose.position.x = wit->second.real_x;
-			marker.pose.position.y = wit->second.real_y;
+			marker.pose.position.x = wit->second->real_x;
+			marker.pose.position.y = wit->second->real_y;
 			marker.pose.position.z = 0;
 			marker.pose.orientation.x = 0.0;
 			marker.pose.orientation.y = 0.0;
@@ -53,14 +53,14 @@ namespace KCL_rosplan {
 		marker.color.b = 1.0;
 		for (std::vector<Edge>::iterator eit=edges.begin(); eit!=edges.end(); ++eit) {
 			geometry_msgs::Point start;
-			start.x = waypoints[eit->start].real_x;
-			start.y = waypoints[eit->start].real_y;
+			start.x = waypoints[eit->start]->real_x;
+			start.y = waypoints[eit->start]->real_y;
 			start.z = 0;
 			marker.points.push_back(start);
 
 			geometry_msgs::Point end;
-			end.x = waypoints[eit->end].real_x;
-			end.y = waypoints[eit->end].real_y;
+			end.x = waypoints[eit->end]->real_x;
+			end.y = waypoints[eit->end]->real_y;
 			end.z = 0;
 			marker.points.push_back(end);
 
@@ -73,7 +73,7 @@ namespace KCL_rosplan {
 	{
 		visualization_msgs::MarkerArray marker_array;
 		size_t counter = 0;
-		for (std::map<std::string, Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
+		for (std::map<std::string, Waypoint*>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 			visualization_msgs::Marker marker;
 			marker.header.frame_id = "map";
 			marker.header.stamp = ros::Time();

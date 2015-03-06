@@ -1,5 +1,8 @@
 #include "rosplan_interface_mapping/RPRoadmapServer.h"
 
+#include <occupancy_grid_utils/ray_tracer.h>
+#include <occupancy_grid_utils/coordinate_conversions.h>
+
 /* implementation of rosplan_interface_mapping::RPRoadmapServer */
 namespace KCL_rosplan {
 
@@ -47,9 +50,42 @@ namespace KCL_rosplan {
 	/*-----------*/
 
 	/**
+	 * Check if two waypoints can be connected without colliding with any known scenery. The line should not
+	 * come closer than @ref{min_width} than any known obstacle.
+	 * @param w1 The first waypoint.
+	 * @param w2 The second waypoint.
+	 * @param threshold A value between -1 and 255 above which a cell is considered to be occupied.
+	 * @return True if the waypoints can be connected, false otherwise.
+	 */
+	bool RPRoadmapServer::canConnect(const geometry_msgs::Point& w1, const geometry_msgs::Point& w2, int threshold) const
+	{
+		/*
+		if (!has_received_occupancy_grid_)
+		{
+			return true;
+		}
+		*/
+		
+		// Check if the turtlebot is going to collide with any known obstacle.
+		occupancy_grid_utils::RayTraceIterRange ray_range = occupancy_grid_utils::rayTrace(cost_map.info, w1, w2);
+		
+		for (occupancy_grid_utils::RayTraceIterator i = ray_range.first; i != ray_range.second; ++i)
+		{
+			const occupancy_grid_utils::Cell& cell = *i;
+
+			// Check if this cell is occupied.
+			if (cost_map.data[cell.x + cell.y * cost_map.info.width] > threshold)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Generates waypoints and stores them in the knowledge base and scene database
 	 */
-	bool RPRoadmapServer::generateRoadmap(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+	bool RPRoadmapServer::generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res) {
 
 		ros::NodeHandle nh("~");
 
@@ -62,8 +98,9 @@ namespace KCL_rosplan {
 		update_knowledge_client.call(updateSrv);
 
 		// clear previous roadmap from scene database
-		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit)
+		for (std::map<std::string,Waypoint*>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 			message_store.deleteID(db_name_map[wit->first]);
+		}
 		db_name_map.clear();
 
 		// clear from visualization
@@ -82,11 +119,14 @@ namespace KCL_rosplan {
 
 		// generate waypoints
 		ROS_INFO("KCL: (RPRoadmapServer) Generating roadmap");
-		/* K, number of seed waypoints
-		 * D, distance of random motions
-		 * R, radius of random connections
-		 * M, max number of waypoints */
-		createPRM(map, 1, 1, 5, 10);
+		/*
+		 * nr_waypoints, number of waypoints to generate before function terminates.
+		 * min_distance, the minimum distance allowed between any pair of waypoints.
+		 * casting_distance, the maximum distance a waypoint can be cast.
+		 * connecting_distance, the maximum distance that can exists between waypoints for them to be connected.
+		 * occupancy_threshold, a number between 0 and 255; determines above which value a cell is considered occupied.
+		 */
+		createPRM(map, req.nr_waypoints, req.min_distance, req.casting_distance, req.connecting_distance, req.occupancy_threshold, req.total_attempts);
 
 		// publish visualization
 		publishWaypointMarkerArray(nh);
@@ -94,7 +134,7 @@ namespace KCL_rosplan {
 
 		// add roadmap to knowledge base and scene database
 		ROS_INFO("KCL: (RPRoadmapServer) Adding knowledge");
-		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
+		for (std::map<std::string,Waypoint*>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 
 			// instance
 			rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
@@ -104,8 +144,10 @@ namespace KCL_rosplan {
 			updateSrv.request.knowledge.instance_name = wit->first;
 			update_knowledge_client.call(updateSrv);
 
+			res.waypoints.push_back(wit->first);
+			
 			// predicates
-			for (std::vector<std::string>::iterator nit=wit->second.neighbours.begin(); nit!=wit->second.neighbours.end(); ++nit) {
+			for (std::vector<std::string>::iterator nit=wit->second->neighbours.begin(); nit!=wit->second->neighbours.end(); ++nit) {
 				rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 				updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 				updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
@@ -122,7 +164,7 @@ namespace KCL_rosplan {
 			}
 
 			// functions
-			for (std::vector<std::string>::iterator nit=wit->second.neighbours.begin(); nit!=wit->second.neighbours.end(); ++nit) {
+			for (std::vector<std::string>::iterator nit=wit->second->neighbours.begin(); nit!=wit->second->neighbours.end(); ++nit) {
 				rosplan_knowledge_msgs::KnowledgeUpdateService updateFuncSrv;
 				updateFuncSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 				updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
@@ -136,8 +178,8 @@ namespace KCL_rosplan {
 				pairTo.value = *nit;
 				updateFuncSrv.request.knowledge.values.push_back(pairTo);
 				double dist = sqrt(
-						(wit->second.real_x - waypoints[*nit].real_x)*(wit->second.real_x - waypoints[*nit].real_x)
-						+ (wit->second.real_y - waypoints[*nit].real_y)*(wit->second.real_y - waypoints[*nit].real_y));
+						(wit->second->real_x - waypoints[*nit]->real_x)*(wit->second->real_x - waypoints[*nit]->real_x)
+						+ (wit->second->real_y - waypoints[*nit]->real_y)*(wit->second->real_y - waypoints[*nit]->real_y));
 				updateFuncSrv.request.knowledge.function_value = dist;
 				update_knowledge_client.call(updateFuncSrv);
 			}
@@ -145,8 +187,8 @@ namespace KCL_rosplan {
 			//data
 			geometry_msgs::PoseStamped pose;
 			pose.header.frame_id = map.header.frame_id;
-			pose.pose.position.x = wit->second.real_x;
-			pose.pose.position.y = wit->second.real_y;
+			pose.pose.position.x = wit->second->real_x;
+			pose.pose.position.y = wit->second->real_y;
 			pose.pose.position.z = 0.0;
 			pose.pose.orientation.x = 0.0;;
 			pose.pose.orientation.y = 0.0;;
@@ -170,21 +212,20 @@ namespace KCL_rosplan {
 		updateSrv.request.knowledge.values.push_back(pair2);
 		update_knowledge_client.call(updateSrv);
 
-
 		ROS_INFO("KCL: (RPRoadmapServer) Done");
 		return true;
 	}
 
 	/*
 	 * Input:
-	 * 	K, number of seed waypoints
-	 * 	D, distance of random motions
-	 * 	R, radius of random connections
-	 * 	M, max number of waypoints
+	 * 	nr_waypoints, number of waypoints to generate before function terminates.
+	 * 	min_distance, the minimum distance allowed between any pair of waypoints.
+	 * 	casting_distance, the maximum distance a waypoint can be cast.
+	 * 	connecting_distance, the maximum distance that can exists between waypoints for them to be connected.
+	 * 	occupancy_threshold, a number between 0 and 255; determines above which value a cell is considered occupied.
 	 * Output: A roadmap G = (V, E)
-	*/
-	void RPRoadmapServer::createPRM(nav_msgs::OccupancyGrid map, unsigned int K, double D, double R, unsigned int M) {
-
+	 */
+	void RPRoadmapServer::createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold, int total_attempts) {
 		// map info
 		int width = map.info.width;
 		int height = map.info.height;
@@ -196,6 +237,9 @@ namespace KCL_rosplan {
 		}
 
 		// V <-- empty set; E <-- empty set.
+		for (std::map<std::string, Waypoint*>::const_iterator ci = waypoints.begin(); ci != waypoints.end(); ++ci) {
+			delete (*ci).second;
+		}
 		waypoints.clear();
 		edges.clear();
 
@@ -219,125 +263,65 @@ namespace KCL_rosplan {
 			return;
 		}
 
-		int startX = (int)((start_pose_transformed.pose.position.x - map.info.origin.position.x) / resolution);
-		int startY = (int)((start_pose_transformed.pose.position.y - map.info.origin.position.y) / resolution);
-		Waypoint wp("wp0", startX, startY, resolution, map.info.origin);
-		waypoints[wp.wpID] = wp;
+		occupancy_grid_utils::Cell start_cell = occupancy_grid_utils::pointCell(map.info, start_pose_transformed.pose.position);
+		Waypoint* start_wp = new Waypoint("wp0", start_cell.x, start_cell.y, map.info);
+		waypoints[start_wp->wpID] = start_wp;
 
-		// while cardinality(V) < K do
-		while(waypoints.size() < K) {
+		int loop_counter = 0;
+		while(waypoints.size() < nr_waypoints && ++loop_counter < total_attempts) {
 
+			// Sample a random waypoint.
+			std::map<std::string, Waypoint*>::iterator item = waypoints.begin();
+			std::advance(item, rand() % waypoints.size());
+			Waypoint* casting_wp = (*item).second;
+			
 			// sample collision-free configuration at random
 			int x = rand() % width;
 			int y = rand() % height;
 
-			if(map.data[ (width*y + x) ] <= 65 && map.data[ (width*y + x) ] >= 0) {
-				std::stringstream ss;
-				ss << "wp" << waypoints.size();
-				Waypoint wp(ss.str(), x, y, resolution, map.info.origin);
-				waypoints[wp.wpID] = wp;
+			std::stringstream ss;
+			ss << "wp" << waypoints.size();
+			Waypoint* wp = new Waypoint(ss.str(), x, y, map.info);
+			
+			// Move the waypoint closer so it's no further than @ref{casting_distance} away from the casting_wp.
+			wp->update(*casting_wp, casting_distance, map.info);
+			
+			// Check whether this waypoint is connected to any of the existing waypoints.
+			geometry_msgs::Point p1, p2;
+			p1.x = wp->real_x;
+			p1.y = wp->real_y;
+			
+			// Ignore waypoint that are too close to existing waypoints.
+			float min_distance_to_other_wp = std::numeric_limits<float>::max();
+			for (std::map<std::string, Waypoint*>::const_iterator ci = waypoints.begin(); ci != waypoints.end(); ++ci) {
+				float distance = wp->getDistance(*(*ci).second);
+				if (distance < min_distance_to_other_wp) 
+					min_distance_to_other_wp = distance;
 			}
-		}
-
-		// TODO make connected proper
-		while( waypoints.size() < M) { // || (!allConnected() && waypoints.size() < M)) {
-
-			for(size_t grow=0; grow<3; grow++) {
-				// get random point
-				int x = rand() % width;
-				int y = rand() % height;
-				while(map.data[ (width*y + x) ] > 0) {
-					x = rand() % width;
-					y = rand() % height;
-				}
-
-				// find closest waypoint from V
-				double dist = -1;
-				Waypoint closest;
-				for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
-					Waypoint w = wit->second;
-					double d = sqrt( ((x - w.grid_x)*(x - w.grid_x)) + ((y - w.grid_y)*(y - w.grid_y)) );
-					if(dist < 0 || d < dist) {
-						closest = w;
-						dist = d;
-					}
-				}
-				if(dist<0) ROS_INFO("KCL: (RPRoadmapServer) Error in RRT (can't find closest neighbour)");
-
-				// new point
-				int xNew = closest.grid_x + (int)((D/resolution)*(x-closest.grid_x)/dist);
-				int yNew = closest.grid_y + (int)((D/resolution)*(y-closest.grid_y)/dist);
-				if(xNew<0) xNew = 1;
-				if(yNew<0) yNew = 1;
-				if(xNew>width) xNew = width-1;
-				if(yNew>height) yNew = height-1;
-
-				// (check collision and) add to waypoints
-				if(map.data[ (width*yNew + xNew) ] <= 65 && map.data[ (width*yNew + xNew) ] >= 0) {
-					std::stringstream ss;
-					ss << "wp" << waypoints.size();
-					Waypoint wpNew(ss.str(), xNew, yNew, resolution, map.info.origin);
-					waypoints[wpNew.wpID] = wpNew;
-					closest.neighbours.push_back(wpNew.wpID);
-					wpNew.neighbours.push_back(closest.wpID);
-					Edge e(closest.wpID, wpNew.wpID);
-					edges.push_back(e);
-
-					// try and connect things up
-					makeConnections(R);
-				}
-			}
-		}
-	}
-
-	/* returns true if waypoints form a single connected component */
-	bool RPRoadmapServer::allConnected() {
-
-		if(waypoints.size()<1) return true;
-
-		std::map<std::string,bool> connected;
-		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit)
-			connected[wit->first] = false;
-
-		connectRecurse(connected, waypoints["wp0"]);
-		
-		int count = 0;
-		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit)
-			if(connected[wit->first]) count++;
-		return (count == waypoints.size());
-	}
-
-	/* recursive call from allConnected */
-	void RPRoadmapServer::connectRecurse(std::map<std::string,bool> &connected, Waypoint &waypoint) {
-		if(connected[waypoint.wpID]) return;
-		connected[waypoint.wpID] = true;
-		for(size_t i=0; i<waypoint.neighbours.size(); i++)
-			if(!connected[waypoints[waypoint.neighbours[i]].wpID])
-				connectRecurse(connected, waypoints[waypoint.neighbours[i]]);
-	}
-
-	/* attempts to make new connections */
-	bool RPRoadmapServer::makeConnections(unsigned int R) {
-
-		bool newEdges = false;
-		for (std::map<std::string,Waypoint>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
-		for (std::map<std::string,Waypoint>::iterator sit=waypoints.begin(); sit!=waypoints.end(); ++sit) {
-			if(wit->first.compare(sit->first)==0 || find(wit->second.neighbours.begin(), wit->second.neighbours.end(), sit->first) != wit->second.neighbours.end())
+			
+			if (min_distance_to_other_wp < min_distance) {
+				delete wp;
 				continue;
-			Waypoint w = wit->second;
-			Waypoint s = sit->second;
-			double d = sqrt( ((s.grid_x - w.grid_x)*(s.grid_x - w.grid_x)) + ((s.grid_y - w.grid_y)*(s.grid_y - w.grid_y)) );
-			if(d<R) {
-				wit->second.neighbours.push_back(s.wpID);
-				sit->second.neighbours.push_back(w.wpID);
-				Edge e(w.wpID, s.wpID);
-				edges.push_back(e);
-				newEdges = true;
 			}
-		}};
-		return newEdges;
+			
+			for (std::map<std::string, Waypoint*>::const_iterator ci = waypoints.begin(); ci != waypoints.end(); ++ci) {
+				Waypoint* other_wp = (*ci).second;
+				p2.x = other_wp->real_x;
+				p2.y = other_wp->real_y;
+				
+				if (wp->getDistance(*other_wp) < connecting_distance && canConnect(p1, p2, occupancy_threshold)) {
+					wp->neighbours.push_back(other_wp->wpID);
+					other_wp->neighbours.push_back(wp->wpID);
+					Edge e(wp->wpID, other_wp->wpID);
+					edges.push_back(e);
+				}
+			}
+			
+			if (wp->neighbours.size() > 0) {
+				waypoints[wp->wpID] = wp;
+			}
+		}
 	}
-
 } // close namespace
 
 	/*-------------*/
@@ -362,7 +346,7 @@ namespace KCL_rosplan {
 		ros::Subscriber map_sub = nh.subscribe<nav_msgs::OccupancyGrid>(costMapTopic, 1, &KCL_rosplan::RPRoadmapServer::costMapCallback, &rms);
 		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/roadmap_server", &KCL_rosplan::RPRoadmapServer::generateRoadmap, &rms);
 
-		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive");
+		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive. Cost map topic: %s", costMapTopic.c_str());
 		ros::spin();
 		return 0;
 	}

@@ -1,0 +1,8 @@
+int32 nr_waypoints
+float32 min_distance
+float32 casting_distance
+float32 connecting_distance
+int8 occupancy_threshold
+int32 total_attempts
+---
+string[] waypoints

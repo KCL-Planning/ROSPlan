@@ -278,7 +278,8 @@ int main(int argc, char **argv)
 
 	// filter services
 	kb.notificationPublisher = n.advertise<rosplan_knowledge_msgs::Notification>("/kcl_rosplan/notification", 10, true);
-	ros::Subscriber filterSub = n.subscribe("/kcl_rosplan/filter", 100, &KCL_rosplan::KnowledgeBase::planningFilterCallback, &kb);
+	ros::Subscriber planningFilterSub = n.subscribe("/kcl_rosplan/planning_filter", 100, &KCL_rosplan::KnowledgeBase::planningFilterCallback, &kb);
+	ros::Subscriber missionFilterSub = n.subscribe("/kcl_rosplan/mission_filter", 100, &KCL_rosplan::KnowledgeBase::missionFilterCallback, &kb);
 
 	// wait for and clear mongoDB 
 	ROS_INFO("KCL: (KB) Waiting for MongoDB");

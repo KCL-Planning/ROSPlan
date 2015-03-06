@@ -134,4 +134,32 @@ namespace KCL_rosplan {
 			}
 		}
 	}
+
+	/**
+	 * Recieve mission filter.
+	 */
+	void KnowledgeBase::missionFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg) {
+		
+		ROS_INFO("KCL: (KB) Mission Filter updated (CLEAR=0;ADD=1;REMOVE=2) function %i", msg->function);
+
+		if(msg->function == rosplan_knowledge_msgs::Filter::CLEAR) {
+			missionFilter.clear();
+		}
+
+		if(msg->function == rosplan_knowledge_msgs::Filter::ADD) {
+			for(size_t i=0; i<msg->knowledge_items.size(); i++)
+				missionFilter.push_back(msg->knowledge_items[i]);
+		}
+
+		if(msg->function == rosplan_knowledge_msgs::Filter::REMOVE) {
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator position = missionFilter.begin();
+			for(size_t i=0; i<msg->knowledge_items.size(); i++) {
+				for(; position != missionFilter.end(); position++) {
+					rosplan_knowledge_msgs::KnowledgeItem item = msg->knowledge_items[i];
+					if(sameKnowledge(item, *position))
+						missionFilter.erase(position);
+				}
+			}
+		}
+	}
 } // close namespace

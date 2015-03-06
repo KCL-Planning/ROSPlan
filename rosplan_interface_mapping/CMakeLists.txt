@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   diagnostic_msgs
   visualization_msgs
   tf
+  occupancy_grid_utils
 )
 
 find_package(Boost REQUIRED COMPONENTS
