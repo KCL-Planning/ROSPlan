@@ -131,7 +131,18 @@ namespace KCL_rosplan {
 				planfile.close();
 				ROS_INFO("KCL: (PS) Plan was unsolvable! Try again?");
 				return false;
-		}			
+		}
+
+		// save file
+		std::stringstream ss;
+		ss << planning_attempts;
+		std::ifstream source;
+		std::ofstream dest;
+		source.open((data_path + "plan.pddl").c_str());
+		dest.open((data_path + "plan_" + ss.str()).c_str());
+		dest << source.rdbuf();
+		source.close();
+		dest.close();
 
 		// Convert plan into message list for dispatch
 		plan_parser.preparePlan(data_path, environment, plan_dispatcher.getCurrentAction());
