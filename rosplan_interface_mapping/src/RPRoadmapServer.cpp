@@ -126,7 +126,7 @@ namespace KCL_rosplan {
 		 * connecting_distance, the maximum distance that can exists between waypoints for them to be connected.
 		 * occupancy_threshold, a number between 0 and 255; determines above which value a cell is considered occupied.
 		 */
-		createPRM(map, req.nr_waypoints, req.min_distance, req.casting_distance, req.connecting_distance, req.occupancy_threshold);
+		createPRM(map, req.nr_waypoints, req.min_distance, req.casting_distance, req.connecting_distance, req.occupancy_threshold, req.total_attempts);
 
 		// publish visualization
 		publishWaypointMarkerArray(nh);
@@ -225,7 +225,7 @@ namespace KCL_rosplan {
 	 * 	occupancy_threshold, a number between 0 and 255; determines above which value a cell is considered occupied.
 	 * Output: A roadmap G = (V, E)
 	 */
-	void RPRoadmapServer::createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold) {
+	void RPRoadmapServer::createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold, int total_attempts) {
 		// map info
 		int width = map.info.width;
 		int height = map.info.height;
@@ -264,14 +264,11 @@ namespace KCL_rosplan {
 		}
 
 		occupancy_grid_utils::Cell start_cell = occupancy_grid_utils::pointCell(map.info, start_pose_transformed.pose.position);
-		//int startX = (int)((start_pose_transformed.pose.position.x - map.info.origin.position.x) / resolution);
-		//int startY = (int)((start_pose_transformed.pose.position.y - map.info.origin.position.y) / resolution);
-		//Waypoint* start_wp = new Waypoint("wp0", startX, startY, resolution, map.info.origin);
 		Waypoint* start_wp = new Waypoint("wp0", start_cell.x, start_cell.y, map.info);
 		waypoints[start_wp->wpID] = start_wp;
 
 		int loop_counter = 0;
-		while(waypoints.size() < nr_waypoints && ++loop_counter < 10000) {
+		while(waypoints.size() < nr_waypoints && ++loop_counter < total_attempts) {
 
 			// Sample a random waypoint.
 			std::map<std::string, Waypoint*>::iterator item = waypoints.begin();

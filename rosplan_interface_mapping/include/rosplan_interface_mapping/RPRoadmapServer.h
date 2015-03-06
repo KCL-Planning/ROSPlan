@@ -12,6 +12,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/CreatePRM.h"
+#include "occupancy_grid_utils/coordinate_conversions.h"
 
 #include <fstream>
 #include <sstream>
@@ -19,7 +20,6 @@
 #include <ctime>
 #include <stdlib.h> 
 #include <algorithm> 
-#include <occupancy_grid_utils/coordinate_conversions.h>
 
 #ifndef KCL_roadmap
 #define KCL_roadmap
@@ -44,8 +44,6 @@ namespace KCL_rosplan {
 			geometry_msgs::Point real_point = occupancy_grid_utils::cellCenter(map_meta_data, cell);
 			real_x = real_point.x;
 			real_y = real_point.y;
-			//real_x = xCoord * resolution + origin.position.x;
-			//real_y = yCoord * resolution + origin.position.y;
 		}
 
 		Waypoint()
@@ -72,13 +70,8 @@ namespace KCL_rosplan {
 			if (distance > max_casting_range) {
 				float scale = max_casting_range / distance;
 				
-				// (0, 0) -> (10, 0) (max = 7); scale = 0.7; 
-				
 				real_x = other.real_x + (real_x - other.real_x) * scale;
 				real_y = other.real_y + (real_y - other.real_y) * scale;
-				
-				//real_x /= scale;
-				//real_y /= scale;
 				geometry_msgs::Point point;
 				point.x = real_x;
 				point.y = real_y;
@@ -157,7 +150,7 @@ namespace KCL_rosplan {
 
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);
-		void createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold);
+		void createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold, int total_attempts);
 		void odomCallback( const nav_msgs::OdometryConstPtr& msg );
 		void costMapCallback( const nav_msgs::OccupancyGridConstPtr& msg );
 	};
