@@ -66,9 +66,9 @@ namespace KCL_rosplan {
 				}
 			}
 
-		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE) {
+		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
 
-			// remove domain attribute (predicate) from knowledge base
+			// remove domain attribute (function) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=domain_functions.begin(); pit!=domain_functions.end(); pit++) {
 				if(sameKnowledge(msg, *pit)) {
@@ -79,9 +79,9 @@ namespace KCL_rosplan {
 				}
 			}
 
-		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
+		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE) {
 
-			// remove domain attribute (function) from knowledge base
+			// remove domain attribute (predicate) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=domain_attributes.begin(); pit!=domain_attributes.end(); pit++) {
 				if(sameKnowledge(msg, *pit)) {
