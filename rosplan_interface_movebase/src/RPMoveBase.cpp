@@ -55,7 +55,7 @@ namespace KCL_rosplan {
 			action_client.sendGoal(goal);
 
 			// publish feedback (enabled)
-			 rosplan_dispatch_msgs::ActionFeedback fb;
+			rosplan_dispatch_msgs::ActionFeedback fb;
 			fb.action_id = msg->action_id;
 			fb.status = "action enabled";
 			action_feedback_pub.publish(fb);
