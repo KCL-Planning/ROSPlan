@@ -72,8 +72,10 @@ namespace KCL_rosplan {
 			if (distance > max_casting_range) {
 				float scale = max_casting_range / distance;
 				
-				real_x -= (real_x - other.real_x) * scale;
-				real_y -= (real_y - other.real_y) * scale;
+				// (0, 0) -> (10, 0) (max = 7); scale = 0.7; 
+				
+				real_x = other.real_x + (real_x - other.real_x) * scale;
+				real_y = other.real_y + (real_y - other.real_y) * scale;
 				
 				//real_x /= scale;
 				//real_y /= scale;
