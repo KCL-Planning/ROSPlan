@@ -263,9 +263,11 @@ namespace KCL_rosplan {
 			return;
 		}
 
-		int startX = (int)((start_pose_transformed.pose.position.x - map.info.origin.position.x) / resolution);
-		int startY = (int)((start_pose_transformed.pose.position.y - map.info.origin.position.y) / resolution);
-		Waypoint* start_wp = new Waypoint("wp0", startX, startY, resolution, map.info.origin);
+		occupancy_grid_utils::Cell start_cell = occupancy_grid_utils::pointCell(map.info, start_pose_transformed.pose.position);
+		//int startX = (int)((start_pose_transformed.pose.position.x - map.info.origin.position.x) / resolution);
+		//int startY = (int)((start_pose_transformed.pose.position.y - map.info.origin.position.y) / resolution);
+		//Waypoint* start_wp = new Waypoint("wp0", startX, startY, resolution, map.info.origin);
+		Waypoint* start_wp = new Waypoint("wp0", start_cell.x, start_cell.y, map.info);
 		waypoints[start_wp->wpID] = start_wp;
 
 		int loop_counter = 0;
@@ -282,10 +284,10 @@ namespace KCL_rosplan {
 
 			std::stringstream ss;
 			ss << "wp" << waypoints.size();
-			Waypoint* wp = new Waypoint(ss.str(), x, y, resolution, map.info.origin);
+			Waypoint* wp = new Waypoint(ss.str(), x, y, map.info);
 			
 			// Move the waypoint closer so it's no further than @ref{casting_distance} away from the casting_wp.
-			wp->update(*casting_wp, casting_distance, resolution, map.info.origin);
+			wp->update(*casting_wp, casting_distance, map.info);
 			
 			// Check whether this waypoint is connected to any of the existing waypoints.
 			geometry_msgs::Point p1, p2;
@@ -293,14 +295,14 @@ namespace KCL_rosplan {
 			p1.y = wp->real_y;
 			
 			// Ignore waypoint that are too close to existing waypoints.
-			float min_distance = std::numeric_limits<float>::max();
+			float min_distance_to_other_wp = std::numeric_limits<float>::max();
 			for (std::map<std::string, Waypoint*>::const_iterator ci = waypoints.begin(); ci != waypoints.end(); ++ci) {
 				float distance = wp->getDistance(*(*ci).second);
-				if (distance < min_distance) 
-					min_distance = distance;
+				if (distance < min_distance_to_other_wp) 
+					min_distance_to_other_wp = distance;
 			}
 			
-			if (min_distance < min_distance) {
+			if (min_distance_to_other_wp < min_distance) {
 				delete wp;
 				continue;
 			}

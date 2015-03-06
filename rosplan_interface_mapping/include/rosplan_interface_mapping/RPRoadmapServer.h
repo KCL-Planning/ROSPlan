@@ -19,6 +19,7 @@
 #include <ctime>
 #include <stdlib.h> 
 #include <algorithm> 
+#include <occupancy_grid_utils/coordinate_conversions.h>
 
 #ifndef KCL_roadmap
 #define KCL_roadmap
@@ -34,11 +35,17 @@ namespace KCL_rosplan {
 
 	struct Waypoint 
 	{
-		Waypoint(const std::string &id, unsigned int xCoord, unsigned int yCoord, double resolution, geometry_msgs::Pose origin)
+		Waypoint(const std::string &id, unsigned int xCoord, unsigned int yCoord, const nav_msgs::MapMetaData& map_meta_data)
 			: wpID(id), grid_x(xCoord), grid_y(yCoord) {
-
-			real_x = xCoord * resolution + origin.position.x;
-			real_y = yCoord * resolution + origin.position.y;
+			occupancy_grid_utils::Cell cell;
+			cell.x = grid_x;
+			cell.y = grid_y;
+			
+			geometry_msgs::Point real_point = occupancy_grid_utils::cellCenter(map_meta_data, cell);
+			real_x = real_point.x;
+			real_y = real_point.y;
+			//real_x = xCoord * resolution + origin.position.x;
+			//real_y = yCoord * resolution + origin.position.y;
 		}
 
 		Waypoint()
@@ -60,15 +67,23 @@ namespace KCL_rosplan {
 		 * @param resolution The resolution of the occupancy grid.
 		 * @param origin The origin of the occupancy grid.
 		 */
-		void update(const Waypoint& other, float max_casting_range, double resolution, geometry_msgs::Pose origin) {
+		void update(const Waypoint& other, float max_casting_range, const nav_msgs::MapMetaData& map_meta_data) {
 			float distance = getDistance(other);
-			if (getDistance(other) > max_casting_range) {
-				float scale = distance / max_casting_range;
-				real_x /= scale;
-				real_y /= scale;
+			if (distance > max_casting_range) {
+				float scale = max_casting_range / distance;
 				
-				grid_x = (real_x - origin.position.x) / resolution;
-				grid_x = (real_y - origin.position.y) / resolution;
+				real_x -= (real_x - other.real_x) * scale;
+				real_y -= (real_y - other.real_y) * scale;
+				
+				//real_x /= scale;
+				//real_y /= scale;
+				geometry_msgs::Point point;
+				point.x = real_x;
+				point.y = real_y;
+				
+				occupancy_grid_utils::Cell cell = occupancy_grid_utils::pointCell(map_meta_data, point);
+				grid_x = cell.x;
+				grid_y = cell.y;
 			}
 		}
 
