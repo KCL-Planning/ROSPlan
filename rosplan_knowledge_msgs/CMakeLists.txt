@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
   genmsg
 )
 
@@ -26,18 +27,20 @@ add_service_files(
   GetInstanceService.srv
   KnowledgeUpdateService.srv
   CreatePRM.srv
+  AddWaypoint.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
+   geometry_msgs
    diagnostic_msgs
    std_msgs
 )
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs roscpp rospy std_msgs genmsg
+  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs geometry_msgs roscpp rospy std_msgs genmsg
 )
 
 ###########
