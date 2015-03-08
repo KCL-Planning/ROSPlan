@@ -12,6 +12,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/CreatePRM.h"
+#include "rosplan_knowledge_msgs/AddWaypoint.h"
 #include "occupancy_grid_utils/coordinate_conversions.h"
 
 #include <fstream>
@@ -150,6 +151,7 @@ namespace KCL_rosplan {
 
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);
+		bool addWaypoint(rosplan_knowledge_msgs::AddWaypoint::Request &req, rosplan_knowledge_msgs::AddWaypoint::Response &res);
 		void createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold, int total_attempts);
 		void odomCallback( const nav_msgs::OdometryConstPtr& msg );
 		void costMapCallback( const nav_msgs::OccupancyGridConstPtr& msg );
