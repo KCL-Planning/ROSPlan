@@ -474,7 +474,7 @@ namespace KCL_rosplan {
 		KCL_rosplan::RPRoadmapServer rms(nh);
 		ros::Subscriber odom_sub = nh.subscribe<nav_msgs::Odometry>(odomTopic, 1, &KCL_rosplan::RPRoadmapServer::odomCallback, &rms);
 		ros::Subscriber map_sub = nh.subscribe<nav_msgs::OccupancyGrid>(costMapTopic, 1, &KCL_rosplan::RPRoadmapServer::costMapCallback, &rms);
-		ros::ServiceServer createPRMService = nh.advertiseService("/kcl_rosplan/roadmap_server/generate", &KCL_rosplan::RPRoadmapServer::generateRoadmap, &rms);
+		ros::ServiceServer createPRMService = nh.advertiseService("/kcl_rosplan/roadmap_server/create_prm", &KCL_rosplan::RPRoadmapServer::generateRoadmap, &rms);
 		ros::ServiceServer addWaypointService = nh.advertiseService("/kcl_rosplan/roadmap_server/add_waypoint", &KCL_rosplan::RPRoadmapServer::addWaypoint, &rms);
 
 		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive. Cost map topic: %s", costMapTopic.c_str());
