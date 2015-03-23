@@ -370,11 +370,20 @@ namespace KCL_rosplan {
 			p2.x = other_wp->real_x;
 			p2.y = other_wp->real_y;
 			
+			std::cout << "Try to connect " << new_wp->wpID << " to " << other_wp->wpID << "." << std::endl;
+			
 			if (new_wp->getDistance(*other_wp) < req.connecting_distance && canConnect(p1, p2, req.occupancy_threshold)) {
 				new_wp->neighbours.push_back(other_wp->wpID);
 				other_wp->neighbours.push_back(new_wp->wpID);
 				Edge e(new_wp->wpID, other_wp->wpID);
 				edges.push_back(e);
+			} else {
+				std::cout << "Do not connect these waypoints because: ";
+				if (new_wp->getDistance(*other_wp) < req.connecting_distance) {
+					std::cout << "the distance between them is too large. " << new_wp->getDistance(*other_wp) << ">= " <<  req.connecting_distance << "." << std::endl;
+				} else {
+					std::cout << "collision detected." << std::endl;
+				}
 			}
 		}
 
@@ -384,7 +393,16 @@ namespace KCL_rosplan {
 		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
 		updateSrv.request.knowledge.instance_type = "waypoint";
 		updateSrv.request.knowledge.instance_name = new_wp->wpID;
-		update_knowledge_client.call(updateSrv);
+		if (!update_knowledge_client.call(updateSrv)) {
+			ROS_ERROR("Failed to add a new waypoint instance.");
+			return false;
+		}
+		
+		// publish visualization
+		publishWaypointMarkerArray(nh);
+		publishEdgeMarkerArray(nh);
+		
+		ROS_INFO("Process the %d neighbours of this new waypoint.", new_wp->neighbours.size());
 			
 		// predicates
 		for (std::vector<std::string>::iterator nit=new_wp->neighbours.begin(); nit!=new_wp->neighbours.end(); ++nit) {
