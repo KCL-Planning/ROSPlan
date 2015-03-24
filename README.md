@@ -9,11 +9,11 @@ Get the prerequisites:
 
 (for Indigo)
 ```sh
-sudo apt-get install ros-indigo-mongodb-store
+sudo apt-get install flex ros-indigo-mongodb-store
 ```
 (for Hydro)
 ```sh
-sudo apt-get install ros-hydro-mongodb-store
+sudo apt-get install flex ros-hydro-mongodb-store
 ```
 Select a catkin workspace or create a new one:
 ```sh
