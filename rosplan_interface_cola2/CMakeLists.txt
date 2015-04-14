@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(rosplan_interface_mapping)
+project(rosplan_interface_cola2)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  rosplan_knowledge_msgs
-  nav_msgs
-  mongodb_store
-  geometry_msgs
+  std_srvs
   diagnostic_msgs
-  visualization_msgs
-  tf
-  occupancy_grid_utils
+  rosplan_dispatch_msgs
+  rosplan_knowledge_msgs
+  auv_msgs
+  cola2_control
+  actionlib
+  mongodb_store
 )
 
 find_package(Boost REQUIRED COMPONENTS
@@ -27,7 +27,7 @@ find_package(Boost REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs actionlib rosplan_dispatch_msgs rosplan_knowledge_msgs auv_msgs cola2_control mongodb_store diagnostic_msgs
   DEPENDS
 )
 
@@ -41,27 +41,17 @@ include_directories(
   include
 )
 
-## roadmap sources
-set(RPROADMAP_SOURCES
-	src/RPRoadmapServer.cpp
-	src/RPRoadmapVisualization.cpp)
-
-## simple map sources
-set(RPSIMPLEMAP_SOURCES
-  src/RPSimpleMapServer.cpp
-  src/RPSimpleMapVisualization.cpp)
-
 ## Declare cpp executables
-add_executable(rproadmapServer ${RPROADMAP_SOURCES})
-add_executable(rpsimplemapServer ${RPSIMPLEMAP_SOURCES})
+add_executable(rpcola2 src/RPCola2.cpp)
 
 ## Specify libraries against which to link a library or executable target
-target_link_libraries(rproadmapServer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(rpsimplemapServer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(rpcola2 ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 ##########
 ## Test ##
 ##########
 
 # please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
-
+# see test documentation: http://wiki.ros.org/gtest
+#add_rostest_gtest(${PROJECT_NAME}_utest test/utest.cpp)
+#target_link_libraries(testPlanningSystem ${catkin_LIBRARIES} ${GTEST_LIBRARIES})

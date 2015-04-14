@@ -1,5 +1,4 @@
 #include "rosplan_interface_mapping/RPRoadmapServer.h"
-
 #include <occupancy_grid_utils/ray_tracer.h>
 #include <occupancy_grid_utils/coordinate_conversions.h>
 
