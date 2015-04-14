@@ -54,7 +54,7 @@ namespace KCL_rosplan {
 			goal.goal.requester = "rosplan_interface_cola2";
 			goal.goal.id = planning_pilot_id_offset + msg->action_id;
 			goal.goal.priority = auv_msgs::GoalDescriptor::PRIORITY_NORMAL;
-			goal.altitude_mode = true;
+			goal.altitude_mode = false;
 			goal.position.north = results[0]->pose.position.x;
 			goal.position.east = results[0]->pose.position.z;
 			goal.position.depth = -1*(results[0]->pose.position.y);
