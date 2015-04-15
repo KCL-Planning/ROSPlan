@@ -1,10 +1,5 @@
 <!-- ROSPlan sparus demo; requires cola2 control and simulation from https://bitbucket.org/udg_cirs -->
 <launch>
-	
-	<!-- SparusII simulation -->
-	<include file="$(find cola2_launch)/launch/s2_start-sim.launch" >
-	</include>
-
 
 	<!-- ROSPlan planning system -->
 	<include file="$(find rosplan_planning_system)/launch/planning_system_knowledge.launch" >
