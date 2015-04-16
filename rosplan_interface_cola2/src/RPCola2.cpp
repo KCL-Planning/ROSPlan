@@ -56,9 +56,9 @@ namespace KCL_rosplan {
 			goal.goal.priority = auv_msgs::GoalDescriptor::PRIORITY_NORMAL;
 			goal.altitude_mode = false;
 			goal.position.north = results[0]->pose.position.x;
-			goal.position.east = results[0]->pose.position.z;
-			goal.position.depth = -1*(results[0]->pose.position.y);
-			goal.altitude = results[0]->pose.position.y;
+			goal.position.east = results[0]->pose.position.y;
+			goal.position.depth = results[0]->pose.position.z;
+			goal.altitude = results[0]->pose.position.z;
 			goal.orientation.roll = 0.0;
 			goal.orientation.pitch = 0.0;
 			goal.orientation.yaw = results[0]->pose.orientation.w;
