@@ -47,6 +47,7 @@ set(KNOWLEDGE_SOURCES
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES})
+add_dependencies(knowledgeBase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(knowledgeBase ${catkin_LIBRARIES})
