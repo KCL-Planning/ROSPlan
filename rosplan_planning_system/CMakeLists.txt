@@ -82,6 +82,7 @@ set(PLANNING_SOURCES
 
 ## Declare cpp executables
 add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
+add_dependencies(planner ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner ${catkin_LIBRARIES})
