@@ -203,7 +203,14 @@ namespace KCL_rosplan {
 			parsePose(pose, line);
 			std::string id(message_store.insertNamed(name, pose));
 			db_name_map[name] = id;
+
+			// save here for viz
+			Waypoint* wp = new Waypoint(name, pose.pose.position.x, pose.pose.position.y);
+			waypoints[wp->wpID] = wp;
 		}
+
+		// publish visualization
+		publishWaypointMarkerArray(nh);
 	}
 
 } // close namespace
