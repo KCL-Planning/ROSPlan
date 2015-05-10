@@ -22,7 +22,7 @@ namespace KCL_rosplan {
 
 	struct Waypoint 
 	{
-		Waypoint(const std::string &id, unsigned int xCoord, unsigned int yCoord)
+		Waypoint(const std::string &id, double xCoord, double yCoord)
 			: wpID(id), real_x(xCoord), real_y(yCoord) {}
 
 		Waypoint()

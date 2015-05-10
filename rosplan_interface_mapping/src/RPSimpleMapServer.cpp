@@ -200,6 +200,7 @@ namespace KCL_rosplan {
 
 			// data
 			geometry_msgs::PoseStamped pose;
+			pose.header.frame_id = "world";
 			parsePose(pose, line);
 			std::string id(message_store.insertNamed(name, pose));
 			db_name_map[name] = id;
