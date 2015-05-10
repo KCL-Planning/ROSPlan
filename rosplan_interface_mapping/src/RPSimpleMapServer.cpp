@@ -150,6 +150,62 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (RPSimpleMapServer) Done");
 		return true;
 	}
+
+	/**
+	 * parses a pose with yaw from strings: "[f, f, f]"
+	 */
+	 void RPSimpleMapServer::parsePose(geometry_msgs::PoseStamped &pose, std::string line) {
+
+		int curr,next;
+		curr=line.find("[")+1;
+		next=line.find(",",curr);
+
+		pose.pose.position.x = (double)atof(line.substr(curr,next-curr).c_str());
+		curr=next+1; next=line.find(",",curr);
+
+		pose.pose.position.y = (double)atof(line.substr(curr,next-curr).c_str());
+		curr=next+1; next=line.find(",",curr);
+
+		pose.pose.orientation.x = 0.0;
+		pose.pose.orientation.y = 0.0;
+		pose.pose.orientation.w = (double)atof(line.substr(curr,next-curr).c_str());
+		pose.pose.orientation.z = sqrt(1 - pose.pose.orientation.w * pose.pose.orientation.w);
+	}
+
+	bool RPSimpleMapServer::setupRoadmap(std::string filename) {
+
+		ros::NodeHandle nh("~");
+
+		// clear previous roadmap from knowledge base
+		ROS_INFO("KCL: (RPSimpleMapServer) Loading roadmap from file");
+
+		// load configuration file
+		std::ifstream infile(filename.c_str());
+		std::string line;
+		int curr,next;
+		while(!infile.eof()) {
+
+			// read waypoint
+			std::getline(infile, line);
+			curr=line.find("[");
+			std::string name = line.substr(0,curr);
+
+			// instance
+			rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
+			updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+			updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
+			updateSrv.request.knowledge.instance_type = "waypoint";
+			updateSrv.request.knowledge.instance_name = name;
+			update_knowledge_client.call(updateSrv);
+
+			// data
+			geometry_msgs::PoseStamped pose;
+			parsePose(pose, line);
+			std::string id(message_store.insertNamed(name, pose));
+			db_name_map[name] = id;
+		}
+	}
+
 } // close namespace
 
 	/*-------------*/
@@ -162,9 +218,14 @@ namespace KCL_rosplan {
 		ros::init(argc, argv, "rosplan_simple_map_server");
 		ros::NodeHandle nh("~");
 
+		// params
+		std::string filename("waypoints.txt");
+		nh.param("waypoint_file", filename, filename);
+
 		// init
 		KCL_rosplan::RPSimpleMapServer sms(nh);
 		ros::ServiceServer createPRMService = nh.advertiseService("/kcl_rosplan/roadmap_server/create_prm", &KCL_rosplan::RPSimpleMapServer::generateRoadmap, &sms);
+		sms.setupRoadmap(filename);
 
 		ROS_INFO("KCL: (RPSimpleMapServer) Ready to receive.");
 		ros::spin();

@@ -54,7 +54,8 @@ namespace KCL_rosplan {
 		// Roadmap
 		std::map<std::string, Waypoint*> waypoints;
 		std::map<std::string, std::string> db_name_map;
-
+		void parsePose(geometry_msgs::PoseStamped &pose, std::string line);
+		
 		// visualisation
 		ros::Publisher waypoints_pub;
 		void publishWaypointMarkerArray(ros::NodeHandle nh);
@@ -67,6 +68,7 @@ namespace KCL_rosplan {
 
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);
+		bool setupRoadmap(std::string filename);
 	};
 }
 #endif
