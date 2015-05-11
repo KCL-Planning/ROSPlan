@@ -121,7 +121,7 @@ namespace KCL_rosplan {
 
 			//data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "world";
+			pose.header.frame_id = "map";
 			pose.pose.position.x = wit->second->real_x;
 			pose.pose.position.y = wit->second->real_y;
 			pose.pose.position.z = 0.0;
@@ -200,7 +200,7 @@ namespace KCL_rosplan {
 
 			// data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "world";
+			pose.header.frame_id = "map";
 			parsePose(pose, line);
 			std::string id(message_store.insertNamed(name, pose));
 			db_name_map[name] = id;
