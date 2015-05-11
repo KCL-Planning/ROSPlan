@@ -10,7 +10,7 @@ namespace KCL_rosplan {
 		size_t counter = 0;
 		for (std::map<std::string, Waypoint*>::iterator wit=waypoints.begin(); wit!=waypoints.end(); ++wit) {
 			visualization_msgs::Marker marker;
-			marker.header.frame_id = "world";
+			marker.header.frame_id = "map";
 			marker.header.stamp = ros::Time();
 			marker.ns = "mission_waypoint";
 			marker.id = counter; counter++;
