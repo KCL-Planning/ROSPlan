@@ -209,7 +209,8 @@ namespace KCL_rosplan {
 			Waypoint* wp = new Waypoint(name, pose.pose.position.x, pose.pose.position.y);
 			waypoints[wp->wpID] = wp;
 		}
-
+		infile.close();
+		
 		// publish visualization
 		publishWaypointMarkerArray(nh);
 	}
