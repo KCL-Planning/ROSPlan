@@ -229,7 +229,7 @@ namespace KCL_rosplan {
 
 		// params
 		std::string filename("waypoints.txt");
-		nh.param("waypoint_file", filename, filename);
+		nh.param("/waypoint_file", filename, filename);
 
 		// init
 		KCL_rosplan::RPSimpleMapServer sms(nh);
