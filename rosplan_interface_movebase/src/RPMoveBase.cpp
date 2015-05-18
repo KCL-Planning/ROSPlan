@@ -7,6 +7,9 @@ namespace KCL_rosplan {
 	RPMoveBase::RPMoveBase(ros::NodeHandle &nh, std::string &actionserver)
 	 : message_store(nh), action_client(actionserver, true) {
 		
+		// knowledge interface
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+
 		// create the action client
 		ROS_INFO("KCL: (MoveBase) waiting for action server to start on %s", actionserver.c_str());
 		action_client.waitForServer();
@@ -65,14 +68,49 @@ namespace KCL_rosplan {
 
 				actionlib::SimpleClientGoalState state = action_client.getState();
 				ROS_INFO("KCL: (MoveBase) action finished: %s", state.toString().c_str());
-				
-				// publish feedback (achieved)
-				 rosplan_dispatch_msgs::ActionFeedback fb;
-				fb.action_id = msg->action_id;
-				fb.status = "action achieved";
-				action_feedback_pub.publish(fb);
+
+				if(state == actionlib::SimpleClientGoalState::SUCCEEDED) {
+
+					// remove old robot_at
+					rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
+					updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+					updatePredSrv.request.knowledge.attribute_name = "robot_at";
+					diagnostic_msgs::KeyValue pair;
+					pair.key = "v";
+					pair.value = "kenny";
+					updatePredSrv.request.knowledge.values.push_back(pair);
+					update_knowledge_client.call(updatePredSrv);
+
+					// predicate robot_at
+					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+					updatePredSrv.request.knowledge.attribute_name = "robot_at";
+					diagnostic_msgs::KeyValue pairWP;
+					pairWP.key = "wp";
+					pairWP.value = wpID;
+					updatePredSrv.request.knowledge.values.push_back(pairWP);
+					update_knowledge_client.call(updatePredSrv);
+
+					ros::Rate big_rate(0.5);
+					big_rate.sleep();
+
+					// publish feedback (achieved)
+					rosplan_dispatch_msgs::ActionFeedback fb;
+					fb.action_id = msg->action_id;
+					fb.status = "action achieved";
+					action_feedback_pub.publish(fb);
+
+				} else {
+					// publish feedback (failed)
+					rosplan_dispatch_msgs::ActionFeedback fb;
+					fb.action_id = msg->action_id;
+					fb.status = "action failed";
+					action_feedback_pub.publish(fb);
+				}
 
 			} else {
+
+				action_client.cancelAllGoals();
 
 				// publish feedback (failed)
 				 rosplan_dispatch_msgs::ActionFeedback fb;
