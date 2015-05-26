@@ -69,27 +69,42 @@ namespace KCL_rosplan {
 					double dispatchTime = (double)atof(line.substr(0,curr).c_str());
 					msg.dispatch_time = dispatchTime;
 
-					// name
+					// check for parameters
 					curr=line.find("(")+1;
-					next=line.find(" ",curr);
-					std::string name = line.substr(curr,next-curr).c_str();
-					msg.name = name;
+					bool paramsExist = (line.find(" ",curr) > line.find(")",curr));
+					
+					if(paramsExist) {
 
-					// parameters
-					std::vector<std::string> params;
-					curr=next+1;
-					next=line.find(")",curr);
-					int at = curr;
-					while(at < next) {
-						int cc = line.find(" ",curr);
-						int cc1 = line.find(")",curr);
-						curr = cc<cc1?cc:cc1;
-						std::string param = environment.name_map[line.substr(at,curr-at)];
-						params.push_back(param);
-						++curr;
-						at = curr;
+						// name
+						next=line.find(" ",curr);
+						std::string name = line.substr(curr,next-curr).c_str();
+						msg.name = name;
+
+						// parameters
+						std::vector<std::string> params;
+						curr=next+1;
+						next=line.find(")",curr);
+						int at = curr;
+						while(at < next) {
+							int cc = line.find(" ",curr);
+							int cc1 = line.find(")",curr);
+							curr = cc<cc1?cc:cc1;
+							std::string param = environment.name_map[line.substr(at,curr-at)];
+							params.push_back(param);
+							++curr;
+							at = curr;
+						}
+						processPDDLParameters(msg, params, environment);
+
+
+					} else {
+
+						// name
+						next=line.find(")",curr);
+						std::string name = line.substr(curr,next-curr).c_str();
+						msg.name = name;
+
 					}
-					processPDDLParameters(msg, params, environment);
 
 					// duration
 					curr=line.find("[",curr)+1;
