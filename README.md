@@ -37,11 +37,11 @@ The turtlebot demo is now a simple exploration mission. The turtlebot will visit
 
 The domain for this demo is in the `rosplan_planning_system` package, as `common/domain.pddl`.
 
-To run the demo first follow the installation instructions and quick-start guide for the turtlebot simulation:
+To run the demo first follow the installation instructions and quick-start guide for the Turtlebot Simulator and Gazebo:
 
-http://wiki.ros.org/turtlebot_gazebo (indigo)
+[Turtlebot Gazebo](http://wiki.ros.org/turtlebot_gazebo) 
 
-http://wiki.ros.org/turtlebot_simulator (hydro)
+[Turtlebot Simulator](http://wiki.ros.org/turtlebot_simulator) 
 
 Then source the ROSPlan workspace and run:
 ```sh
@@ -65,3 +65,5 @@ KCL: (PS) Feedback received [0,action achieved]
 ...
 ```
 ![kSJr9g](http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif)
+
+For more detailed information about this demo, please visit our [ROSPlan Wiki Page](https://github.com/KCL-Planning/ROSPlan/wiki), and follow tutorial pages on the right.
