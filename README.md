@@ -22,13 +22,13 @@ cd ROSPlan/
 ```
 Get the code:
 ```sh
-git clone https://github.com/clearpathrobotics/occupancy_grid_utils
+git clone https://github.com/clearpathrobotics/occupancy_grid_utils src/
 git clone https://github.com/KCL-Planning/ROSPlan.git src/
 ```
 Compile everything:
 ```sh
 source /opt/ros/hydro/setup.bash
-catkin_make -j1
+catkin_make
 ```
 
 ### Running a demo with the turtlebot
