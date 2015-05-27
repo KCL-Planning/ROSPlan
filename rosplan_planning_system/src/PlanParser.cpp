@@ -71,8 +71,8 @@ namespace KCL_rosplan {
 
 					// check for parameters
 					curr=line.find("(")+1;
-					bool paramsExist = (line.find(" ",curr) > line.find(")",curr));
-					
+					bool paramsExist = (line.find(" ",curr) < line.find(")",curr));
+
 					if(paramsExist) {
 
 						// name
