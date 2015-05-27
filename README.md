@@ -64,3 +64,4 @@ KCL: (MoveBase) action finished: SUCCEEDED
 KCL: (PS) Feedback received [0,action achieved]
 ...
 ```
+![kSJr9g](http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif)
