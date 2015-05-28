@@ -1,7 +1,7 @@
 ROSPlan Framework
 =================
 
-The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. It possesses as a simple interface, and already includes interfaces to common ROS libraries.
+The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. It possesses a simple interface, and already includes interfaces to common ROS libraries.
 
 ### Installation
 
@@ -64,7 +64,7 @@ KCL: (MoveBase) action finished: SUCCEEDED
 KCL: (PS) Feedback received [0,action achieved]
 ...
 ```
-<img src="http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif" alt="Turtlebot Demo" style="width: 50%;"/>
+<img src="http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif" alt="Turtlebot Demo" width="60%"/>
 
 
 For more detailed information about this demo, please visit our [ROSPlan Wiki Page](https://github.com/KCL-Planning/ROSPlan/wiki), and follow tutorial pages on the right.
