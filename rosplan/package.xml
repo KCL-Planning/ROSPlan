@@ -5,7 +5,7 @@
 	<description>ROSPlan metapackage</description>
 	<maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
 	<license>BSD</license>
-    <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
+	<url type="website">https://github.com/KCL-Planning/ROSPlan</url>
 
 	<buildtool_depend>catkin</buildtool_depend>
 
