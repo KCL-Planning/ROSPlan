@@ -1,5 +1,5 @@
 #include "rosplan_planning_system/PlanningEnvironment.h"
-//testing git commitddsdv
+
 /* implementation of rosplan_planning_system::PlanningEnvironment */
 namespace KCL_rosplan {
 
@@ -132,7 +132,7 @@ namespace KCL_rosplan {
 			return;
 		}
 
-		const VAL::simple_goal* sg = dynamic_cast<const VAL::simple_goal*>(goal);
+	/* 	const VAL::simple_goal* sg = dynamic_cast<const VAL::simple_goal*>(goal);
 		if (sg) {
 			const VAL::proposition* prop = sg->getProp();
 			std::vector<string> precondition;
@@ -143,11 +143,24 @@ namespace KCL_rosplan {
 			}
 			domain_operator_precondition_map[opName].push_back(precondition);
 			return;
-		}
+		} */
 
 		const VAL::timed_goal* tg = dynamic_cast<const VAL::timed_goal*>(goal);
 		if (tg) {
-			parsePrecondition(opName, tg->getGoal(), negative);
+			timedCondition timedPrecondition;
+			timedPrecondition.time_spec = tg->getTime();  //get time_spec
+			
+			const VAL::simple_goal* sg = dynamic_cast<const VAL::simple_goal*>(goal);
+			
+			const VAL::proposition* prop = sg->getProp();
+			
+			timedPrecondition.prop_name = prop->head->symbol::getName(); //get proposition name 
+	        for (VAL::parameter_symbol_list::const_iterator ci = prop->args->begin(); ci != prop->args->end(); ci++) {
+				const VAL::parameter_symbol* param = *ci;
+				timedPrecondition.param_name.push_back(param->symbol::getName()); //get parameter name
+			}
+			
+			domain_operator_precondition_map[opName].push_back(timedPrecondition); //store all simple preconditions here
 			return;
 		}
 

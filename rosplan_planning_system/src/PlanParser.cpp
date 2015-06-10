@@ -130,7 +130,6 @@ namespace KCL_rosplan {
 						action_list.push_back(potentialPlan[i]);
 						generateFilter(environment);
 					}
-
 					total_plan_duration = planDuration;
 
 				} else {
@@ -140,7 +139,6 @@ namespace KCL_rosplan {
 		}
 		planfile.close();
 	}
-
 	/**
 	 * processes the parameters of a single PDDL action into an ActionDispatch message
 	 */
@@ -168,14 +166,17 @@ namespace KCL_rosplan {
 			// prepare object attributes for the knowledge filter
 			for(size_t i=0; i<environment.domain_operator_precondition_map[msg.name].size(); i++) {
 				std::vector<std::string> filterAttribute;
-				std::vector<std::string> precondition = environment.domain_operator_precondition_map[msg.name][i];
-				filterAttribute.push_back(precondition[0]);
-				for(size_t j=1; j<precondition.size(); j++) {
+				timedCondition precondition = environment.domain_operator_precondition_map[msg.name][i];
+				//Needed to convert struct to individual strings to keep the same data structure
+				filterAttribute.push_back(precondition.prop_name); //get proposition name of the precondition
+				filterAttribute.push_back(precondition.time_spec); //get time_spec 
+				
+					for (std::vector<string>::const_iterator it = precondition.param_name.begin() ; it != precondition.param_name.end() ; ++it){
 					// label
-					if(j>1) filterAttribute.push_back(precondition[j]);
+					filterAttribute.push_back(*it); 
 					// instance name
 					for(size_t k=0;k<ait->second.size();k++) {
-						if(0==ait->second[k].compare(precondition[j]))
+						if(0==ait->second[k].compare(*it))
 							filterAttribute.push_back(params[k]);
 					}
 				}
