@@ -36,18 +36,20 @@ namespace KCL_rosplan {
 			if((unsigned int)currentMessage.action_id != current_action)
 				ROS_ERROR("KCL: (PS) Message action_id [%d] does not meet expected [%zu]", currentMessage.action_id, current_action);
 
-			// loop while waiting for dispatch time
-			double wait_period = 10.0;
-			int wait_print = (int)(currentMessage.dispatch_time + planStart - ros::WallTime::now().toSec()) / wait_period;
-			while (ros::ok() && ros::WallTime::now().toSec() < currentMessage.dispatch_time + planStart) {
-				ros::spinOnce();
-				loop_rate.sleep();
-				double remaining = planStart + currentMessage.dispatch_time - ros::WallTime::now().toSec();
-				if(wait_print > (int)remaining / wait_period) {
-					ROS_INFO("KCL: (PS) Waiting %f before dispatching action: [%i, %s, %f, %f]",
-							remaining,currentMessage.action_id, currentMessage.name.c_str(),
-							 (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
-					wait_print--;
+			if(!dispatch_on_completion) {
+				// loop while waiting for dispatch time
+				double wait_period = 10.0;
+				int wait_print = (int)(currentMessage.dispatch_time + planStart - ros::WallTime::now().toSec()) / wait_period;
+				while (ros::ok() && ros::WallTime::now().toSec() < currentMessage.dispatch_time + planStart) {
+					ros::spinOnce();
+					loop_rate.sleep();
+					double remaining = planStart + currentMessage.dispatch_time - ros::WallTime::now().toSec();
+					if(wait_print > (int)remaining / wait_period) {
+						ROS_INFO("KCL: (PS) Waiting %f before dispatching action: [%i, %s, %f, %f]",
+								remaining,currentMessage.action_id, currentMessage.name.c_str(),
+								 (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
+						wait_print--;
+					}
 				}
 			}
 
@@ -57,18 +59,20 @@ namespace KCL_rosplan {
 			double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
 			if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
-			// callback and sleep
-			int counter = 0;
-			while (ros::ok() && !action_completed[current_action]) {
-				ros::spinOnce();
-				loop_rate.sleep();
-				counter++;
-				if (counter == 2000) {
-					ROS_INFO("KCL: (PS) Action %i timed out now. Cancelling...", currentMessage.action_id);
-					rosplan_dispatch_msgs::ActionDispatch cancelMessage;
-					cancelMessage.action_id = currentMessage.action_id;
-					cancelMessage.name = "cancel_action";
-					action_publisher.publish(cancelMessage);
+			if(dispatch_concurrent) {
+				// callback and sleep
+				int counter = 0;
+				while (ros::ok() && !action_completed[current_action]) {
+					ros::spinOnce();
+					loop_rate.sleep();
+					counter++;
+					if (counter == 2000) {
+						ROS_INFO("KCL: (PS) Action %i timed out now. Cancelling...", currentMessage.action_id);
+						rosplan_dispatch_msgs::ActionDispatch cancelMessage;
+						cancelMessage.action_id = currentMessage.action_id;
+						cancelMessage.name = "cancel_action";
+						action_publisher.publish(cancelMessage);
+					}
 				}
 			}
 
