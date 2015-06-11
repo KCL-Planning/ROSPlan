@@ -4,6 +4,9 @@
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
+#include "PlanningEnvironment.h"
 
 #ifndef KCL_dispatcher
 #define KCL_dispatcher
@@ -15,6 +18,9 @@ namespace KCL_rosplan
 	{
 	private:
 
+		/* check preconditions are true */
+		bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
+
 		/* action dispatch list (current plan) */
 		size_t current_action;
 
@@ -24,6 +30,9 @@ namespace KCL_rosplan
 		bool dispatch_paused;
 
 	public:
+
+		/* knowledge */
+		PlanningEnvironment environment;
 
 		/* dispatch modes */
 		bool dispatch_on_completion;

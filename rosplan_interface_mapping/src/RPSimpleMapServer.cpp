@@ -133,20 +133,6 @@ namespace KCL_rosplan {
 			db_name_map[wit->first] = id;
 		}
 
-		// robot start position (TODO remove)
-		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-		updateSrv.request.knowledge.attribute_name = "robot_at";
-		diagnostic_msgs::KeyValue pair1, pair2;
-		pair1.key = "v";
-		pair1.value = "kenny";
-		updateSrv.request.knowledge.values.push_back(pair1);
-		pair2.key = "wp";
-		pair2.value = "wp0";
-		updateSrv.request.knowledge.values.push_back(pair2);
-		update_knowledge_client.call(updateSrv);
-
 		ROS_INFO("KCL: (RPSimpleMapServer) Done");
 		return true;
 	}

@@ -72,13 +72,14 @@ namespace KCL_rosplan {
 		nh.param("dispatch_on_completion", dispatchCompletion, true);
 		nh.param("dispatch_concurrent", dispatchConcurrent, false);
 		environment.parseDomain(domain_path);
-	
+
 		// dispatch plan
 		plan_parser.reset();
 		plan_dispatcher.reset();
 
 		plan_dispatcher.dispatch_on_completion = dispatchCompletion;
 		plan_dispatcher.dispatch_concurrent = dispatchConcurrent;
+		plan_dispatcher.environment = environment;
 
 		bool planSucceeded = false;
 		mission_start_time = ros::WallTime::now().toSec();

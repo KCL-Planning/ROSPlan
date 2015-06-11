@@ -26,6 +26,7 @@ add_service_files(
   GetAttributeService.srv
   GetInstanceService.srv
   KnowledgeUpdateService.srv
+  KnowledgeQueryService.srv
   CreatePRM.srv
   AddWaypoint.srv
 )

@@ -1,0 +1,6 @@
+# symbolic model query (1/1)
+
+rosplan_knowledge_msgs/KnowledgeItem[] knowledge
+---
+bool all_true
+rosplan_knowledge_msgs/KnowledgeItem[] false_knowledge

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
+#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
@@ -21,6 +22,7 @@ namespace KCL_rosplan {
 		// checking if filters are violated
 		bool containsInstance(const rosplan_knowledge_msgs::KnowledgeItem &a, std::string &name);
 		bool sameKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
+		bool containsKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
 		bool isInFilter(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
 		void checkFilters(const rosplan_knowledge_msgs::KnowledgeItem &a, bool added);
 
@@ -37,6 +39,9 @@ namespace KCL_rosplan {
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> domain_functions;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> domain_goals;
 		std::map<std::string, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > instance_attributes;
+
+		// checking the symbolic model
+		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
 
 		// fetching the symbolic model
 		bool getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
