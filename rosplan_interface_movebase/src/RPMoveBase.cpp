@@ -66,11 +66,35 @@ namespace KCL_rosplan {
 				actionlib::SimpleClientGoalState state = action_client.getState();
 				ROS_INFO("KCL: (MoveBase) action finished: %s", state.toString().c_str());
 				
-				// publish feedback (achieved)
-				 rosplan_dispatch_msgs::ActionFeedback fb;
-				fb.action_id = msg->action_id;
-				fb.status = "action achieved";
-				action_feedback_pub.publish(fb);
+				if(state == actionlib::SimpleClientGoalState::SUCCEEDED) {
+
+					// remove old robot_at
+					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+					updatePredSrv.request.knowledge.attribute_name = "robot_at";
+					update_knowledge_client.call(updatePredSrv);
+
+					// predicate robot_at
+					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
+					updatePredSrv.request.knowledge.attribute_name = "robot_at";
+					diagnostic_msgs::KeyValue pairWP;
+					pairWP.key = "wp";
+					pairWP.value = wpName;
+					updatePredSrv.request.knowledge.values.push_back(pairWP);
+					update_knowledge_client.call(updatePredSrv);
+
+					// publish feedback (achieved)
+					rosplan_dispatch_msgs::ActionFeedback fb;
+					fb.action_id = msg->action_id;
+					fb.status = "action achieved";
+					action_feedback_pub.publish(fb);
+
+				} else {
+					// publish feedback (failed)
+					rosplan_dispatch_msgs::ActionFeedback fb;
+					fb.action_id = msg->action_id;
+					fb.status = "action failed";
+					action_feedback_pub.publish(fb);
+				}
 
 			} else {
 
