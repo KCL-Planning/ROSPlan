@@ -43,7 +43,7 @@ namespace KCL_rosplan {
 				for(pit=domain_attributes.begin(); pit!=domain_attributes.end(); pit++) {
 					if(sameKnowledge(*iit, *pit)) {
 						present = true;
-						pit = domain_attributes.end();
+						break;
 					}
 				}
 			}
