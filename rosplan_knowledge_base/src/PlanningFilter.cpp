@@ -63,8 +63,7 @@ namespace KCL_rosplan {
 			for(size_t i=0;i<a.values.size();i++) {
 				bool match = false;
 				for(size_t j=0;j<b.values.size();j++) {
-					if(0==a.values[i].key.compare(b.values[i].key)
-							&& 0!=a.values[i].value.compare(b.values[i].value))
+					if(a.values[i].key == b.values[j].key && a.values[i].value == b.values[j].value)
 						match = true;
 				}
 				if(!match) return false;
