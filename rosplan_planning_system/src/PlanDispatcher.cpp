@@ -119,17 +119,24 @@ namespace KCL_rosplan {
 
 			// populate parameters
 			condition.attribute_name = (*cit)[0];
-			std::vector<diagnostic_msgs::KeyValue>::iterator pit;
-			int index = 0;
-			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++) {
+			int index = 1;
+			std::vector<std::string>::iterator pit;
+			for(pit=environment.domain_predicates[condition.attribute_name].begin();
+					pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+				// set parameter label to predicate label
 				diagnostic_msgs::KeyValue param;
-std::cout << pit->key << " " << environment.domain_predicates[(*cit)[0]].size()  << " " << std::endl;
-				param.key = environment.domain_predicates[(*cit)[0]][index];
-				param.value = pit->value;
-				condition.values.push_back(param);
+				param.key = *pit;
+				// find label as it is in domain operator
+				std::string conditionKey = (*cit)[index];
 				index++;
+				// set value
+				std::vector<diagnostic_msgs::KeyValue>::iterator opit;
+				for(opit = msg.parameters.begin(); opit!=msg.parameters.end(); opit++) {
+					if(0==opit->value.compare(conditionKey))
+						param.value = opit->value;
+				}
+				condition.values.push_back(param);
 			}
-
 			querySrv.request.knowledge.push_back(condition);
 		}
 
