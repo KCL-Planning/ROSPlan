@@ -59,7 +59,7 @@ namespace KCL_rosplan {
 			double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
 			if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
-			if(dispatch_concurrent) {
+			if(!dispatch_concurrent) {
 				// callback and sleep
 				int counter = 0;
 				while (ros::ok() && !action_completed[current_action]) {
