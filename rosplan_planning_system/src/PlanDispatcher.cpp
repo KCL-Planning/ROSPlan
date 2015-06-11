@@ -65,7 +65,7 @@ namespace KCL_rosplan {
 			if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
 			// wait for action to complete
-			if(dispatch_concurrent) {
+			if(!dispatch_concurrent) {
 				int counter = 0;
 				while (ros::ok() && !action_completed[current_action]) {
 					ros::spinOnce();
@@ -120,8 +120,10 @@ namespace KCL_rosplan {
 			// populate parameters
 			condition.attribute_name = (*cit)[0];
 			std::vector<diagnostic_msgs::KeyValue>::iterator pit;
-			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++)
+			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++) {
 				condition.values.push_back(*pit);
+			}
+
 
 			querySrv.request.knowledge.push_back(condition);
 		}
