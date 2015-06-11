@@ -56,27 +56,29 @@ namespace KCL_rosplan {
 
 			if(!checkPreconditions(currentMessage)) {
 				ROS_INFO("KCL: (PS) Preconditions not achieved [%i, %s]", currentMessage.action_id, currentMessage.name.c_str());
-			}
+				replan_requested = true;
+			} else {
 
-			// dispatch action
-			ROS_INFO("KCL: (PS) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
-			action_publisher.publish(currentMessage);
-			double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
-			if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
+				// dispatch action
+				ROS_INFO("KCL: (PS) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
+				action_publisher.publish(currentMessage);
+				double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
+				if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
-			// wait for action to complete
-			if(!dispatch_concurrent) {
-				int counter = 0;
-				while (ros::ok() && !action_completed[current_action]) {
-					ros::spinOnce();
-					loop_rate.sleep();
-					counter++;
-					if (counter == 2000) {
-						ROS_INFO("KCL: (PS) Action %i timed out now. Cancelling...", currentMessage.action_id);
-						rosplan_dispatch_msgs::ActionDispatch cancelMessage;
-						cancelMessage.action_id = currentMessage.action_id;
-						cancelMessage.name = "cancel_action";
-						action_publisher.publish(cancelMessage);
+				// wait for action to complete
+				if(!dispatch_concurrent) {
+					int counter = 0;
+					while (ros::ok() && !action_completed[current_action]) {
+						ros::spinOnce();
+						loop_rate.sleep();
+						counter++;
+						if (counter == 2000) {
+							ROS_INFO("KCL: (PS) Action %i timed out now. Cancelling...", currentMessage.action_id);
+							rosplan_dispatch_msgs::ActionDispatch cancelMessage;
+							cancelMessage.action_id = currentMessage.action_id;
+							cancelMessage.name = "cancel_action";
+							action_publisher.publish(cancelMessage);
+						}
 					}
 				}
 			}
@@ -118,9 +120,7 @@ namespace KCL_rosplan {
 			if(dit!=environment.domain_functions.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
 
 			// populate parameters
-std::cout << "---" << std::endl;
 			condition.attribute_name = (*cit)[0];
-std::cout << condition.attribute_name << std::endl;
 			int index = 1;
 			std::vector<std::string>::iterator pit;
 			for(pit=environment.domain_predicates[condition.attribute_name].begin();
@@ -128,20 +128,17 @@ std::cout << condition.attribute_name << std::endl;
 				// set parameter label to predicate label
 				diagnostic_msgs::KeyValue param;
 				param.key = *pit;
-std::cout << "-" << *pit;
 				// find label as it is in domain operator
 				std::string conditionKey = (*cit)[index];
 				index++;
 				// set value
 				std::vector<diagnostic_msgs::KeyValue>::iterator opit;
 				for(opit = msg.parameters.begin(); opit!=msg.parameters.end(); opit++) {
-					if(0==opit->value.compare(conditionKey)) {
+					if(0==opit->key.compare(conditionKey)) {
 						param.value = opit->value;
-std::cout << " : " << opit->value;
 					}
 				}
 				condition.values.push_back(param);
-std::cout << std::endl;
 			}
 			querySrv.request.knowledge.push_back(condition);
 		}
