@@ -123,7 +123,8 @@ namespace KCL_rosplan {
 			int index = 0;
 			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++) {
 				diagnostic_msgs::KeyValue param;
-				param.key = domain_predicates[(*cit)[0]][index];
+std::cout << pit->key << " " << environment.domain_predicates[(*cit)[0]].size()  << " " << std::endl;
+				param.key = environment.domain_predicates[(*cit)[0]][index];
 				param.value = pit->value;
 				condition.values.push_back(param);
 				index++;
