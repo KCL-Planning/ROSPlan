@@ -22,6 +22,7 @@ namespace KCL_rosplan {
 		// checking if filters are violated
 		bool containsInstance(const rosplan_knowledge_msgs::KnowledgeItem &a, std::string &name);
 		bool sameKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
+		bool containsKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
 		bool isInFilter(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
 		void checkFilters(const rosplan_knowledge_msgs::KnowledgeItem &a, bool added);
 

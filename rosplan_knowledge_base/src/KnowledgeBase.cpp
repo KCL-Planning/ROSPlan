@@ -30,7 +30,7 @@ namespace KCL_rosplan {
 				// check if function exists; TODO inequalities
 				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 				for(pit=domain_functions.begin(); pit!=domain_functions.end(); pit++) {
-					if(sameKnowledge(*iit, *pit)) {
+					if(containsKnowledge(*iit, *pit)) {
 						present = true;
 						pit = domain_functions.end();
 					}
@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 				// check if fact is true
 				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 				for(pit=domain_attributes.begin(); pit!=domain_attributes.end(); pit++) {
-					if(sameKnowledge(*iit, *pit)) {
+					if(containsKnowledge(*iit, *pit)) {
 						present = true;
 						break;
 					}
@@ -126,7 +126,7 @@ namespace KCL_rosplan {
 			// remove domain attribute (function) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=domain_functions.begin(); pit!=domain_functions.end(); pit++) {
-				if(sameKnowledge(msg, *pit)) {
+				if(containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = domain_functions.erase(pit);
@@ -139,7 +139,7 @@ namespace KCL_rosplan {
 			// remove domain attribute (predicate) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=domain_attributes.begin(); pit!=domain_attributes.end(); pit++) {
-				if(sameKnowledge(msg, *pit)) {
+				if(containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = domain_attributes.erase(pit);
@@ -152,7 +152,7 @@ namespace KCL_rosplan {
 			// remove instance attribute (non-symbolic) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=instance_attributes[msg.instance_name].begin(); pit!=instance_attributes[msg.instance_name].end(); pit++) {
-				if(sameKnowledge(msg, *pit)) {
+				if(containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing instance attribute (%s, %s)", msg.instance_name.c_str(), msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = instance_attributes[msg.instance_name].erase(pit);
