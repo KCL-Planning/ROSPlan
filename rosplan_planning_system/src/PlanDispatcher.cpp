@@ -124,13 +124,17 @@ namespace KCL_rosplan {
 				condition.values.push_back(*pit);
 			}
 
-
 			querySrv.request.knowledge.push_back(condition);
 		}
 
 		// check conditions in knowledge base
 		if (queryKnowledgeClient.call(querySrv)) {
 			
+			if(!querySrv.response.all_true) {
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kit;
+				for(kit=querySrv.response.false_knowledge.begin(); kit != querySrv.response.false_knowledge.end(); kit++)
+					ROS_INFO("KCL: (PS)        [%s]", kit->attribute_name.c_str());
+			}
 			return querySrv.response.all_true;
 
 		} else {
