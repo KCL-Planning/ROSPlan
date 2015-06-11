@@ -25,6 +25,10 @@ namespace KCL_rosplan
 
 	public:
 
+		/* dispatch modes */
+		bool dispatch_on_completion;
+		bool dispatch_concurrent;
+
 		int getCurrentAction();
 		void reset();
 

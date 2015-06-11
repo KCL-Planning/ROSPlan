@@ -9,6 +9,8 @@
 #include "move_base_msgs/MoveBaseAction.h"
 #include "mongodb_store/message_store.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 
 #ifndef KCL_movebase
 #define KCL_movebase
@@ -29,6 +31,7 @@ namespace KCL_rosplan {
 		mongodb_store::MessageStoreProxy message_store;
 		actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> action_client;
 		ros::Publisher action_feedback_pub;
+		ros::ServiceClient update_knowledge_client;
 
 	public:
 

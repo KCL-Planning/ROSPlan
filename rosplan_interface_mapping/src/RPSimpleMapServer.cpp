@@ -121,7 +121,7 @@ namespace KCL_rosplan {
 
 			//data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "world";
+			pose.header.frame_id = "map";
 			pose.pose.position.x = wit->second->real_x;
 			pose.pose.position.y = wit->second->real_y;
 			pose.pose.position.z = 0.0;
@@ -200,7 +200,7 @@ namespace KCL_rosplan {
 
 			// data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "world";
+			pose.header.frame_id = "map";
 			parsePose(pose, line);
 			std::string id(message_store.insertNamed(name, pose));
 			db_name_map[name] = id;
@@ -209,7 +209,8 @@ namespace KCL_rosplan {
 			Waypoint* wp = new Waypoint(name, pose.pose.position.x, pose.pose.position.y);
 			waypoints[wp->wpID] = wp;
 		}
-
+		infile.close();
+		
 		// publish visualization
 		publishWaypointMarkerArray(nh);
 	}
@@ -228,7 +229,7 @@ namespace KCL_rosplan {
 
 		// params
 		std::string filename("waypoints.txt");
-		nh.param("waypoint_file", filename, filename);
+		nh.param("/waypoint_file", filename, filename);
 
 		// init
 		KCL_rosplan::RPSimpleMapServer sms(nh);

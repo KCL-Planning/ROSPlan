@@ -65,11 +65,21 @@ namespace KCL_rosplan {
 		nh.param("domain_path", domain_path, std::string("common/domain.pddl"));
 		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
 		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
+
+		bool dispatchCompletion = false;
+		bool dispatchConcurrent = false;
+
+		nh.param("dispatch_on_completion", dispatchCompletion, true);
+		nh.param("dispatch_concurrent", dispatchConcurrent, true);
 		environment.parseDomain(domain_path);
 	
 		// dispatch plan
 		plan_parser.reset();
 		plan_dispatcher.reset();
+
+		plan_dispatcher.dispatch_on_completion = dispatchCompletion;
+		plan_dispatcher.dispatch_concurrent = dispatchConcurrent;
+
 		bool planSucceeded = false;
 		mission_start_time = ros::WallTime::now().toSec();
 		while(!planSucceeded) {
