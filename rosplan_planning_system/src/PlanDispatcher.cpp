@@ -120,8 +120,13 @@ namespace KCL_rosplan {
 			// populate parameters
 			condition.attribute_name = (*cit)[0];
 			std::vector<diagnostic_msgs::KeyValue>::iterator pit;
+			int index = 0;
 			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++) {
-				condition.values.push_back(*pit);
+				diagnostic_msgs::KeyValue param;
+				param.key = domain_predicates[(*cit)[0]][index];
+				param.value = pit->value;
+				condition.values.push_back(param);
+				index++;
 			}
 
 			querySrv.request.knowledge.push_back(condition);
