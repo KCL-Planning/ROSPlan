@@ -1,4 +1,5 @@
 #include "rosplan_planning_system/PlanDispatcher.h"
+#include <map>
 
 namespace KCL_rosplan {
 
@@ -36,8 +37,8 @@ namespace KCL_rosplan {
 			if((unsigned int)currentMessage.action_id != current_action)
 				ROS_ERROR("KCL: (PS) Message action_id [%d] does not meet expected [%zu]", currentMessage.action_id, current_action);
 
+			// loop while waiting for dispatch time
 			if(!dispatch_on_completion) {
-				// loop while waiting for dispatch time
 				double wait_period = 10.0;
 				int wait_print = (int)(currentMessage.dispatch_time + planStart - ros::WallTime::now().toSec()) / wait_period;
 				while (ros::ok() && ros::WallTime::now().toSec() < currentMessage.dispatch_time + planStart) {
@@ -53,14 +54,18 @@ namespace KCL_rosplan {
 				}
 			}
 
+			if(!checkPreconditions(currentMessage)) {
+				ROS_INFO("KCL: (PS) Preconditions not achieved [%i, %s]", currentMessage.action_id, currentMessage.name.c_str());
+			}
+
 			// dispatch action
 			ROS_INFO("KCL: (PS) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
 			action_publisher.publish(currentMessage);
 			double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
 			if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
 
+			// wait for action to complete
 			if(dispatch_concurrent) {
-				// callback and sleep
 				int counter = 0;
 				while (ros::ok() && !action_completed[current_action]) {
 					ros::spinOnce();
@@ -86,6 +91,49 @@ namespace KCL_rosplan {
 			if(replan_requested) return false;
 		}
 		return true;
+	}
+
+	bool PlanDispatcher::checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg) {
+
+		// setup service call
+		ros::NodeHandle nh;
+		ros::ServiceClient queryKnowledgeClient = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
+		rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+
+		std::map<std::string, std::vector<std::vector<std::string> > >::iterator oit;
+		oit = environment.domain_operator_precondition_map.find(msg.name);
+		if(oit==environment.domain_operator_precondition_map.end()) return false;
+
+		// iterate through conditions
+		std::vector<std::vector<std::string> >::iterator cit = oit->second.begin();
+		for(; cit!=oit->second.end(); cit++) {
+			
+			rosplan_knowledge_msgs::KnowledgeItem condition;
+			
+			// set fact or function
+			std::map<std::string,std::vector<std::string> >::iterator dit = environment.domain_predicates.find((*cit)[0]);
+			if(dit!=environment.domain_predicates.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+
+			dit = environment.domain_functions.find((*cit)[0]);
+			if(dit!=environment.domain_functions.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+
+			// populate parameters
+			condition.attribute_name = (*cit)[0];
+			std::vector<diagnostic_msgs::KeyValue>::iterator pit;
+			for(pit = msg.parameters.begin(); pit!=msg.parameters.end(); pit++)
+				condition.values.push_back(*pit);
+
+			querySrv.request.knowledge.push_back(condition);
+		}
+
+		// check conditions in knowledge base
+		if (queryKnowledgeClient.call(querySrv)) {
+			
+			return querySrv.response.all_true;
+
+		} else {
+			ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/query_knowledge_base");
+		}
 	}
 
 	/*------------------*/

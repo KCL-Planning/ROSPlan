@@ -6,6 +6,61 @@
 
 namespace KCL_rosplan {
 
+
+	/*-----------------*/
+	/* knowledge query */
+	/*-----------------*/
+
+	bool KnowledgeBase::queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res) {
+
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator iit;
+		res.all_true = true;
+		for(iit = req.knowledge.begin(); iit!=req.knowledge.end(); iit++) {
+
+			bool present = false;
+			if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INSTANCE) {
+
+				// check if instance exists
+				std::vector<std::string>::iterator sit;
+				sit = find(domain_instances[iit->instance_type].begin(), domain_instances[iit->instance_type].end(), iit->instance_name);
+				present = (sit!=domain_instances[iit->instance_type].end());
+				
+			} else if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
+	
+				// check if function exists; TODO inequalities
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+				for(pit=domain_functions.begin(); pit!=domain_functions.end(); pit++) {
+					if(sameKnowledge(*iit, *pit)) {
+						present = true;
+						pit = domain_functions.end();
+					}
+				}
+
+			} else if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE) {
+
+				// check if fact is true
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+				for(pit=domain_attributes.begin(); pit!=domain_attributes.end(); pit++) {
+					if(sameKnowledge(*iit, *pit)) {
+						present = true;
+						pit = domain_attributes.end();
+					}
+				}
+			}
+
+			if(!present) {
+				res.all_true = false;
+				res.false_knowledge.push_back(*iit);
+			}
+		}
+
+		return true;
+	}
+
+	/*------------------*/
+	/* knowledge update */
+	/*------------------*/
+
 	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
 
 		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
@@ -269,12 +324,17 @@ int main(int argc, char **argv)
 	kb.domain_instances["robot"].push_back("kenny");
 	// END TESTING */
 
+	// query knowledge
+	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
+
+	// update knowledge
+	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+
 	// environment services
 	ros::ServiceServer instanceServer = n.advertiseService("/kcl_rosplan/get_instances", &KCL_rosplan::KnowledgeBase::getInstances, &kb);
 	ros::ServiceServer attributeServer = n.advertiseService("/kcl_rosplan/get_instance_attributes", &KCL_rosplan::KnowledgeBase::getInstanceAttr, &kb);
 	ros::ServiceServer domainServer = n.advertiseService("/kcl_rosplan/get_domain_attributes", &KCL_rosplan::KnowledgeBase::getDomainAttr, &kb);
 	ros::ServiceServer goalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
-	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
 
 	// filter services
 	kb.notificationPublisher = n.advertise<rosplan_knowledge_msgs::Notification>("/kcl_rosplan/notification", 10, true);
