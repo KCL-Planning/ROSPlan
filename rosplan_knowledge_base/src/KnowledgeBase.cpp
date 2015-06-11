@@ -102,6 +102,7 @@ namespace KCL_rosplan {
 							ROS_INFO("KCL: (KB) Removing domain attribute (%s)", pit->attribute_name.c_str());
 							checkFilters(*pit, false);
 							pit = domain_attributes.erase(pit);
+							if(pit!=domain_attributes.begin()) pit--;
 							if(pit==domain_attributes.end()) break;
 						}
 					}
@@ -112,6 +113,7 @@ namespace KCL_rosplan {
 							ROS_INFO("KCL: (KB) Removing instance attribute (%s, %s)", name.c_str(), pit->attribute_name.c_str());
 							checkFilters(*pit, false);
 							pit = instance_attributes[name].erase(pit);
+							if(pit!=instance_attributes[name].begin()) pit--;
 							if(pit==instance_attributes[name].end()) break;
 						}
 					}
@@ -130,6 +132,7 @@ namespace KCL_rosplan {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = domain_functions.erase(pit);
+					if(pit!=domain_functions.begin()) pit--;
 					if(pit==domain_functions.end()) break;
 				}
 			}
@@ -143,6 +146,7 @@ namespace KCL_rosplan {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = domain_attributes.erase(pit);
+					if(pit!=domain_attributes.begin()) pit--;
 					if(pit==domain_attributes.end()) break;
 				}
 			}
@@ -156,6 +160,7 @@ namespace KCL_rosplan {
 					ROS_INFO("KCL: (KB) Removing instance attribute (%s, %s)", msg.instance_name.c_str(), msg.attribute_name.c_str());
 					checkFilters(msg, false);
 					pit = instance_attributes[msg.instance_name].erase(pit);
+					if(pit!=instance_attributes[msg.instance_name].begin()) pit--;
 					if(pit==instance_attributes[msg.instance_name].end()) break;
 				}
 			}
