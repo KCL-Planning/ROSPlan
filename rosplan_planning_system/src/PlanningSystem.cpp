@@ -54,10 +54,22 @@ namespace KCL_rosplan {
 	/* Planning system loop */
 	/*----------------------*/
 
+	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
+		if(msg->data == "plan") {
+			if(!planning) {
+				std_srvs::Empty srv;
+				runPlanningServer(srv.request,srv.response);
+			}
+		}
+	}
+
 	/**
 	 * planning system service method; prepares planning; main loop.
 	 */
 	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+
+		planning = true;
+
 		ros::NodeHandle nh("~");
 
 		// setup environment
@@ -104,6 +116,8 @@ namespace KCL_rosplan {
 			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
 		}
 		ROS_INFO("KCL: (PS) Planning System Finished");
+
+		planning = false;
 
 		return planSucceeded;
 	}
@@ -188,6 +202,7 @@ namespace KCL_rosplan {
 		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
 		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
+		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);
 
 		// publishing "/kcl_rosplan/filter"; listening "/kcl_rosplan/notification"
 		planningSystem.filter_publisher = nh.advertise<rosplan_knowledge_msgs::Filter>("/kcl_rosplan/planning_filter", 10, true);
