@@ -48,7 +48,7 @@
 	</node>
 	<node name="rosplan_interface_localiser" pkg="rosplan_interface_turtlebot" type="rplocaliser" respawn="false" output="screen"></node>
 	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen"></node>
-	<node name="rosplan_interface_docker" pkg="rosplan_interface_turtlebot" type="rodocker" respawn="false" output="screen"></node>
+	<node name="rosplan_interface_docker" pkg="rosplan_interface_turtlebot" type="rpdocker" respawn="false" output="screen"></node>
 	<node name="rosplan_interface_talker" pkg="rosplan_interface_turtlebot" type="rptalker" respawn="false" output="screen"></node>
 
 </launch>
