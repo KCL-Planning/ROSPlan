@@ -94,6 +94,11 @@ namespace KCL_rosplan {
 			// run planner; generate a plan
 			runPlanner();
 
+			// publish plan
+			rosplan_dispatch_msgs::CompletePlan planMsg;
+			planMsg.plan = plan_parser.action_list;
+			plan_publisher.publish(planMsg);
+
 			// dispatch plan
 			plan_start_time = ros::WallTime::now().toSec();
 			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
@@ -180,6 +185,7 @@ namespace KCL_rosplan {
 		KCL_rosplan::PlanningSystem planningSystem;
 
 		// publishing "action_dispatch"; listening "action_feedback"
+		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
 		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
 

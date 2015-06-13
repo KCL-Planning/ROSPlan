@@ -4,6 +4,7 @@
  */
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
+#include "rosplan_dispatch_msgs/CompletePlan.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "std_srvs/Empty.h"
@@ -61,6 +62,7 @@ namespace KCL_rosplan {
 
 		/* ROS interface */
 		ros::Publisher filter_publisher;
+		ros::Publisher plan_publisher;
 	};
 
 } // close namespace
