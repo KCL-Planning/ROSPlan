@@ -8,6 +8,7 @@
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "std_srvs/Empty.h"
+#include "std_msgs/String.h"
 #include "PlanningEnvironment.h"
 #include "PDDLProblemGenerator.h"
 #include "PlanParser.h"
@@ -35,6 +36,7 @@ namespace KCL_rosplan {
 		std::string data_path;
 
 		/* planning */
+		bool planning;
 		double mission_start_time;
 		double plan_start_time;
 		bool runPlanner();
@@ -45,6 +47,7 @@ namespace KCL_rosplan {
 
 	public:
 
+		void commandCallback(const std_msgs::String::ConstPtr& msg);
 		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
 		/* knowledge */
