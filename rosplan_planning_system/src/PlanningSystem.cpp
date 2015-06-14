@@ -55,7 +55,7 @@ namespace KCL_rosplan {
 	/*----------------------*/
 
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
-		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
+		ROS_INFO("KCL: (PS) Command received: %s", msg->data.c_str());
 		if(msg->data == "plan") {
 			if(system_status == READY) {
 				system_status = PLANNING;
@@ -131,6 +131,8 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (PS) Planning System Finished");
 
 		system_status = READY;
+		statusMsg.data = "Ready";
+		state_publisher.publish(statusMsg);
 
 		return planSucceeded;
 	}
@@ -212,7 +214,7 @@ namespace KCL_rosplan {
 		KCL_rosplan::PlanningSystem planningSystem;
 
 		// publishing system_state
-		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/syatem_state", 5, true);
+		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
 
 		// publishing "action_dispatch", "plan"; listening "action_feedback"
 		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
@@ -226,6 +228,10 @@ namespace KCL_rosplan {
 
 		// start the planning service
 		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
+		planningSystem.system_status = KCL_rosplan::READY;
+		std_msgs::String statusMsg;
+		statusMsg.data = "Ready";
+		planningSystem.state_publisher.publish(statusMsg);
 		ROS_INFO("KCL: (PS) Ready to receive");
 		ros::spin();
 

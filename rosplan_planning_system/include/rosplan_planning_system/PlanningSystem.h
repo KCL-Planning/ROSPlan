@@ -20,7 +20,7 @@
 namespace KCL_rosplan {
 
 	/* status */
-	enum SytemStatus { READY, PLANNING, DISPATCHING };
+	enum SystemStatus { READY, PLANNING, DISPATCHING };
 
 	class PlanningSystem
 	{
@@ -49,7 +49,7 @@ namespace KCL_rosplan {
 
 	public:
 
-		SytemStatus system_status;
+		SystemStatus system_status;
 
 		void commandCallback(const std_msgs::String::ConstPtr& msg);
 		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);

@@ -287,13 +287,13 @@ namespace KCL_rosplan {
 
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<domain_attributes.size(); i++) {
-			if(0==req.predicate_name.compare(domain_attributes[i].attribute_name))
+			if(0==req.predicate_name.compare(domain_attributes[i].attribute_name) || ""==req.predicate_name)
 				res.attributes.push_back(domain_attributes[i]);
 		}
 
 		// ...or fetch the knowledgeItems of the correct function
 		for(size_t i=0; i<domain_functions.size(); i++) {
-			if(0==req.predicate_name.compare(domain_functions[i].attribute_name))
+			if(0==req.predicate_name.compare(domain_functions[i].attribute_name) || ""==req.predicate_name)
 				res.attributes.push_back(domain_functions[i]);
 		}
 
