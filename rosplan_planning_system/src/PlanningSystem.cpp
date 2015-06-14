@@ -57,9 +57,9 @@ namespace KCL_rosplan {
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
 		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
 		if(msg->data == "plan") {
-			if(!planning) {
+			if(system_status == READY) {
+				system_status = PLANNING;
 				ROS_INFO("KCL: (PS) Processing planning request");
-				planning = true;
 				std_srvs::Empty srv;
 				runPlanningServer(srv.request,srv.response);
 			}
@@ -71,7 +71,10 @@ namespace KCL_rosplan {
 	 */
 	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
-		planning = true;
+		std_msgs::String statusMsg;
+		statusMsg.data = "Planning";
+		state_publisher.publish(statusMsg);
+		system_status = PLANNING;
 
 		ros::NodeHandle nh("~");
 
@@ -100,6 +103,10 @@ namespace KCL_rosplan {
 		mission_start_time = ros::WallTime::now().toSec();
 		while(!planSucceeded) {
 
+			statusMsg.data = "Planning";
+			state_publisher.publish(statusMsg);
+			system_status = PLANNING;
+
 			// update the environment from the ontology
 			environment.update(nh);
 
@@ -115,12 +122,15 @@ namespace KCL_rosplan {
 			plan_publisher.publish(planMsg);
 
 			// dispatch plan
+			system_status = DISPATCHING;
+			statusMsg.data = "Dispatching";
+			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
 			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
 		}
 		ROS_INFO("KCL: (PS) Planning System Finished");
 
-		planning = false;
+		system_status = READY;
 
 		return planSucceeded;
 	}
@@ -201,7 +211,10 @@ namespace KCL_rosplan {
 
 		KCL_rosplan::PlanningSystem planningSystem;
 
-		// publishing "action_dispatch"; listening "action_feedback"
+		// publishing system_state
+		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/syatem_state", 5, true);
+
+		// publishing "action_dispatch", "plan"; listening "action_feedback"
 		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
 		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);

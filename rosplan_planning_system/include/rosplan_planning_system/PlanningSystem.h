@@ -19,6 +19,9 @@
 
 namespace KCL_rosplan {
 
+	/* status */
+	enum SytemStatus { READY, PLANNING, DISPATCHING };
+
 	class PlanningSystem
 	{
 	private:
@@ -36,7 +39,6 @@ namespace KCL_rosplan {
 		std::string data_path;
 
 		/* planning */
-		bool planning;
 		double mission_start_time;
 		double plan_start_time;
 		bool runPlanner();
@@ -46,6 +48,8 @@ namespace KCL_rosplan {
 		size_t planning_attempts;
 
 	public:
+
+		SytemStatus system_status;
 
 		void commandCallback(const std_msgs::String::ConstPtr& msg);
 		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
@@ -66,6 +70,7 @@ namespace KCL_rosplan {
 		/* ROS interface */
 		ros::Publisher filter_publisher;
 		ros::Publisher plan_publisher;
+		ros::Publisher state_publisher;
 	};
 
 } // close namespace
