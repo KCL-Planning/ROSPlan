@@ -123,7 +123,6 @@ namespace KCL_rosplan {
 
 		if(filterViolated) {
 			ROS_INFO("KCL: (KB) Filter violated, sending notification");	
-
 			rosplan_knowledge_msgs::Notification msg;
 			if(added) msg.function = rosplan_knowledge_msgs::Notification::ADDED;
 			else msg.function = rosplan_knowledge_msgs::Notification::REMOVED;

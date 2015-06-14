@@ -30,6 +30,7 @@ namespace KCL_rosplan {
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
+		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 	public:
 

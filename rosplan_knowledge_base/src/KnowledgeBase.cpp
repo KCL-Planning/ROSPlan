@@ -69,6 +69,8 @@ namespace KCL_rosplan {
 			addMissionGoal(req.knowledge);
 		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
 			removeKnowledge(req.knowledge);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
+			removeMissionGoal(req.knowledge);
 
 		res.success = true;
 		return true;
@@ -164,6 +166,30 @@ namespace KCL_rosplan {
 					if(pit==instance_attributes[msg.instance_name].end()) break;
 				}
 			}
+		}
+	}
+
+	/**
+	 * remove mission goal
+	 */
+	void KnowledgeBase::removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg) {
+
+		bool changed = false;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator git;
+		for(git=domain_goals.begin(); git!=domain_goals.end(); git++) {
+			if(containsKnowledge(msg, *git)) {
+				ROS_INFO("KCL: (KB) Removing goal (%s)", msg.attribute_name.c_str());
+				git = domain_goals.erase(git);
+				if(git!=domain_goals.begin()) git--;
+				if(git==domain_goals.end()) break;
+			}
+		}
+
+		if(changed) {			
+			rosplan_knowledge_msgs::Notification notMsg;
+			notMsg.function = rosplan_knowledge_msgs::Notification::REMOVED;
+			notMsg.knowledge_item = msg;
+			notificationPublisher.publish(notMsg);
 		}
 	}
 
