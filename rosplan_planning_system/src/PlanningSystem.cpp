@@ -55,8 +55,11 @@ namespace KCL_rosplan {
 	/*----------------------*/
 
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
+		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
 		if(msg->data == "plan") {
 			if(!planning) {
+				ROS_INFO("KCL: (PS) Processing planning request");
+				planning = true;
 				std_srvs::Empty srv;
 				runPlanningServer(srv.request,srv.response);
 			}
