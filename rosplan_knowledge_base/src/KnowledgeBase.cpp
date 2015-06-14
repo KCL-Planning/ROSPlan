@@ -278,11 +278,20 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (KB) Sending %s getInstances", req.type_name.c_str());
 	
 		// fetch the instances of the correct type
-		std::map<std::string,std::vector<std::string> >::iterator iit;
-		iit = domain_instances.find(req.type_name);
-		if(iit != domain_instances.end()) {
-			for(size_t j=0; j<iit->second.size(); j++)
-				res.instances.push_back(iit->second[j]);
+		if(""==req.type_name) {
+			std::map<std::string,std::vector<std::string> >::iterator iit;
+			iit = domain_instances.find(req.type_name);
+			for(iit=domain_instances.end(); iit != domain_instances.end(); iit++) {
+				for(size_t j=0; j<iit->second.size(); j++)
+					res.instances.push_back(iit->second[j]);
+			}
+		} else {
+			std::map<std::string,std::vector<std::string> >::iterator iit;
+			iit = domain_instances.find(req.type_name);
+			if(iit != domain_instances.end()) {
+				for(size_t j=0; j<iit->second.size(); j++)
+					res.instances.push_back(iit->second[j]);
+			}
 		}
 
 		return true;
