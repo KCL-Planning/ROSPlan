@@ -11,6 +11,7 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
+#include "std_srvs/Empty.h"
 
 #ifndef KCL_movebase
 #define KCL_movebase
@@ -32,6 +33,7 @@ namespace KCL_rosplan {
 		actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> action_client;
 		ros::Publisher action_feedback_pub;
 		ros::ServiceClient update_knowledge_client;
+		ros::ServiceClient clear_costmaps_client;
 
 	public:
 

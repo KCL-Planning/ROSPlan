@@ -10,6 +10,9 @@ namespace KCL_rosplan {
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
 
+		// costmap client
+		clear_costmaps_client = nh.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
+
 		// create the action client
 		ROS_INFO("KCL: (MoveBase) waiting for action server to start on %s", actionserver.c_str());
 		action_client.waitForServer();
@@ -101,6 +104,11 @@ namespace KCL_rosplan {
 					action_feedback_pub.publish(fb);
 
 				} else {
+
+					// clear costmaps
+					std_srvs::Empty emptySrv;
+					clear_costmaps_client.call(emptySrv);
+
 					// publish feedback (failed)
 					rosplan_dispatch_msgs::ActionFeedback fb;
 					fb.action_id = msg->action_id;
