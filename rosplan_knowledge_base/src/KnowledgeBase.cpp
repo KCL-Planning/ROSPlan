@@ -280,8 +280,7 @@ namespace KCL_rosplan {
 		// fetch the instances of the correct type
 		if(""==req.type_name) {
 			std::map<std::string,std::vector<std::string> >::iterator iit;
-			iit = domain_instances.find(req.type_name);
-			for(iit=domain_instances.end(); iit != domain_instances.end(); iit++) {
+			for(iit=domain_instances.begin(); iit != domain_instances.end(); iit++) {
 				for(size_t j=0; j<iit->second.size(); j++)
 					res.instances.push_back(iit->second[j]);
 			}
