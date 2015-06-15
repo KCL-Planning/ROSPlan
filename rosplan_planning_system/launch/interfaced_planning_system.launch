@@ -1,5 +1,7 @@
 <launch>
 
+	<param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
+
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
@@ -17,7 +19,6 @@
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
-	    <param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
 	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
 		<!-- to run the planner -->
 	    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />

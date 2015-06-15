@@ -17,6 +17,8 @@
 	<!-- ROSPlan -->
 	<!-- ******* -->
 
+	<param name="domain_path" value="$(find rosplan_planning_system)/common/domain_turtlebot.pddl" />
+
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
@@ -32,7 +34,6 @@
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 		<!-- directory for generated files -->
 		<param name="data_path" value="$(find rosplan_planning_system)/common/" />
-		<param name="domain_path" value="$(find rosplan_planning_system)/common/domain_turtlebot.pddl" />
 		<param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
 		<!-- to run the planner -->
 		<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />
@@ -43,6 +44,7 @@
 	<!-- ********** -->
 
 	<param name="waypoint_file" value="$(find rosplan_demos)/scripts/waypoint_file.txt" />
+
 	<node name="rosplan_roadmap_server" pkg="rosplan_interface_mapping" type="rpsimplemapServer" respawn="false" output="screen">
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	</node>

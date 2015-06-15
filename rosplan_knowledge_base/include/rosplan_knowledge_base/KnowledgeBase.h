@@ -13,6 +13,7 @@
 
 #include "KnowledgeComparitor.h"
 #include "PlanFilter.h"
+#include "DomainParser.h"
 
 #ifndef KCL_knowledgebase
 #define KCL_knowledgebase
@@ -30,6 +31,9 @@ namespace KCL_rosplan {
 		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 	public:
+
+		// domain
+		DomainParser domain_parser;
 
 		// plan and mission filter
 		PlanFilter plan_filter;

@@ -245,9 +245,7 @@ namespace KCL_rosplan {
 	/* fetching items */
 	/*----------------*/
 
-	bool KnowledgeBase::getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res)
-	{
-		ROS_INFO("KCL: (KB) Sending %s getInstances", req.type_name.c_str());
+	bool KnowledgeBase::getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res) {
 	
 		// fetch the instances of the correct type
 		if(""==req.type_name) {
@@ -268,9 +266,7 @@ namespace KCL_rosplan {
 		return true;
 	}
 
-	bool KnowledgeBase::getDomainAttr(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res)
-	{
-		ROS_INFO("KCL: (KB) Sending getDomainAttr response for %s", req.predicate_name.c_str());
+	bool KnowledgeBase::getDomainAttr(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res) {
 
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<domain_attributes.size(); i++) {
@@ -287,9 +283,7 @@ namespace KCL_rosplan {
 		return true;
 	}
 
-	bool KnowledgeBase::getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res)
-	{
-		ROS_INFO("KCL: (KB) Sending getCurrentGoals response");
+	bool KnowledgeBase::getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res) {
 
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<domain_goals.size(); i++) {
@@ -310,7 +304,12 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "KCL_knowledge_base");
 	ros::NodeHandle n;
 
+	// parameters
+	std::string domainPath;
+	n.param("/domain_path", domainPath, std::string("common/domain.pddl"));
+
 	KCL_rosplan::KnowledgeBase kb;
+	kb.domain_parser.parseDomain(domainPath);
 
 	// query knowledge
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
