@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
@@ -9,6 +10,9 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
+
+#include "KnowledgeComparitor.h"
+#include "PlanFilter.h"
 
 #ifndef KCL_knowledgebase
 #define KCL_knowledgebase
@@ -19,13 +23,6 @@ namespace KCL_rosplan {
 	{
 	private:
 
-		// checking if filters are violated
-		bool containsInstance(const rosplan_knowledge_msgs::KnowledgeItem &a, std::string &name);
-		bool sameKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
-		bool containsKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
-		bool isInFilter(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b);
-		void checkFilters(const rosplan_knowledge_msgs::KnowledgeItem &a, bool added);
-
 		// adding and removing items to and from the knowledge base
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
@@ -33,6 +30,9 @@ namespace KCL_rosplan {
 		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 	public:
+
+		// plan and mission filter
+		PlanFilter plan_filter;
 
 		// symbolic model
 		std::map<std::string, std::vector<std::string> > domain_instances;
@@ -46,21 +46,11 @@ namespace KCL_rosplan {
 
 		// fetching the symbolic model
 		bool getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
-		bool getInstanceAttr(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 		bool getDomainAttr(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 		bool getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 
 		// adding and removing items to and from the knowledge base
 		bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
-
-		// planning and mission filter
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> planningFilter;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> missionFilter;
-
-		// planning_system notification
-		void planningFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
-		void missionFilterCallback(const rosplan_knowledge_msgs::Filter::ConstPtr& msg);
-		ros::Publisher notificationPublisher;
 	};
 }
 #endif

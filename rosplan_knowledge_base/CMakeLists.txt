@@ -43,7 +43,8 @@ include_directories(
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
 	src/KnowledgeBase.cpp
-	src/PlanningFilter.cpp)
+	src/PlanFilter.cpp
+	src/KnowledgeComparitor.cpp)
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES})
