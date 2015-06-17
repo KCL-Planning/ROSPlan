@@ -368,6 +368,8 @@ int main(int argc, char **argv)
 	n.param("/domain_path", domainPath, std::string("common/domain.pddl"));
 
 	KCL_rosplan::KnowledgeBase kb;
+	ROS_INFO("KCL: (KB) Parsing domain");
+	kb.domain_parser.domain_parsed = false;
 	kb.domain_parser.parseDomain(domainPath);
 
 	// fetch domain info
