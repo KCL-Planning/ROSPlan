@@ -57,6 +57,7 @@ namespace KCL_rosplan {
 			if(predicates) {
 				for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
 					const VAL::pred_decl* predicate = *ci;
+
 					// predicate name
 					PDDLAtomicFormula pred;
 					pred.name = predicate->getPred()->symbol::getName();
@@ -64,11 +65,12 @@ namespace KCL_rosplan {
 
 					// predicate variables
 					for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
+
 						const VAL::var_symbol* var = *vi;
 						PDDLTypedSymbol sym;
 						sym.type = var->type->getName();
 						sym.name = var->pddl_typed_symbol::getName();
-						pred.vars.push_back(sym);
+						domain_predicates[pred.name].vars.push_back(sym);
 					}
 				}
 			}
@@ -89,7 +91,7 @@ namespace KCL_rosplan {
 						PDDLTypedSymbol sym;
 						sym.type = var->type->getName();
 						sym.name = var->pddl_typed_symbol::getName();
-						func.vars.push_back(sym);
+						domain_functions[func.name].vars.push_back(sym);
 					}
 				}
 			}
@@ -118,7 +120,7 @@ namespace KCL_rosplan {
 
 				// operator
 				PDDLOperator oper(d, c);
-				domain_operators.insert( std::pair<std::string,PDDLOperator>(name, oper) );
+				oper.name = name;
 
 				// parameters
 				for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
@@ -128,6 +130,8 @@ namespace KCL_rosplan {
 					sym.name = var->pddl_typed_symbol::getName();
 					oper.parameters.push_back(sym);
 				}
+
+				domain_operators.insert( std::pair<std::string,PDDLOperator>(name, oper) );
 			}
 		}
 		domainFile.close();

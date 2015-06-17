@@ -300,7 +300,6 @@ namespace KCL_rosplan {
 			
 			rosplan_knowledge_msgs::DomainFormula formula;
 			formula.name = iit->second.name;
-
 			for(size_t i=0; i<iit->second.vars.size(); i++) {
 				diagnostic_msgs::KeyValue param;
 				param.key = iit->second.vars[i].name;
