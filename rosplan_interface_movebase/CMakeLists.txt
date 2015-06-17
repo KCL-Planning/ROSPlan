@@ -43,6 +43,7 @@ include_directories(
 
 ## Declare cpp executables
 add_executable(rpmovebase src/RPMoveBase.cpp)
+add_dependencies(rpmovebase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(rpmovebase ${catkin_LIBRARIES} ${Boost_LIBRARIES})

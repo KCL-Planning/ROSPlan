@@ -76,7 +76,7 @@ namespace KCL_rosplan {
 
 					// remove old robot_at
 					rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
-					updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+					updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 					updatePredSrv.request.knowledge.attribute_name = "robot_at";
 					diagnostic_msgs::KeyValue pair;
