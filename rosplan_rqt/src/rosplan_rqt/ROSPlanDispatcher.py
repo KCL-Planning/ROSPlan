@@ -28,6 +28,7 @@ class PlanViewWidget(QWidget):
     _predicate_param_label_list = {}
 
     # model view
+    _type_list = []
     _goal_list = {}
     _fact_list = {}
 
@@ -59,8 +60,20 @@ class PlanViewWidget(QWidget):
         self._handle_goal_name_changed(0)
         self._handle_fact_name_changed(0)
 
+        # populate type combo box
+        rospy.wait_for_service('/kcl_rosplan/get_domain_types')
+        try:
+            type_client = rospy.ServiceProxy('/kcl_rosplan/get_domain_types', GetDomainTypeService)
+            resp = type_client()
+            for typename in resp.types:
+                self.typeComboBox.addItem(typename)
+                self._type_list.append(typename)
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+
         # connect components
         self.planButton.clicked[bool].connect(self._handle_plan_clicked)
+        self.addInstanceButton.clicked[bool].connect(self._handle_add_instance_clicked)
         self.removeGoalButton.clicked[bool].connect(self._handle_remove_goal_clicked)
         self.removeFactButton.clicked[bool].connect(self._handle_remove_fact_clicked)
         self.addGoalButton.clicked[bool].connect(self._handle_add_goal_clicked)
@@ -98,6 +111,7 @@ class PlanViewWidget(QWidget):
     updating goal and model view
     """
     def refresh_model(self):
+        # goals
         rospy.wait_for_service('/kcl_rosplan/get_current_goals')
         selected_list = []
         for item in self.goalView.selectedItems():
@@ -119,6 +133,7 @@ class PlanViewWidget(QWidget):
                     item.setSelected(True)
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+        # facts and functions
         rospy.wait_for_service('/kcl_rosplan/get_current_knowledge')
         selected_list = []
         for item in self.modelView.selectedItems():
@@ -140,6 +155,25 @@ class PlanViewWidget(QWidget):
                     item.setSelected(True)
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+        # instances
+        expanded_list = []
+        root = self.instanceView.invisibleRootItem()
+        child_count = root.childCount()
+        for i in range(child_count):
+            item = root.child(i)
+            if item.isExpanded():
+                expanded_list.append(item.text(0))
+        self.instanceView.clear()
+        for typename in self._type_list:
+            instance_client = rospy.ServiceProxy('/kcl_rosplan/get_current_instances', GetInstanceService)
+            resp = instance_client(typename)
+            item = QTreeWidgetItem(self.instanceView)
+            item.setText(0, typename)
+            for instancename in resp.instances:
+                inst = QTreeWidgetItem(item)
+                inst.setText(0, instancename)
+            if typename in expanded_list:
+                item.setExpanded(True)
 
     """
     updating plan view
@@ -209,8 +243,6 @@ class PlanViewWidget(QWidget):
                 predicates_client = rospy.ServiceProxy('/kcl_rosplan/get_current_instances', GetInstanceService)
                 resp = predicates_client(param_type)
                 parameters.append(resp.instances)
-                print param_type
-                print resp.instances
             except rospy.ServiceException, e:
                 print "Service call failed: %s"%e
         for element in product(*parameters):
@@ -273,6 +305,23 @@ class PlanViewWidget(QWidget):
         self._handle_remove_button_clicked(KnowledgeUpdateServiceRequest.REMOVE_KNOWLEDGE, self.modelView.selectedItems(), self._fact_list)
         self.refresh_model()
 
+    """
+    called when the add isntance button is clicked
+    """
+    def _handle_add_instance_clicked(self, checked):
+        if self.instanceNameEdit.text() == '':
+            return
+        rospy.wait_for_service('/kcl_rosplan/update_knowledge_base')
+        try:
+            update_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base', KnowledgeUpdateService)
+            knowledge = KnowledgeItem()
+            knowledge.knowledge_type = KnowledgeItem.INSTANCE
+            knowledge.instance_type = self.typeComboBox.currentText()
+            knowledge.instance_name = self.instanceNameEdit.text()
+            resp = update_client(KnowledgeUpdateServiceRequest.ADD_KNOWLEDGE, knowledge)
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+        self.refresh_model()
 
     """
     Qt methods
