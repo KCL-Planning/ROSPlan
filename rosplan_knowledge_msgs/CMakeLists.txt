@@ -14,10 +14,11 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-   FILES
-   Filter.msg
-   KnowledgeItem.msg
-   Notification.msg
+  FILES
+  Filter.msg
+  KnowledgeItem.msg
+  Notification.msg
+  DomainFormula.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -27,16 +28,19 @@ add_service_files(
   GetInstanceService.srv
   KnowledgeUpdateService.srv
   KnowledgeQueryService.srv
+  GetDomainAttributeService.srv
+  GetDomainTypeService.srv
+  GetDomainOperatorService.srv  
   CreatePRM.srv
   AddWaypoint.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-   DEPENDENCIES
-   geometry_msgs
-   diagnostic_msgs
-   std_msgs
+  DEPENDENCIES
+  geometry_msgs
+  diagnostic_msgs
+  std_msgs
 )
 
 ## Declare things to be passed to dependent projects
