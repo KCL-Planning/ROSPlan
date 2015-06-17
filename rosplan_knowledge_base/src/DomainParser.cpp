@@ -50,7 +50,6 @@ namespace KCL_rosplan {
 			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 				const VAL::pddl_type* type = *ci;
 				domain_types.push_back(type->getName());
-std::cout << type->getName() << std::endl;
 			}
 
 			// predicates
@@ -62,7 +61,7 @@ std::cout << type->getName() << std::endl;
 					PDDLAtomicFormula pred;
 					pred.name = predicate->getPred()->symbol::getName();
 					domain_predicates[pred.name] = pred;
-std::cout << pred.name << std::endl;
+
 					// predicate variables
 					for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
 						const VAL::var_symbol* var = *vi;
@@ -83,7 +82,7 @@ std::cout << pred.name << std::endl;
 					PDDLAtomicFormula func;
 					func.name = function->getFunction()->symbol::getName();
 					domain_functions[func.name] = func;
-std::cout << func.name << std::endl;
+
 					// parameters
 					for (VAL::var_symbol_list::const_iterator vi = function->getArgs()->begin(); vi != function->getArgs()->end(); vi++) {
 						const VAL::var_symbol* var = *vi;
@@ -102,7 +101,7 @@ std::cout << func.name << std::endl;
 
 				// name
 				std::string name = op->name->symbol::getName();
-std::cout << name << std::endl;
+
 				// condition
 				const VAL::goal* precondition = op->precondition;
 				PDDLGoalDescription c = parseCondition(precondition);

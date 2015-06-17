@@ -168,6 +168,12 @@ namespace KCL_rosplan {
 	{
 	private:
 
+		/* domain parsing methods */
+		PDDLGoalDescription parseCondition(const VAL::goal* goal);
+		PDDLFunction parseExpression(const VAL::expression* exp);
+
+	public:
+
 		/* domain information */
 		bool domain_parsed;
 		std::string domain_name;
@@ -175,12 +181,6 @@ namespace KCL_rosplan {
 		std::map< std::string, PDDLAtomicFormula> domain_predicates;
 		std::map< std::string, PDDLAtomicFormula> domain_functions;
 		std::map< std::string, PDDLOperator> domain_operators;
-
-		/* domain parsing methods */
-		PDDLGoalDescription parseCondition(const VAL::goal* goal);
-		PDDLFunction parseExpression(const VAL::expression* exp);
-
-	public:
 
 		/* domain parsing */		
 		void parseDomain(const std::string domainPath);

@@ -58,7 +58,7 @@ namespace KCL_rosplan {
 			ss << "    (";
 
 			// output function equality
-			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
+			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
 				ss << "= (";
 			};
 
@@ -87,7 +87,7 @@ namespace KCL_rosplan {
 			ss << ")";
 
 			// output function value
-			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION) {
+			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
 				ss << " " << environment.domain_attributes[i].function_value << ")";
 			};
 

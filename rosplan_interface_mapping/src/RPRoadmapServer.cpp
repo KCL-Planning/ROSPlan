@@ -149,7 +149,7 @@ namespace KCL_rosplan {
 			for (std::vector<std::string>::iterator nit=wit->second->neighbours.begin(); nit!=wit->second->neighbours.end(); ++nit) {
 				rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 				updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-				updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+				updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 				updatePredSrv.request.knowledge.attribute_name = "connected";
 				diagnostic_msgs::KeyValue pairFrom;
 				pairFrom.key = "from";
@@ -166,7 +166,7 @@ namespace KCL_rosplan {
 			for (std::vector<std::string>::iterator nit=wit->second->neighbours.begin(); nit!=wit->second->neighbours.end(); ++nit) {
 				rosplan_knowledge_msgs::KnowledgeUpdateService updateFuncSrv;
 				updateFuncSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-				updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+				updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
 				updateFuncSrv.request.knowledge.attribute_name = "distance";
 				diagnostic_msgs::KeyValue pairFrom;
 				pairFrom.key = "wp1";
@@ -199,8 +199,7 @@ namespace KCL_rosplan {
 
 		// robot start position (TODO remove)
 		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
-		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 		updateSrv.request.knowledge.attribute_name = "robot_at";
 		diagnostic_msgs::KeyValue pair1, pair2;
 		pair1.key = "v";
@@ -408,7 +407,7 @@ namespace KCL_rosplan {
 			// connected new->old
 			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 			updatePredSrv.request.knowledge.attribute_name = "connected";
 			diagnostic_msgs::KeyValue pairFrom;
 			pairFrom.key = "from";
@@ -435,7 +434,7 @@ namespace KCL_rosplan {
 			// distance new->old
 			rosplan_knowledge_msgs::KnowledgeUpdateService updateFuncSrv;
 			updateFuncSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-			updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION;
+			updateFuncSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
 			updateFuncSrv.request.knowledge.attribute_name = "distance";
 			diagnostic_msgs::KeyValue pairFrom;
 			pairFrom.key = "wp1";

@@ -186,10 +186,8 @@ namespace KCL_rosplan {
 		clear();
 
 		// setup service calls
-		ros::ServiceClient GetInstancesClient = nh.serviceClient<rosplan_knowledge_msgs::GetInstanceService>("/kcl_rosplan/get_instances");
-		ros::ServiceClient GetInstanceAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_instance_attributes");
-		ros::ServiceClient GetDomainAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_domain_attributes");
-		ros::ServiceClient GetDomainFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_domain_functions");
+		ros::ServiceClient GetInstancesClient = nh.serviceClient<rosplan_knowledge_msgs::GetInstanceService>("/kcl_rosplan/get_current_instances");
+		ros::ServiceClient GetDomainAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_knowledge");
 		ros::ServiceClient GetCurrentGoalsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_goals");
 
 		// for each type fetch instances
@@ -207,24 +205,6 @@ namespace KCL_rosplan {
 					name_map[KCL_rosplan::toLowerCase(name)] = name;
 					type_object_map[domain_types[t]].push_back(name);
 					object_type_map[name] = domain_types[t];
-
-					// get instance attributes
-					rosplan_knowledge_msgs::GetAttributeService instanceAttrSrv;
-					instanceAttrSrv.request.instance_name = name;
-					instanceAttrSrv.request.type_name = domain_types[t];
-					if (GetInstanceAttrsClient.call(instanceAttrSrv)) {
-						for(size_t j=0;j<instanceAttrSrv.response.attributes.size();j++) {
-							// if knowledge item corresponds to an attribute of this object, then store it.
-							rosplan_knowledge_msgs::KnowledgeItem attr = instanceAttrSrv.response.attributes[j];
-							if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INSTANCE_ATTRIBUTE
-									&& attr.instance_type.compare(domain_types[t])==0
-									&& attr.instance_name.compare(name)==0)
-								instance_attributes.push_back(attr);
-						}
-					} else {
-						ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_instance_attributes: %s %s",
-							instanceAttrSrv.request.type_name.c_str(), instanceAttrSrv.request.instance_name.c_str());
-					}
 				}
 			} else {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_instances: %s", instanceSrv.request.type_name.c_str());
@@ -240,7 +220,7 @@ namespace KCL_rosplan {
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
-					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE && attr.attribute_name.compare(ait->first)==0)
+					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT && attr.attribute_name.compare(ait->first)==0)
 						domain_attributes.push_back(attr);
 				}
 			} else {
@@ -253,7 +233,7 @@ namespace KCL_rosplan {
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
-					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_FUNCTION && attr.attribute_name.compare(ait->first)==0)
+					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION && attr.attribute_name.compare(ait->first)==0)
 						domain_attributes.push_back(attr);
 				}
 			} else {
@@ -266,7 +246,7 @@ namespace KCL_rosplan {
 		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
 				rosplan_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[j];
-				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE)
+				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT)
 					goal_attributes.push_back(attr);
 			}
 		} else {

@@ -1,0 +1,5 @@
+# Fetching the Domain (2/3):
+# Get all operators in the domain.
+
+---
+rosplan_knowledge_msgs/DomainFormula[] operators

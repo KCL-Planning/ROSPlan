@@ -1,8 +1,7 @@
-# A knowledge item used internally in ROSPlan
+# A knowledge item used to represent a piece of the world model in ROSPlan
 uint8 INSTANCE = 0
-uint8 DOMAIN_ATTRIBUTE = 1
-uint8 INSTANCE_ATTRIBUTE = 2
-uint8 DOMAIN_FUNCTION = 3
+uint8 FACT = 1
+uint8 FUNCTION = 2
 
 uint8 knowledge_type
 

@@ -181,26 +181,6 @@ namespace KCL_rosplan {
 				}
 				filter_attributes.push_back(filterAttribute);
 			}
-
-			// add non-PDDL knowledge items to action dispatch
-			std::map<std::string,std::vector<std::string> >::iterator pit;
-			for(size_t i=0; i<params.size(); i++) {
-				pit = environment.domain_predicates.find(ait->second[i]);
-				for(size_t j=0; j<environment.instance_attributes.size(); j++) {
-					// TODO have knowledge items be passed more cleanly in dispatch
-					if(0==environment.instance_attributes[j].instance_name.compare(params[i])
-							&& environment.instance_attributes[j].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE) {
-						for(size_t k=0; k<environment.instance_attributes[j].values.size(); k++) {
-							diagnostic_msgs::KeyValue pair;
-							pair.key = environment.instance_attributes[j].instance_name
-									+ "_" + environment.instance_attributes[j].attribute_name
-									 + "_" + environment.instance_attributes[j].values[k].key;
-							pair.value = environment.instance_attributes[j].values[k].value;
-							msg.parameters.push_back(pair);
-						}
-					}
-				}
-			}
 		} // end of operator
 	}
 
@@ -228,7 +208,7 @@ namespace KCL_rosplan {
 		// TODO only statics, not all preconditions.
 		for(size_t i=0; i<filter_attributes.size(); i++) {
 			rosplan_knowledge_msgs::KnowledgeItem filterItem;
-			filterItem.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::DOMAIN_ATTRIBUTE;
+			filterItem.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 			filterItem.attribute_name = filter_attributes[i][0];
 			filterItem.instance_type = environment.object_type_map[filter_attributes[i][1]];
 			filterItem.instance_name = filter_attributes[i][1];
