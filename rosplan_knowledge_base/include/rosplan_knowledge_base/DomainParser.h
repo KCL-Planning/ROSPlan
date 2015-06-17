@@ -169,7 +169,6 @@ namespace KCL_rosplan {
 	private:
 
 		/* domain information */
-		bool domain_parsed;
 		std::string domain_name;
 		std::vector<std::string> domain_types;
 		std::map< std::string, PDDLAtomicFormula> domain_predicates;
@@ -182,7 +181,8 @@ namespace KCL_rosplan {
 
 	public:
 
-		/* domain parsing */		
+		/* domain parsing */
+		bool domain_parsed;
 		void parseDomain(const std::string domainPath);
 	};
 }
