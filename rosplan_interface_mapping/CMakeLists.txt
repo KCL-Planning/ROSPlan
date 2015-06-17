@@ -53,7 +53,10 @@ set(RPSIMPLEMAP_SOURCES
 
 ## Declare cpp executables
 add_executable(rproadmapServer ${RPROADMAP_SOURCES})
+add_dependencies(rproadmapServer ${catkin_EXPORTED_TARGETS})
+
 add_executable(rpsimplemapServer ${RPSIMPLEMAP_SOURCES})
+add_dependencies(rpsimplemapServer ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(rproadmapServer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
