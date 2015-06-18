@@ -20,7 +20,7 @@
 namespace KCL_rosplan {
 
 	/* status */
-	enum SystemStatus { READY, PLANNING, DISPATCHING };
+	enum SystemStatus { READY, PLANNING, DISPATCHING, PAUSED };
 
 	class PlanningSystem
 	{

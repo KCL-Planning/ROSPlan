@@ -36,6 +36,20 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pauseButton">
+       <property name="text">
+        <string>Pause/Resume</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="label">
        <property name="text">
         <string>System Status</string>
