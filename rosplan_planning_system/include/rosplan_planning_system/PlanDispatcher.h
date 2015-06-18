@@ -27,7 +27,6 @@ namespace KCL_rosplan
 		/* dispatch state */
 		std::map<int,bool> action_received;
 		std::map<int,bool> action_completed;
-		bool dispatch_paused;
 
 	public:
 
@@ -37,6 +36,8 @@ namespace KCL_rosplan
 		/* dispatch modes */
 		bool dispatch_on_completion;
 		bool dispatch_concurrent;
+		bool dispatch_paused;
+		bool plan_cancelled;
 
 		int getCurrentAction();
 		void reset();

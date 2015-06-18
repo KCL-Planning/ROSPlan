@@ -73,6 +73,8 @@ class PlanViewWidget(QWidget):
 
         # connect components
         self.planButton.clicked[bool].connect(self._handle_plan_clicked)
+        self.pauseButton.clicked[bool].connect(self._handle_pause_clicked)
+        self.cancelButton.clicked[bool].connect(self._handle_cancel_clicked)
         self.addInstanceButton.clicked[bool].connect(self._handle_add_instance_clicked)
         self.removeGoalButton.clicked[bool].connect(self._handle_remove_goal_clicked)
         self.removeFactButton.clicked[bool].connect(self._handle_remove_fact_clicked)
@@ -213,6 +215,22 @@ class PlanViewWidget(QWidget):
         self._status_list.clear()
         plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
         plan_pub.publish('plan')
+
+    """
+    called when the plan button is clicked; sends a planning request
+    """
+    def _handle_pause_clicked(self, checked):
+        self._status_list.clear()
+        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
+        plan_pub.publish('pause')
+
+    """
+    called when the plan button is clicked; sends a planning request
+    """
+    def _handle_cancel_clicked(self, checked):
+        self._status_list.clear()
+        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
+        plan_pub.publish('cancel')
 
     """
     callback for complete_plan

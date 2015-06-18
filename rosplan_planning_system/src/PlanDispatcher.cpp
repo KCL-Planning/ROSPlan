@@ -8,11 +8,12 @@ namespace KCL_rosplan {
 	}
 
 	void PlanDispatcher::reset() {
+		replan_requested = false;
 		dispatch_paused = false;
+		plan_cancelled = false;
 		current_action = 0;
 		action_received.clear();
 		action_completed.clear();
-		replan_requested = false;
 	}
 
 	/*-----------------*/
@@ -31,6 +32,17 @@ namespace KCL_rosplan {
 		replan_requested = false;
 		bool repeatAction = false;
 		while (ros::ok() && actionList.size() > current_action) {
+
+			// loop while dispatch is paused
+			while (ros::ok() && dispatch_paused) {
+				ros::spinOnce();
+				loop_rate.sleep();
+			}
+
+			// cancel plan
+			if(plan_cancelled) {
+				break;
+			}
 
 			// get next action
 			rosplan_dispatch_msgs::ActionDispatch currentMessage = actionList[current_action];
