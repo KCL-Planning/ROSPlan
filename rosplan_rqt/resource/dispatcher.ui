@@ -107,12 +107,12 @@
       </column>
       <column>
        <property name="text">
-        <string>action_name</string>
+        <string>dispatch_time</string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>dispatch_time</string>
+        <string>action_name</string>
        </property>
       </column>
       <column>

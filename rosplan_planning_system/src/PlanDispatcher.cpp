@@ -56,6 +56,13 @@ namespace KCL_rosplan {
 
 			if(!checkPreconditions(currentMessage)) {
 				ROS_INFO("KCL: (PS) Preconditions not achieved [%i, %s]", currentMessage.action_id, currentMessage.name.c_str());
+
+				// publish feedback (precondition false)
+				rosplan_dispatch_msgs::ActionFeedback fb;
+				fb.action_id = currentMessage.action_id;
+				fb.status = "precondition false";
+				action_feedback_pub.publish(fb);
+
 				replan_requested = true;
 			} else {
 

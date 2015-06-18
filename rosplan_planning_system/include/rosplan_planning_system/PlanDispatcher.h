@@ -51,6 +51,7 @@ namespace KCL_rosplan
 
 		/* ROS interface */
 		ros::Publisher action_publisher;
+		ros::Publisher action_feedback_pub;
 	};
 }
 

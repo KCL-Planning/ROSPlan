@@ -216,9 +216,10 @@ namespace KCL_rosplan {
 		// publishing system_state
 		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
 
-		// publishing "action_dispatch", "plan"; listening "action_feedback"
+		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
 		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
 		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
+		planningSystem.plan_dispatcher.action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
 		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);
 

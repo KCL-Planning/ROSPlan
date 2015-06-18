@@ -21,7 +21,7 @@ from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWi
 class PlanViewWidget(QWidget):
 
     # plan view
-    _column_names = ['action_id', 'action_name', 'dispatch_time', 'duration', 'status']
+    _column_names = ['action_id', 'dispatch_time', 'action_name', 'duration', 'status']
     _action_list = []
     _status_list = {}
     _predicate_param_type_list = {}
@@ -190,10 +190,10 @@ class PlanViewWidget(QWidget):
         for action in self._action_list:
             item = QTreeWidgetItem(self.planView)
             item.setText(self._column_index['action_id'], str(action.action_id))
-            item.setText(self._column_index['action_name'], action.name)
             item.setText(self._column_index['dispatch_time'], str(action.dispatch_time))
             item.setText(self._column_index['duration'], str(action.duration))
             item.setText(self._column_index['status'], self._status_list.get(str(action.action_id),"-"))
+            action_name = '(' + action.name
             for keyval in action.parameters:
                 param = QTreeWidgetItem(item)
                 param.setText(self._column_index['action_id'], '')
@@ -201,6 +201,8 @@ class PlanViewWidget(QWidget):
                 param.setText(self._column_index['dispatch_time'], '')
                 param.setText(self._column_index['duration'], '')
                 param.setText(self._column_index['status'], '')
+                action_name = action_name + ' ' + keyval.value
+            item.setText(self._column_index['action_name'], action_name +')')
             if str(action.action_id) in expanded_list:
                 item.setExpanded(True)
 
