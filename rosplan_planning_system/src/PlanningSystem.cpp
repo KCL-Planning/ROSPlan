@@ -105,7 +105,7 @@ namespace KCL_rosplan {
 	 */
 	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
-		if(system_status != READY) return;
+		if(system_status != READY) return false;
 
 		system_status = PLANNING;
 		std_msgs::String statusMsg;
