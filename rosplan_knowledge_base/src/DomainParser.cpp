@@ -297,4 +297,59 @@ namespace KCL_rosplan {
 		}
 	}
 
+	/*--------------------*/
+	/* condition checking */
+	/*--------------------*/
+
+	bool PDDLGDAtomic::checkCondition(
+			std::map<std::string,PDDLTypedSymbol> &parameters,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
+std::cout << "Atomic condition called" << std::endl;
+		return false;		
+	}
+
+	bool PDDLGDFunction::checkCondition(
+			std::map<std::string,PDDLTypedSymbol> &parameters,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
+std::cout << "Function condition called" << std::endl;
+		return false;
+	}
+
+	bool PDDLGDConjunction::checkCondition(
+			std::map<std::string,PDDLTypedSymbol> &parameters,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
+std::cout << "Conjunction condition called" << std::endl;
+
+		std::vector<PDDLGoalDescription>::iterator git = goal_conditions.begin();
+		switch(operand) {
+			case AND:
+				while(git!=goal_conditions.end()) {
+					if(!git->checkCondition(parameters, modelFacts, modelFunctions)) return false;
+					git++;
+				}
+				return true;
+			case OR:
+				while(git!=goal_conditions.end()) {
+					if(git->checkCondition(parameters, modelFacts, modelFunctions)) return true;
+					git++;
+				}
+				return false;
+			case NOT:
+				if(git!=goal_conditions.end())
+					return (!git->checkCondition(parameters, modelFacts, modelFunctions));
+				return false;
+		}
+		return false;
+	}
+
+	bool PDDLGDTimed::checkCondition(
+			std::map<std::string,PDDLTypedSymbol> &parameters,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
+		return false;
+	}
+
 } // close namespace

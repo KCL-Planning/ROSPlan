@@ -125,7 +125,7 @@ namespace KCL_rosplan {
 
 		nh.param("dispatch_on_completion", dispatchCompletion, true);
 		nh.param("dispatch_concurrent", dispatchConcurrent, false);
-		environment.parseDomain(domain_path);
+		environment.domain_parser.parseDomain(domain_path);
 
 		// dispatch plan
 		plan_parser.reset();

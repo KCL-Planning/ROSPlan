@@ -4,7 +4,8 @@
 #include <fstream>
 
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
-#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
+#include "rosplan_knowledge_msgs/QueryKnowledgeService.h"
+#include "rosplan_knowledge_msgs/QueryConditionService.h"
 
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
 #include "rosplan_knowledge_msgs/GetDomainAttributeService.h"
@@ -58,7 +59,9 @@ namespace KCL_rosplan {
 		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
 
 		// checking the model
-		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
+		bool queryKnowledge(rosplan_knowledge_msgs::QueryKnowledgeService::Request  &req, rosplan_knowledge_msgs::QueryKnowledgeService::Response &res);
+		bool queryCondition(rosplan_knowledge_msgs::QueryConditionService::Request  &req, rosplan_knowledge_msgs::QueryConditionService::Response &res);
+		bool recursivelyQueryCondition(PDDLGoalDescription &condition, std::map<std::string,PDDLTypedSymbol> &parameters);
 
 		// fetching the model
 		bool getCurrentInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);

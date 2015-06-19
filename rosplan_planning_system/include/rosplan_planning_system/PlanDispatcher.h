@@ -1,15 +1,16 @@
 /**
- * This file dispatches a plan. TODO document
+ * This file dispatches a plan.
  */
+#ifndef KCL_dispatcher
+#define KCL_dispatcher
+
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
+#include "rosplan_knowledge_msgs/QueryConditionService.h"
 #include "PlanningEnvironment.h"
-
-#ifndef KCL_dispatcher
-#define KCL_dispatcher
+#include <map>
 
 namespace KCL_rosplan
 {

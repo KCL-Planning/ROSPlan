@@ -1,4 +1,4 @@
-# symbolic model query (1/1)
+# symbolic model query (1/2)
 
 rosplan_knowledge_msgs/KnowledgeItem[] knowledge
 ---

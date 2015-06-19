@@ -2,7 +2,16 @@
  * This file parses the output of popf and generates a list of ActionDispatch messages.
  * TODO Document
  */
+
+#ifndef KCL_planparser
+#define KCL_planparser
+
+#include <sstream>
+#include <iostream>
+#include <fstream>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
@@ -36,3 +45,5 @@ namespace KCL_rosplan {
 
 	};
 } // close namespace
+
+#endif

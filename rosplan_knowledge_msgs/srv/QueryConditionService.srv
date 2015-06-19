@@ -1,0 +1,6 @@
+# symbolic model query (2/2)
+
+string operator_name
+diagnostic_msgs/KeyValue[] parameters
+---
+bool precondition_true

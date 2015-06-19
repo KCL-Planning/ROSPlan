@@ -1,10 +1,4 @@
 #include "rosplan_planning_system/PlanParser.h"
-#include <sstream>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <algorithm>
 
 namespace KCL_rosplan {
 
@@ -147,25 +141,30 @@ namespace KCL_rosplan {
 	void PlanParser::processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params, PlanningEnvironment &environment) {
 
 		// find the correct PDDL operator definition
-		std::map<std::string,std::vector<std::string> >::iterator ait;
-		ait = environment.domain_operators.find(msg.name);
-		if(ait != environment.domain_operators.end()) {
+		std::map< std::string, PDDLOperator>::iterator ait;
+		ait = environment.domain_parser.domain_operators.find(msg.name);
+		if(ait != environment.domain_parser.domain_operators.end()) {
 
 			// add the PDDL parameters to the action dispatch
-			for(size_t i=0; i<ait->second.size(); i++) {
+			std::vector<PDDLTypedSymbol>::iterator pit;
+			int paramIter = 0;
+			for(pit=ait->second.parameters.begin(); pit!=ait->second.parameters.end(); pit++) {
 				diagnostic_msgs::KeyValue pair;
-				pair.key = ait->second[i];
-				pair.value = params[i];
+				pair.key = pit->name;
+				pair.value = params[paramIter];
 				msg.parameters.push_back(pair);
 
 				// prepare object existence for the knowledge filter
 				bool add = true;
 				for(size_t j=0; j<filter_objects.size(); j++)
-					if(0==filter_objects[j].compare(params[i])) add = false;
-				if(add) filter_objects.push_back(params[i]);
+					if(0==filter_objects[j].compare(params[paramIter])) add = false;
+				if(add) filter_objects.push_back(params[paramIter]);
+				paramIter++;
 			}
 
-			// prepare object attributes for the knowledge filter
+			// TODO prepare attributes for the knowledge filter
+			PDDLGoalDescription condition = ait->second.condition;
+			/*
 			for(size_t i=0; i<environment.domain_operator_precondition_map[msg.name].size(); i++) {
 				std::vector<std::string> filterAttribute;
 				std::vector<std::string> precondition = environment.domain_operator_precondition_map[msg.name][i];
@@ -181,6 +180,7 @@ namespace KCL_rosplan {
 				}
 				filter_attributes.push_back(filterAttribute);
 			}
+			*/
 		} // end of operator
 	}
 
