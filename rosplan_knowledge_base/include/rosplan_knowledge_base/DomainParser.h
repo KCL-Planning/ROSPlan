@@ -1,3 +1,6 @@
+#ifndef KCL_domainparser
+#define KCL_domainparser
+
 #include <ros/ros.h>
 #include <vector>
 #include <iostream>
@@ -6,8 +9,7 @@
 #include "../../src/VALfiles/ptree.h"
 #include "FlexLexer.h"
 
-#ifndef KCL_domainparser
-#define KCL_domainparser
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 extern int yyparse();
 extern int yydebug;
@@ -99,6 +101,13 @@ namespace KCL_rosplan {
 	{
 		PDDLGoalDescription(PDDLGoalDescriptionType t) : type(t) {}
 		PDDLGoalDescriptionType type;
+
+		virtual bool checkCondition(
+				std::map<std::string,PDDLTypedSymbol> &parameters,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
+			return false;
+		}
 	};
 
 	struct PDDLGDAtomic : PDDLGoalDescription
@@ -106,6 +115,11 @@ namespace KCL_rosplan {
 		PDDLGDAtomic(PDDLAtomicFormula g)
 				: PDDLGoalDescription(GD_ATOMIC), goal_condition(g) {}
 		PDDLAtomicFormula goal_condition;
+
+		virtual bool checkCondition(
+				std::map<std::string,PDDLTypedSymbol> &parameters,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions);
 	};
 
 	struct PDDLGDTimed : PDDLGoalDescription
@@ -114,6 +128,11 @@ namespace KCL_rosplan {
 				: PDDLGoalDescription(GD_TIMED), time_specifier(ts) {}
 		PDDLTimeSpecifier time_specifier;
 		std::vector<PDDLGoalDescription> goal_conditions;
+
+		virtual bool checkCondition(
+				std::map<std::string,PDDLTypedSymbol> &parameters,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions);
 	};
 
 	struct PDDLGDConjunction : PDDLGoalDescription
@@ -122,6 +141,11 @@ namespace KCL_rosplan {
 				: PDDLGoalDescription(GD_CONJUNCTION), operand(o) {}
 		PDDLGoalDescriptionOperand operand;
 		std::vector<PDDLGoalDescription> goal_conditions;
+
+		virtual bool checkCondition(
+				std::map<std::string,PDDLTypedSymbol> &parameters,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions);
 	};
 
 	struct PDDLGDFunction : PDDLGoalDescription
@@ -131,6 +155,11 @@ namespace KCL_rosplan {
 		PDDLFunctionInequality function_inequality;
 		PDDLFunction first;
 		PDDLFunction second;
+
+		virtual bool checkCondition(
+				std::map<std::string,PDDLTypedSymbol> &parameters,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFacts,
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions);
 	};
 
 	/*-----------*/

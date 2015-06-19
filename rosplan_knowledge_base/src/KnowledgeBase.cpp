@@ -6,7 +6,10 @@ namespace KCL_rosplan {
 	/* knowledge query */
 	/*-----------------*/
 
-	bool KnowledgeBase::queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res) {
+	/*
+	 * @returns: true if the requested list of facts and functions exists in the model
+	 */
+	bool KnowledgeBase::queryKnowledge(rosplan_knowledge_msgs::QueryKnowledgeService::Request  &req, rosplan_knowledge_msgs::QueryKnowledgeService::Response &res) {
 
 		res.all_true = true;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator iit;
@@ -49,6 +52,49 @@ namespace KCL_rosplan {
 		}
 
 		return true;
+	}
+
+	/*
+	 * @returns: true if the requested condition is true in the model
+	 */
+	bool KnowledgeBase::queryCondition(rosplan_knowledge_msgs::QueryConditionService::Request  &req, rosplan_knowledge_msgs::QueryConditionService::Response &res) {
+
+		// fetch operator precondition
+		std::map<std::string, PDDLOperator>::iterator oit;
+		oit = domain_parser.domain_operators.find(req.operator_name);
+		if(oit==domain_parser.domain_operators.end()) return false;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator iit;
+
+		res.precondition_true = false;
+
+		// bind parameters
+		PDDLGoalDescription condition = oit->second.condition;
+		std::map<std::string,PDDLTypedSymbol> parameters;
+		int paramCount = 0;
+		for(size_t i=0; i<req.parameters.size(); i++) {
+		for(size_t j=0; j<oit->second.parameters.size(); j++) {
+			if(req.parameters[i].key == oit->second.parameters[j].name) {
+				PDDLTypedSymbol sym;
+				sym.type = oit->second.parameters[j].type;
+				sym.name = req.parameters[i].value;
+				parameters[req.parameters[i].key] = sym;
+				paramCount++;
+			}
+		}};
+		if(paramCount!=oit->second.parameters.size())
+			return false;
+
+		// check condition
+		return recursivelyQueryCondition(condition, parameters);
+	}
+
+	/*
+	 * check PDDL goal condition recursively
+	 */
+	bool KnowledgeBase::recursivelyQueryCondition(PDDLGoalDescription &condition, std::map<std::string,PDDLTypedSymbol> &parameters) {
+
+		return condition.checkCondition(parameters, model_facts, model_functions);
+
 	}
 
 	/*------------------*/
@@ -378,7 +424,8 @@ int main(int argc, char **argv)
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
 
 	// query knowledge
-	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
+	ros::ServiceServer queryKnowledgeServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
+	ros::ServiceServer queryConditionServer = n.advertiseService("/kcl_rosplan/query_condition", &KCL_rosplan::KnowledgeBase::queryCondition, &kb);
 
 	// update knowledge
 	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);

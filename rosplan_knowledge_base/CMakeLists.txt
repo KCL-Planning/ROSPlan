@@ -25,9 +25,9 @@ find_package(Boost REQUIRED COMPONENTS
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  LIBRARIES ${PROJECT_NAME}
+  INCLUDE_DIRS include
+  LIBRARIES domainParser
   CATKIN_DEPENDS roscpp rospy std_msgs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
-  DEPENDS
 )
 
 ###########
@@ -74,22 +74,23 @@ set(VAL_SOURCES
 	src/VALfiles/LaTeXSupport.cpp
 	src/VALfiles/Utils.cpp)
 
+## pddl sources
+set(PDDL_SOURCES
+	src/DomainParser.cpp)
+
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
 	src/KnowledgeBase.cpp
 	src/PlanFilter.cpp
-	src/KnowledgeComparitor.cpp
-	src/DomainParser.cpp)
+	src/KnowledgeComparitor.cpp)
+
+## Declare cpp LIBRARIES
+add_library(domainParser ${PDDL_SOURCES} ${VAL_SOURCES})
+target_link_libraries(domainParser ${catkin_LIBRARIES})
 
 ## Declare cpp executables
-add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})
+add_executable(knowledgeBase ${KNOWLEDGE_SOURCES})
 add_dependencies(knowledgeBase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
-target_link_libraries(knowledgeBase ${catkin_LIBRARIES})
-
-##########
-## Test ##
-##########
-
-# please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
+target_link_libraries(knowledgeBase ${catkin_LIBRARIES} domainParser)

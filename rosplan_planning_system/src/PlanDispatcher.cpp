@@ -1,5 +1,4 @@
 #include "rosplan_planning_system/PlanDispatcher.h"
-#include <map>
 
 namespace KCL_rosplan {
 
@@ -114,66 +113,31 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+	/*
+	 * return: true if preconditions of an action are true
+	 */
 	bool PlanDispatcher::checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg) {
 
 		// setup service call
 		ros::NodeHandle nh;
-		ros::ServiceClient queryKnowledgeClient = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+		ros::ServiceClient queryKnowledgeClient = nh.serviceClient<rosplan_knowledge_msgs::QueryConditionService>("/kcl_rosplan/query_condition");
+		rosplan_knowledge_msgs::QueryConditionService querySrv;
 
-		std::map<std::string, std::vector<std::vector<std::string> > >::iterator oit;
-		oit = environment.domain_operator_precondition_map.find(msg.name);
-		if(oit==environment.domain_operator_precondition_map.end()) return false;
+		// check if operator is part of domain
+		std::map<std::string, PDDLOperator>::iterator oit;
+		oit = environment.domain_parser.domain_operators.find(msg.name);
+		if(oit==environment.domain_parser.domain_operators.end()) return false;
 
-		// iterate through conditions
-		std::vector<std::vector<std::string> >::iterator cit = oit->second.begin();
-		for(; cit!=oit->second.end(); cit++) {
-			
-			rosplan_knowledge_msgs::KnowledgeItem condition;
-			
-			// set fact or function
-			std::map<std::string,std::vector<std::string> >::iterator dit = environment.domain_predicates.find((*cit)[0]);
-			if(dit!=environment.domain_predicates.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-
-			dit = environment.domain_functions.find((*cit)[0]);
-			if(dit!=environment.domain_functions.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
-
-			// populate parameters
-			condition.attribute_name = (*cit)[0];
-			int index = 1;
-			std::vector<std::string>::iterator pit;
-			for(pit=environment.domain_predicates[condition.attribute_name].begin();
-					pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
-				// set parameter label to predicate label
-				diagnostic_msgs::KeyValue param;
-				param.key = *pit;
-				// find label as it is in domain operator
-				std::string conditionKey = (*cit)[index];
-				index++;
-				// set value
-				std::vector<diagnostic_msgs::KeyValue>::iterator opit;
-				for(opit = msg.parameters.begin(); opit!=msg.parameters.end(); opit++) {
-					if(0==opit->key.compare(conditionKey)) {
-						param.value = opit->value;
-					}
-				}
-				condition.values.push_back(param);
-			}
-			querySrv.request.knowledge.push_back(condition);
-		}
+		// make query
+		querySrv.request.operator_name = msg.name;
+		querySrv.request.parameters = msg.parameters;
 
 		// check conditions in knowledge base
 		if (queryKnowledgeClient.call(querySrv)) {
-			
-			if(!querySrv.response.all_true) {
-				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kit;
-				for(kit=querySrv.response.false_knowledge.begin(); kit != querySrv.response.false_knowledge.end(); kit++)
-					ROS_INFO("KCL: (PS)        [%s]", kit->attribute_name.c_str());
-			}
-			return querySrv.response.all_true;
-
+			return querySrv.response.precondition_true;
 		} else {
 			ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/query_knowledge_base");
+			return false;
 		}
 	}
 

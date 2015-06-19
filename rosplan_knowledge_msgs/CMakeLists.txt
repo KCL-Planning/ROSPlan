@@ -27,7 +27,8 @@ add_service_files(
   GetAttributeService.srv
   GetInstanceService.srv
   KnowledgeUpdateService.srv
-  KnowledgeQueryService.srv
+  QueryKnowledgeService.srv
+  QueryConditionService.srv
   GetDomainAttributeService.srv
   GetDomainTypeService.srv
   GetDomainOperatorService.srv  
