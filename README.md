@@ -22,8 +22,11 @@ cd ROSPlan/
 ```
 Get the code:
 ```sh
-git clone https://github.com/clearpathrobotics/occupancy_grid_utils src/
-git clone https://github.com/KCL-Planning/ROSPlan.git src/
+cd src/
+git clone https://github.com/clearpathrobotics/occupancy_grid_utils
+git clone https://github.com/KCL-Planning/rosplan
+# optionally get the turtlebot interface
+git clone https://github.com/KCL-Planning/rosplan_interface_turtlebot2
 ```
 Compile everything:
 ```sh
