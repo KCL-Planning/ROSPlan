@@ -1,6 +1,6 @@
 #!/bin/bash
 rosservice call /kcl_rosplan/roadmap_server/create_prm "{nr_waypoints: 10, min_distance: 0.3, casting_distance: 2.0, connecting_distance: 8.0, occupancy_threshold: 10, total_attempts: 10}";
-rosservice call /kcl_rosplan/update_knowledge_base "update_type: 1
+rosservice call /kcl_rosplan/update_knowledge_base "update_type: 0
 knowledge:
   knowledge_type: 0
   instance_type: 'robot'
