@@ -4,8 +4,8 @@
 namespace KCL_rosplan {
 
 	/* constructor */
-	RPSimpleMapServer::RPSimpleMapServer(ros::NodeHandle &nh)
-	 : message_store(nh) {
+	RPSimpleMapServer::RPSimpleMapServer(ros::NodeHandle &nh, std::string frame)
+	 : message_store(nh), fixed_frame(frame) {
 
 		// config
 		std::string dataPath("common/");
@@ -121,7 +121,7 @@ namespace KCL_rosplan {
 
 			//data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "map";
+			pose.header.frame_id = fixed_frame;
 			pose.pose.position.x = wit->second->real_x;
 			pose.pose.position.y = wit->second->real_y;
 			pose.pose.position.z = 0.0;
@@ -186,7 +186,7 @@ namespace KCL_rosplan {
 
 			// data
 			geometry_msgs::PoseStamped pose;
-			pose.header.frame_id = "map";
+			pose.header.frame_id = fixed_frame;
 			parsePose(pose, line);
 			std::string id(message_store.insertNamed(name, pose));
 			db_name_map[name] = id;
@@ -215,10 +215,12 @@ namespace KCL_rosplan {
 
 		// params
 		std::string filename("waypoints.txt");
+		std::string fixed_frame("world");
 		nh.param("/waypoint_file", filename, filename);
+		nh.param("fixed_frame", fixed_frame, fixed_frame);
 
 		// init
-		KCL_rosplan::RPSimpleMapServer sms(nh);
+		KCL_rosplan::RPSimpleMapServer sms(nh, fixed_frame);
 		ros::ServiceServer createPRMService = nh.advertiseService("/kcl_rosplan/roadmap_server/create_prm", &KCL_rosplan::RPSimpleMapServer::generateRoadmap, &sms);
 		sms.setupRoadmap(filename);
 

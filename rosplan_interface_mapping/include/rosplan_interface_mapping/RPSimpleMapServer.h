@@ -57,6 +57,7 @@ namespace KCL_rosplan {
 		void parsePose(geometry_msgs::PoseStamped &pose, std::string line);
 		
 		// visualisation
+		std::string fixed_frame;
 		ros::Publisher waypoints_pub;
 		void publishWaypointMarkerArray(ros::NodeHandle nh);
 		void clearMarkerArrays(ros::NodeHandle nh);
@@ -64,7 +65,7 @@ namespace KCL_rosplan {
 	public:
 
 		/* constructor */
-		RPSimpleMapServer(ros::NodeHandle &nh);
+		RPSimpleMapServer(ros::NodeHandle &nh, std::string frame);
 
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);

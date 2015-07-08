@@ -7,7 +7,9 @@
 
 
 	<!-- ROSPlan interfaces -->
+	<param name="waypoint_file" value="$(find rosplan_demos)/scripts/waypoints.txt" />
 	<node name="rosplan_interface_mapping" pkg="rosplan_interface_mapping" type="rpsimplemapServer" respawn="false" output="screen">
+		<param name="fixed_frame" value="world" />
 	</node>
 	<node name="rosplan_interface_cola2" pkg="rosplan_interface_cola2" type="rpcola2" respawn="false" output="screen">
 		<param name="goto_server" value="/absolute_movement" />
