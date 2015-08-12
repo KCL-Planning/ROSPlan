@@ -13,7 +13,7 @@ namespace KCL_rosplan {
 
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
-		
+
 		// visualisation
 		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
 	}
@@ -21,7 +21,7 @@ namespace KCL_rosplan {
 	/*-----------*/
 	/* build PRM */
 	/*-----------*/
-	
+
 	/**
 	 * Generates waypoints and stores them in the knowledge base and scene database
 	 */
@@ -80,7 +80,7 @@ namespace KCL_rosplan {
 			update_knowledge_client.call(updateSrv);
 
 			res.waypoints.push_back(wit->first);
-			
+
 			// predicates
 			for (std::vector<std::string>::iterator nit=wit->second->neighbours.begin(); nit!=wit->second->neighbours.end(); ++nit) {
 				rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
@@ -95,7 +95,7 @@ namespace KCL_rosplan {
 				pairTo.key = "to";
 				pairTo.value = *nit;
 				updatePredSrv.request.knowledge.values.push_back(pairTo);
-				update_knowledge_client.call(updatePredSrv);	
+				update_knowledge_client.call(updatePredSrv);
 			}
 
 			// functions
@@ -169,10 +169,8 @@ namespace KCL_rosplan {
 		std::ifstream infile(filename.c_str());
 		std::string line;
 		int curr,next;
-		while(!infile.eof()) {
-
+		while(std::getline(infile, line)) {
 			// read waypoint
-			std::getline(infile, line);
 			curr=line.find("[");
 			std::string name = line.substr(0,curr);
 
@@ -196,7 +194,7 @@ namespace KCL_rosplan {
 			waypoints[wp->wpID] = wp;
 		}
 		infile.close();
-		
+
 		// publish visualization
 		publishWaypointMarkerArray(nh);
 	}
