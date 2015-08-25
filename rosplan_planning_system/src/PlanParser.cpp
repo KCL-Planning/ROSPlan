@@ -210,14 +210,17 @@ namespace KCL_rosplan {
 			rosplan_knowledge_msgs::KnowledgeItem filterItem;
 			filterItem.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 			filterItem.attribute_name = filter_attributes[i][0];
-			filterItem.instance_type = environment.object_type_map[filter_attributes[i][1]];
-			filterItem.instance_name = filter_attributes[i][1];
-			for(size_t j=2; j<filter_attributes[i].size()-1; j+=2) {
-				diagnostic_msgs::KeyValue pair;
-				pair.key = filter_attributes[i][j];
-				pair.value = filter_attributes[i][j+1];
-				filterItem.values.push_back(pair);
-			}
+			if (filter_attributes[i].size() > 1)
+			{
+				filterItem.instance_type = environment.object_type_map[filter_attributes[i][1]];
+				filterItem.instance_name = filter_attributes[i][1];
+				for(size_t j=2; j<filter_attributes[i].size()-1; j+=2) {
+					diagnostic_msgs::KeyValue pair;
+					pair.key = filter_attributes[i][j];
+					pair.value = filter_attributes[i][j+1];
+					filterItem.values.push_back(pair);
+				}
+			} 
 			knowledge_filter.push_back(filterItem);
 		}
 	}
