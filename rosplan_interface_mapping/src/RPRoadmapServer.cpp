@@ -378,9 +378,9 @@ namespace KCL_rosplan {
 			} else {
 				std::cout << "Do not connect these waypoints because: ";
 				if (new_wp->getDistance(*other_wp) < req.connecting_distance) {
-					std::cout << "the distance between them is too large. " << new_wp->getDistance(*other_wp) << ">= " <<  req.connecting_distance << "." << std::endl;
-				} else {
 					std::cout << "collision detected." << std::endl;
+				} else {
+					std::cout << "the distance between them is too large. " << new_wp->getDistance(*other_wp) << ">= " <<  req.connecting_distance << "." << std::endl;
 				}
 			}
 		}
