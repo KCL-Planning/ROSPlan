@@ -9,11 +9,11 @@ Get the prerequisites:
 
 (for Indigo)
 ```sh
-sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet
+sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet freeglut3-dev
 ```
 (for Hydro)
 ```sh
-sudo apt-get install flex ros-hydro-mongodb-store ros-hydro-tf2-bullet
+sudo apt-get install flex ros-hydro-mongodb-store ros-hydro-tf2-bullet freeglut3-dev
 ```
 Select a catkin workspace or create a new one:
 ```sh
