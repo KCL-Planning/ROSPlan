@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+find_package(FLEX REQUIRED)
+
 find_package(Boost REQUIRED COMPONENTS
   filesystem
 )
