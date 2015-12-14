@@ -33,6 +33,8 @@ include_directories(
   include
 )
 
+find_package(FLEX REQUIRED)
+
 ## visualisation
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)

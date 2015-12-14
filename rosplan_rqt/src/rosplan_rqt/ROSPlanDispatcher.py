@@ -40,7 +40,7 @@ class PlanViewWidget(QWidget):
         loadUi(ui_file, self)
         self.setObjectName('ROSPlanDispatcherUI')
 
-		# populate goal combo boxes
+        # populate goal combo boxes
         rospy.wait_for_service('/kcl_rosplan/get_domain_predicates')
         try:
             predicates_client = rospy.ServiceProxy('/kcl_rosplan/get_domain_predicates', GetDomainAttributeService)
