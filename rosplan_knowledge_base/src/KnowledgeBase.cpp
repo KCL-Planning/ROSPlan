@@ -141,6 +141,20 @@ namespace KCL_rosplan {
 	}
 
 	/**
+	 * remove everything
+	 */
+	bool KnowledgeBase::clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
+
+		ROS_INFO("KCL: (KB) Removing whole model");
+
+		// model
+		model_instances.clear();
+		model_facts.clear();
+		model_functions.clear();
+		model_goals.clear();
+	}
+
+	/**
 	 * remove mission goal
 	 */
 	void KnowledgeBase::removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg) {
@@ -382,6 +396,7 @@ int main(int argc, char **argv)
 
 	// update knowledge
 	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
 
 	// fetch knowledge
 	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
