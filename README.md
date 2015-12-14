@@ -46,15 +46,7 @@ To run the demo first follow the installation instructions and quick-start guide
 
 [Turtlebot Simulator](http://wiki.ros.org/turtlebot_simulator) 
 
-Then source the ROSPlan workspace and run:
-```sh
-roslaunch rosplan_demos turtlebot.launch
-sh src/rosplan_demos/scripts/turtlebot_explore.bash
-```
-
-`turtlebot.launch` will start the turtlebot simulation, rviz, and ROSPlan.
-
-`turtlebot_explore.bash` calls a ROSPlan component service to generate a roadmap (you can see in rviz); adds exploration goals; and then calls the planning system service.
+Then source the ROSPlan workspace and follow the "Getting Started" guide on our [ROSPlan Wiki Page](https://github.com/KCL-Planning/ROSPlan/wiki).
 
 The turtlebot will move around the waypoints, exploring the environment. You should see output from the planning system, something like:
 ```
@@ -68,6 +60,3 @@ KCL: (PS) Feedback received [0,action achieved]
 ...
 ```
 <img src="http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif" alt="Turtlebot Demo" width="60%"/>
-
-
-For more detailed information about this demo, please visit our [ROSPlan Wiki Page](https://github.com/KCL-Planning/ROSPlan/wiki), and follow tutorial pages on the right.
