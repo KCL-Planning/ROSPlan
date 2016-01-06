@@ -60,3 +60,14 @@ KCL: (PS) Feedback received [0,action achieved]
 ...
 ```
 <img src="http://cdn.makeagif.com/media/5-27-2015/kSJr9g.gif" alt="Turtlebot Demo" width="60%"/>
+
+### Related repositories:
+
+Automatic localisation and docking action interfaces with the Turtlebot 2 (Kobuki base) 
+https://github.com/KCL-Planning/ROSPlan_interface_Turtlebot2
+
+Integration with the Component Oriented Layered-base Architecture for Autonomy (COLA2). Developed in the Research Center of Underwater Robotics (CIRS) in the University of Girona (UdG). This architecture is used to control the Autonomous Underwater Vehicles (AUVs) developed in this center. (https://bitbucket.org/udg_cirs/cola2)
+https://github.com/KCL-Planning/ROSPlan_interface_COLA2
+
+Action interfaces for piloting a quadrotor from Jindrich Vodrazka, (takeoff, land, fly_square, and fly_waypoint).
+https://github.com/fairf4x/ROSPlan_interface_quadrotor
