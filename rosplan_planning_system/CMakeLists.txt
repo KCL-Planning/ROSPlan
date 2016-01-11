@@ -79,7 +79,8 @@ set(PLANNING_SOURCES
 	src/PlanningSystem.cpp
 	src/SimplePlanDispatcher.cpp
 	src/EsterelPlanDispatcher.cpp
-	src/PlanParser.cpp
+	src/POPFPlanParser.cpp
+	src/CFFPlanParser.cpp
 	src/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp)
 

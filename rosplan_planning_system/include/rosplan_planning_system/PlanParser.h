@@ -8,31 +8,25 @@
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "PlanningEnvironment.h"
 
+#ifndef KCL_plan_parser
+#define KCL_plan_parser
+
 namespace KCL_rosplan {
 
 	class PlanParser
 	{
-	private:
-
-		/* plan knowledge filter */
-		std::vector<std::string> filter_objects;
-		std::vector<std::vector<std::string> > filter_attributes;
-
-		/* post process plan */
-		void processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params, PlanningEnvironment &environment);
-
 	public:
 
-		void reset();
+		virtual void reset() =0;
+
+		/* post process plan */
+		virtual void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) =0;
+		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
 
 		/* plan knowledge filter */
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> knowledge_filter;
-		void generateFilter(PlanningEnvironment &environment);
-
-		/* post process plan */
-		void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID);
-		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
-		double total_plan_duration;
-
+		virtual void generateFilter(PlanningEnvironment &environment) =0;
 	};
 } // close namespace
+
+#endif
