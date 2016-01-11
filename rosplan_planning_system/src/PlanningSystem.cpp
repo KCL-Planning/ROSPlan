@@ -30,7 +30,7 @@ namespace KCL_rosplan {
 	 */
 	void PlanningSystem::notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg) {
 		ROS_INFO("KCL: (PS) Notification received; plan invalidated; replanning.");
-		plan_dispatcher.replan_requested = true;
+		plan_dispatcher->replan_requested = true;
 	}
 
 	/**
@@ -63,9 +63,9 @@ namespace KCL_rosplan {
 				runPlanningServer(srv.request,srv.response);
 			}
 		} else if(msg->data == "pause") {
-			if(system_status == DISPATCHING && !plan_dispatcher.dispatch_paused) {
+			if(system_status == DISPATCHING && !plan_dispatcher->dispatch_paused) {
 				ROS_INFO("KCL: (PS) Pausing dispatch");
-				plan_dispatcher.dispatch_paused = true;
+				plan_dispatcher->dispatch_paused = true;
 				system_status = PAUSED;
 				// produce status message
 				std_msgs::String statusMsg;
@@ -73,7 +73,7 @@ namespace KCL_rosplan {
 				state_publisher.publish(statusMsg);
 			} else if(system_status == PAUSED) {
 				ROS_INFO("KCL: (PS) Resuming dispatch");
-				plan_dispatcher.dispatch_paused = false;
+				plan_dispatcher->dispatch_paused = false;
 				system_status = DISPATCHING;
 				// produce status message
 				std_msgs::String statusMsg;
@@ -86,11 +86,11 @@ namespace KCL_rosplan {
 				case DISPATCHING:
 				case PAUSED:
 					ROS_INFO("KCL: (PS) Cancelling");
-					plan_dispatcher.plan_cancelled = true;
+					plan_dispatcher->plan_cancelled = true;
 					break;
 			}
 			if(system_status == PAUSED ) {
-				plan_dispatcher.dispatch_paused = false;
+				plan_dispatcher->dispatch_paused = false;
 				system_status = DISPATCHING;
 				// produce status message
 				std_msgs::String statusMsg;
@@ -120,24 +120,16 @@ namespace KCL_rosplan {
 		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
 		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
 
-		bool dispatchCompletion = true;
-		bool dispatchConcurrent = false;
-
-		nh.param("dispatch_on_completion", dispatchCompletion, true);
-		nh.param("dispatch_concurrent", dispatchConcurrent, false);
 		environment.parseDomain(domain_path);
 
 		// dispatch plan
 		plan_parser.reset();
-		plan_dispatcher.reset();
-
-		plan_dispatcher.dispatch_on_completion = dispatchCompletion;
-		plan_dispatcher.dispatch_concurrent = dispatchConcurrent;
-		plan_dispatcher.environment = environment;
+		plan_dispatcher->reset();
+		plan_dispatcher->environment = environment;
 
 		bool planSucceeded = false;
 		mission_start_time = ros::WallTime::now().toSec();
-		while(!planSucceeded && !plan_dispatcher.plan_cancelled) {
+		while(!planSucceeded && !plan_dispatcher->plan_cancelled) {
 
 			statusMsg.data = "Planning";
 			state_publisher.publish(statusMsg);
@@ -162,7 +154,7 @@ namespace KCL_rosplan {
 			statusMsg.data = "Dispatching";
 			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
-			planSucceeded = plan_dispatcher.dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
+			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
 		}
 		ROS_INFO("KCL: (PS) Planning System Finished");
 
@@ -226,7 +218,7 @@ namespace KCL_rosplan {
 		dest.close();
 
 		// Convert plan into message list for dispatch
-		plan_parser.preparePlan(data_path, environment, plan_dispatcher.getCurrentAction());
+		plan_parser.preparePlan(data_path, environment, plan_dispatcher->getCurrentAction());
 
 		// publish the filter to the knowledge base
 		publishFilter();
@@ -249,14 +241,18 @@ namespace KCL_rosplan {
 
 		KCL_rosplan::PlanningSystem planningSystem;
 
+		// plan dispatcher
+		KCL_rosplan::SimplePlanDispatcher spd;
+		planningSystem.plan_dispatcher = &spd;
+
 		// publishing system_state
 		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
 
 		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
 		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
-		planningSystem.plan_dispatcher.action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
-		planningSystem.plan_dispatcher.action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
-		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, &planningSystem.plan_dispatcher);
+		planningSystem.plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
+		planningSystem.plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
+		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, planningSystem.plan_dispatcher);
 		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);
 
 		// publishing "/kcl_rosplan/filter"; listening "/kcl_rosplan/notification"

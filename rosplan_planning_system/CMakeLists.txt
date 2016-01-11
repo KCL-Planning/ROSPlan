@@ -77,7 +77,8 @@ set(VAL_SOURCES
 ## planning system sources
 set(PLANNING_SOURCES
 	src/PlanningSystem.cpp
-	src/PlanDispatcher.cpp
+	src/SimplePlanDispatcher.cpp
+	src/EsterelPlanDispatcher.cpp
 	src/PlanParser.cpp
 	src/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp)
@@ -88,3 +89,4 @@ add_dependencies(planner ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner ${catkin_LIBRARIES})
+

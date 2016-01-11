@@ -1,5 +1,5 @@
 /**
- * This file dispatches a plan. TODO document
+ * This file describes the class that dispatches a plan.
  */
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
@@ -16,10 +16,7 @@ namespace KCL_rosplan
 
 	class PlanDispatcher
 	{
-	private:
-
-		/* check preconditions are true */
-		bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
+	protected:
 
 		/* action dispatch list (current plan) */
 		size_t current_action;
@@ -34,21 +31,20 @@ namespace KCL_rosplan
 		PlanningEnvironment environment;
 
 		/* dispatch modes */
-		bool dispatch_on_completion;
-		bool dispatch_concurrent;
 		bool dispatch_paused;
 		bool plan_cancelled;
-
-		int getCurrentAction();
-		void reset();
-
-		/* action dispatch methods */
-		bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart);
 		bool replan_requested;
 
+		/* access */
+		virtual int getCurrentAction() =0;
+		virtual void reset() =0;
+
+		/* action dispatch methods */
+		virtual bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart) =0;
+
 		/* action feedback methods */
-		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
-		void actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
+		virtual void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;
+		virtual void actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;
 
 		/* ROS interface */
 		ros::Publisher action_publisher;
