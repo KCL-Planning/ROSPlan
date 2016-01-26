@@ -16,6 +16,7 @@
 #include "PlanDispatcher.h"
 #include "SimplePlanDispatcher.h"
 #include "EsterelPlanDispatcher.h"
+#include "CFFPlanParser.h"
 
 #ifndef KCL_planning_system
 #define KCL_planning_system
@@ -51,11 +52,15 @@ namespace KCL_rosplan {
 		size_t planning_attempts;
 
 	public:
-
+		PlanningSystem(ros::NodeHandle& nh);
+		virtual ~PlanningSystem();
+		
 		SystemStatus system_status;
 
 		void commandCallback(const std_msgs::String::ConstPtr& msg);
 		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		bool runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand);
+
 
 		/* knowledge */
 		PlanningEnvironment environment;
@@ -64,7 +69,7 @@ namespace KCL_rosplan {
 
 		/* planning */
 		PDDLProblemGenerator pddl_problem_generator;
-		POPFPlanParser plan_parser;
+		PlanParser* plan_parser;
 		void publishFilter();
 	
 		/* dispatch class */
