@@ -33,6 +33,7 @@ add_service_files(
   GetDomainOperatorService.srv  
   CreatePRM.srv
   AddWaypoint.srv
+  GenerateProblemService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

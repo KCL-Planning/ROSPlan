@@ -7,8 +7,9 @@
 #include "rosplan_dispatch_msgs/CompletePlan.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
-#include "std_srvs/Empty.h"
+#include "rosplan_knowledge_msgs/GenerateProblemService.h"
 #include "std_msgs/String.h"
+#include "std_srvs/Empty.h"
 #include "PlanningEnvironment.h"
 #include "PDDLProblemGenerator.h"
 #include "PlanParser.h"
@@ -68,8 +69,10 @@ namespace KCL_rosplan {
 		void notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg);
 
 		/* planning */
+		ros::ServiceClient generate_problem_client;
 		PDDLProblemGenerator pddl_problem_generator;
 		PlanParser* plan_parser;
+		bool generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res);
 		void publishFilter();
 	
 		/* dispatch class */
