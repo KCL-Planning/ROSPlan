@@ -7,6 +7,10 @@ namespace KCL_rosplan {
 		return current_action;
 	}
 
+	void PlanDispatcher::setCurrentAction(size_t freeActionID) {
+		current_action = freeActionID;
+	}
+
 	void PlanDispatcher::reset() {
 		replan_requested = false;
 		dispatch_paused = false;

@@ -94,7 +94,13 @@ namespace KCL_rosplan {
 
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
 		ROS_INFO("KCL: (PS) Command received: %s", msg->data.c_str());
-		if(msg->data == "plan") {
+		if(msg->data.substr(0,4) == "plan") {
+			// get free action ID
+			if(msg->data.length() > 4) {
+				size_t aid = atoi(msg->data.substr(5).c_str());
+				plan_dispatcher->setCurrentAction(aid);
+			}
+			// start planning and executing
 			if(system_status == READY) {
 				ROS_INFO("KCL: (PS) Processing planning request");
 				std_srvs::Empty srv;
@@ -139,7 +145,7 @@ namespace KCL_rosplan {
 	}
 
 	/**
-	 * planning system service method; prepares planning; main loop.
+	 * planning system service method; loads parameters and calls method below.
 	 */
 	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
@@ -155,6 +161,9 @@ namespace KCL_rosplan {
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
 	}
 	
+	/**
+	 * planning system service method; prepares planning; main loop.
+	 */
 	bool PlanningSystem::runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand) {
 
 		data_path = dataPath;

@@ -24,6 +24,10 @@ namespace KCL_rosplan {
 		return current_action;
 	}
 
+	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
+		current_action = freeActionID;
+	}
+
 	void EsterelPlanDispatcher::reset() {
 		replan_requested = false;
 		dispatch_paused = false;
