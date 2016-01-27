@@ -5,6 +5,7 @@
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/CompletePlan.h"
+#include "rosplan_dispatch_msgs/PlanningService.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "rosplan_knowledge_msgs/GenerateProblemService.h"
@@ -59,7 +60,8 @@ namespace KCL_rosplan {
 		SystemStatus system_status;
 
 		void commandCallback(const std_msgs::String::ConstPtr& msg);
-		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		bool runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		bool runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
 		bool runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand);
 
 

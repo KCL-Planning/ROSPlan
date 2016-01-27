@@ -104,7 +104,7 @@ namespace KCL_rosplan {
 			if(system_status == READY) {
 				ROS_INFO("KCL: (PS) Processing planning request");
 				std_srvs::Empty srv;
-				runPlanningServer(srv.request,srv.response);
+				runPlanningServerDefault(srv.request,srv.response);
 			}
 		} else if(msg->data == "pause") {
 			if(system_status == DISPATCHING && !plan_dispatcher->dispatch_paused) {
@@ -147,7 +147,7 @@ namespace KCL_rosplan {
 	/**
 	 * planning system service method; loads parameters and calls method below.
 	 */
-	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
 		ros::NodeHandle nh("~");
 
@@ -159,6 +159,12 @@ namespace KCL_rosplan {
 		
 		// call planning server
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
+	}
+
+	bool PlanningSystem::runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
+
+		// call planning server
+		return runPlanningServer(req.domain_path, req.problem_path, req.data_path, req.planner_command);
 	}
 	
 	/**
@@ -324,7 +330,8 @@ namespace KCL_rosplan {
 		if(genProb) ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
 		
 		// start the planning service
-		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
+		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);
+		ros::ServiceServer service1 = nh.advertiseService("/kcl_rosplan/planning_server_params", &KCL_rosplan::PlanningSystem::runPlanningServerParams, &planningSystem);
 		std_msgs::String statusMsg;
 		statusMsg.data = "Ready";
 		planningSystem.state_publisher.publish(statusMsg);
