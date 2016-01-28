@@ -12,7 +12,10 @@ namespace KCL_rosplan {
 	/*-------------*/
 
 	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
-		: system_status(READY), plan_parser(new CFFPlanParser(nh)), plan_dispatcher(new EsterelPlanDispatcher())
+		: system_status(READY),
+		  plan_parser(new CFFPlanParser(nh)),
+		  plan_dispatcher(new EsterelPlanDispatcher()),
+		  plan_server(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false)
 	{
 		// publishing system_state
 		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
@@ -24,6 +27,9 @@ namespace KCL_rosplan {
 
 		// problem generation client
 		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
+
+		// start planning action server
+		plan_server.start();
 	}
 	
 	PlanningSystem::~PlanningSystem()
@@ -88,9 +94,9 @@ namespace KCL_rosplan {
 		filter_publisher.publish(filterMessage);
 	}
 
-	/*----------------------*/
-	/* Planning system loop */
-	/*----------------------*/
+	/*--------------------------*/
+	/* Planning system commands */
+	/*--------------------------*/
 
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
 		ROS_INFO("KCL: (PS) Command received: %s", msg->data.c_str());
@@ -144,9 +150,11 @@ namespace KCL_rosplan {
 		}
 	}
 
-	/**
-	 * planning system service method; loads parameters and calls method below.
-	 */
+	/*--------------------------*/
+	/* Service and Action hooks */
+	/*--------------------------*/
+
+	/* planning system service method; loads parameters and calls method below */
 	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
 		ros::NodeHandle nh("~");
@@ -161,12 +169,25 @@ namespace KCL_rosplan {
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
 	}
 
+	/* planning system service hook with parameters */
 	bool PlanningSystem::runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
-
 		// call planning server
 		return runPlanningServer(req.domain_path, req.problem_path, req.data_path, req.planner_command);
 	}
+
+	/* planning system action hook */
+	void PlanningSystem::runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal) {
+		
+		// call planning server TODO preemption and feedback
+		ROS_INFO("KCL: (PS) Planning Action recieved.");
+		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command))
+			plan_server.setSucceeded();
+	}
 	
+	/*----------------------*/
+	/* Planning system loop */
+	/*----------------------*/
+
 	/**
 	 * planning system service method; prepares planning; main loop.
 	 */
@@ -329,12 +350,14 @@ namespace KCL_rosplan {
 		nh.param("generate_default_problem", genProb, true);
 		if(genProb) ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
 		
-		// start the planning service
+		// start the planning services
 		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);
 		ros::ServiceServer service1 = nh.advertiseService("/kcl_rosplan/planning_server_params", &KCL_rosplan::PlanningSystem::runPlanningServerParams, &planningSystem);
+
 		std_msgs::String statusMsg;
 		statusMsg.data = "Ready";
 		planningSystem.state_publisher.publish(statusMsg);
+
 		ROS_INFO("KCL: (PS) Ready to receive");
 		ros::spin();
 
