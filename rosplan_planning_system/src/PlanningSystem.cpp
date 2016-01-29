@@ -15,7 +15,7 @@ namespace KCL_rosplan {
 		: system_status(READY),
 		  plan_parser(new CFFPlanParser(nh)),
 		  plan_dispatcher(new EsterelPlanDispatcher()),
-		  plan_server(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false)
+		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
 	{
 		// publishing system_state
 		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
@@ -29,13 +29,14 @@ namespace KCL_rosplan {
 		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
 
 		// start planning action server
-		plan_server.start();
+		plan_server->start();
 	}
 	
 	PlanningSystem::~PlanningSystem()
 	{
 		delete plan_parser;
 		delete plan_dispatcher;
+		delete plan_server;
 	}
 
 	/**
@@ -181,7 +182,7 @@ namespace KCL_rosplan {
 		// call planning server TODO preemption and feedback
 		ROS_INFO("KCL: (PS) Planning Action recieved.");
 		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command))
-			plan_server.setSucceeded();
+			plan_server->setSucceeded();
 	}
 	
 	/*----------------------*/
@@ -211,7 +212,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		environment.parseDomain(domain_path);
-
+		
 		// dispatch plan
 		plan_parser->reset();
 		plan_dispatcher->reset();
@@ -219,6 +220,7 @@ namespace KCL_rosplan {
 
 		bool planSucceeded = false;
 		mission_start_time = ros::WallTime::now().toSec();
+		
 		while(!planSucceeded && !plan_dispatcher->plan_cancelled) {
 
 			statusMsg.data = "Planning";
@@ -231,8 +233,10 @@ namespace KCL_rosplan {
 			// generate PDDL problem
 			rosplan_knowledge_msgs::GenerateProblemService genSrv;
 			genSrv.request.problem_path = problem_path;
-			if (!generate_problem_client.call(genSrv))
-				ROS_ERROR("KCL: (PS) The problem was not generated.");
+			if (!generate_problem_client.call(genSrv)) {
+				ROS_INFO("KCL: (PS) The problem was not generated.");
+				return false;
+			}
 
 			// run planner; generate a plan
 			runPlanner();
@@ -277,10 +281,15 @@ namespace KCL_rosplan {
 
 		// run the planner
 		std::string str = planner_command;
+		ROS_INFO("KCL: (PS) Parsing: %s", str.c_str());
 		std::size_t dit = str.find("DOMAIN");
-		str.replace(dit,dit+6,domain_path);
+		ROS_INFO("KCL: (PS) Found DOMAIN at: %d", dit);
+		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
+		ROS_INFO("KCL: (PS) Parsing: %s", str.c_str());
 		std::size_t pit = str.find("PROBLEM");
-		str.replace(pit,pit+7,problem_path);
+		ROS_INFO("KCL: (PS) Found PROBLEM at: %d", dit);
+		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
+		ROS_INFO("KCL: (PS) Done parsing: %s", str.c_str());
 		
 		std::string commandString = str + " > " + data_path + "plan.pddl";
 		ROS_INFO("KCL: (PS) Running: %s", commandString.c_str());
@@ -347,8 +356,12 @@ namespace KCL_rosplan {
 
 		// start a problem generation service
 		bool genProb = true;
-		nh.param("generate_default_problem", genProb, true);
-		if(genProb) ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
+		nh.getParam("/rosplan_planning_system/generate_default_problem", genProb);
+		if(genProb) {
+			ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
+		} else {
+			ROS_INFO("Use an alternative PDDL problem generator.");
+		}
 		
 		// start the planning services
 		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);

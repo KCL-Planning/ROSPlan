@@ -50,7 +50,7 @@ namespace KCL_rosplan {
 		std::string data_path;
 
 		/* planning */
-		actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction> plan_server;
+		actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>* plan_server;
 		double mission_start_time;
 		double plan_start_time;
 		bool runPlanner();
