@@ -179,6 +179,9 @@ namespace KCL_rosplan {
 	/* planning system action hook */
 	void PlanningSystem::runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal) {
 		
+		// set the starting action ID
+		plan_dispatcher->setCurrentAction(goal->start_action_id);
+
 		// call planning server TODO preemption and feedback
 		ROS_INFO("KCL: (PS) Planning Action recieved.");
 		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command))
@@ -211,6 +214,7 @@ namespace KCL_rosplan {
 
 		ros::NodeHandle nh("~");
 
+		// parse domain
 		environment.parseDomain(domain_path);
 		
 		// dispatch plan
@@ -230,7 +234,7 @@ namespace KCL_rosplan {
 			// update the environment from the ontology
 			environment.update(nh);
 
-			// generate PDDL problem
+			// generate PDDL problem (and problem-specific domain)
 			rosplan_knowledge_msgs::GenerateProblemService genSrv;
 			genSrv.request.problem_path = problem_path;
 			if (!generate_problem_client.call(genSrv)) {
@@ -245,6 +249,9 @@ namespace KCL_rosplan {
 			rosplan_dispatch_msgs::CompletePlan planMsg;
 			planMsg.plan = plan_parser->action_list;
 			plan_publisher.publish(planMsg);
+
+			// re-parse the (problem-specific) domain
+			environment.parseDomain(domain_path);
 
 			// dispatch plan
 			system_status = DISPATCHING;

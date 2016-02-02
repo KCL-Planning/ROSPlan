@@ -4,6 +4,7 @@ string domain_path
 string problem_path
 string data_path
 string planner_command
+uint64 start_action_id
 ---
 # result definition
 string result_status
