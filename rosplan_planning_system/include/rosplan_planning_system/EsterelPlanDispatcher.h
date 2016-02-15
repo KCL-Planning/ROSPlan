@@ -1,4 +1,5 @@
 #include "PlanDispatcher.h"
+#include "CFFPlanParser.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #ifndef KCL_esterel_dispatcher
@@ -40,10 +41,15 @@ namespace KCL_rosplan
 		ros::ServiceClient query_knowledge_client;
 		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> condition_mapping;
 		void preparePDDLCondition(std::string edgeName);
+
+		/* printing DOT */
+		CFFPlanParser *cff_pp;
+		bool printPlan();
+
 	public:
 
 		/* constructor */
-		EsterelPlanDispatcher();
+		EsterelPlanDispatcher(CFFPlanParser &parser);
 
 		/* access */
 		int getCurrentAction();

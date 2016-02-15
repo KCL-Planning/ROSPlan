@@ -17,9 +17,9 @@ namespace KCL_rosplan {
 		// do nothing yet
 	}
 
-	/*-----------*/
-	/* build PRM */
-	/*-----------*/
+	/*------------*/
+	/* Parse plan */
+	/*------------*/
 
 	/**
 	 * Parse a plan
@@ -156,6 +156,10 @@ namespace KCL_rosplan {
 		infile.close();
 	}
 
+	/*--------------------*/
+	/* Produce DOT graphs */
+	/*--------------------*/
+
 	/*
 	 * output a plan as a dot graph
 	 */
@@ -167,17 +171,55 @@ namespace KCL_rosplan {
 
 		dest << "digraph plan {" << std::endl;
 
+		// nodes
+		for(int i=0;i<plan.size();i++) {
+			dest <<  plan[i].id << "[ label=\"" << plan[i].action_name;
+		}
+
+		// edges
 		for(int i=0;i<plan.size();i++) {
 			for(int j=0;j<plan[i].inc_edges.size();j++) {
 				if(plan[i].inc_edges[j] >= 0)
-					dest << "\"[" <<  plan[i].inc_edges[j] << "] " << plan[plan[i].inc_edges[j]].action_name
-						<< "\" -> \"[" << plan[i].id <<	 "] " << plan[i].action_name << "\"" << std::endl;
+					dest <<  plan[i].inc_edges[j] << " -> " << plan[i].id << ";" << std::endl;
 			}
 		}
 
 		dest << "}" << std::endl;
 		dest.close();
 	}
+
+	bool CFFPlanParser::printPlan(std::vector<PlanNode> &plan, std::map<int,bool> &actionReceived, std::map<int,bool> &actionCompleted) {
+
+		// output file
+		std::ofstream dest;
+		dest.open("plan.dot");
+
+		dest << "digraph plan {" << std::endl;
+
+		// nodes
+		for(int i=0;i<plan.size();i++) {
+			dest <<  plan[i].id << "[ label=\"" << plan[i].action_name;
+			if(actionCompleted[plan[i].id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
+			else if(actionReceived[plan[i].id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
+			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
+		}
+
+		// edges
+		for(int i=0;i<plan.size();i++) {
+			for(int j=0;j<plan[i].inc_edges.size();j++) {
+				if(plan[i].inc_edges[j] >= 0)
+					dest <<  plan[i].inc_edges[j] << " -> " << plan[i].id << ";" << std::endl;
+			}
+		}
+
+		dest << "}" << std::endl;
+		dest.close();
+
+	}
+
+	/*-----------------*/
+	/* Produce Esterel */
+	/*-----------------*/
 
 	/*
 	 * output a plan as an Esterel controller

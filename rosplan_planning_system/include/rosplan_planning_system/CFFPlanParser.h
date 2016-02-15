@@ -56,6 +56,7 @@ namespace KCL_rosplan {
 
 		/* service to parse plans */
 		bool printPlan(std::vector<PlanNode> &plan);
+		bool printPlan(std::vector<PlanNode> &plan, std::map<int,bool> &actionReceived, std::map<int,bool> &actionCompleted);
 		bool produceEsterel(std::vector<PlanNode> &plan);
 
 		/* virtual methods */

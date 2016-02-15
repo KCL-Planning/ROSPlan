@@ -11,7 +11,8 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher() {
+	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser) {
+		cff_pp = &parser;
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
 		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
@@ -253,6 +254,8 @@ namespace KCL_rosplan {
 					}
 				}
 
+				printPlan();
+
 				ros::spinOnce();
 				loop_rate.sleep();
 			}
@@ -322,5 +325,38 @@ namespace KCL_rosplan {
 	 */
 	void EsterelPlanDispatcher::actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
 		// nothing yet...
+	}
+
+	/*--------------------*/
+	/* Produce DOT graphs */
+	/*--------------------*/
+
+	bool EsterelPlanDispatcher::printPlan() {
+
+		// output file
+		std::ofstream dest;
+		dest.open("plan.dot");
+
+		dest << "digraph plan {" << std::endl;
+
+		// nodes
+		for(int i=0;i<cff_pp->plan.size();i++) {
+			dest <<  cff_pp->plan[i].id << "[ label=\"" << cff_pp->plan[i].action_name;
+			if(action_completed[cff_pp->plan[i].id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
+			else if(action_received[cff_pp->plan[i].id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
+			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
+		}
+
+		// edges
+		for(int i=0;i<cff_pp->plan.size();i++) {
+			for(int j=0;j<cff_pp->plan[i].inc_edges.size();j++) {
+				if(cff_pp->plan[i].inc_edges[j] >= 0)
+					dest <<  cff_pp->plan[i].inc_edges[j] << " -> " << cff_pp->plan[i].id << ";" << std::endl;
+			}
+		}
+
+		dest << "}" << std::endl;
+		dest.close();
+
 	}
 } // close namespace
