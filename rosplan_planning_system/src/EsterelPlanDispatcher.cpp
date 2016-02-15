@@ -14,6 +14,7 @@ namespace KCL_rosplan {
 	EsterelPlanDispatcher::EsterelPlanDispatcher() {
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
+		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
 	}
 
 	/*---------------*/
@@ -22,6 +23,10 @@ namespace KCL_rosplan {
 
 	int EsterelPlanDispatcher::getCurrentAction() {
 		return current_action;
+	}
+
+	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
+		current_action = freeActionID;
 	}
 
 	void EsterelPlanDispatcher::reset() {
@@ -36,6 +41,43 @@ namespace KCL_rosplan {
 	/*---------------*/
 	/* parse esterel */
 	/*---------------*/
+
+	void EsterelPlanDispatcher::preparePDDLCondition(std::string edgeName) {
+
+		// regex through the conditions
+		boost::regex e_conditions("-([^-]+)");
+		boost::sregex_iterator iter(edgeName.begin(), edgeName.end(), e_conditions);
+		boost::sregex_iterator end;
+		
+		// prepare the attribute knowledge item
+		rosplan_knowledge_msgs::KnowledgeItem item;
+		item.knowledge_type = 1;
+		item.attribute_name = (*iter)[1];
+
+		// fetch attribute signiature
+		std::map<std::string,std::vector<std::string> >::iterator it;
+		it = environment.domain_predicates.find(item.attribute_name);
+		if (it != environment.domain_predicates.end()) {
+			int param = 0;
+			// set parameters
+			for(; iter != end; ++iter ) {
+				if(param<=it->second.size()) {
+					std::cout << "error reading condition edge!" << std::endl;
+					return;
+				}
+				diagnostic_msgs::KeyValue pair;
+				pair.key = it->second[param];
+				pair.value = (*iter)[1];
+				param++;
+			}
+		} else {
+			std::cout << "error reading condition edge (2)!" << std::endl;
+			return;
+		}
+		
+		condition_mapping[edgeName] = item;
+
+	}
 
 	bool EsterelPlanDispatcher::readEsterelFile(std::string strlFile) {
 
@@ -84,7 +126,12 @@ namespace KCL_rosplan {
 					for(; iter != end; ++iter ) {
 						if(plan_edges.find((*iter)[1]) == plan_edges.end()) {
 							StrlEdge edge;
+							edge.signal_type = 0;
 							edge.edge_name = (*iter)[1];
+							if(edge.edge_name.length() > 3 && edge.edge_name.substr(0,4)=="cond") {
+								edge.signal_type = 1;
+								preparePDDLCondition(edge.edge_name);
+							}
 							plan_edges[(*iter)[1]] = edge;
 						}
 						plan_description[currentNode].input.push_back((*iter)[1]);
@@ -100,6 +147,7 @@ namespace KCL_rosplan {
 					for(; iter != end; ++iter ) {
 						if(plan_edges.find((*iter)[1]) == plan_edges.end()) {
 							StrlEdge edge;
+							edge.signal_type = 0;
 							edge.edge_name = (*iter)[1];
 							plan_edges[(*iter)[1]] = edge;
 						}
@@ -209,6 +257,17 @@ namespace KCL_rosplan {
 				loop_rate.sleep();
 			}
 
+			// query KMS for condition edges
+			std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator kit = condition_mapping.begin();
+			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+			for(; kit!=condition_mapping.end(); kit++) {
+				querySrv.request.knowledge.clear();
+				querySrv.request.knowledge.push_back(kit->second);
+				if (query_knowledge_client.call(querySrv)) {
+					edge_values[it->first] = querySrv.response.all_true;
+				}
+			}
+			
 			// copy new edge values
 			std::map<std::string,StrlEdge>::iterator eit = plan_edges.begin();
 			for(; eit!=plan_edges.end(); eit++) {

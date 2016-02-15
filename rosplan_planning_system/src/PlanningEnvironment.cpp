@@ -40,6 +40,9 @@ namespace KCL_rosplan {
 		current_filename = &writable[0];
 
 		// parse domain
+		
+		
+		
 		VAL::current_analysis = &VAL::an_analysis;
 		std::ifstream domainFile;
 		domainFile.open(domainFileName.c_str());
@@ -47,11 +50,15 @@ namespace KCL_rosplan {
 
 		VAL::yfl = new yyFlexLexer;
 
-		if (domainFile.bad()) {
+		if (!domainFile.is_open() || domainFile.fail() || domainFile.bad()) {
 			ROS_ERROR("KCL: (PS) Failed to open domain file.");
 			line_no = 0;
 			VAL::log_error(VAL::E_FATAL,"Failed to open file");
 		} else {
+			
+			ROS_INFO("KCL: (PS) File does exist: %s.", domainFileName.c_str());
+
+			
 			line_no = 1;
 			VAL::yfl->switch_streams(&domainFile,&std::cout);
 			yyparse();
@@ -117,6 +124,8 @@ namespace KCL_rosplan {
 		}
 		domainFile.close();
 		delete VAL::yfl;
+		
+		ROS_INFO("KCL: (PS) Finished parsing domain: %s.", domainFileName.c_str());
 	}
 
 	/**

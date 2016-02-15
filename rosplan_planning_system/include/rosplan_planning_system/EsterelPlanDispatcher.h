@@ -1,4 +1,5 @@
 #include "PlanDispatcher.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
@@ -35,6 +36,10 @@ namespace KCL_rosplan
 		std::map<std::string,StrlNode> plan_description;
 		std::map<std::string,StrlEdge> plan_edges;
 
+		/* mapping PDDL conditions and esterel inputs */
+		ros::ServiceClient query_knowledge_client;
+		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> condition_mapping;
+		void preparePDDLCondition(std::string edgeName);
 	public:
 
 		/* constructor */
@@ -42,6 +47,7 @@ namespace KCL_rosplan
 
 		/* access */
 		int getCurrentAction();
+		void setCurrentAction(size_t freeActionID);
 		void reset();
 
 		/* action dispatch methods */
