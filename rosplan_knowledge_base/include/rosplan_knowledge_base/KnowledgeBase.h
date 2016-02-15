@@ -6,6 +6,7 @@
 #include "std_srvs/Empty.h"
 
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
+#include "rosplan_knowledge_msgs/KnowledgeUpdateServiceArray.h"
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
@@ -69,6 +70,7 @@ namespace KCL_rosplan {
 
 		// adding and removing items to and from the knowledge base
 		bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
+		bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
 	};
 }

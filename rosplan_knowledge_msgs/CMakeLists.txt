@@ -27,6 +27,7 @@ add_service_files(
   GetAttributeService.srv
   GetInstanceService.srv
   KnowledgeUpdateService.srv
+  KnowledgeUpdateServiceArray.srv
   KnowledgeQueryService.srv
   GetDomainAttributeService.srv
   GetDomainTypeService.srv

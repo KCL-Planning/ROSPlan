@@ -70,6 +70,21 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+
+		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
+			for(int i=0;i<req.knowledge.size();i++) addKnowledge(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
+			for(int i=0;i<req.knowledge.size();i++) addMissionGoal(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
+			for(int i=0;i<req.knowledge.size();i++) removeKnowledge(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
+			for(int i=0;i<req.knowledge.size();i++) removeMissionGoal(req.knowledge[i]);
+
+		res.success = true;
+		return true;
+	}
+
 	/*----------------*/
 	/* removing items */
 	/*----------------*/
@@ -395,7 +410,8 @@ int main(int argc, char **argv)
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
 
 	// update knowledge
-	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer updateServer1 = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer updateServer2 = n.advertiseService("/kcl_rosplan/update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
 	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
 
 	// fetch knowledge
@@ -418,3 +434,4 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+
