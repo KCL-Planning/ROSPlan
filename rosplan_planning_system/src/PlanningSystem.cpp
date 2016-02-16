@@ -240,6 +240,7 @@ namespace KCL_rosplan {
 			// generate PDDL problem (and problem-specific domain)
 			rosplan_knowledge_msgs::GenerateProblemService genSrv;
 			genSrv.request.problem_path = problem_path;
+			genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
 			if (!generate_problem_client.call(genSrv)) {
 				ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_path.c_str());
 				return false;
