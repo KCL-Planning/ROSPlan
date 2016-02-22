@@ -13,7 +13,7 @@ namespace KCL_rosplan {
 	 */
 	void PDDLProblemGenerator::generatePDDLProblemFile(PlanningEnvironment &environment, std::string &problemPath) {
 
-		ROS_INFO("KCL: (PS) Generating PDDL problem file");
+		ROS_INFO("KCL: (PS) Generating PDDL problem file %s", problemPath.c_str());
 		std::ofstream pFile;
 		pFile.open((problemPath).c_str());
 
@@ -63,14 +63,16 @@ namespace KCL_rosplan {
 			};
 
 			ss << environment.domain_attributes[i].attribute_name;
-
+			
 			// fetch the corresponding symbols from domain
 			std::map<std::string,std::vector<std::string> >::iterator ait;
 			ait = environment.domain_predicates.find(environment.domain_attributes[i].attribute_name);
 			if(ait == environment.domain_predicates.end())
 				ait = environment.domain_functions.find(environment.domain_attributes[i].attribute_name);
 			if(ait == environment.domain_functions.end())
-				continue;
+			{
+				continue;	
+			}
 
 			// find the PDDL parameters in the KnowledgeItem
 			bool writeAttribute = true;
@@ -82,7 +84,10 @@ namespace KCL_rosplan {
 						found = true;
 					}
 				}
-				if(!found) writeAttribute = false; 
+				if(!found)
+				{
+					writeAttribute = false; 
+				}
 			};
 			ss << ")";
 

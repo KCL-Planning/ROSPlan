@@ -4,7 +4,9 @@
 namespace KCL_rosplan {
 
 	/* constructor */
-	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh) : message_store(nh) {
+	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh)
+		: node_handle(&nh), message_store(nh)
+	{
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
 	}
@@ -26,9 +28,12 @@ namespace KCL_rosplan {
 	 */
 	void CFFPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
-		ros::NodeHandle nh("~");
-		ROS_INFO("KCL: (CFFPlanParser) Loading plan from file: %s", ((dataPath + "plan.pddl").c_str()));
+		ROS_INFO("KCL: (CFFPlanParser) Loading plan from file: %s. Free action ID: %d", ((dataPath + "plan.pddl").c_str()), freeActionID);
 
+		// trim the end of any existing plan
+		while(action_list.size() > freeActionID)
+			action_list.pop_back();
+		
 		// prepare plan
 		plan.clear();
 
@@ -38,6 +43,7 @@ namespace KCL_rosplan {
 		int curr,next,nodeCount;
 		bool planFound = false;
 		bool planRead = false;
+		
 		while(!infile.eof()) {
 			std::getline(infile, line);
 
@@ -100,7 +106,9 @@ namespace KCL_rosplan {
 					} else {
 
 						PlanNode node(nodeCount,name);
-
+						
+						ROS_INFO("KCL: (CFFPlanParser) Created plan node: [%i] %s", node.id, name.c_str());
+						
 						// incoming edge(s)
 						if(parentStack.size()>0) {
 							node.inc_edges.push_back(parentStack.back());
@@ -227,10 +235,17 @@ namespace KCL_rosplan {
 	bool CFFPlanParser::produceEsterel(std::vector<PlanNode> &plan) {
 
 		// output file
+		std::string strl_file;
+		ros::NodeHandle nh("~");
+		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
+		
+		ROS_INFO("KCL: (CFFPlanParser) Write the esterel plan: %s", strl_file.c_str());
+		
 		std::ofstream dest;
-		dest.open("plan.strl");
+		dest.open(strl_file.c_str());
 
 		// main module
+
 		dest << "module plan:" << std::endl;
 		dest << "input SOURCE";
 		for(int i=0;i<plan.size();i++) {

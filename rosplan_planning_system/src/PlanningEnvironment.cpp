@@ -219,18 +219,21 @@ namespace KCL_rosplan {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_instances: %s", instanceSrv.request.type_name.c_str());
 			}
 		}
-
+		ROS_INFO("KCL: (PS) Fetch attributes and functions");
 
 		// get domain attributes and functions
 		std::map<std::string,std::vector<std::string> >::iterator ait;
 		for(ait = domain_predicates.begin(); ait != domain_predicates.end(); ait++) {
 			rosplan_knowledge_msgs::GetAttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
+			
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
 					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT && attr.attribute_name.compare(ait->first)==0)
+					{
 						domain_attributes.push_back(attr);
+					}
 				}
 			} else {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_domain_attributes %s", domainAttrSrv.request.predicate_name.c_str());
@@ -251,6 +254,7 @@ namespace KCL_rosplan {
 		}
 
 		// get current goals
+		ROS_INFO("KCL: (PS) Fetch goals");
 		rosplan_knowledge_msgs::GetAttributeService currentGoalSrv;
 		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
@@ -261,5 +265,7 @@ namespace KCL_rosplan {
 		} else {
 			ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_current_goals");
 		}
+		
+		ROS_INFO("KCL: (PS) Update complete");
 	}
 } // close namespace

@@ -41,6 +41,9 @@ namespace KCL_rosplan {
 
 	private:
 		
+		// ROS node handle.
+		ros::NodeHandle* node_handle;
+		
 		// Scene database
 		mongodb_store::MessageStoreProxy message_store;
 

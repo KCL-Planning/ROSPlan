@@ -45,6 +45,8 @@ namespace KCL_rosplan
 		/* printing DOT */
 		CFFPlanParser *cff_pp;
 		bool printPlan();
+		
+		size_t action_id_offset;
 
 	public:
 

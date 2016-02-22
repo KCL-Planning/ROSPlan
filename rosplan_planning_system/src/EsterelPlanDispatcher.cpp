@@ -11,7 +11,10 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser) {
+	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser)
+		: action_id_offset(0)
+	{
+		current_action = 0;
 		cff_pp = &parser;
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
@@ -27,7 +30,8 @@ namespace KCL_rosplan {
 	}
 
 	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
-		current_action = freeActionID;
+		//current_action = freeActionID;
+		action_id_offset = freeActionID;
 	}
 
 	void EsterelPlanDispatcher::reset() {
@@ -185,11 +189,15 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 
 		// parse strl file
-		ROS_INFO("KCL: (PS) Parsing STRL file: %s", strl_file.c_str());
-		readEsterelFile(strl_file);
+		ROS_INFO("KCL: (EsterelPlanDispatcher) %d Parsing STRL file: %s", action_id_offset, strl_file.c_str());
+		if (!readEsterelFile(strl_file))
+		{
+			ROS_ERROR("KCL: (EsterelPlanDispatcher) %d Failed to read STRL file: %s", action_id_offset, strl_file.c_str());
+			return false;
+		}
 
 		// dispatch plan
-		ROS_INFO("KCL: (PS) Dispatching plan");
+		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan %d", current_action);
 		replan_requested = false;
 		bool repeatAction = false;
 		
@@ -198,9 +206,38 @@ namespace KCL_rosplan {
 		std::map<std::string,StrlEdge>::iterator eit = plan_edges.begin();
 		for(; eit!=plan_edges.end(); eit++)
 			edge_values[eit->second.edge_name] = false;
+		
+		ROS_INFO("KCL: (EsterelPlanDispatcher) %d Complete plan:", action_id_offset);
+		
+		/*
+		for (std::vector<PlanNode>::const_iterator ci = cff_pp->plan.begin(); ci != cff_pp->plan.end(); ++ci)
+		{
+			const PlanNode& plane_node = *ci;
+			const rosplan_dispatch_msgs::ActionDispatch& action_dispatch = plane_node.dispatch_msg;
+			ROS_INFO("KCL: (EsterelPlanDispatcher) %d Action [%i, %s, %f, %f]", action_id_offset, action_dispatch.action_id, action_dispatch.name.c_str(), (action_dispatch.dispatch_time+planStart-missionStart), action_dispatch.duration);
+		}
+		
+		for (std::map<std::string,StrlNode>::const_iterator ci = plan_description.begin(); ci != plan_description.end(); ++ci)
+		{
+			const std::string& name = (*ci).first;
+			const StrlNode& node = (*ci).second;
+			
+			ROS_INFO("KCL: (EsterelPlanDispatcher) %d Plan node %s (=%s) ", action_id_offset, name.c_str(), node.node_name.c_str());
+			for (std::vector<std::string>::const_iterator ci = node.input.begin(); ci != node.input.end(); ++ci)
+			{
+				ROS_INFO("\tIN %s", (*ci).c_str());
+			}
+			for (std::vector<std::string>::const_iterator ci = node.output.begin(); ci != node.output.end(); ++ci)
+			{
+				ROS_INFO("\tOUT %s", (*ci).c_str());
+			}
+		}
+		*/
+		
+		bool finished_execution = false;
+		while (ros::ok() && !finished_execution) {
 
-		while (ros::ok() && actionList.size() > current_action) {
-
+			finished_execution = true;
 			// loop while dispatch is paused
 			while (ros::ok() && dispatch_paused) {
 				ros::spinOnce();
@@ -209,48 +246,68 @@ namespace KCL_rosplan {
 
 			// cancel plan
 			if(plan_cancelled) {
+				ROS_INFO("KCL: (EsterelPlanDispatcher) %d Plan has been cancelled!", action_id_offset);
 				break;
 			}
 
 			// for each module
 			std::map<std::string,StrlNode>::iterator it = plan_description.begin();
 			for(; it!=plan_description.end(); it++) {
-	
-				if(!it->second.dispatched) {
-
+				
+				StrlNode& strl_node = it->second;
+				
+				// If at least one node is still executing we are not done yet.
+				if (strl_node.dispatched && !strl_node.completed)
+					finished_execution = false;
+				
+				if(!strl_node.dispatched) {
+				
 					// activate waiting nodes
 					bool activate = true;
-					for(int i=0;i<it->second.await_input.size();i++) {
-						if(!plan_edges[it->second.input[i]].active)
+					for(int i=0;i<strl_node.await_input.size();i++) {
+						
+						if(!plan_edges[strl_node.input[i]].active)
+						{
 							activate = false;
+						}
 					}
+					
 					if(activate) {
 
+						finished_execution = false;
+						
 						// activate action
-						it->second.dispatched = true;
-						current_action = atoi(it->second.node_name.substr(0,6).c_str());
-						rosplan_dispatch_msgs::ActionDispatch currentMessage = actionList[current_action];
+						strl_node.dispatched = true;
+						current_action = atoi(strl_node.node_name.substr(std::string("action").length()).c_str());
+						//rosplan_dispatch_msgs::ActionDispatch currentMessage = actionList[current_action];
+						rosplan_dispatch_msgs::ActionDispatch currentMessage = cff_pp->plan[current_action].dispatch_msg;
 						action_received[current_action] = false;
 						action_completed[current_action] = false;
+						currentMessage.action_id = currentMessage.action_id + action_id_offset;
 
 						// dispatch action
-						ROS_INFO("KCL: (PS) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
+						ROS_INFO("KCL: (EsterelPlanDispatcher) %d Dispatching action [%i, %s, %f, %f]; current_ation = %d", action_id_offset, currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration, current_action);
 						action_publisher.publish(currentMessage);
 						double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time + planStart));
-						if(late_print>0.1) ROS_INFO("KCL: (PS) Action [%i] is %f second(s) late", currentMessage.action_id, late_print);
-
+						if(late_print>0.1) ROS_INFO("KCL: (EsterelPlanDispatcher) %d Action [%i] is %f second(s) late", action_id_offset, currentMessage.action_id, late_print);
 					}
-
-				} else if(!it->second.completed) {
-
+				} else if(!strl_node.completed) {
+					
 					// check action completion
-					int actionID = atoi(it->second.node_name.substr(0,6).c_str());
+					int actionID = atoi(strl_node.node_name.substr(0,6).c_str());
+					//std::cout << "Action ID: " << actionID << std::endl;
 					if(action_completed[current_action]) {
-						it->second.completed = true;
+						strl_node.completed = true;
+						finished_execution = false;
+						
+						ROS_INFO("KCL: (EsterelPlanDispatcher) %d The action %s is completed!", action_id_offset, strl_node.node_name.c_str());
+						//std::cout << "It is :)" << std::endl;
 
 						// emit output edges
-						for(int i=0;i<it->second.output.size();i++)
-							edge_values[it->second.output[i]] = true;
+						for(int i=0;i<strl_node.output.size();i++) {
+							ROS_INFO("KCL: (EsterelPlanDispatcher) %d Activate the edge %s", action_id_offset, strl_node.output[i].c_str());
+							edge_values[strl_node.output[i]] = true;
+						}
 					}
 				}
 
@@ -278,7 +335,10 @@ namespace KCL_rosplan {
 				edge_values[eit->second.edge_name] = false;
 			}
 
-			if(replan_requested) return false;
+			if(replan_requested) {
+				ROS_INFO("KCL: (EsterelPlanDispatcher) %d Replan requested!", action_id_offset);
+				return false;
+			}
 		}
 		return true;
 	}
@@ -293,25 +353,30 @@ namespace KCL_rosplan {
 	void EsterelPlanDispatcher::feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
 
 		// create error if the action is unrecognised
-		ROS_INFO("KCL: (PS) Feedback received [%i, %s]", msg->action_id, msg->status.c_str());
-		if(current_action != (unsigned int)msg->action_id)
-			ROS_ERROR("KCL: (PS) Unexpected action ID: %d; current action: %zu", msg->action_id, current_action);
+		ROS_INFO("KCL: (EsterelPlanDispatcher) %d Feedback received [%i, %s]", action_id_offset, msg->action_id, msg->status.c_str());
+		if(current_action + action_id_offset != (unsigned int)msg->action_id) {
+			ROS_WARN("KCL: (EsterelPlanDispatcher) %d Unexpected action ID: %d; current action: %zu", action_id_offset, msg->action_id, current_action + action_id_offset);
+			return;
+		} else {
+			ROS_INFO("KCL: (EsterelPlanDispatcher) %d Expected action ID: %d!", action_id_offset, msg->action_id);
+		}
 
 		// action enabled
-		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled")))
-			action_received[msg->action_id] = true;
+		int normalised_action_id = msg->action_id - action_id_offset;
+		if(!action_received[normalised_action_id] && (0 == msg->status.compare("action enabled")))
+			action_received[normalised_action_id] = true;
 		
 		// more specific feedback
 		actionFeedback(msg);
 
 		// action completed (successfuly)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
-			action_completed[msg->action_id] = true;
+		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action achieved"))
+			action_completed[normalised_action_id] = true;
 
 		// action completed (failed)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action failed")) {
 			replan_requested = true;
-			action_completed[msg->action_id] = true;
+			action_completed[normalised_action_id] = true;
 		}
 	}
 

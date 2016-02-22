@@ -245,6 +245,7 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_path.c_str());
 				return false;
 			}
+			ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
 
 			// run planner; generate a plan
 			runPlanner();
@@ -263,13 +264,22 @@ namespace KCL_rosplan {
 			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
 			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser->action_list, mission_start_time, plan_start_time);
+			
+			if (!planSucceeded)
+			{
+				ROS_INFO("KCL: (PS) (%s) The plan failed!", problem_path.c_str());
+			}
+			else
+			{
+				ROS_INFO("KCL: (PS) (%s) ANOTHER SUCCESSFUL DISPATCH!", problem_path.c_str());
+			}
 		}
 		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_path.c_str());
 
 		system_status = READY;
 		statusMsg.data = "Ready";
 		state_publisher.publish(statusMsg);
-
+		
 		return planSucceeded;
 	}
 
@@ -312,9 +322,12 @@ namespace KCL_rosplan {
 		planfile.open((data_path + "plan.pddl").c_str());
 		std::string line;
 		bool solved = false;
+		
 		while(!planfile.eof() && !solved) {
 			getline(planfile, line);
 			if (line.find("; Time", 0) != std::string::npos)
+				solved = true;
+			if (line.find("ff: found legal plan as follows", 0) != std::string::npos)
 				solved = true;
 		}
 		if(!solved) {
