@@ -6,7 +6,7 @@
 #include "ros/ros.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
-#include "../../src/VALfiles/ptree.h"
+#include "rosplan_planning_system/ptree.h"
 #include "FlexLexer.h"
 #include <fstream>
 #include <sstream>
