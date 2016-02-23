@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  INCLUDE_DIRS include ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS} src/VALfiles
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp rospy std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
@@ -30,6 +30,7 @@ catkin_package(
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
+include_directories(src/VALfiles)
 
 find_package(FLEX REQUIRED)
 
