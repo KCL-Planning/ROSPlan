@@ -9,31 +9,12 @@
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "PlanningEnvironment.h"
 #include "PlanParser.h"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <ctime>
-#include <stdlib.h>
+#include "EsterelPlan.h"
 
 #ifndef KCL_cff_plan_parser
 #define KCL_cff_plan_parser
 
 namespace KCL_rosplan {
-
-	/* Plan node definition */
-	struct PlanNode
-	{
-		PlanNode(const int &nodeID, const std::string &actionName)
-			: id(nodeID), action_name(actionName) {}
-
-		PlanNode()
-			: id(-1), action_name("GHOST_ACTION") {}
-		
-		int id;
-		rosplan_dispatch_msgs::ActionDispatch dispatch_msg;
-		std::string action_name;
-		std::vector<int> inc_edges;
-	};
 
 	/* Plan Parsing class definition */
 	class CFFPlanParser: public PlanParser
@@ -52,15 +33,15 @@ namespace KCL_rosplan {
 		
 	public:
 
-		std::vector<PlanNode> plan;
+		/* plan description in Esterel */
+		std::map<std::string,StrlNode> plan_nodes;
+		std::map<std::string,StrlEdge> plan_edges;
 
 		/* constructor */
 		CFFPlanParser(ros::NodeHandle &nh);
 
 		/* service to parse plans */
-		bool printPlan(std::vector<PlanNode> &plan);
-		bool printPlan(std::vector<PlanNode> &plan, std::map<int,bool> &actionReceived, std::map<int,bool> &actionCompleted);
-		bool produceEsterel(std::vector<PlanNode> &plan);
+		bool produceEsterel();
 
 		/* virtual methods */
 		void reset();

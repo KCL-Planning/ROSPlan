@@ -1,4 +1,5 @@
 #include "PlanDispatcher.h"
+#include "EsterelPlan.h"
 #include "CFFPlanParser.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
@@ -7,46 +8,23 @@
 
 namespace KCL_rosplan
 {
-	struct StrlEdge
-	{
-		int signal_type;
-		std::string edge_name;
-		bool active;
-	};
-
-	struct StrlNode
-	{
-		std::string node_name;
-		std::vector<std::string> input;
-		std::vector<std::string> output;
-
-		std::vector<bool> await_input;
-		bool dispatched;
-		bool completed;
-	};
-
 	class EsterelPlanDispatcher: public PlanDispatcher
 	{
 	private:
 
-		/* Esterel filename */
-		std::string strl_file;
-		bool readEsterelFile(std::string strlFile);
-
-		/* plan description in Esterel */
-		std::map<std::string,StrlNode> plan_description;
-		std::map<std::string,StrlEdge> plan_edges;
+		bool printPlan();
 
 		/* mapping PDDL conditions and esterel inputs */
 		ros::ServiceClient query_knowledge_client;
 		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> condition_mapping;
 		void preparePDDLCondition(std::string edgeName);
 
-		/* printing DOT */
+		/* plan description from parser */
 		CFFPlanParser *cff_pp;
-		bool printPlan();
-		
-		size_t action_id_offset;
+
+		/* plan description from Esterel file */
+		std::string strl_file;
+		bool readEsterelFile(std::string strlFile);
 
 	public:
 

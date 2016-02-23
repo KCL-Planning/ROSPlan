@@ -16,7 +16,6 @@ namespace KCL_rosplan {
 		  plan_parser(new CFFPlanParser(nh)),
 		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
 	{
-
 		// dispatcher
 		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<CFFPlanParser*>(plan_parser));
 
@@ -187,8 +186,11 @@ namespace KCL_rosplan {
 
 		// call planning server TODO preemption and feedback
 		ROS_INFO("KCL: (PS) (%s) Planning Action recieved.", goal->problem_path.c_str());
-		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command))
+		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command)) {
 			plan_server->setSucceeded();
+		} else {
+			plan_server->setAborted();
+		}
 	}
 	
 	/*----------------------*/
@@ -304,11 +306,11 @@ namespace KCL_rosplan {
 		std::string str = planner_command;
 		ROS_INFO("KCL: (PS) (%s) Parsing: %s", problem_path.c_str(),  str.c_str());
 		std::size_t dit = str.find("DOMAIN");
-		ROS_INFO("KCL: (PS) (%s) Found DOMAIN at: %d", problem_path.c_str(),  dit);
+		ROS_INFO("KCL: (PS) (%s) Found DOMAIN at: %zu", problem_path.c_str(),  dit);
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
 		ROS_INFO("KCL: (PS) (%s) Parsing: %s", problem_path.c_str(),  str.c_str());
 		std::size_t pit = str.find("PROBLEM");
-		ROS_INFO("KCL: (PS) (%s) Found PROBLEM at: %d", problem_path.c_str(),  dit);
+		ROS_INFO("KCL: (PS) (%s) Found PROBLEM at: %zu", problem_path.c_str(),  dit);
 		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
 		ROS_INFO("KCL: (PS) (%s) Done parsing: %s", problem_path.c_str(),  str.c_str());
 		

@@ -1,18 +1,23 @@
 #include "rosplan_planning_system/CFFPlanParser.h"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <ctime>
+#include <stdlib.h>
 
 /* implementation of rosplan_interface_mapping::CFFPlanParser.h */
 namespace KCL_rosplan {
 
 	/* constructor */
-	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh)
-		: node_handle(&nh), message_store(nh)
+	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh) : node_handle(&nh), message_store(nh)
 	{
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
 	}
 
 	void CFFPlanParser::reset() {
-		plan.clear();
+		plan_nodes.clear();
+		plan_edges.clear();
 	}
 
 	void CFFPlanParser::generateFilter(PlanningEnvironment &environment) {
@@ -28,14 +33,12 @@ namespace KCL_rosplan {
 	 */
 	void CFFPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
-		ROS_INFO("KCL: (CFFPlanParser) Loading plan from file: %s. Free action ID: %d", ((dataPath + "plan.pddl").c_str()), freeActionID);
-
-		// trim the end of any existing plan
-		while(action_list.size() > freeActionID)
-			action_list.pop_back();
+		ROS_INFO("KCL: (CFFPlanParser) Loading plan from file: %s. Initial action ID: %zu", ((dataPath + "plan.pddl").c_str()), freeActionID);
 		
 		// prepare plan
-		plan.clear();
+		plan_nodes.clear();
+		plan_edges.clear();
+		std::vector<std::string> parentStack;
 
 		// load plan file
 		std::ifstream infile((dataPath + "plan.pddl").c_str());
@@ -55,8 +58,8 @@ namespace KCL_rosplan {
 
 				bool observeAction = false;
 				bool shedAction = false;
-				nodeCount = 0;
-				std::vector<int> parentStack;
+				nodeCount = freeActionID;
+				std::vector<std::string> parentEdge;
 
 				while(!infile.eof()) {
 
@@ -76,8 +79,9 @@ namespace KCL_rosplan {
 					if("RAMINIFICATE" == name && observeAction) {
 
 						// branch
-						parentStack.push_back(nodeCount-1);
+						parentStack.push_back(parentStack.back());
 						observeAction = true;
+
 					} else if("SHED" == name.substr(0,4)) {
 
 						// shed
@@ -105,27 +109,45 @@ namespace KCL_rosplan {
 
 					} else {
 
-						PlanNode node(nodeCount,name);
-						
-						ROS_INFO("KCL: (CFFPlanParser) Created plan node: [%i] %s", node.id, name.c_str());
-						
+						StrlNode node;
+						node.node_name = name;
+						node.node_id = nodeCount;
+						node.dispatched = false;
+						node.completed = false;
+
+						ROS_INFO("KCL: (CFFPlanParser) Created plan node: [%i] %s", node.node_id, name.c_str());
+
 						// incoming edge(s)
 						if(parentStack.size()>0) {
-							node.inc_edges.push_back(parentStack.back());
+							node.input.push_back(parentStack.back());
+							node.await_input.push_back(false);
+							plan_edges[parentStack.back()].sinks.push_back(node.node_name);
 							parentStack.pop_back();
 						}
 						if(shedAction && parentStack.size()>0) {
-							node.inc_edges.push_back(parentStack.back());
+							node.input.push_back(parentStack.back());
+							node.await_input.push_back(false);
+							plan_edges[parentStack.back()].sinks.push_back(node.node_name);
 							parentStack.pop_back();
 							shedAction = false;
 						}
 
-						// save this parent
-						parentStack.push_back(nodeCount);
+						// save this parent edge
+						StrlEdge edge;
+						edge.signal_type = ACTION;
+						std::stringstream ss;
+						ss << "e" << node.node_id;
+						edge.edge_name = ss.str();
+						edge.sources.push_back(node.node_name);
+						edge.active = false;
+						plan_edges[edge.edge_name] = edge;
+
+						node.output.push_back(edge.edge_name);
+						parentStack.push_back(edge.edge_name);
 						nodeCount++;
 
 						// prepare message
-						node.dispatch_msg.action_id = node.id;
+						node.dispatch_msg.action_id = node.node_id;
 						node.dispatch_msg.duration = 0.1;
 						node.dispatch_msg.dispatch_time = 0;
 						node.dispatch_msg.name = name;
@@ -152,77 +174,16 @@ namespace KCL_rosplan {
 								node.dispatch_msg.parameters.push_back(pair);
 							}
 						}
-						plan.push_back(node);
+						plan_nodes[node.node_name] = node;
 						observeAction = true;
 					}
 				}
 				planRead = true;
 			}
 		}
-		printPlan(plan);
-		produceEsterel(plan);
+		// printPlan(plan);
+		// produceEsterel();
 		infile.close();
-	}
-
-	/*--------------------*/
-	/* Produce DOT graphs */
-	/*--------------------*/
-
-	/*
-	 * output a plan as a dot graph
-	 */
-	bool CFFPlanParser::printPlan(std::vector<PlanNode> &plan) {
-
-		// output file
-		std::ofstream dest;
-		dest.open("plan.dot");
-
-		dest << "digraph plan {" << std::endl;
-
-		// nodes
-		for(int i=0;i<plan.size();i++) {
-			dest <<  plan[i].id << "[ label=\"" << plan[i].action_name;
-		}
-
-		// edges
-		for(int i=0;i<plan.size();i++) {
-			for(int j=0;j<plan[i].inc_edges.size();j++) {
-				if(plan[i].inc_edges[j] >= 0)
-					dest <<  plan[i].inc_edges[j] << " -> " << plan[i].id << ";" << std::endl;
-			}
-		}
-
-		dest << "}" << std::endl;
-		dest.close();
-	}
-
-	bool CFFPlanParser::printPlan(std::vector<PlanNode> &plan, std::map<int,bool> &actionReceived, std::map<int,bool> &actionCompleted) {
-
-		// output file
-		std::ofstream dest;
-		dest.open("plan.dot");
-
-		dest << "digraph plan {" << std::endl;
-
-		// nodes
-		for(int i=0;i<plan.size();i++) {
-			dest <<  plan[i].id << "[ label=\"" << plan[i].action_name;
-			if(actionCompleted[plan[i].id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
-			else if(actionReceived[plan[i].id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
-			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
-		}
-
-		// edges
-		for(int i=0;i<plan.size();i++) {
-			for(int j=0;j<plan[i].inc_edges.size();j++) {
-				if(plan[i].inc_edges[j] >= 0)
-					dest <<  plan[i].inc_edges[j] << " -> " << plan[i].id << ";" << std::endl;
-			}
-		}
-
-		dest << "}" << std::endl;
-		dest.close();
-
 	}
 
 	/*-----------------*/
@@ -232,7 +193,7 @@ namespace KCL_rosplan {
 	/*
 	 * output a plan as an Esterel controller
 	 */
-	bool CFFPlanParser::produceEsterel(std::vector<PlanNode> &plan) {
+	bool CFFPlanParser::produceEsterel() {
 
 		// output file
 		std::string strl_file;
@@ -245,57 +206,84 @@ namespace KCL_rosplan {
 		dest.open(strl_file.c_str());
 
 		// main module
-
 		dest << "module plan:" << std::endl;
+
+		// inputs
 		dest << "input SOURCE";
-		for(int i=0;i<plan.size();i++) {
-			dest << ", a" << plan[i].id << "_complete";
+		std::map<std::string,StrlNode>::iterator nit = plan_nodes.begin();
+		for(; nit!=plan_nodes.end(); nit++) {
+			dest << ", a" << (nit->second).node_id << "_complete";
 		}
 		dest << std::endl;
 
-		dest << "output SINK";
-		for(int i=0;i<plan.size();i++) {
-			dest << ", a" << plan[i].id << "_dispatch";
+		// outputs
+		dest << "output SINK";		
+		for(nit = plan_nodes.begin(); nit!=plan_nodes.end(); nit++) {
+			dest << ", a" << (nit->second).node_id << "_dispatch";
 		}
 		dest << std::endl;
 
-		dest << "signal e" << plan[0].id;
-		for(int i=1;i<plan.size();i++) {
-			dest << ", e" << plan[i].id;
+		// internal signals
+		std::map<std::string,StrlEdge>::iterator eit = plan_edges.begin();
+		if(eit!=plan_edges.end()) {
+			dest << "signal " << (eit->second).edge_name;
+			for(; eit!=plan_edges.end(); eit++) {
+				dest << ", " << (eit->second).edge_name;
+			}
+			dest << " in" << std::endl;
 		}
-		dest << " in" << std::endl;
-		dest << "run action" << plan[0].id << std::endl;
-		for(int i=1;i<plan.size();i++) {
-			dest << " || action" << plan[i].id << std::endl;
+
+		// run everything
+		nit = plan_nodes.begin();
+		if(nit!=plan_nodes.end()) {
+			dest << "run action" << (nit->second).node_id << std::endl;
+			for(; nit!=plan_nodes.end(); nit++) {
+				dest << " || action" << (nit->second).node_id << std::endl;
+			}
+			dest << "end" << std::endl;
 		}
-		dest << "end" << std::endl;
 		dest << "end module" << std::endl << std::endl;
 
 		// action modules
-		for(int i=0;i<plan.size();i++) {
+		nit = plan_nodes.begin();
+		for(; nit!=plan_nodes.end(); nit++) {
 
-			dest << "module action" << plan[i].id << ":" << std::endl;
+			dest << "module action" << (nit->second).node_id << ":" << std::endl;
 
-			if(plan[i].inc_edges.size() > 0) {
+			if((nit->second).input.size() > 0) {
 				dest << "input ";
-				for(int j=0;j<plan[i].inc_edges.size();j++) {
+				for(int j=0;j<(nit->second).input.size();j++) {
 					if(j>0) dest << ", ";
-					dest << "e" << plan[plan[i].inc_edges[j]].id;
+					dest << (nit->second).input[j];
 				}
 				dest << ";" << std::endl;
 			}
 
-			dest << "output e" << plan[i].id << ";" << std::endl;
+			if((nit->second).output.size() > 0) {
+				dest << "output ";
+				for(int j=0;j<(nit->second).output.size();j++) {
+					if(j>0) dest << ", ";
+					dest << (nit->second).output[j];
+				}
+				dest << ";" << std::endl;
+			}
 
-			dest << "  await ";
-			for(int j=0;j<plan[i].inc_edges.size();j++) {
-				if(j>0) dest << " or ";
-				dest << "e" << plan[plan[i].inc_edges[j]].id;
+			if((nit->second).input.size() > 0) {
+				dest << "  await ";
+				for(int j=0;j<(nit->second).input.size();j++) {
+					if(j>0) dest << " or ";
+					dest << (nit->second).input[j];
+				}
+				dest << ";" << std::endl;
+			}
+
+			dest << "  emit a" << (nit->second).node_id << "_dispatch;" << std::endl;
+			dest << "  await a" << (nit->second).node_id << "_complete;" << std::endl;
+			
+			for(int j=0;j<(nit->second).output.size();j++) {
+				dest << "emit " << (nit->second).output[j];
 			}
 			dest << ";" << std::endl;
-			dest << "  emit action" << plan[i].id << "_dispatch;" << std::endl;
-			dest << "  await action" << plan[i].id << "_complete;" << std::endl;
-			dest << "  emit e" << plan[i].id << ";" << std::endl;
 			dest << "end module" << std::endl << std::endl;
 		}
 		dest.close();
