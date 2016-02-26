@@ -44,7 +44,10 @@ namespace KCL_rosplan {
 
 			if(!present) {
 				res.all_true = false;
+				res.results.push_back(false);
 				res.false_knowledge.push_back(*iit);
+			} else {
+				res.results.push_back(true);
 			}
 		}
 
