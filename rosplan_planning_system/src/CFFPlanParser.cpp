@@ -18,10 +18,91 @@ namespace KCL_rosplan {
 	void CFFPlanParser::reset() {
 		plan_nodes.clear();
 		plan_edges.clear();
+		edge_conditions.clear();
 	}
 
 	void CFFPlanParser::generateFilter(PlanningEnvironment &environment) {
 		// do nothing yet
+	}
+
+	void CFFPlanParser::toLowerCase(std::string &str) {
+		const int length = str.length();
+		for(int i=0; i < length; ++i) {
+			str[i] = std::tolower(str[i]);
+		}
+	}
+
+	/*------------*/
+	/* parse PDDL */
+	/*------------*/
+
+	/**
+	 * parse a PDDL condition
+	 */
+	void CFFPlanParser::preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment) {
+
+		// find action conditions
+		std::map<std::string, std::vector<std::vector<std::string> > >::iterator oit;
+		oit = environment.domain_operator_precondition_map.find(node.dispatch_msg.name);
+		if(oit==environment.domain_operator_precondition_map.end()) {
+std::cout << "action precondition map entry not found" << std::endl;
+			return;
+		}
+
+		// iterate through conditions
+		std::vector<std::vector<std::string> >::iterator cit = oit->second.begin();
+		for(; cit!=oit->second.end(); cit++) {
+			
+			rosplan_knowledge_msgs::KnowledgeItem condition;
+			
+			// set fact or function
+			std::map<std::string,std::vector<std::string> >::iterator dit = environment.domain_predicates.find((*cit)[0]);
+			if(dit!=environment.domain_predicates.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+
+			dit = environment.domain_functions.find((*cit)[0]);
+			if(dit!=environment.domain_functions.end()) condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
+
+			// create edge name
+			condition.attribute_name = (*cit)[0];
+			std::stringstream ss;
+			ss << condition.attribute_name;
+
+			// populate parameters
+			int index = 1;
+			std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
+			for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+
+				// set parameter label to predicate label
+				diagnostic_msgs::KeyValue param;
+				param.key = *pit;
+
+				// find label as it is in domain operator
+				std::string conditionKey = (*cit)[index];
+				index++;
+
+				// set value
+				std::vector<diagnostic_msgs::KeyValue>::iterator opit;
+				for(opit = node.dispatch_msg.parameters.begin(); opit!=node.dispatch_msg.parameters.end(); opit++) {
+					if(0==opit->key.compare(conditionKey)) {
+						param.value = opit->value;
+						ss << " " << param.value;
+					}
+				}
+				condition.values.push_back(param);
+			}
+
+			// create new edge
+			StrlEdge edge;
+			edge.signal_type = CONDITION;
+			edge.edge_name = ss.str();
+			edge.active = false;
+			edge.sinks.push_back(node.node_name);
+			node.output.push_back(edge.edge_name);
+			plan_edges[edge.edge_name] = edge;
+
+			// save condition
+			edge_conditions[edge.edge_name] = condition;
+		}
 	}
 
 	/*------------*/
@@ -29,7 +110,7 @@ namespace KCL_rosplan {
 	/*------------*/
 
 	/**
-	 * Parse a plan
+	 * Parse a plan written by CFF
 	 */
 	void CFFPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
@@ -49,6 +130,7 @@ namespace KCL_rosplan {
 		
 		while(!infile.eof()) {
 			std::getline(infile, line);
+			toLowerCase(line);
 
 			if (line.compare("ff: found legal plan as follows") == 0) {
 				planFound = true;

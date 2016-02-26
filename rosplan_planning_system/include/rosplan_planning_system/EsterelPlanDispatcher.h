@@ -16,8 +16,6 @@ namespace KCL_rosplan
 
 		/* mapping PDDL conditions and esterel inputs */
 		ros::ServiceClient query_knowledge_client;
-		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> condition_mapping;
-		void preparePDDLCondition(std::string edgeName);
 
 		/* plan description from parser */
 		CFFPlanParser *cff_pp;

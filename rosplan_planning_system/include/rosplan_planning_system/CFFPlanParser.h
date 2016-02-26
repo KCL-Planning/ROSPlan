@@ -30,12 +30,16 @@ namespace KCL_rosplan {
 
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
-		
+
+		void toLowerCase(std::string &str);
+		void preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment);
+
 	public:
 
 		/* plan description in Esterel */
 		std::map<std::string,StrlNode> plan_nodes;
 		std::map<std::string,StrlEdge> plan_edges;
+		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> edge_conditions;
 
 		/* constructor */
 		CFFPlanParser(ros::NodeHandle &nh);

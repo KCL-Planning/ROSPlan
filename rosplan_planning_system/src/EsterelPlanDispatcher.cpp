@@ -43,47 +43,10 @@ namespace KCL_rosplan {
 		action_completed.clear();
 	}
 
-	/*---------------*/
-	/* parse esterel */
-	/*---------------*/
-/*
-	void EsterelPlanDispatcher::preparePDDLCondition(std::string edgeName) {
-
-		// regex through the conditions
-		boost::regex e_conditions("-([^-]+)");
-		boost::sregex_iterator iter(edgeName.begin(), edgeName.end(), e_conditions);
-		boost::sregex_iterator end;
-		
-		// prepare the attribute knowledge item
-		rosplan_knowledge_msgs::KnowledgeItem item;
-		item.knowledge_type = 1;
-		item.attribute_name = (*iter)[1];
-
-		// fetch attribute signiature
-		std::map<std::string,std::vector<std::string> >::iterator it;
-		it = environment.domain_predicates.find(item.attribute_name);
-		if (it != environment.domain_predicates.end()) {
-			int param = 0;
-			// set parameters
-			for(; iter != end; ++iter ) {
-				if(param<=it->second.size()) {
-					std::cout << "error reading condition edge!" << std::endl;
-					return;
-				}
-				diagnostic_msgs::KeyValue pair;
-				pair.key = it->second[param];
-				pair.value = (*iter)[1];
-				param++;
-			}
-		} else {
-			std::cout << "error reading condition edge (2)!" << std::endl;
-			return;
-		}
-		
-		condition_mapping[edgeName] = item;
-
-	}
-
+	/*--------------*/
+	/* read Esterel */
+	/*--------------*/
+	/*
 	bool EsterelPlanDispatcher::readEsterelFile(std::string strlFile) {
 
 		// open file
@@ -174,8 +137,7 @@ namespace KCL_rosplan {
 			}
 		}
 		planfile.close();
-	}
-*/
+	}*/
 
 	/*-----------------*/
 	/* action dispatch */
@@ -279,14 +241,19 @@ namespace KCL_rosplan {
 			}
 
 			// query KMS for condition edges
-			std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator kit = condition_mapping.begin();
+			std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = cff_pp->edge_conditions.begin();
 			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-			for(; kit!=condition_mapping.end(); kit++) {
-				querySrv.request.knowledge.clear();
-				querySrv.request.knowledge.push_back(kit->second);
-				if (query_knowledge_client.call(querySrv)) {
-					edge_values[it->first] = querySrv.response.all_true;
+			for(; cit != cff_pp->edge_conditions.end(); cit++) {
+				querySrv.request.knowledge.push_back(cit->second);
+			}
+			if (query_knowledge_client.call(querySrv)) {
+				cit = cff_pp->edge_conditions.begin();
+				for(int i=0; i<querySrv.response.results.size(); i++) {
+					edge_values[cit->first] = querySrv.response.results[i];
+					cit++;
 				}
+			} else {
+				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
 			}
 			
 			// copy new edge values
