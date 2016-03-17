@@ -23,6 +23,9 @@ namespace KCL_rosplan
 		/* plan description from Esterel file */
 		std::string strl_file;
 		bool readEsterelFile(std::string strlFile);
+		
+		/* action offset */
+		int action_id_offset;
 
 	public:
 

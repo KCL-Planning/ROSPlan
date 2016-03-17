@@ -62,18 +62,24 @@ namespace KCL_rosplan {
 			line_no = 1;
 			VAL::yfl->switch_streams(&domainFile,&std::cout);
 			yyparse();
-
+			
 			// domain name
 			VAL::domain* domain = VAL::current_analysis->the_domain;
+			if (domain == NULL)
+			{
+				ROS_ERROR("KCL: (PS) Domain could not be parsed!");
+				return;
+			}
+			
 			domainName = domain->name;
-
+			
 			// types
 			VAL::pddl_type_list* types = domain->types;
 			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 				const VAL::pddl_type* type = *ci;
 				domain_types.push_back(type->getName());
 			}
-
+			
 			// predicates
 			VAL::pred_decl_list* predicates = domain->predicates;
 			if(predicates) {
@@ -88,7 +94,7 @@ namespace KCL_rosplan {
 					}
 				}
 			}
-
+			
 			// functions
 			VAL::func_decl_list* functions = domain->functions;
 			if(functions) {
@@ -103,7 +109,7 @@ namespace KCL_rosplan {
 					}
 				}
 			}
-
+			
 			// operators
 			VAL::operator_list* operators = domain->ops;
 			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			

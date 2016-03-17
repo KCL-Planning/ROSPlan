@@ -1,5 +1,7 @@
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 
+#include <ostream>
+
 #ifndef KCL_esterel_plan
 #define KCL_esterel_plan
 
@@ -17,6 +19,8 @@ namespace KCL_rosplan
 		std::vector<std::string> sinks;
 		bool active;
 	};
+	
+	
 
 	/* Plan node definition */
 	struct StrlNode
@@ -33,5 +37,8 @@ namespace KCL_rosplan
 		rosplan_dispatch_msgs::ActionDispatch dispatch_msg;
 	};
 }
+
+std::ostream& operator<<(std::ostream& os, const KCL_rosplan::StrlEdge& edge);
+std::ostream& operator<<(std::ostream& os, const KCL_rosplan::StrlNode& edge);
 
 #endif

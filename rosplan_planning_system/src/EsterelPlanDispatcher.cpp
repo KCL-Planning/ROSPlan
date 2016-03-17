@@ -1,4 +1,5 @@
 #include "rosplan_planning_system/EsterelPlanDispatcher.h"
+#include "rosplan_planning_system/EsterelPlan.h"
 #include <stdlib.h> 
 #include <map>
 #include <iostream>
@@ -12,6 +13,7 @@ namespace KCL_rosplan {
 	/*-------------*/
 
 	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser)
+		: action_id_offset(0)
 	{
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
@@ -31,7 +33,8 @@ namespace KCL_rosplan {
 	}
 
 	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
-		current_action = freeActionID;
+		//current_action = freeActionID;
+		action_id_offset = freeActionID;
 	}
 
 	void EsterelPlanDispatcher::reset() {
@@ -153,6 +156,7 @@ namespace KCL_rosplan {
 
 		// dispatch plan
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");
+		
 		replan_requested = false;
 		bool repeatAction = false;
 		
@@ -162,11 +166,43 @@ namespace KCL_rosplan {
 		for(; eit!=cff_pp->plan_edges.end(); eit++)
 			edge_values[eit->second.edge_name] = false;
 		
-
+		// query KMS for condition edges
+		{
+		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = cff_pp->edge_conditions.begin();
+		rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+		for(; cit != cff_pp->edge_conditions.end(); cit++) {
+			querySrv.request.knowledge.push_back(cit->second);
+			std::cout << "Check if the condition " << cit->first << " holds..." << std::endl;
+		}
+		if (query_knowledge_client.call(querySrv)) {
+			cit = cff_pp->edge_conditions.begin();
+			for(int i=0; i<querySrv.response.results.size(); i++) {
+				std::cout << "The condition " << cit->first << (querySrv.response.results[i] ? " is true!" : " is false!") << std::endl;
+				cff_pp->plan_edges[cit->first].active = querySrv.response.results[i];
+				cit++;
+			}
+		} else {
+			ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+		}
+		}
+		/*
+		for(std::map<std::string,StrlNode>::const_iterator ci = cff_pp->plan_nodes.begin(); ci!=cff_pp->plan_nodes.end(); ++ci) {
+			const StrlNode& node = (*ci).second;
+			std::cout << " ************** " << (*ci).first << " **************" << std::endl;
+			std::cout << node << std::endl;
+			
+			for(int i=0;i<node.await_input.size();i++) {
+				const StrlEdge& input_edge = cff_pp->plan_edges[node.input[i]];
+				std::cout << "IN: " << input_edge << std::endl;
+			}
+			std::cout << " ************** " << (*ci).first << " **************" << std::endl;
+		}
+		*/
 		// begin execution
 		bool finished_execution = false;
 		while (ros::ok() && !finished_execution) {
 
+			//std::cout << " *** BEGIN LOOP *** " << std::endl;
 			finished_execution = true;
 
 			// loop while dispatch is paused
@@ -197,6 +233,8 @@ namespace KCL_rosplan {
 					bool activate = true;
 					for(int i=0;i<strl_node.await_input.size();i++) {
 						if(!cff_pp->plan_edges[strl_node.input[i]].active) {
+							//std::cout << "Cannot start: " << strl_node << std::endl;
+							//std::cout << "Because: " << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
 							activate = false;
 						}
 					}
@@ -210,9 +248,18 @@ namespace KCL_rosplan {
 						action_received[strl_node.node_id] = false;
 						action_completed[strl_node.node_id] = false;
 						rosplan_dispatch_msgs::ActionDispatch currentMessage = strl_node.dispatch_msg;
-
+						
+						currentMessage.action_id = currentMessage.action_id + action_id_offset;
+						
 						// dispatch action
 						ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
+						
+						for(int i=0;i<strl_node.await_input.size();i++) {
+							if(!cff_pp->plan_edges[strl_node.input[i]].active) {
+								std::cout << "\t" << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
+							}
+						}
+						
 						action_publisher.publish(currentMessage);
 						current_action = strl_node.node_id;
 					}
@@ -231,7 +278,15 @@ namespace KCL_rosplan {
 						for(int i=0;i<strl_node.output.size();i++) {
 							edge_values[strl_node.output[i]] = true;
 						}
-					}
+					}/* else {
+						std::cout << "Action still active: " << std::endl;
+						std::cout << strl_node << std::endl;
+						
+						for(int i=0;i<strl_node.await_input.size();i++) {
+							std::cout << "Check edge: " << std::endl;
+							std::cout << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
+						}
+					}*/
 				}
 
 				printPlan();
@@ -245,10 +300,12 @@ namespace KCL_rosplan {
 			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
 			for(; cit != cff_pp->edge_conditions.end(); cit++) {
 				querySrv.request.knowledge.push_back(cit->second);
+				//std::cout << "Check if the condition " << cit->first << " holds..." << std::endl;
 			}
 			if (query_knowledge_client.call(querySrv)) {
 				cit = cff_pp->edge_conditions.begin();
 				for(int i=0; i<querySrv.response.results.size(); i++) {
+					//std::cout << "The condition " << cit->first << (querySrv.response.results[i] ? " is true!" : " is false!") << std::endl;
 					edge_values[cit->first] = querySrv.response.results[i];
 					cit++;
 				}
@@ -267,6 +324,8 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (EsterelPlanDispatcher) Replan requested");
 				return false;
 			}
+			
+			//std::cout << " *** END LOOP *** " << std::endl;
 		}
 		return true;
 	}
@@ -284,7 +343,7 @@ namespace KCL_rosplan {
 		bool found = false;
 		std::map<std::string,StrlNode>::iterator it = cff_pp->plan_nodes.begin();
 		for(; it!=cff_pp->plan_nodes.end(); it++) {
-			if((it->second).node_id == msg->action_id)
+			if((it->second).node_id == msg->action_id - action_id_offset)
 				found = true;
 		}
 		// no matching action
@@ -293,20 +352,21 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Feedback received [%i, %s]", msg->action_id, msg->status.c_str());
 
 		// action enabled
-		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled")))
-			action_received[msg->action_id] = true;
+		int normalised_action_id = msg->action_id - action_id_offset;
+		if(!action_received[normalised_action_id] && (0 == msg->status.compare("action enabled")))
+			action_received[normalised_action_id] = true;
 		
 		// more specific feedback
 		actionFeedback(msg);
 
 		// action completed (successfuly)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
-			action_completed[msg->action_id] = true;
+		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action achieved"))
+			action_completed[normalised_action_id] = true;
 
 		// action completed (failed)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action failed")) {
 			replan_requested = true;
-			action_completed[msg->action_id] = true;
+			action_completed[normalised_action_id] = true;
 		}
 	}
 

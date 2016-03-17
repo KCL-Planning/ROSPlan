@@ -20,7 +20,8 @@ SEARCHDIRS := -iquote -I${MYCODEDIR}
 
 # makemake variables
 
-DEPENDFLAGS := -g -Wall -Werror ${SEARCHDIRS}
+#DEPENDFLAGS := -g -Wall -Werror ${SEARCHDIRS}
+DEPENDFLAGS := -g -Wall ${SEARCHDIRS}
 
 # C preprocessor (C, C++, FORTRAN)
 
