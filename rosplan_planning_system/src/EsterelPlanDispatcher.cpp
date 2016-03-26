@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <boost/regex.hpp>
+#include <boost/concept_check.hpp>
 
 namespace KCL_rosplan {
 
@@ -161,43 +162,43 @@ namespace KCL_rosplan {
 		bool repeatAction = false;
 		
 		// initialise machine
-		std::map<std::string,bool> edge_values;
-		std::map<std::string,StrlEdge>::iterator eit = cff_pp->plan_edges.begin();
-		for(; eit!=cff_pp->plan_edges.end(); eit++)
-			edge_values[eit->second.edge_name] = false;
+		std::map<StrlEdge*,bool> edge_values;
+		for(std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ci++)
+			edge_values[*ci] = false;
 		
 		// query KMS for condition edges
+		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
+		for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci)
 		{
-		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = cff_pp->edge_conditions.begin();
-		rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-		for(; cit != cff_pp->edge_conditions.end(); cit++) {
-			querySrv.request.knowledge.push_back(cit->second);
-			std::cout << "Check if the condition " << cit->first << " holds..." << std::endl;
-		}
-		if (query_knowledge_client.call(querySrv)) {
-			cit = cff_pp->edge_conditions.begin();
-			for(int i=0; i<querySrv.response.results.size(); i++) {
-				std::cout << "The condition " << cit->first << (querySrv.response.results[i] ? " is true!" : " is false!") << std::endl;
-				cff_pp->plan_edges[cit->first].active = querySrv.response.results[i];
-				cit++;
-			}
-		} else {
-			ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
-		}
-		}
-		/*
-		for(std::map<std::string,StrlNode>::const_iterator ci = cff_pp->plan_nodes.begin(); ci!=cff_pp->plan_nodes.end(); ++ci) {
-			const StrlNode& node = (*ci).second;
-			std::cout << " ************** " << (*ci).first << " **************" << std::endl;
-			std::cout << node << std::endl;
+			StrlEdge* edge = *ci;
 			
-			for(int i=0;i<node.await_input.size();i++) {
-				const StrlEdge& input_edge = cff_pp->plan_edges[node.input[i]];
-				std::cout << "IN: " << input_edge << std::endl;
+			if (edge->external_conditions.empty())
+			{
+				continue;
 			}
-			std::cout << " ************** " << (*ci).first << " **************" << std::endl;
+			
+			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+			for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci)
+			{
+				const rosplan_knowledge_msgs::KnowledgeItem& knowledge_item = *ci;
+				querySrv.request.knowledge.push_back(knowledge_item);
+			}
+			
+			// Check if all external conditions have been satisfied.
+			if (query_knowledge_client.call(querySrv))
+			{
+				if (querySrv.response.all_true)
+				{
+					edge->active = true;
+				}
+			}
+			else
+			{
+				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+				exit(1);
+			}
 		}
-		*/
+		
 		// begin execution
 		bool finished_execution = false;
 		while (ros::ok() && !finished_execution) {
@@ -218,24 +219,24 @@ namespace KCL_rosplan {
 			}
 
 			// for each module
-			std::map<std::string,StrlNode>::iterator it = cff_pp->plan_nodes.begin();
-			for(; it!=cff_pp->plan_nodes.end(); it++) {
+			for(std::vector<StrlNode*>::const_iterator ci = cff_pp->plan_nodes.begin(); ci != cff_pp->plan_nodes.end(); ci++) {
 				
-				StrlNode& strl_node = it->second;
+				StrlNode* strl_node = *ci;
 				
 				// If at least one node is still executing we are not done yet.
-				if (strl_node.dispatched && !strl_node.completed)
+				if (strl_node->dispatched && !strl_node->completed)
 					finished_execution = false;
 				
-				if(!strl_node.dispatched) {
+				if(!strl_node->dispatched) {
 				
 					// activate waiting nodes
 					bool activate = true;
-					for(int i=0;i<strl_node.await_input.size();i++) {
-						if(!cff_pp->plan_edges[strl_node.input[i]].active) {
-							//std::cout << "Cannot start: " << strl_node << std::endl;
-							//std::cout << "Because: " << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
+					for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci)
+					{
+						if (!(*ci)->active)
+						{
 							activate = false;
+							break;
 						}
 					}
 					
@@ -244,49 +245,34 @@ namespace KCL_rosplan {
 						finished_execution = false;
 						
 						// activate action
-						strl_node.dispatched = true;
-						action_received[strl_node.node_id] = false;
-						action_completed[strl_node.node_id] = false;
-						rosplan_dispatch_msgs::ActionDispatch currentMessage = strl_node.dispatch_msg;
+						strl_node->dispatched = true;
+						action_received[strl_node->node_id] = false;
+						action_completed[strl_node->node_id] = false;
+						rosplan_dispatch_msgs::ActionDispatch currentMessage = strl_node->dispatch_msg;
 						
 						currentMessage.action_id = currentMessage.action_id + action_id_offset;
 						
 						// dispatch action
 						ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
-						
-						for(int i=0;i<strl_node.await_input.size();i++) {
-							if(!cff_pp->plan_edges[strl_node.input[i]].active) {
-								std::cout << "\t" << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
-							}
-						}
-						
 						action_publisher.publish(currentMessage);
-						current_action = strl_node.node_id;
+						current_action = strl_node->node_id;
 					}
 
-				} else if(!strl_node.completed) {
+				} else if(!strl_node->completed) {
 					
 					// check action completion
-					if(action_completed[strl_node.node_id]) {
+					if(action_completed[strl_node->node_id]) {
 
-						strl_node.completed = true;
+						strl_node->completed = true;
 						finished_execution = false;
 						
-						ROS_INFO("KCL: (EsterelPlanDispatcher) %i: action %s completed", strl_node.node_id, strl_node.node_name.c_str());
+						ROS_INFO("KCL: (EsterelPlanDispatcher) %i: action %s completed", strl_node->node_id, strl_node->node_name.c_str());
 
 						// emit output edges
-						for(int i=0;i<strl_node.output.size();i++) {
-							edge_values[strl_node.output[i]] = true;
+						for(int i=0;i<strl_node->output.size();i++) {
+							edge_values[strl_node->output[i]] = true;
 						}
-					}/* else {
-						std::cout << "Action still active: " << std::endl;
-						std::cout << strl_node << std::endl;
-						
-						for(int i=0;i<strl_node.await_input.size();i++) {
-							std::cout << "Check edge: " << std::endl;
-							std::cout << cff_pp->plan_edges[strl_node.input[i]] << std::endl;
-						}
-					}*/
+					}
 				}
 
 				printPlan();
@@ -296,28 +282,42 @@ namespace KCL_rosplan {
 			}
 
 			// query KMS for condition edges
-			std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = cff_pp->edge_conditions.begin();
-			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-			for(; cit != cff_pp->edge_conditions.end(); cit++) {
-				querySrv.request.knowledge.push_back(cit->second);
-				//std::cout << "Check if the condition " << cit->first << " holds..." << std::endl;
-			}
-			if (query_knowledge_client.call(querySrv)) {
-				cit = cff_pp->edge_conditions.begin();
-				for(int i=0; i<querySrv.response.results.size(); i++) {
-					//std::cout << "The condition " << cit->first << (querySrv.response.results[i] ? " is true!" : " is false!") << std::endl;
-					edge_values[cit->first] = querySrv.response.results[i];
-					cit++;
+			for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci)
+			{
+				StrlEdge* edge = *ci;
+		
+				if (edge->external_conditions.empty())
+				{
+					continue;
 				}
-			} else {
-				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+				
+				rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+				for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci)
+				{
+					const rosplan_knowledge_msgs::KnowledgeItem& knowledge_item = *ci;
+					querySrv.request.knowledge.push_back(knowledge_item);
+				}
+				
+				// Check if all external conditions have been satisfied.
+				if (query_knowledge_client.call(querySrv))
+				{
+					if (querySrv.response.all_true)
+					{
+						edge_values[edge] = true;
+					}
+				}
+				else
+				{
+					ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+					exit(1);
+				}
 			}
 			
 			// copy new edge values
-			std::map<std::string,StrlEdge>::iterator eit = cff_pp->plan_edges.begin();
-			for(; eit!=cff_pp->plan_edges.end(); eit++) {
-				eit->second.active = edge_values[eit->second.edge_name];
-				edge_values[eit->second.edge_name] = false;
+			for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit != cff_pp->plan_edges.end(); eit++)
+			{
+				(*eit)->active = edge_values[*eit];
+				edge_values[*eit] = false;
 			}
 
 			if(replan_requested) {
@@ -327,6 +327,7 @@ namespace KCL_rosplan {
 			
 			//std::cout << " *** END LOOP *** " << std::endl;
 		}
+		
 		return true;
 	}
 
@@ -341,9 +342,8 @@ namespace KCL_rosplan {
 
 		// find action
 		bool found = false;
-		std::map<std::string,StrlNode>::iterator it = cff_pp->plan_nodes.begin();
-		for(; it!=cff_pp->plan_nodes.end(); it++) {
-			if((it->second).node_id == msg->action_id - action_id_offset)
+		for(std::vector<StrlNode*>::iterator it = cff_pp->plan_nodes.begin(); it!=cff_pp->plan_nodes.end(); it++) {
+			if((*it)->node_id == msg->action_id - action_id_offset)
 				found = true;
 		}
 		// no matching action
@@ -395,21 +395,20 @@ namespace KCL_rosplan {
 		dest << "digraph plan {" << std::endl;
 
 		// nodes
-		std::map<std::string,StrlNode>::iterator nit = cff_pp->plan_nodes.begin();
-		for(; nit!=cff_pp->plan_nodes.end(); nit++) {
-			dest <<  (nit->second).node_id << "[ label=\"" << (nit->second).node_name;
-			if(action_completed[(nit->second).node_id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
-			else if(action_received[(nit->second).node_id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
+		for(std::vector<StrlNode*>::iterator nit = cff_pp->plan_nodes.begin(); nit!=cff_pp->plan_nodes.end(); nit++) {
+			dest <<  (*nit)->node_id << "[ label=\"" << (*nit)->node_name;
+			if(action_completed[(*nit)->node_id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
+			else if(action_received[(*nit)->node_id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
 			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
 		}
 
 		// edges
-		std::map<std::string,StrlEdge>::iterator eit = cff_pp->plan_edges.begin();
-		for(; eit!=cff_pp->plan_edges.end(); eit++) {
-			for(int i=0; i<(eit->second).sources.size(); i++) {
-			for(int j=0; j<(eit->second).sinks.size(); j++) {
-				dest << (eit->second).sources[i] << " -> " << (eit->second).sinks[j] << ";" << std::endl;
-			}}
+		for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit!=cff_pp->plan_edges.end(); eit++) {
+			for(int i=0; i<(*eit)->sources.size(); i++) {
+				for(int j=0; j<(*eit)->sinks.size(); j++) {
+					dest << "\"" << (*eit)->sources[i] << "\"" << " -> \"" << (*eit)->sinks[j] << "\";" << std::endl;
+				}
+			}
 		}
 
 		dest << "}" << std::endl;

@@ -1,6 +1,7 @@
-#include "rosplan_dispatch_msgs/ActionDispatch.h"
-
+#include <rosplan_dispatch_msgs/ActionDispatch.h>
+#include <rosplan_knowledge_msgs/KnowledgeItem.h>
 #include <ostream>
+#include <vector>
 
 #ifndef KCL_esterel_plan
 #define KCL_esterel_plan
@@ -10,27 +11,28 @@ namespace KCL_rosplan
 
 	enum SignalType { ACTION, CONDITION, TIME };
 
+	struct StrlNode;
+	
 	/* Plan edge definition */
 	struct StrlEdge
 	{
 		SignalType signal_type;
 		std::string edge_name;
-		std::vector<std::string> sources;
-		std::vector<std::string> sinks;
+		std::vector<StrlNode*> sources;
+		std::vector<StrlNode*> sinks;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> external_conditions;
 		bool active;
 	};
 	
-	
-
 	/* Plan node definition */
 	struct StrlNode
 	{
 		std::string node_name;
 		int node_id;
-		std::vector<std::string> input;
-		std::vector<std::string> output;
+		std::vector<StrlEdge*> input;
+		std::vector<StrlEdge*> output;
 
-		std::vector<bool> await_input;
+		//std::vector<bool> await_input;
 		bool dispatched;
 		bool completed;
 

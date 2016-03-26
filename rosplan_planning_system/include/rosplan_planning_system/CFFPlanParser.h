@@ -33,13 +33,22 @@ namespace KCL_rosplan {
 
 		void toLowerCase(std::string &str);
 		void preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment);
+		
+		/**
+		 * Create an Estrel node based on the name of the action.
+		 * @param action_name The name of the action.
+		 * @param node_id The id that should be given to the node.
+		 * @param environment The planning environment.
+		 * @param node The node that is created based on @ref{action_name}.
+		 * @param edge The edge that is created based on @ref{action_name}.
+		 */
+		void createNodeAndEdge(const std::string& action_name, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
 
 	public:
 
 		/* plan description in Esterel */
-		std::map<std::string,StrlNode> plan_nodes;
-		std::map<std::string,StrlEdge> plan_edges;
-		std::map<std::string,rosplan_knowledge_msgs::KnowledgeItem> edge_conditions;
+		std::vector<StrlNode*> plan_nodes;
+		std::vector<StrlEdge*> plan_edges;
 
 		/* constructor */
 		CFFPlanParser(ros::NodeHandle &nh);
