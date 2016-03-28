@@ -4,6 +4,8 @@
 #include <string>
 #include <ctime>
 #include <stdlib.h>
+#include <algorithm>
+#include <ctype.h>
 
 /* implementation of rosplan_interface_mapping::CFFPlanParser.h */
 namespace KCL_rosplan {
@@ -18,7 +20,6 @@ namespace KCL_rosplan {
 	void CFFPlanParser::reset() {
 		plan_nodes.clear();
 		plan_edges.clear();
-		edge_conditions.clear();
 	}
 
 	void CFFPlanParser::generateFilter(PlanningEnvironment &environment) {
@@ -26,10 +27,7 @@ namespace KCL_rosplan {
 	}
 
 	void CFFPlanParser::toLowerCase(std::string &str) {
-		const int length = str.length();
-		for(int i=0; i < length; ++i) {
-			str[i] = std::tolower(str[i]);
-		}
+		std::transform(str.begin(), str.end(), str.begin(), tolower);
 	}
 
 	/*------------*/
@@ -41,19 +39,40 @@ namespace KCL_rosplan {
 	 */
 	void CFFPlanParser::preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment) {
 
+		std::string normalised_action_name = node.dispatch_msg.name;
+		std::transform(normalised_action_name.begin(), normalised_action_name.end(), normalised_action_name.begin(), tolower);
+		
 		// find action conditions
 		std::map<std::string, std::vector<std::vector<std::string> > >::iterator oit;
-		oit = environment.domain_operator_precondition_map.find(node.dispatch_msg.name);
+		oit = environment.domain_operator_precondition_map.find(normalised_action_name);
 		if(oit==environment.domain_operator_precondition_map.end()) {
-std::cout << "action precondition map entry not found" << std::endl;
+			std::cout << "action precondition map entry not found:" << node.dispatch_msg.name << std::endl;
+			for (std::map<std::string, std::vector<std::vector<std::string> > >::const_iterator ci = environment.domain_operator_precondition_map.begin(); ci != environment.domain_operator_precondition_map.end(); ++ci)
+			{
+				std::cout << (*ci).first;
+				const std::vector<std::vector<std::string> >& mapping = (*ci).second;
+				for (std::vector<std::vector<std::string> >::const_iterator ci = mapping.begin(); ci != mapping.end(); ++ci)
+				{
+					const std::vector<std::string>& list = *ci;
+					std::cout << "{";
+					for (std::vector<std::string>::const_iterator ci = list.begin(); ci != list.end(); ++ci)
+					{
+						std::cout << *ci << ", ";
+					}
+					std::cout << "}" << std::endl;
+				}
+			}
+			exit(1);
 			return;
 		}
+		
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> processed_preconditions;
 
 		// iterate through conditions
-		std::vector<std::vector<std::string> >::iterator cit = oit->second.begin();
-		for(; cit!=oit->second.end(); cit++) {
+		for(std::vector<std::vector<std::string> >::iterator cit = oit->second.begin(); cit!=oit->second.end(); cit++) {
 			
 			rosplan_knowledge_msgs::KnowledgeItem condition;
+			condition.is_negative = false;
 			
 			// set fact or function
 			std::map<std::string,std::vector<std::string> >::iterator dit = environment.domain_predicates.find((*cit)[0]);
@@ -64,6 +83,13 @@ std::cout << "action precondition map entry not found" << std::endl;
 
 			// create edge name
 			condition.attribute_name = (*cit)[0];
+			
+			// Preconditions that start with an 'r' are resolved atoms that are only necessary for generating the plan.
+			if (condition.attribute_name[0] == 'r' && "resolve-axioms" != condition.attribute_name)
+			{
+				condition.attribute_name = condition.attribute_name.substr(1);
+			}
+			
 			std::stringstream ss;
 			ss << condition.attribute_name;
 
@@ -78,36 +104,120 @@ std::cout << "action precondition map entry not found" << std::endl;
 
 				// find label as it is in domain operator
 				std::string conditionKey = (*cit)[index];
+				std::transform(conditionKey.begin(), conditionKey.end(), conditionKey.begin(), tolower);
 				index++;
 
 				// set value
 				std::vector<diagnostic_msgs::KeyValue>::iterator opit;
 				for(opit = node.dispatch_msg.parameters.begin(); opit!=node.dispatch_msg.parameters.end(); opit++) {
-					if(0==opit->key.compare(conditionKey)) {
+					
+					std::string parameter = opit->key;
+					std::transform(parameter.begin(), parameter.end(), parameter.begin(), tolower);
+					
+					if(0==parameter.compare(conditionKey)) {
 						param.value = opit->value;
 						ss << " " << param.value;
 					}
 				}
 				condition.values.push_back(param);
 			}
-
+			
+			// Make sure we haven't already processed this precondition.
+			bool already_processed = true;
+			for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = processed_preconditions.begin(); ci != processed_preconditions.end(); ++ci)
+			{
+				const rosplan_knowledge_msgs::KnowledgeItem& processed_precondition = *ci;
+				if (condition.attribute_name != processed_precondition.attribute_name)
+				{
+					already_processed = false;
+					break;
+				}
+				
+				for (unsigned int i = 0; i < processed_precondition.values.size(); ++i)
+				{
+					if (processed_precondition.values[i].value != condition.values[i].value)
+					{
+						already_processed = false;
+						break;
+					}
+				}
+			}
+			
+			if (already_processed) continue;
+			
 			// create new edge
-			StrlEdge edge;
-			edge.signal_type = CONDITION;
-			edge.edge_name = ss.str();
-			edge.active = false;
-			edge.sinks.push_back(node.node_name);
-			node.output.push_back(edge.edge_name);
-			plan_edges[edge.edge_name] = edge;
-
-			// save condition
-			edge_conditions[edge.edge_name] = condition;
+			StrlEdge* edge = new StrlEdge();
+			edge->signal_type = CONDITION;
+			edge->edge_name = ss.str();
+			edge->active = false;
+			edge->sinks.push_back(&node);
+			edge->external_conditions.push_back(condition);
+			
+			node.input.push_back(edge);
+			plan_edges.push_back(edge);
 		}
 	}
 
 	/*------------*/
 	/* Parse plan */
 	/*------------*/
+	
+	void CFFPlanParser::createNodeAndEdge(const std::string& action_name, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge)
+	{
+		//std::cout << "[CFFPlanParser::createNodeAndEdge] " << action_name << " " << node_id << std::endl;
+		node.node_name = action_name;
+		node.node_id = node_id;
+		node.dispatched = false;
+		node.completed = false;
+
+		// save this parent edge
+		edge.signal_type = ACTION;
+		std::stringstream ss;
+		ss << "e" << node.node_id;
+		edge.edge_name = ss.str();
+		edge.sources.push_back(&node);
+		edge.active = false;
+		plan_edges.push_back(&edge);
+		
+		// prepare message
+		node.output.push_back(&edge);
+		node.dispatch_msg.action_id = node.node_id;
+		node.dispatch_msg.duration = 0.1;
+		node.dispatch_msg.dispatch_time = 0;
+		node.dispatch_msg.name = action_name;
+		
+		std::string operator_name = action_name.substr(0, action_name.find(" "));
+		
+		// check for parameters
+		int curr = operator_name.length();
+		int next = 0;
+		bool paramsExist = (action_name.find(" ",curr) != std::string::npos);
+		if(paramsExist) {
+
+			// name
+			next = action_name.find(" ",curr);
+			node.dispatch_msg.name = operator_name;
+			int parameter_index = 0;
+			
+			// parameters
+			std::vector<std::string> params;
+			while(next < action_name.length()) {
+				curr = next + 1;
+				next = action_name.find(" ",curr);
+				if(next == std::string::npos)
+					next = action_name.length();
+				
+				
+				diagnostic_msgs::KeyValue pair;
+				pair.key = environment.domain_operators[operator_name][parameter_index];
+				pair.value = action_name.substr(curr,next-curr);
+				node.dispatch_msg.parameters.push_back(pair);
+				++parameter_index;
+			}
+		}
+		preparePDDLConditions(node, environment);
+		plan_nodes.push_back(&node);
+	}
 
 	/**
 	 * Parse a plan written by CFF
@@ -119,7 +229,20 @@ std::cout << "action precondition map entry not found" << std::endl;
 		// prepare plan
 		plan_nodes.clear();
 		plan_edges.clear();
-		std::vector<std::string> parentStack;
+		
+		// Manage shad / assume knowledge bases.
+		std::vector<std::vector<StrlEdge*>* > leafs;
+		
+		// Keep a stack of the observation actions that still have to be resolved.
+		std::vector<StrlEdge*> conditional_branch_stack;
+		
+		// Keep a stack of the negative / possitive observations made.
+		std::vector<StrlEdge*> active_branch_edge;
+		
+		// The last edge that will lead to the next action.
+		StrlEdge* last_edge = NULL;
+		
+		bool observation_is_active = false;
 
 		// load plan file
 		std::ifstream infile((dataPath + "plan.pddl").c_str());
@@ -137,15 +260,14 @@ std::cout << "action precondition map entry not found" << std::endl;
 			} else if (!planFound) {
 				//consume useless lines
 			} else if (!planRead) {
-
-				bool observeAction = false;
-				bool shedAction = false;
+				
 				nodeCount = freeActionID;
 				std::vector<std::string> parentEdge;
 
 				while(!infile.eof()) {
 
 					std::getline(infile, line);
+					toLowerCase(line);
 
 					if(line.substr(0,10).compare("time spent")==0)
 						break;
@@ -155,109 +277,175 @@ std::cout << "action precondition map entry not found" << std::endl;
 
 					// action name
 					curr = line.find(":");
-					std::string name = line.substr(curr+2).c_str();
+					std::string name = line.substr(curr+2);
 
 					// deal with branches
-					if("RAMINIFICATE" == name && observeAction) {
-
-						// branch
-						parentStack.push_back(parentStack.back());
-						observeAction = true;
-
-					} else if("SHED" == name.substr(0,4)) {
-
-						// shed
-						observeAction = false;
-						shedAction = true;
-
-					} else if("POP" == name.substr(0,3)) {
-
-						// pop
-						if(parentStack.size()>1) {
-							std::swap(
-								parentStack[parentStack.size()-1],
-								parentStack[parentStack.size()-2]);
-							observeAction = false;
-						} else {
-							ROS_INFO("KCL: (CFFPlanParser) Error parsing plan (POP)");
-						}
-
-					} else if("RAMINIFICATE" == name) {
-						// skip administration actions
-						observeAction = true;
-					} else if("ASSUME" == name.substr(0,6)) {
-						// skip administration actions
-						observeAction = false;
-
-					} else {
-
-						StrlNode node;
-						node.node_name = name;
-						node.node_id = nodeCount;
-						node.dispatched = false;
-						node.completed = false;
-
-						ROS_INFO("KCL: (CFFPlanParser) Created plan node: [%i] %s", node.node_id, name.c_str());
-
-						// incoming edge(s)
-						if(parentStack.size()>0) {
-							node.input.push_back(parentStack.back());
-							node.await_input.push_back(false);
-							plan_edges[parentStack.back()].sinks.push_back(node.node_name);
-							parentStack.pop_back();
-						}
-						if(shedAction && parentStack.size()>0) {
-							node.input.push_back(parentStack.back());
-							node.await_input.push_back(false);
-							plan_edges[parentStack.back()].sinks.push_back(node.node_name);
-							parentStack.pop_back();
-							shedAction = false;
-						}
-
-						// save this parent edge
-						StrlEdge edge;
-						edge.signal_type = ACTION;
-						std::stringstream ss;
-						ss << "e" << node.node_id;
-						edge.edge_name = ss.str();
-						edge.sources.push_back(node.node_name);
-						edge.active = false;
-						plan_edges[edge.edge_name] = edge;
-
-						node.output.push_back(edge.edge_name);
-						parentStack.push_back(edge.edge_name);
-						nodeCount++;
-
-						// prepare message
-						node.dispatch_msg.action_id = node.node_id;
-						node.dispatch_msg.duration = 0.1;
-						node.dispatch_msg.dispatch_time = 0;
-						node.dispatch_msg.name = name;
-
-						// check for parameters
-						curr = line.find(":")+2;
-						bool paramsExist = (line.find(" ",curr) != std::string::npos);
-						if(paramsExist) {
-
-							// name
-							next = line.find(" ",curr);
-							node.dispatch_msg.name = line.substr(curr,next-curr).c_str();
-
-							// parameters
-							std::vector<std::string> params;
-							while(next < line.length()) {
-								curr = next + 1;
-								next = line.find(" ",curr);
-								if(next == std::string::npos)
-									next = line.length();
-								diagnostic_msgs::KeyValue pair;
-								pair.key = "";
-								pair.value = line.substr(curr,next-curr);
-								node.dispatch_msg.parameters.push_back(pair);
+					if("ramificate" == name) {
+						continue;
+					} else if("shed" == name.substr(0,4)) {
+						// Create a node for this action.
+						StrlNode* node = new StrlNode();
+						StrlEdge* edge = new StrlEdge();
+						
+						createNodeAndEdge(name, nodeCount, environment, *node, *edge);
+						++nodeCount;
+						
+						// Shedding a knowledge base indicates that there 
+						// are no more states on the stack, so we can make
+						// this action follow all of the leafs.
+						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
+						current_leafs->push_back(last_edge);
+						leafs.pop_back();
+						
+						// Make the shed action the next action for all leafs.
+						for (std::vector<StrlEdge*>::const_iterator ci = current_leafs->begin(); ci != current_leafs->end(); ++ci)
+						{
+							StrlEdge* leaf_edge = *ci;
+							//plan_edges.push_back(leaf_edge);
+							
+							node->input.push_back(leaf_edge);
+							leaf_edge->sinks.push_back(node);
+							
+							// As the shed action can only be fired if all leafs are finished, we need to do a little 
+							// trick to make this work during execution as only a single branch will be executed (so 
+							// only a single leaf will be active). So we will add the output edges of each leaf to 
+							// all the leafs.
+							for (std::vector<StrlEdge*>::const_iterator ci = current_leafs->begin(); ci != current_leafs->end(); ++ci)
+							{
+								StrlEdge* other_leaf_edge = *ci;
+								if (leaf_edge == other_leaf_edge)
+								{
+									continue;
+								}
+								
+								leaf_edge->sources[0]->output.push_back(other_leaf_edge);
 							}
 						}
-						plan_nodes[node.node_name] = node;
-						observeAction = true;
+						delete current_leafs;
+						
+						last_edge = edge;
+						observation_is_active = false;
+					} else if("pop" == name.substr(0,3)) {
+						
+						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
+						current_leafs->push_back(last_edge);
+						
+						// When a pop action is executed we go back to the last node where we 
+						// branched due to an observation that has been made.
+						last_edge = conditional_branch_stack[conditional_branch_stack.size() - 1];
+						conditional_branch_stack.pop_back();
+						observation_is_active = true;
+						
+					} else if("assume" == name.substr(0,6)) {
+						// When a knowledge base is assumed, we need to prepare the dispatches for the 
+						// 'shed' action. When this action occurs we need to link all the 'leafs' of 
+						// all branches that were formed whilst this knowledge base was active to the 
+						// shed action.
+						std::vector<StrlEdge*>* new_knowledge_base = new std::vector<StrlEdge*>();
+						leafs.push_back(new_knowledge_base);
+						observation_is_active = false;
+					} else {
+						StrlNode* node = new StrlNode();
+						StrlEdge* edge = new StrlEdge();
+						createNodeAndEdge(name, nodeCount, environment, *node, *edge);
+						++nodeCount;
+						
+						if (last_edge != NULL)
+						{
+							node->input.push_back(last_edge);
+							last_edge->sinks.push_back(node);
+						}
+						last_edge = edge;
+						
+						// Check if this action is dependend on an observation outcome.
+						if (observation_is_active)
+						{
+							StrlEdge* conditional_edge = active_branch_edge[active_branch_edge.size() - 1];
+							node->input.push_back(conditional_edge);
+							conditional_edge->sinks.push_back(node);
+							observation_is_active = false;
+							active_branch_edge.pop_back();
+						}
+						
+						// Check if this is an observation action. If so then we prepare the negative and 
+						// possitive branches.
+						if ("observe-" == name.substr(0, 8)) {
+							std::string observation_fact = name.substr(8);
+							
+							// Create the possitive first.
+							std::stringstream ss;
+							ss << name << "_TRUE";
+							StrlEdge* possitive_edge = new StrlEdge();
+							possitive_edge->signal_type = CONDITION;
+							possitive_edge->edge_name = ss.str();
+							possitive_edge->active = false;
+							
+							//plan_edges.push_back(edge);
+							
+							// Make the observation outcome a condition.
+							rosplan_knowledge_msgs::KnowledgeItem condition;
+							condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+							condition.is_negative = false;
+
+							std::vector<std::string> tokens;
+							size_t counter = 0;
+							size_t new_counter = 0;
+							while ((new_counter = observation_fact.find(" ", counter)) != string::npos)
+							{
+								tokens.push_back(observation_fact.substr(counter, new_counter - counter));
+								counter = new_counter + 1;
+							}
+							
+							if (counter == 0)
+							{
+								tokens.push_back(observation_fact);
+							}
+							
+							// create edge name
+							std::string predicate_name = 
+							condition.attribute_name = tokens[0];
+							
+							ss.str(std::string());
+							ss << condition.attribute_name;
+
+							// Populate parameters
+							int index = 1;
+							std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
+							for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+
+								// set parameter label to predicate label
+								diagnostic_msgs::KeyValue param;
+								param.key = *pit;
+								param.value = tokens[index];
+								condition.values.push_back(param);
+								++index;
+							}
+							
+							// Remove the last parameter (state).
+							condition.values.erase(condition.values.begin() + condition.values.size() - 1);
+							
+							possitive_edge->external_conditions.push_back(condition);
+							
+							
+							// Next create the negative branch.
+							ss.str(std::string());
+							ss << name << "_FALSE";
+							StrlEdge* negative_edge = new StrlEdge(*possitive_edge);
+							negative_edge->edge_name = ss.str();
+							negative_edge->external_conditions.clear();
+							condition.is_negative = true;
+							negative_edge->external_conditions.push_back(condition);
+							active_branch_edge.push_back(negative_edge);
+							active_branch_edge.push_back(possitive_edge);
+							
+							plan_edges.push_back(negative_edge);
+							plan_edges.push_back(possitive_edge);
+							
+							// Flag that the next action is conditional on an observation.
+							observation_is_active = true;
+							
+							conditional_branch_stack.push_back(edge);
+						}
 					}
 				}
 				planRead = true;
@@ -266,6 +454,20 @@ std::cout << "action precondition map entry not found" << std::endl;
 		// printPlan(plan);
 		// produceEsterel();
 		infile.close();
+		/*
+		std::cout << " *** ALL NODES *** " << std::endl;
+		for (std::vector<StrlNode*>::const_iterator ci = plan_nodes.begin(); ci != plan_nodes.end(); ++ci)
+		{
+			StrlNode* node = *ci;
+			std::cout << node->dispatch_msg.name << " ";
+			for (std::vector<diagnostic_msgs::KeyValue>::const_iterator ci = node->dispatch_msg.parameters.begin(); ci != node->dispatch_msg.parameters.end(); ++ci)
+			{
+				std::cout << (*ci).value << " ";
+			}
+			std::cout << std::endl;
+			std::cout << *node << std::endl;
+		}
+		*/
 	}
 
 	/*-----------------*/
@@ -292,25 +494,25 @@ std::cout << "action precondition map entry not found" << std::endl;
 
 		// inputs
 		dest << "input SOURCE";
-		std::map<std::string,StrlNode>::iterator nit = plan_nodes.begin();
+		std::vector<StrlNode*>::iterator nit = plan_nodes.begin();
 		for(; nit!=plan_nodes.end(); nit++) {
-			dest << ", a" << (nit->second).node_id << "_complete";
+			dest << ", a" << (*nit)->node_id << "_complete";
 		}
 		dest << std::endl;
 
 		// outputs
 		dest << "output SINK";		
 		for(nit = plan_nodes.begin(); nit!=plan_nodes.end(); nit++) {
-			dest << ", a" << (nit->second).node_id << "_dispatch";
+			dest << ", a" << (*nit)->node_id << "_dispatch";
 		}
 		dest << std::endl;
 
 		// internal signals
-		std::map<std::string,StrlEdge>::iterator eit = plan_edges.begin();
+		std::vector<StrlEdge*>::iterator eit = plan_edges.begin();
 		if(eit!=plan_edges.end()) {
-			dest << "signal " << (eit->second).edge_name;
+			dest << "signal " << (*eit)->edge_name;
 			for(; eit!=plan_edges.end(); eit++) {
-				dest << ", " << (eit->second).edge_name;
+				dest << ", " << (*eit)->edge_name;
 			}
 			dest << " in" << std::endl;
 		}
@@ -318,9 +520,9 @@ std::cout << "action precondition map entry not found" << std::endl;
 		// run everything
 		nit = plan_nodes.begin();
 		if(nit!=plan_nodes.end()) {
-			dest << "run action" << (nit->second).node_id << std::endl;
+			dest << "run action" << (*nit)->node_id << std::endl;
 			for(; nit!=plan_nodes.end(); nit++) {
-				dest << " || action" << (nit->second).node_id << std::endl;
+				dest << " || action" << (*nit)->node_id << std::endl;
 			}
 			dest << "end" << std::endl;
 		}
@@ -330,40 +532,40 @@ std::cout << "action precondition map entry not found" << std::endl;
 		nit = plan_nodes.begin();
 		for(; nit!=plan_nodes.end(); nit++) {
 
-			dest << "module action" << (nit->second).node_id << ":" << std::endl;
+			dest << "module action" << (*nit)->node_id << ":" << std::endl;
 
-			if((nit->second).input.size() > 0) {
+			if((*nit)->input.size() > 0) {
 				dest << "input ";
-				for(int j=0;j<(nit->second).input.size();j++) {
+				for(int j=0;j<(*nit)->input.size();j++) {
 					if(j>0) dest << ", ";
-					dest << (nit->second).input[j];
+					dest << (*nit)->input[j]->edge_name;
 				}
 				dest << ";" << std::endl;
 			}
 
-			if((nit->second).output.size() > 0) {
+			if((*nit)->output.size() > 0) {
 				dest << "output ";
-				for(int j=0;j<(nit->second).output.size();j++) {
+				for(int j=0;j<(*nit)->output.size();j++) {
 					if(j>0) dest << ", ";
-					dest << (nit->second).output[j];
+					dest << (*nit)->output[j]->edge_name;
 				}
 				dest << ";" << std::endl;
 			}
 
-			if((nit->second).input.size() > 0) {
+			if((*nit)->input.size() > 0) {
 				dest << "  await ";
-				for(int j=0;j<(nit->second).input.size();j++) {
+				for(int j=0;j<(*nit)->input.size();j++) {
 					if(j>0) dest << " or ";
-					dest << (nit->second).input[j];
+					dest << (*nit)->input[j]->edge_name;
 				}
 				dest << ";" << std::endl;
 			}
 
-			dest << "  emit a" << (nit->second).node_id << "_dispatch;" << std::endl;
-			dest << "  await a" << (nit->second).node_id << "_complete;" << std::endl;
+			dest << "  emit a" << (*nit)->node_id << "_dispatch;" << std::endl;
+			dest << "  await a" << (*nit)->node_id << "_complete;" << std::endl;
 			
-			for(int j=0;j<(nit->second).output.size();j++) {
-				dest << "emit " << (nit->second).output[j];
+			for(int j=0;j<(*nit)->output.size();j++) {
+				dest << "emit " << (*nit)->output[j]->edge_name;
 			}
 			dest << ";" << std::endl;
 			dest << "end module" << std::endl << std::endl;

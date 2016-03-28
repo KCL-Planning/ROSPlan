@@ -20,6 +20,7 @@ namespace KCL_rosplan {
 
 			// check fact or function
 			if(a.attribute_name!="" && 0!=a.attribute_name.compare(b.attribute_name)) return false;
+			if(a.is_negative != b.is_negative) return false;
 			for(size_t i=0;i<a.values.size();i++) {
 				bool match = false;
 				for(size_t j=0;j<b.values.size();j++) {
