@@ -166,7 +166,7 @@ namespace KCL_rosplan {
 		nh.param("/domain_path", domain_path, std::string("common/domain.pddl"));
 		nh.param("data_path", data_path, std::string("common/"));
 		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n DOMAIN PROBLEM"));
+		nh.param("planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
 		
 		// call planning server
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);

@@ -12,7 +12,7 @@ namespace KCL_rosplan
 	{
 	private:
 
-		bool printPlan();
+		bool printPlan(const std::string& path);
 
 		/* mapping PDDL conditions and esterel inputs */
 		ros::ServiceClient query_knowledge_client;

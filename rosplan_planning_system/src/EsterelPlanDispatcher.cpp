@@ -154,6 +154,9 @@ namespace KCL_rosplan {
 
 		ros::NodeHandle nh("~");
 		ros::Rate loop_rate(10);
+		
+		std::string data_path;
+		nh.param("data_path", data_path, std::string("common/"));
 
 		// dispatch plan
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");
@@ -275,7 +278,7 @@ namespace KCL_rosplan {
 					}
 				}
 
-				printPlan();
+				printPlan(data_path);
 
 				ros::spinOnce();
 				loop_rate.sleep();
@@ -386,11 +389,13 @@ namespace KCL_rosplan {
 	/* Produce DOT graphs */
 	/*--------------------*/
 
-	bool EsterelPlanDispatcher::printPlan() {
+	bool EsterelPlanDispatcher::printPlan(const std::string& path) {
 
 		// output file
 		std::ofstream dest;
-		dest.open("plan.dot");
+		std::stringstream ss;
+		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
+		dest.open(ss.str().c_str());
 
 		dest << "digraph plan {" << std::endl;
 
@@ -406,7 +411,7 @@ namespace KCL_rosplan {
 		for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit!=cff_pp->plan_edges.end(); eit++) {
 			for(int i=0; i<(*eit)->sources.size(); i++) {
 				for(int j=0; j<(*eit)->sinks.size(); j++) {
-					dest << "\"" << (*eit)->sources[i] << "\"" << " -> \"" << (*eit)->sinks[j] << "\";" << std::endl;
+					dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\";" << std::endl;
 				}
 			}
 		}
