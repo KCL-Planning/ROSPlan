@@ -401,7 +401,9 @@ namespace KCL_rosplan {
 
 		// nodes
 		for(std::vector<StrlNode*>::iterator nit = cff_pp->plan_nodes.begin(); nit!=cff_pp->plan_nodes.end(); nit++) {
-			dest <<  (*nit)->node_id << "[ label=\"" << (*nit)->node_name;
+
+			std::string name = (*nit)->node_name.substr(0, (*nit)->node_name.find(" "));
+			dest <<  (*nit)->node_id << "[ label=\"" << name;
 			if(action_completed[(*nit)->node_id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
 			else if(action_received[(*nit)->node_id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
 			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
