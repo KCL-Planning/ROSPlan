@@ -233,17 +233,26 @@ namespace KCL_rosplan {
 				if(!strl_node->dispatched) {
 				
 					// activate waiting nodes
+					int action_edge_count = 0;
 					bool activate = true;
+					bool activate_action = false;
 					for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci)
 					{
-						if (!(*ci)->active)
+						if (!(*ci)->active && (*ci)->signal_type == CONDITION)
 						{
 							activate = false;
 							break;
 						}
+
+						if ((*ci)->signal_type == ACTION) {
+							action_edge_count++;
+							if ((*ci)->active) {
+								activate_action = true;
+							}
+						}
 					}
 					
-					if(activate) {
+					if(activate && (action_edge_count==0 || activate_action)) {
 
 						finished_execution = false;
 						

@@ -162,7 +162,7 @@ namespace KCL_rosplan {
 	/* Parse plan */
 	/*------------*/
 	
-	void CFFPlanParser::createNodeAndEdge(const std::string& action_name, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge)
+	void CFFPlanParser::createNodeAndEdge(const std::string& action_name, int action_number, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge)
 	{
 		//std::cout << "[CFFPlanParser::createNodeAndEdge] " << action_name << " " << node_id << std::endl;
 		node.node_name = action_name;
@@ -217,6 +217,7 @@ namespace KCL_rosplan {
 		}
 		preparePDDLConditions(node, environment);
 		plan_nodes.push_back(&node);
+		jump_map.insert(std::pair<int, StrlNode*>(action_number,&node));
 	}
 
 	/**
@@ -230,7 +231,7 @@ namespace KCL_rosplan {
 		plan_nodes.clear();
 		plan_edges.clear();
 		
-		// Manage shad / assume knowledge bases.
+		// Manage shed / assume knowledge bases.
 		std::vector<std::vector<StrlEdge*>* > leafs;
 		
 		// Keep a stack of the observation actions that still have to be resolved.
@@ -243,6 +244,7 @@ namespace KCL_rosplan {
 		StrlEdge* last_edge = NULL;
 		
 		bool observation_is_active = false;
+		bool last_node_is_jump = false;
 
 		// load plan file
 		std::ifstream infile((dataPath + "plan.pddl").c_str());
@@ -279,22 +281,26 @@ namespace KCL_rosplan {
 					curr = line.find(":");
 					std::string name = line.substr(curr+2);
 
+					// action number
+					int action_number = atoi(line.substr(5).c_str());
+
 					// deal with branches
 					if("ramificate" == name) {
 						continue;
 					} else if("shed" == name.substr(0,4)) {
+
 						// Create a node for this action.
 						StrlNode* node = new StrlNode();
 						StrlEdge* edge = new StrlEdge();
 						
-						createNodeAndEdge(name, nodeCount, environment, *node, *edge);
+						createNodeAndEdge(name, action_number, nodeCount, environment, *node, *edge);
 						++nodeCount;
 						
 						// Shedding a knowledge base indicates that there 
 						// are no more states on the stack, so we can make
 						// this action follow all of the leafs.
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
-						current_leafs->push_back(last_edge);
+						if (!last_node_is_jump) current_leafs->push_back(last_edge);
 						leafs.pop_back();
 						
 						// Make the shed action the next action for all leafs.
@@ -305,26 +311,12 @@ namespace KCL_rosplan {
 							
 							node->input.push_back(leaf_edge);
 							leaf_edge->sinks.push_back(node);
-							
-							// As the shed action can only be fired if all leafs are finished, we need to do a little 
-							// trick to make this work during execution as only a single branch will be executed (so 
-							// only a single leaf will be active). So we will add the output edges of each leaf to 
-							// all the leafs.
-							for (std::vector<StrlEdge*>::const_iterator ci = current_leafs->begin(); ci != current_leafs->end(); ++ci)
-							{
-								StrlEdge* other_leaf_edge = *ci;
-								if (leaf_edge == other_leaf_edge)
-								{
-									continue;
-								}
-								
-								leaf_edge->sources[0]->output.push_back(other_leaf_edge);
-							}
 						}
 						delete current_leafs;
 						
 						last_edge = edge;
 						observation_is_active = false;
+
 					} else if("pop" == name.substr(0,3)) {
 						
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
@@ -344,10 +336,59 @@ namespace KCL_rosplan {
 						std::vector<StrlEdge*>* new_knowledge_base = new std::vector<StrlEdge*>();
 						leafs.push_back(new_knowledge_base);
 						observation_is_active = false;
-					} else {
+
+					} else if("jump" == name.substr(0,4)) {
+
 						StrlNode* node = new StrlNode();
 						StrlEdge* edge = new StrlEdge();
-						createNodeAndEdge(name, nodeCount, environment, *node, *edge);
+						createNodeAndEdge(name, action_number,  nodeCount, environment, *node, *edge);
+						++nodeCount;
+						
+						if (last_edge != NULL)
+						{
+							node->input.push_back(last_edge);
+							last_edge->sinks.push_back(node);
+						}
+						last_edge = edge;
+
+						// Check if this action is dependend on an observation outcome.
+						if (observation_is_active)
+						{
+							StrlEdge* conditional_edge = active_branch_edge[active_branch_edge.size() - 1];
+							node->input.push_back(conditional_edge);
+							conditional_edge->sinks.push_back(node);
+							observation_is_active = false;
+							active_branch_edge.pop_back();
+						}
+
+						// connect output edge to jump location
+						int jumpDest = atoi(line.substr(5).c_str());
+						std::map<int,StrlNode*>::iterator it;
+						it = jump_map.find(jumpDest);
+						if (it != jump_map.end() && last_edge != NULL) {
+							it->second->input.push_back(last_edge);
+							last_edge->sinks.push_back(it->second);
+						} else {
+							ROS_INFO("KCL: (CFFPlanParser) Could not find jump destination: %i", jumpDest);
+						}
+
+						if (active_branch_edge.size() > 0)
+						{
+							// IF WE ARE IN A BRANCH we go back to the last node where we 
+							// branched due to an observation that has been made.
+							last_edge = conditional_branch_stack.back();
+							conditional_branch_stack.pop_back();
+							observation_is_active = true;
+						}
+						last_node_is_jump = true;
+
+					} else {
+
+						last_node_is_jump = false;
+
+						StrlNode* node = new StrlNode();
+						StrlEdge* edge = new StrlEdge();
+						createNodeAndEdge(name, action_number,  nodeCount, environment, *node, *edge);
 						++nodeCount;
 						
 						if (last_edge != NULL)
@@ -425,7 +466,6 @@ namespace KCL_rosplan {
 							condition.values.erase(condition.values.begin() + condition.values.size() - 1);
 							
 							possitive_edge->external_conditions.push_back(condition);
-							
 							
 							// Next create the negative branch.
 							ss.str(std::string());

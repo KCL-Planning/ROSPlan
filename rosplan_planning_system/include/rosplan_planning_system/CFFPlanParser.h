@@ -42,7 +42,8 @@ namespace KCL_rosplan {
 		 * @param node The node that is created based on @ref{action_name}.
 		 * @param edge The edge that is created based on @ref{action_name}.
 		 */
-		void createNodeAndEdge(const std::string& action_name, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
+		void createNodeAndEdge(const std::string& action_name, int action_number, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
+		std::map<int, StrlNode*> jump_map;
 
 	public:
 
