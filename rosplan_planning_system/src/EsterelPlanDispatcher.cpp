@@ -156,7 +156,7 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 		
 		std::string data_path;
-		nh.param("data_path", data_path, std::string("common/"));
+		nh.param("/data_path", data_path, std::string("common/"));
 
 		// dispatch plan
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");
