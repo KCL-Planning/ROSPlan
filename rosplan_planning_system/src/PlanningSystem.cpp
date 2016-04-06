@@ -63,7 +63,8 @@ namespace KCL_rosplan {
 	 * generate a default PDDL2.1 problem instance with goals from the Knowledge Base
 	 */
 	bool PlanningSystem::generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res) {
-		pddl_problem_generator.generatePDDLProblemFile(environment, req.problem_path);	
+		ROS_INFO("KCL: (PS) Beginning default problem generation");
+		// pddl_problem_generator.generatePDDLProblemFile(environment, req.problem_path);	
 	}
 
 	/*-----------*/
@@ -240,17 +241,21 @@ namespace KCL_rosplan {
 			environment.update(nh);
 
 			// generate PDDL problem (and problem-specific domain)
-			rosplan_knowledge_msgs::GenerateProblemService genSrv;
-			genSrv.request.problem_path = problem_path;
-			genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
-			if (!generate_problem_client.call(genSrv)) {
-				ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_path.c_str());
-				return false;
+			if(generate_problem) {
+				rosplan_knowledge_msgs::GenerateProblemService genSrv;
+				genSrv.request.problem_path = problem_path;
+				genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
+				if (!generate_problem_client.call(genSrv)) {
+					ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_path.c_str());
+					return false;
+				}
+				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
+			} else {
+				ROS_INFO("KCL: (PS) Skipping problem generation.");
 			}
-			ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
 
 			// run planner; generate a plan
-			runPlanner();
+			if(!runPlanner()) return false;
 
 			// publish plan
 			rosplan_dispatch_msgs::CompletePlan planMsg;
@@ -383,8 +388,11 @@ namespace KCL_rosplan {
 		// start a problem generation service
 		bool genProb = true;
 		nh.getParam("/rosplan_planning_system/generate_default_problem", genProb);
+		planningSystem.generate_problem = !genProb;
+		// ros::ServiceServer service;
 		if(genProb) {
-			ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
+			ROS_INFO("KCL: (PS) Not using a PDDL problem generator.");
+			// service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
 		} else {
 			ROS_INFO("KCL: (PS) Using an alternative PDDL problem generator.");
 		}

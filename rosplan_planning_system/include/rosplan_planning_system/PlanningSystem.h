@@ -81,6 +81,7 @@ namespace KCL_rosplan {
 		ros::ServiceClient generate_problem_client;
 		PDDLProblemGenerator pddl_problem_generator;
 		PlanParser* plan_parser;
+		bool generate_problem;
 		bool generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res);
 		void publishFilter();
 	
