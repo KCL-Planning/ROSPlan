@@ -309,15 +309,10 @@ namespace KCL_rosplan {
 
 		// run the planner
 		std::string str = planner_command;
-		ROS_INFO("KCL: (PS) (%s) Parsing: %s", problem_path.c_str(),  str.c_str());
 		std::size_t dit = str.find("DOMAIN");
-		ROS_INFO("KCL: (PS) (%s) Found DOMAIN at: %zu", problem_path.c_str(),  dit);
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
-		ROS_INFO("KCL: (PS) (%s) Parsing: %s", problem_path.c_str(),  str.c_str());
 		std::size_t pit = str.find("PROBLEM");
-		ROS_INFO("KCL: (PS) (%s) Found PROBLEM at: %zu", problem_path.c_str(),  dit);
 		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-		ROS_INFO("KCL: (PS) (%s) Done parsing: %s", problem_path.c_str(),  str.c_str());
 		
 		std::string commandString = str + " > " + data_path + "plan.pddl";
 		ROS_INFO("KCL: (PS) (%s) Running: %s", problem_path.c_str(),  commandString.c_str());
