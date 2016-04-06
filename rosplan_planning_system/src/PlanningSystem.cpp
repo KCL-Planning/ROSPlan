@@ -255,7 +255,7 @@ namespace KCL_rosplan {
 			}
 
 			// run planner; generate a plan
-			runPlanner();
+			if(!runPlanner()) return false;
 
 			// publish plan
 			rosplan_dispatch_msgs::CompletePlan planMsg;
