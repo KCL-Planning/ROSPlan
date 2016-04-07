@@ -1,11 +1,5 @@
 #include "rosplan_planning_system/EsterelPlanDispatcher.h"
-#include "rosplan_planning_system/EsterelPlan.h"
-#include <stdlib.h> 
-#include <map>
-#include <iostream>
-#include <string>
-#include <boost/regex.hpp>
-#include <boost/concept_check.hpp>
+
 
 namespace KCL_rosplan {
 
@@ -23,6 +17,7 @@ namespace KCL_rosplan {
 		current_action = 0;
 
 		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
+		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
 	}
 
 	/*---------------*/
@@ -401,10 +396,7 @@ namespace KCL_rosplan {
 	bool EsterelPlanDispatcher::printPlan(const std::string& path) {
 
 		// output file
-		std::ofstream dest;
-		std::stringstream ss;
-		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
-		dest.open(ss.str().c_str());
+		std::stringstream dest;
 
 		dest << "digraph plan {" << std::endl;
 
@@ -428,7 +420,20 @@ namespace KCL_rosplan {
 		}
 
 		dest << "}" << std::endl;
-		dest.close();
 
+		// publish on topic
+		std_msgs::String msg;
+		msg.data = dest.str();
+		plan_graph_publisher.publish(msg);
+
+		// write to file
+		/*
+		std::ofstream file;
+		std::stringstream ss;
+		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
+		file.open(ss.str().c_str());
+		file << dest.str();
+		file.close();
+		*/
 	}
 } // close namespace

@@ -2,6 +2,13 @@
 #include "EsterelPlan.h"
 #include "CFFPlanParser.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "std_msgs/String.h"
+#include <stdlib.h> 
+#include <map>
+#include <iostream>
+#include <string>
+#include <boost/regex.hpp>
+#include <boost/concept_check.hpp>
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
@@ -26,6 +33,9 @@ namespace KCL_rosplan
 		
 		/* action offset */
 		int action_id_offset;
+
+		/* plan graph publisher */
+		ros::Publisher plan_graph_publisher;
 
 	public:
 
