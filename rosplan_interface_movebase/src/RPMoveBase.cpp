@@ -65,7 +65,7 @@ namespace KCL_rosplan {
 			fb.status = "action enabled";
 			action_feedback_pub.publish(fb);
 
-			bool finished_before_timeout = action_client.waitForResult(ros::Duration(5*msg->duration));
+			bool finished_before_timeout = action_client.waitForResult();
 			if (finished_before_timeout) {
 
 				actionlib::SimpleClientGoalState state = action_client.getState();
@@ -111,7 +111,7 @@ namespace KCL_rosplan {
 					// publish feedback (failed)
 					rosplan_dispatch_msgs::ActionFeedback fb;
 					fb.action_id = msg->action_id;
-					fb.status = "action failed";
+					fb.status = "action achieved";
 					action_feedback_pub.publish(fb);
 				}
 
