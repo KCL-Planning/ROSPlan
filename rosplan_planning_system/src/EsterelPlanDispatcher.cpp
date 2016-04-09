@@ -201,7 +201,6 @@ namespace KCL_rosplan {
 		bool finished_execution = false;
 		while (ros::ok() && !finished_execution) {
 
-			//std::cout << " *** BEGIN LOOP *** " << std::endl;
 			finished_execution = true;
 
 			// loop while dispatch is paused
@@ -253,6 +252,7 @@ namespace KCL_rosplan {
 						
 						// activate action
 						strl_node->dispatched = true;
+						strl_node->completed = false;
 						action_received[strl_node->node_id] = false;
 						action_completed[strl_node->node_id] = false;
 						rosplan_dispatch_msgs::ActionDispatch currentMessage = strl_node->dispatch_msg;
@@ -278,6 +278,11 @@ namespace KCL_rosplan {
 						// emit output edges
 						for(int i=0;i<strl_node->output.size();i++) {
 							edge_values[strl_node->output[i]] = true;
+						}
+						
+						// reset node.
+						if (!strl_node->input.empty()) {
+							strl_node->dispatched = false;
 						}
 					}
 				}
@@ -331,8 +336,6 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (EsterelPlanDispatcher) Replan requested");
 				return false;
 			}
-			
-			//std::cout << " *** END LOOP *** " << std::endl;
 		}
 		
 		return true;
@@ -405,8 +408,8 @@ namespace KCL_rosplan {
 
 			std::string name = (*nit)->node_name.substr(0, (*nit)->node_name.find(" "));
 			dest <<  (*nit)->node_id << "[ label=\"" << name;
-			if(action_completed[(*nit)->node_id]) dest << "\" style=\"fill: #77f; \"];" << std::endl;
-			else if(action_received[(*nit)->node_id]) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
+			if((*nit)->completed) dest << "\" style=\"fill: #77f; \"];" << std::endl;
+			else if((*nit)->dispatched) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
 			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
 		}
 
@@ -427,13 +430,13 @@ namespace KCL_rosplan {
 		plan_graph_publisher.publish(msg);
 
 		// write to file
-		/*
+		
 		std::ofstream file;
 		std::stringstream ss;
 		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
 		file.open(ss.str().c_str());
 		file << dest.str();
 		file.close();
-		*/
+		
 	}
 } // close namespace

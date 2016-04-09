@@ -46,20 +46,20 @@ namespace KCL_rosplan {
 		std::map<std::string, std::vector<std::vector<std::string> > >::iterator oit;
 		oit = environment.domain_operator_precondition_map.find(normalised_action_name);
 		if(oit==environment.domain_operator_precondition_map.end()) {
-			std::cout << "action precondition map entry not found:" << node.dispatch_msg.name << std::endl;
+			std::cerr << "action precondition map entry not found:" << node.dispatch_msg.name << std::endl;
 			for (std::map<std::string, std::vector<std::vector<std::string> > >::const_iterator ci = environment.domain_operator_precondition_map.begin(); ci != environment.domain_operator_precondition_map.end(); ++ci)
 			{
-				std::cout << (*ci).first;
+				std::cerr << (*ci).first;
 				const std::vector<std::vector<std::string> >& mapping = (*ci).second;
 				for (std::vector<std::vector<std::string> >::const_iterator ci = mapping.begin(); ci != mapping.end(); ++ci)
 				{
 					const std::vector<std::string>& list = *ci;
-					std::cout << "{";
+					std::cerr << "{";
 					for (std::vector<std::string>::const_iterator ci = list.begin(); ci != list.end(); ++ci)
 					{
-						std::cout << *ci << ", ";
+						std::cerr << *ci << ", ";
 					}
-					std::cout << "}" << std::endl;
+					std::cerr << "}" << std::endl;
 				}
 			}
 			exit(1);
@@ -85,7 +85,7 @@ namespace KCL_rosplan {
 			condition.attribute_name = (*cit)[0];
 			
 			// Preconditions that start with an 'r' are resolved atoms that are only necessary for generating the plan.
-			if (condition.attribute_name[0] == 'r' && "resolve-axioms" != condition.attribute_name)
+			if (condition.attribute_name[0] == 'r' && "resolve-axioms" != condition.attribute_name && "robot_at" != condition.attribute_name)
 			{
 				condition.attribute_name = condition.attribute_name.substr(1);
 			}
@@ -95,8 +95,8 @@ namespace KCL_rosplan {
 
 			// populate parameters
 			int index = 1;
-			std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
-			for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+			
+			for(std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin(); pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
 
 				// set parameter label to predicate label
 				diagnostic_msgs::KeyValue param;
@@ -164,7 +164,6 @@ namespace KCL_rosplan {
 	
 	void CFFPlanParser::createNodeAndEdge(const std::string& action_name, int action_number, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge)
 	{
-		//std::cout << "[CFFPlanParser::createNodeAndEdge] " << action_name << " " << node_id << std::endl;
 		node.node_name = action_name;
 		node.node_id = node_id;
 		node.dispatched = false;
@@ -206,7 +205,6 @@ namespace KCL_rosplan {
 				next = action_name.find(" ",curr);
 				if(next == std::string::npos)
 					next = action_name.length();
-				
 				
 				diagnostic_msgs::KeyValue pair;
 				pair.key = environment.domain_operators[operator_name][parameter_index];
@@ -256,7 +254,7 @@ namespace KCL_rosplan {
 		while(!infile.eof()) {
 			std::getline(infile, line);
 			toLowerCase(line);
-
+			
 			if (line.compare("ff: found legal plan as follows") == 0) {
 				planFound = true;
 			} else if (!planFound) {
@@ -270,7 +268,7 @@ namespace KCL_rosplan {
 
 					std::getline(infile, line);
 					toLowerCase(line);
-
+					
 					if(line.substr(0,10).compare("time spent")==0)
 						break;
 
@@ -300,14 +298,16 @@ namespace KCL_rosplan {
 						// are no more states on the stack, so we can make
 						// this action follow all of the leafs.
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
-						if (!last_node_is_jump) current_leafs->push_back(last_edge);
+						if (!last_node_is_jump)
+						{
+							current_leafs->push_back(last_edge);
+						}
 						leafs.pop_back();
 						
 						// Make the shed action the next action for all leafs.
 						for (std::vector<StrlEdge*>::const_iterator ci = current_leafs->begin(); ci != current_leafs->end(); ++ci)
 						{
 							StrlEdge* leaf_edge = *ci;
-							//plan_edges.push_back(leaf_edge);
 							
 							node->input.push_back(leaf_edge);
 							leaf_edge->sinks.push_back(node);
@@ -362,9 +362,9 @@ namespace KCL_rosplan {
 						}
 
 						// connect output edge to jump location
-						int jumpDest = atoi(line.substr(5).c_str());
-						std::map<int,StrlNode*>::iterator it;
-						it = jump_map.find(jumpDest);
+						int jumpDest = atoi(name.substr(5).c_str());
+						std::map<int,StrlNode*>::iterator it = jump_map.find(jumpDest);
+						
 						if (it != jump_map.end() && last_edge != NULL) {
 							it->second->input.push_back(last_edge);
 							last_edge->sinks.push_back(it->second);
@@ -436,14 +436,9 @@ namespace KCL_rosplan {
 								tokens.push_back(observation_fact.substr(counter, new_counter - counter));
 								counter = new_counter + 1;
 							}
-							
-							if (counter == 0)
-							{
-								tokens.push_back(observation_fact);
-							}
+							tokens.push_back(observation_fact.substr(counter));
 							
 							// create edge name
-							std::string predicate_name = 
 							condition.attribute_name = tokens[0];
 							
 							ss.str(std::string());
@@ -453,7 +448,6 @@ namespace KCL_rosplan {
 							int index = 1;
 							std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
 							for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
-
 								// set parameter label to predicate label
 								diagnostic_msgs::KeyValue param;
 								param.key = *pit;
@@ -492,22 +486,8 @@ namespace KCL_rosplan {
 			}
 		}
 		// printPlan(plan);
-		// produceEsterel();
+		produceEsterel();
 		infile.close();
-		/*
-		std::cout << " *** ALL NODES *** " << std::endl;
-		for (std::vector<StrlNode*>::const_iterator ci = plan_nodes.begin(); ci != plan_nodes.end(); ++ci)
-		{
-			StrlNode* node = *ci;
-			std::cout << node->dispatch_msg.name << " ";
-			for (std::vector<diagnostic_msgs::KeyValue>::const_iterator ci = node->dispatch_msg.parameters.begin(); ci != node->dispatch_msg.parameters.end(); ++ci)
-			{
-				std::cout << (*ci).value << " ";
-			}
-			std::cout << std::endl;
-			std::cout << *node << std::endl;
-		}
-		*/
 	}
 
 	/*-----------------*/

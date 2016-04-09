@@ -36,6 +36,9 @@ namespace KCL_rosplan
 
 		/* plan graph publisher */
 		ros::Publisher plan_graph_publisher;
+		
+		/* mapping between the node ids and the node */
+		std::map<int, StrlNode*> strl_node_mapping;
 
 	public:
 
