@@ -34,19 +34,21 @@ namespace KCL_rosplan {
 		std::string domainFileName = (domainPath);
 		ROS_INFO("KCL: (PS) Parsing domain: %s.", domainFileName.c_str());
 
+		
 		// save filename for VAL
 		std::vector<char> writable(domainFileName.begin(), domainFileName.end());
 		writable.push_back('\0');
 		current_filename = &writable[0];
-
 		// parse domain
-		
+		ROS_INFO("KCL: (PS) Current filename: %s.", current_filename);
 		
 		
 		VAL::current_analysis = &VAL::an_analysis;
 		std::ifstream domainFile;
 		domainFile.open(domainFileName.c_str());
 		yydebug = 0;
+		
+		ROS_INFO("KCL: (PS) Opened file: %s.", domainFileName.c_str());
 
 		VAL::yfl = new yyFlexLexer;
 
@@ -78,6 +80,7 @@ namespace KCL_rosplan {
 			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 				const VAL::pddl_type* type = *ci;
 				domain_types.push_back(type->getName());
+				ROS_INFO("KCL: (PS) Found type: %s.", type->getName().c_str());
 			}
 			
 			// predicates
@@ -92,6 +95,8 @@ namespace KCL_rosplan {
 						const VAL::var_symbol* var = *vi;
 						domain_predicates[predicate->getPred()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
 					}
+					
+					ROS_INFO("KCL: (PS) Found predicate: %s.", predicate->getPred()->symbol::getName().c_str());
 				}
 			}
 			
@@ -126,6 +131,7 @@ namespace KCL_rosplan {
 				const VAL::goal* precondition = op->precondition;
 				domain_operator_precondition_map[op->name->symbol::getName()];
 				parsePrecondition(op->name->symbol::getName(), precondition, false);
+				ROS_INFO("KCL: (PS) Parsed operator: %s.", op->name->symbol::getName().c_str());
 			}
 		}
 		domainFile.close();
@@ -157,6 +163,7 @@ namespace KCL_rosplan {
 				precondition.push_back(param->symbol::getName());
 			}
 			domain_operator_precondition_map[opName].push_back(precondition);
+			ROS_INFO("KCL: (PS) Add precondition: %s for %s.", prop->head->symbol::getName().c_str(), opName.c_str());
 			return;
 		}
 
