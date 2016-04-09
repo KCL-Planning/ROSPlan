@@ -401,7 +401,7 @@ namespace KCL_rosplan {
 		// output file
 		std::stringstream dest;
 
-		dest << "digraph plan {" << std::endl;
+		dest << "digraph plan_" << action_id_offset << " {" << std::endl;
 
 		// nodes
 		for(std::vector<StrlNode*>::iterator nit = cff_pp->plan_nodes.begin(); nit!=cff_pp->plan_nodes.end(); nit++) {
