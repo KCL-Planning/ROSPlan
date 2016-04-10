@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS} src/VALfiles
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
@@ -29,11 +29,9 @@ catkin_package(
 ## Build ##
 ###########
 
-## include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include
-)
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+include_directories(src/VALfiles)
 
 find_package(FLEX REQUIRED)
 
@@ -96,3 +94,19 @@ target_link_libraries(planner ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY src/VALfiles/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+)
