@@ -170,12 +170,14 @@ namespace KCL_rosplan {
 		nh.param("planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
 		
 		// call planning server
+		plan_dispatcher->setCurrentAction(0);
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
 	}
 
 	/* planning system service hook with parameters */
 	bool PlanningSystem::runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
 		// call planning server
+		plan_dispatcher->setCurrentAction(0);
 		return runPlanningServer(req.domain_path, req.problem_path, req.data_path, req.planner_command);
 	}
 
@@ -384,10 +386,9 @@ namespace KCL_rosplan {
 		bool genProb = true;
 		nh.getParam("/rosplan_planning_system/generate_default_problem", genProb);
 		planningSystem.generate_problem = !genProb;
-		// ros::ServiceServer service;
+
 		if(genProb) {
 			ROS_INFO("KCL: (PS) Not using a PDDL problem generator.");
-			// service = nh.advertiseService("/kcl_rosplan/generate_planning_problem", &KCL_rosplan::PlanningSystem::generatePDDLProblemFile, &planningSystem);
 		} else {
 			ROS_INFO("KCL: (PS) Using an alternative PDDL problem generator.");
 		}

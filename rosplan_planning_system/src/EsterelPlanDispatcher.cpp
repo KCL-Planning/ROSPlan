@@ -166,6 +166,7 @@ namespace KCL_rosplan {
 		
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
+
 		for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci)
 		{
 			StrlEdge* edge = *ci;
