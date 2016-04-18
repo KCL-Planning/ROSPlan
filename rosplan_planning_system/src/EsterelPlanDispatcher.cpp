@@ -29,7 +29,6 @@ namespace KCL_rosplan {
 	}
 
 	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
-		//current_action = freeActionID;
 		action_id_offset = freeActionID;
 	}
 
@@ -167,42 +166,36 @@ namespace KCL_rosplan {
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
 
-		for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci)
-		{
+		for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci) {
 			StrlEdge* edge = *ci;
 			
-			if (edge->external_conditions.empty())
-			{
+			if (edge->external_conditions.empty()) {
 				continue;
 			}
 			
 			rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-			for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci)
-			{
+			for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci) {
 				const rosplan_knowledge_msgs::KnowledgeItem& knowledge_item = *ci;
 				querySrv.request.knowledge.push_back(knowledge_item);
 			}
 			
 			// Check if all external conditions have been satisfied.
-			if (query_knowledge_client.call(querySrv))
-			{
-				if (querySrv.response.all_true)
-				{
+			if (query_knowledge_client.call(querySrv)) {
+				if (querySrv.response.all_true) {
 					edge->active = true;
 				}
-			}
-			else
-			{
+			} else {
 				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
-				exit(1);
 			}
 		}
 		
 		// begin execution
 		bool finished_execution = false;
+		bool state_changed = false;
 		while (ros::ok() && !finished_execution) {
 
 			finished_execution = true;
+			state_changed = false;
 
 			// loop while dispatch is paused
 			while (ros::ok() && dispatch_paused) {
@@ -227,18 +220,10 @@ namespace KCL_rosplan {
 				
 				if(!strl_node->dispatched) {
 				
-					// activate waiting nodes
+					// check action edges
 					int action_edge_count = 0;
-					bool activate = true;
 					bool activate_action = false;
-					for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci)
-					{
-						if (!(*ci)->active && (*ci)->signal_type == CONDITION)
-						{
-							activate = false;
-							break;
-						}
-
+					for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci) {
 						if ((*ci)->signal_type == ACTION) {
 							action_edge_count++;
 							if ((*ci)->active) {
@@ -246,10 +231,33 @@ namespace KCL_rosplan {
 							}
 						}
 					}
+
+					// query KMS for condition edges
+					bool activate = true;
+					if(action_edge_count==0 || activate_action) {
+						for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci) {
+							StrlEdge* edge = *ci;
+							if ((*ci)->signal_type == CONDITION && !edge->external_conditions.empty()) {
+								// Check if all external conditions have been satisfied.
+								rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+								querySrv.request.knowledge = edge->external_conditions;
+								if (query_knowledge_client.call(querySrv)) {
+									edge_values[edge] = querySrv.response.all_true;
+									if (!querySrv.response.all_true) {
+										activate = false;
+										break;
+									}
+								} else {
+									ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+								}
+							}
+						}
+					}
 					
 					if(activate && (action_edge_count==0 || activate_action)) {
 
 						finished_execution = false;
+						state_changed = true;
 						
 						// activate action
 						strl_node->dispatched = true;
@@ -273,66 +281,37 @@ namespace KCL_rosplan {
 
 						strl_node->completed = true;
 						finished_execution = false;
+						state_changed = true;
 						
 						ROS_INFO("KCL: (EsterelPlanDispatcher) %i: action %s completed", strl_node->node_id, strl_node->node_name.c_str());
 
-						// emit output edges
+						// emit output edges in next loop
 						for(int i=0;i<strl_node->output.size();i++) {
 							edge_values[strl_node->output[i]] = true;
 						}
 						
-						// reset node.
+						// reset node
 						if (!strl_node->input.empty()) {
 							strl_node->dispatched = false;
 						}
 					}
-				}
 
-				printPlan(data_path);
+				} // end if(!dispatched)
 
-				ros::spinOnce();
-				loop_rate.sleep();
-			}
-
-			// query KMS for condition edges
-			for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci)
-			{
-				StrlEdge* edge = *ci;
-		
-				if (edge->external_conditions.empty())
-				{
-					continue;
-				}
-				
-				rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-				for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci)
-				{
-					const rosplan_knowledge_msgs::KnowledgeItem& knowledge_item = *ci;
-					querySrv.request.knowledge.push_back(knowledge_item);
-				}
-				
-				// Check if all external conditions have been satisfied.
-				if (query_knowledge_client.call(querySrv))
-				{
-					if (querySrv.response.all_true)
-					{
-						edge_values[edge] = true;
-					}
-				}
-				else
-				{
-					ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
-					exit(1);
-				}
-			}
+			} // end loop (nodes)
 			
-			// copy new edge values
-			for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit != cff_pp->plan_edges.end(); eit++)
-			{
+			// copy new edge values for next loop
+			for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit != cff_pp->plan_edges.end(); eit++) {
 				(*eit)->active = edge_values[*eit];
 				edge_values[*eit] = false;
 			}
 
+			if(state_changed)
+				printPlan(data_path);
+			ros::spinOnce();
+			loop_rate.sleep();
+
+			// cancel dispatch on replan
 			if(replan_requested) {
 				ROS_INFO("KCL: (EsterelPlanDispatcher) Replan requested");
 				return false;
@@ -431,7 +410,6 @@ namespace KCL_rosplan {
 		plan_graph_publisher.publish(msg);
 
 		// write to file
-		
 		std::ofstream file;
 		std::stringstream ss;
 		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
