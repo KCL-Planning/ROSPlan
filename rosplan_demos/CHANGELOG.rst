@@ -2,8 +2,8 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2016-04-19)
+------------------
 * changed maintainer
 * Contributors: Marc Hanheide
 
