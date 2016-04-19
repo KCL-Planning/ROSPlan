@@ -2,8 +2,8 @@
 Changelog for package rosplan_dispatch_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * changed maintainer to not sending emails to the wrong people
 * Complete plan publishing
 * Getting rid of catkin warnings. Everything so tidy.

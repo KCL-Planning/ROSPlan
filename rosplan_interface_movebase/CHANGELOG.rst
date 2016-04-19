@@ -2,8 +2,8 @@
 Changelog for package rosplan_interface_movebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * changed maintainer to not sending emails to the wrong people
 * Exported target dependiencies
 * Clear costmaps on goto_waypoint action failure

@@ -2,8 +2,8 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * changed maintainer to not sending emails to the wrong people
 * Update RPRoadmapServer.cpp
 * Fix RPSimpleMapServer who added a supplementary waypoint with a empty string as a name

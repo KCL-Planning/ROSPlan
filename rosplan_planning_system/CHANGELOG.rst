@@ -2,8 +2,8 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * added missing compile dependency for planning lib
 * changed maintainer to not sending emails to the wrong people
 * compilation error solved

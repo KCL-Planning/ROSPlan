@@ -2,8 +2,8 @@
 Changelog for package rosplan_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * changed maintainer to not sending emails to the wrong people
 * Changed playground to world in launch files
 * Pause and Cancel commands

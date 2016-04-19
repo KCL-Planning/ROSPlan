@@ -2,8 +2,8 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.1 (2016-04-19)
+------------------
 * Update turtlebot_explore.bash
 * updated turtlebot package name in mc2 launch
 * altered sample waypoints.txt
