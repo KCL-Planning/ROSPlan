@@ -2,6 +2,11 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* changed maintainer
+* Contributors: Marc Hanheide
+
 0.0.1 (2016-04-19)
 ------------------
 * Update turtlebot_explore.bash
