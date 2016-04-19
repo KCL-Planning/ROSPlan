@@ -92,6 +92,7 @@ target_link_libraries(planner ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
