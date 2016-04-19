@@ -1,0 +1,13 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package rosplan_rqt
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Forthcoming
+-----------
+* changed maintainer to not sending emails to the wrong people
+* Changed playground to world in launch files
+* Pause and Cancel commands
+* Update UI added precondition false status
+* Instance services in UI
+* rqt UI initial commit
+* Contributors: Marc Hanheide, m312z, michael
