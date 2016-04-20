@@ -2,6 +2,14 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Install target and paths (`#3 <https://github.com/LCAS/ROSPlan/issues/3>`_)
+  * added install targets (fixes `#2 <https://github.com/LCAS/ROSPlan/issues/2>`_)
+  * made parameters private and included package path prefix for defaults
+  * created absolute path for pre-compiled planner binary `popf`
+* Contributors: Marc Hanheide
+
 0.0.2 (2016-04-19)
 ------------------
 * changed maintainer
