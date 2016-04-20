@@ -57,3 +57,18 @@ target_link_libraries(rpmovebase ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 # see test documentation: http://wiki.ros.org/gtest
 #add_rostest_gtest(${PROJECT_NAME}_utest test/utest.cpp)
 #target_link_libraries(testPlanningSystem ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
+
+#############
+## Install ##
+#############
+
+install(TARGETS rpmovebase 
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)

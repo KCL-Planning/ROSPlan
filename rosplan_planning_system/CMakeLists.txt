@@ -4,6 +4,7 @@ project(rosplan_planning_system)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   rospy
   std_msgs
   std_srvs
@@ -94,7 +95,7 @@ target_link_libraries(planner ${catkin_LIBRARIES})
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} planner
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -108,4 +109,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(DIRECTORY src/VALfiles/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY common
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(PROGRAMS common/bin/popf
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
