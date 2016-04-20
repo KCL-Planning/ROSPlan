@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosplan_planning_system</name>
-  <version>0.0.2</version>
+  <version>0.0.3</version>
   <description>Deliberative layer of ROSPlan.  Deals with automatic problem generation, planning, dispatch, and replanning.</description>
   <maintainer email="marc@hanheide.net">Marc Hanheide</maintainer>
   <license>BSD</license>
