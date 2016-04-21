@@ -118,10 +118,10 @@ namespace KCL_rosplan {
 		// setup environment
 		std::string pkg_path = ros::package::getPath("rosplan_planning_system");
 
-		nh.param("~domain_path", domain_path, pkg_path + std::string("/common/domain.pddl"));
-		nh.param("~data_path", data_path, pkg_path + std::string("/common/"));
-		nh.param("~problem_path", problem_path, pkg_path + std::string("/common/problem.pddl"));
-		nh.param("~planner_command", planner_command, 
+		nh.param("domain_path", domain_path, pkg_path + std::string("/common/domain.pddl"));
+		nh.param("data_path", data_path, pkg_path + std::string("/common/"));
+		nh.param("problem_path", problem_path, pkg_path + std::string("/common/problem.pddl"));
+		nh.param("planner_command", planner_command, 
 			  std::string("timeout 10 ") 
 			+ pkg_path
 			+ std::string("/common/bin/popf -n"));
