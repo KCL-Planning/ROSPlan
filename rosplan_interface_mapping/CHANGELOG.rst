@@ -2,6 +2,11 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* removed ~ which is incorrectly introduced
+* Contributors: Marc Hanheide
+
 0.0.3 (2016-04-20)
 ------------------
 * Install target and paths (`#3 <https://github.com/LCAS/ROSPlan/issues/3>`_)

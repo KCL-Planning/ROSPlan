@@ -2,6 +2,9 @@
 Changelog for package rosplan_interface_movebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2016-04-20)
 ------------------
 * Install target and paths (`#3 <https://github.com/LCAS/ROSPlan/issues/3>`_)

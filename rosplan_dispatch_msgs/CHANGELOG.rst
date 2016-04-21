@@ -2,6 +2,9 @@
 Changelog for package rosplan_dispatch_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2016-04-20)
 ------------------
 
