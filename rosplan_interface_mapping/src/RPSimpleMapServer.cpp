@@ -214,7 +214,7 @@ namespace KCL_rosplan {
 		// params
 		std::string filename("waypoints.txt");
 		std::string fixed_frame("world");
-		nh.param("waypoint_file", filename, filename);
+		nh.param("/waypoint_file", filename, filename);
 		nh.param("fixed_frame", fixed_frame, fixed_frame);
 
 		// init
