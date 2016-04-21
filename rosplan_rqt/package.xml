@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<name>rosplan_rqt</name>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<description>The rosplan_rqt package</description>
 	<maintainer email="marc@hanheide.net">Marc Hanheide</maintainer>
 	<license>BSD</license>

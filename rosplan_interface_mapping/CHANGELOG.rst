@@ -2,8 +2,8 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2016-04-21)
+------------------
 * removed ~ which is incorrectly introduced
 * Contributors: Marc Hanheide
 
