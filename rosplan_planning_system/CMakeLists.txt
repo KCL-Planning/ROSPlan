@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS} src/VALfiles
-  LIBRARIES ${PROJECT_NAME}
+  LIBRARIES ${PROJECT_NAME} rosplan_action_interface
   CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
 )
@@ -99,6 +99,12 @@ target_link_libraries(planGraphListener ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
+add_library(rosplan_action_interface src/RPActionInterface.cpp)
+add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
 
 install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

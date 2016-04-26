@@ -6,26 +6,20 @@ namespace KCL_rosplan {
 	/* constructor */
 	RPMoveBase::RPMoveBase(ros::NodeHandle &nh, std::string &actionserver)
 	 : message_store(nh), action_client(actionserver, true) {
-		
-		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
 
 		// costmap client
 		clear_costmaps_client = nh.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
 		// create the action client
 		ROS_INFO("KCL: (MoveBase) waiting for action server to start on %s", actionserver.c_str());
-		action_client.waitForServer();
-		
-		// create the action feedback publisher
-		action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 10, true);
+		// action_client.waitForServer();
 	}
 
 	/* action dispatch callback */
 	void RPMoveBase::dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
 		// ignore non-goto-waypoint actions
-		if(0!=msg->name.compare("goto_waypoint")) return;
+		if(0!=msg->name.compare(params.name)) return;
 
 		ROS_INFO("KCL: (MoveBase) action recieved");
 
@@ -140,7 +134,7 @@ namespace KCL_rosplan {
 	int main(int argc, char **argv) {
 
 		ros::init(argc, argv, "rosplan_interface_movebase");
-		ros::NodeHandle nh;
+		ros::NodeHandle nh("~");
 
 		std::string actionserver;
 		nh.param("action_server", actionserver, std::string("/move_base"));
@@ -152,6 +146,6 @@ namespace KCL_rosplan {
 		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPMoveBase::dispatchCallback, &rpmb);
 		ROS_INFO("KCL: (MoveBase) Ready to receive");
 
-		ros::spin();
+		rpmb.runActionInterface();
 		return 0;
 	}
