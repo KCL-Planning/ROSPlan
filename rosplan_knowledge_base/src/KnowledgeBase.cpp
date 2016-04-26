@@ -318,27 +318,38 @@ namespace KCL_rosplan {
 	/* get domain types */
 	bool KnowledgeBase::getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
 
-		std::vector<std::string>::iterator iit;
-		for(iit = domain_parser.domain_types.begin(); iit!=domain_parser.domain_types.end(); iit++)
-			res.types.push_back(*iit);
+		if(!domain_parser.domain_parsed) return false;
+
+		VAL::pddl_type_list* types = domain_parser.domain->types;
+		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
+			const VAL::pddl_type* type = *ci;
+			res.types.push_back(type->getName());
+		}	
 		return true;
 	}		
 
 	/* get domain predicates */
 	bool KnowledgeBase::getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
 
-		std::map< std::string, PDDLAtomicFormula>::iterator iit;
-		for(iit = domain_parser.domain_predicates.begin(); iit!=domain_parser.domain_predicates.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
-			for(size_t i=0; i<iit->second.vars.size(); i++) {
-				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.vars[i].name;
-				param.value = iit->second.vars[i].type;
-				formula.typed_parameters.push_back(param);
+		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
+		if(predicates) {
+			for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
+				const VAL::pred_decl* predicate = *ci;
+
+				// predicate name
+				rosplan_knowledge_msgs::DomainFormula formula;
+				formula.name = predicate->getPred()->symbol::getName();
+
+				// predicate variables
+				for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
+					const VAL::var_symbol* var = *vi;
+					diagnostic_msgs::KeyValue param;
+					param.key = var->pddl_typed_symbol::getName();
+					param.value = var->type->getName();
+					formula.typed_parameters.push_back(param);
+				}
+				res.items.push_back(formula);
 			}
-			res.items.push_back(formula);
 		}
 		return true;
 	}
@@ -346,19 +357,25 @@ namespace KCL_rosplan {
 	/* get domain functions */
 	bool KnowledgeBase::getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
 
-		std::map< std::string, PDDLAtomicFormula>::iterator iit;
-		for(iit = domain_parser.domain_functions.begin(); iit!=domain_parser.domain_functions.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
+		VAL::func_decl_list* functions = domain_parser.domain->functions;
+		if(functions) {
+			for (VAL::func_decl_list::const_iterator ci = functions->begin(); ci != functions->end(); ci++) {
+				const VAL::func_decl* function = *ci;
 
-			for(size_t i=0; i<iit->second.vars.size(); i++) {
-				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.vars[i].name;
-				param.value = iit->second.vars[i].type;
-				formula.typed_parameters.push_back(param);
+				// function name
+				rosplan_knowledge_msgs::DomainFormula formula;
+				formula.name = function->getFunction()->symbol::getName();
+
+				// parameters
+				for (VAL::var_symbol_list::const_iterator vi = function->getArgs()->begin(); vi != function->getArgs()->end(); vi++) {
+					const VAL::var_symbol* var = *vi;
+					diagnostic_msgs::KeyValue param;
+					param.key = var->pddl_typed_symbol::getName();
+					param.value = var->type->getName();
+					formula.typed_parameters.push_back(param);
+				}
+				res.items.push_back(formula);
 			}
-			res.items.push_back(formula);
 		}
 		return true;
 	}
@@ -366,16 +383,20 @@ namespace KCL_rosplan {
 	/* get domain operators */
 	bool KnowledgeBase::getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) {
 
-		std::map< std::string, PDDLOperator>::iterator iit;
-		for(iit = domain_parser.domain_operators.begin(); iit!=domain_parser.domain_operators.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
+		VAL::operator_list* operators = domain_parser.domain->ops;
+		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			const VAL::operator_* op = *ci;
 
-			for(size_t i=0; i<iit->second.parameters.size(); i++) {
+			// name
+			rosplan_knowledge_msgs::DomainFormula formula;
+			formula.name = op->name->symbol::getName();
+
+			// parameters
+			for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
+				const VAL::var_symbol* var = *vi;
 				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.parameters[i].name;
-				param.value = iit->second.parameters[i].type;
+				param.key = var->pddl_typed_symbol::getName();
+				param.value = var->type->getName();
 				formula.typed_parameters.push_back(param);
 			}
 			res.operators.push_back(formula);
