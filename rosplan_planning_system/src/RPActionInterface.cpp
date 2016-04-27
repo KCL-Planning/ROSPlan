@@ -58,7 +58,7 @@ namespace KCL_rosplan {
 			for(size_t i=0; i<msg->parameters.size(); i++) {
 				if(params.typed_parameters[j].key == msg->parameters[i].key) {
 					boundParameters[msg->parameters[i].key] = msg->parameters[i].value;
-					found[i] = true;
+					found[j] = true;
 					break;
 				}
 			}
@@ -71,10 +71,6 @@ namespace KCL_rosplan {
 		// send feedback (enabled)
 		rosplan_dispatch_msgs::ActionFeedback fb;
 		fb.action_id = msg->action_id;
-		fb.status = "action enabled";
-		action_feedback_pub.publish(fb);
-
-		// publish feedback (enabled)
 		fb.status = "action enabled";
 		action_feedback_pub.publish(fb);
 

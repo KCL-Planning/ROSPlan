@@ -154,7 +154,6 @@ namespace KCL_rosplan {
 					if(pit==model_facts.end()) break;
 				}
 			}
-
 		}
 	}
 
