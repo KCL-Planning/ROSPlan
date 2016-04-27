@@ -39,12 +39,63 @@ namespace KCL_rosplan {
 
 		// loop
 		ros::Rate loopRate(1);
+		ROS_INFO("KCL: (%s) Ready to receive", params.name.c_str());
+
 		while(ros::ok()) {
 
 			pddl_action_parameters_pub.publish(params);
 
 			loopRate.sleep();
 			ros::spinOnce();
+		}
+	}
+
+	/* run action interface */
+	void RPActionInterface::dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
+
+		// check action name
+		if(0!=msg->name.compare(params.name)) return;
+		ROS_INFO("KCL: (%s) action recieved", params.name.c_str());
+
+		// check PDDL parameters
+		std::vector<bool> found(params.typed_parameters.size(), false);
+		for(size_t j=0; j<params.typed_parameters.size(); j++) {
+			for(size_t i=0; i<msg->parameters.size(); i++) {
+				if(params.typed_parameters[j].key == msg->parameters[i].key) {
+					found[i] = true;
+					break;
+				}
+			}
+			if(!found[j]) {
+				ROS_INFO("KCL: (%s) aborting action dispatch; malformed parameters, missing %s", params.name.c_str(), params.typed_parameters[j].key.c_str());
+				return;
+			}
+		}
+
+		// send feedback (enabled)
+		rosplan_dispatch_msgs::ActionFeedback fb;
+		fb.action_id = msg->action_id;
+		fb.status = "action enabled";
+		action_feedback_pub.publish(fb);
+
+		// publish feedback (enabled)
+		fb.status = "action enabled";
+		action_feedback_pub.publish(fb);
+
+		// call concrete implementation
+		action_success = concreteCallback(msg);
+
+		if(action_success) {
+
+			// publish feedback (achieved)
+			fb.status = "action achieved";
+			action_feedback_pub.publish(fb);
+
+		} else {
+
+			// publish feedback (failed)
+			fb.status = "action failed";
+			action_feedback_pub.publish(fb);
 		}
 	}
 

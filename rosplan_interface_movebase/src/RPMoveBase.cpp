@@ -11,17 +11,12 @@ namespace KCL_rosplan {
 		clear_costmaps_client = nh.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
 
 		// create the action client
-		ROS_INFO("KCL: (MoveBase) waiting for action server to start on %s", actionserver.c_str());
+		ROS_INFO("KCL: (%s) waiting for action server to start on %s", params.name.c_str(), actionserver.c_str());
 		// action_client.waitForServer();
 	}
 
 	/* action dispatch callback */
-	void RPMoveBase::dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
-
-		// ignore non-goto-waypoint actions
-		if(0!=msg->name.compare(params.name)) return;
-
-		ROS_INFO("KCL: (MoveBase) action recieved");
+	bool RPMoveBase::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
 		// get waypoint ID from action dispatch
 		std::string wpID;
@@ -33,19 +28,19 @@ namespace KCL_rosplan {
 			}
 		}
 		if(!found) {
-			ROS_INFO("KCL: (MoveBase) aborting action dispatch; malformed parameters");
-			return;
+			ROS_INFO("KCL: (%s) aborting action dispatch; PDDL action missing required parameter ?to", params.name.c_str());
+			return false;
 		}
 		
 		// get pose from message store
 		std::vector< boost::shared_ptr<geometry_msgs::PoseStamped> > results;
 		if(message_store.queryNamed<geometry_msgs::PoseStamped>(wpID, results)) {
 			if(results.size()<1) {
-				ROS_INFO("KCL: (MoveBase) aborting action dispatch; no matching wpID %s", wpID.c_str());
-				return;
+				ROS_INFO("KCL: (%s) aborting action dispatch; no matching wpID %s", params.name.c_str(), wpID.c_str());
+				return false;
 			}
 			if(results.size()>1)
-				ROS_INFO("KCL: (MoveBase) multiple waypoints share the same wpID");
+				ROS_INFO("KCL: (%s) multiple waypoints share the same wpID", params.name.c_str());
 
 			// dispatch MoveBase action
 			move_base_msgs::MoveBaseGoal goal;
@@ -53,17 +48,11 @@ namespace KCL_rosplan {
 			goal.target_pose = pose;
 			action_client.sendGoal(goal);
 
-			// publish feedback (enabled)
-			rosplan_dispatch_msgs::ActionFeedback fb;
-			fb.action_id = msg->action_id;
-			fb.status = "action enabled";
-			action_feedback_pub.publish(fb);
-
 			bool finished_before_timeout = action_client.waitForResult();
 			if (finished_before_timeout) {
 
 				actionlib::SimpleClientGoalState state = action_client.getState();
-				ROS_INFO("KCL: (MoveBase) action finished: %s", state.toString().c_str());
+				ROS_INFO("KCL: (%s) action finished: %s", params.name.c_str(), state.toString().c_str());
 
 				if(state == actionlib::SimpleClientGoalState::SUCCEEDED) {
 
@@ -91,10 +80,7 @@ namespace KCL_rosplan {
 					big_rate.sleep();
 
 					// publish feedback (achieved)
-					rosplan_dispatch_msgs::ActionFeedback fb;
-					fb.action_id = msg->action_id;
-					fb.status = "action achieved";
-					action_feedback_pub.publish(fb);
+					return true;
 
 				} else {
 
@@ -103,27 +89,19 @@ namespace KCL_rosplan {
 					clear_costmaps_client.call(emptySrv);
 
 					// publish feedback (failed)
-					rosplan_dispatch_msgs::ActionFeedback fb;
-					fb.action_id = msg->action_id;
-					fb.status = "action achieved";
-					action_feedback_pub.publish(fb);
+					return false;
 				}
-
 			} else {
-
+				// timed out (failed)
 				action_client.cancelAllGoals();
-
-				// publish feedback (failed)
-				 rosplan_dispatch_msgs::ActionFeedback fb;
-				fb.action_id = msg->action_id;
-				fb.status = "action failed";
-				action_feedback_pub.publish(fb);
-
-				ROS_INFO("KCL: (MoveBase) action timed out");
-
+				ROS_INFO("KCL: (%s) action timed out", params.name.c_str());
+				return false;
 			}
-
-		} else ROS_INFO("KCL: (MoveBase) aborting action dispatch; query to sceneDB failed");
+		} else {
+			// no KMS connection (failed)
+			ROS_INFO("KCL: (%s) aborting action dispatch; query to sceneDB failed", params.name.c_str());
+			return false;
+		}
 	}
 } // close namespace
 
@@ -141,11 +119,10 @@ namespace KCL_rosplan {
 
 		// create PDDL action subscriber
 		KCL_rosplan::RPMoveBase rpmb(nh, actionserver);
-	
-		// listen for action dispatch
-		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPMoveBase::dispatchCallback, &rpmb);
-		ROS_INFO("KCL: (MoveBase) Ready to receive");
 
+		// listen for action dispatch
+		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, dynamic_cast<KCL_rosplan::RPActionInterface*>(&rpmb));
 		rpmb.runActionInterface();
+
 		return 0;
 	}

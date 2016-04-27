@@ -38,7 +38,7 @@ namespace KCL_rosplan {
 		RPMoveBase(ros::NodeHandle &nh, std::string &actionserver);
 
 		/* listen to and process action_dispatch topic */
-		void dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
+		bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
 	};
 }
 #endif
