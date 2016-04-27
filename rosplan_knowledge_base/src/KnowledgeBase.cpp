@@ -399,9 +399,24 @@ namespace KCL_rosplan {
 				param.value = var->type->getName();
 				formula.typed_parameters.push_back(param);
 			}
+
 			res.operators.push_back(formula);
 		}
 		return true;
+	}
+
+	/* get domain operator details */
+	bool KnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
+
+		VAL::operator_list* operators = domain_parser.domain->ops;
+		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			if((*ci)->name->symbol::getName() == req.name) {
+				op_visitor.visit_operator_(*ci);
+				res.op = op_visitor.msg;
+				return true;
+			}
+		}
+		return false;
 	}
 
 } // close namespace
@@ -429,6 +444,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
+	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
 
 	// query knowledge
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
