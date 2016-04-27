@@ -82,7 +82,7 @@ class ActionDispatchWidget(QWidget):
     callback for action_feedback
     """
     def action_feedback_callback(self, data):
-        self.statusLabel.setText(data.data)
+        self.statusLabel.setText(data.status)
 
     """
     handle changing selected operator name
