@@ -12,20 +12,14 @@ namespace KCL_rosplan {
 		nh.getParam("pddl_action_name", params.name);
 
 		// fetch action params
-		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorService>("/kcl_rosplan/get_domain_operators");
-		rosplan_knowledge_msgs::GetDomainOperatorService srv;
+		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
+		srv.request.name = params.name;
 		if(client.call(srv)) {
-			bool foundAction = false;
-			for(int i=0; i<srv.response.operators.size(); i++) {
-				if(params.name == srv.response.operators[i].name) {
-					params = srv.response.operators[i];
-					foundAction = true;
-				}
-			}
-			if(!foundAction)
-				ROS_ERROR("KCL: (RPActionInterface) operator does not exist in domain %s", params.name.c_str());
+			params = srv.response.op.formula;
+			op = srv.response.op;
 		} else {
-			ROS_ERROR("KCL: (RPActionInterface) could not call Knowledge Base for operator parameters, %s", params.name.c_str());
+			ROS_ERROR("KCL: (RPActionInterface) could not call Knowledge Base for operator details, %s", params.name.c_str());
 		}
 
 		// create PDDL info publisher
@@ -59,9 +53,11 @@ namespace KCL_rosplan {
 
 		// check PDDL parameters
 		std::vector<bool> found(params.typed_parameters.size(), false);
+		std::map<std::string, std::string> boundParameters;
 		for(size_t j=0; j<params.typed_parameters.size(); j++) {
 			for(size_t i=0; i<msg->parameters.size(); i++) {
 				if(params.typed_parameters[j].key == msg->parameters[i].key) {
+					boundParameters[msg->parameters[i].key] = msg->parameters[i].value;
 					found[i] = true;
 					break;
 				}
@@ -86,6 +82,65 @@ namespace KCL_rosplan {
 		action_success = concreteCallback(msg);
 
 		if(action_success) {
+
+			// update knowledge base
+			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
+			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+			
+			// simple add effects
+			for(int i=0; i<op.at_start_add_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_start_add_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_start_add_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			for(int i=0; i<op.at_end_add_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_end_add_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_end_add_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_end_add_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_end_add_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			// simple del effects
+			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+			for(int i=0; i<op.at_start_del_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_start_del_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_start_del_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_start_del_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_start_del_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			for(int i=0; i<op.at_end_del_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_end_del_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_end_del_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_end_del_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_end_del_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			// sleep a little
+			ros::Rate big_rate(0.5);
+			big_rate.sleep();
 
 			// publish feedback (achieved)
 			fb.status = "action achieved";

@@ -9,10 +9,6 @@ namespace KCL_rosplan {
 
 		// costmap client
 		clear_costmaps_client = nh.serviceClient<std_srvs::Empty>("/move_base/clear_costmaps");
-
-		// create the action client
-		ROS_INFO("KCL: (%s) waiting for action server to start on %s", params.name.c_str(), actionserver.c_str());
-		// action_client.waitForServer();
 	}
 
 	/* action dispatch callback */
@@ -42,6 +38,9 @@ namespace KCL_rosplan {
 			if(results.size()>1)
 				ROS_INFO("KCL: (%s) multiple waypoints share the same wpID", params.name.c_str());
 
+			ROS_INFO("KCL: (%s) waiting for move_base action server to start", params.name.c_str());
+			action_client.waitForServer();
+
 			// dispatch MoveBase action
 			move_base_msgs::MoveBaseGoal goal;
 			geometry_msgs::PoseStamped &pose = *results[0];
@@ -55,29 +54,6 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (%s) action finished: %s", params.name.c_str(), state.toString().c_str());
 
 				if(state == actionlib::SimpleClientGoalState::SUCCEEDED) {
-
-					// remove old robot_at
-					rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
-					updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
-					updatePredSrv.request.knowledge.attribute_name = "robot_at";
-					diagnostic_msgs::KeyValue pair;
-					pair.key = "v";
-					pair.value = "kenny";
-					updatePredSrv.request.knowledge.values.push_back(pair);
-					update_knowledge_client.call(updatePredSrv);
-
-					// predicate robot_at
-					updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
-					updatePredSrv.request.knowledge.attribute_name = "robot_at";
-					diagnostic_msgs::KeyValue pairWP;
-					pairWP.key = "wp";
-					pairWP.value = wpID;
-					updatePredSrv.request.knowledge.values.push_back(pairWP);
-					update_knowledge_client.call(updatePredSrv);
-
-					ros::Rate big_rate(0.5);
-					big_rate.sleep();
 
 					// publish feedback (achieved)
 					return true;

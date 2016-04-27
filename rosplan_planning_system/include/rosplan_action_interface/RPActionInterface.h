@@ -6,7 +6,7 @@
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
-#include "rosplan_knowledge_msgs/GetDomainOperatorService.h"
+#include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
 #include "diagnostic_msgs/KeyValue.h"
 
 #ifndef KCL_action_interface
@@ -29,6 +29,7 @@ namespace KCL_rosplan {
 
 		/* PDDL info and publisher */
 		rosplan_knowledge_msgs::DomainFormula params;
+		rosplan_knowledge_msgs::DomainOperator op;
 		ros::Publisher action_feedback_pub;
 
 		/* action feedback to planning system */
