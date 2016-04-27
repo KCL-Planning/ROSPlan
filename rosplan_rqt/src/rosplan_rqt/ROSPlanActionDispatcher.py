@@ -73,8 +73,8 @@ class ActionDispatchWidget(QWidget):
             item = root.child(i)
             cmb = self.operatorView.itemWidget(item, 2)
             kv = KeyValue()
-            kv.key = item.text(1)
-            kv.key = cmb.currentText()
+            kv.key = item.text(0)
+            kv.value = cmb.currentText()
             msg.parameters.append(kv)
         pub.publish(msg)
 
