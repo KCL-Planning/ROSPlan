@@ -88,14 +88,17 @@ set(PLANNING_SOURCES
 ## Declare cpp executables
 add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
 add_executable(planGraphListener src/PlanGraphListener.cpp)
+add_executable(simulatedAction src/RPSimulatedActionInterface.cpp src/RPActionInterface.cpp)
 
 ## Add dependencies
 add_dependencies(planner ${catkin_EXPORTED_TARGETS})
 add_dependencies(planGraphListener ${catkin_EXPORTED_TARGETS})
+add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner ${catkin_LIBRARIES})
 target_link_libraries(planGraphListener ${catkin_LIBRARIES})
+target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})

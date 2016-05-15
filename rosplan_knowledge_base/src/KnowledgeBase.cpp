@@ -222,8 +222,9 @@ namespace KCL_rosplan {
 			// add domain attribute
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
-				if(KnowledgeComparitor::containsKnowledge(msg, *pit))
+				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					return;
+				}
 			}
 			ROS_INFO("KCL: (KB) Adding domain attribute (%s)", msg.attribute_name.c_str());
 			model_facts.push_back(msg);

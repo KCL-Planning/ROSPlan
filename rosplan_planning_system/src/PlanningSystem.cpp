@@ -13,11 +13,11 @@ namespace KCL_rosplan {
 
 	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
 		: system_status(READY),
-		  plan_parser(new CFFPlanParser(nh)),
+		  plan_parser(new POPFPlanParser()),
 		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
 	{
 		// dispatcher
-		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<CFFPlanParser*>(plan_parser));
+		plan_dispatcher = new SimplePlanDispatcher();//*dynamic_cast<POPFPlanParser*>(plan_parser));
 
 		// publishing system_state
 		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
@@ -244,6 +244,10 @@ namespace KCL_rosplan {
 
 			// generate PDDL problem (and problem-specific domain)
 			if(generate_problem) {
+				pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
+			} else {
+				// ROS_INFO("KCL: (PS) Skipping problem generation.");
 				rosplan_knowledge_msgs::GenerateProblemService genSrv;
 				genSrv.request.problem_path = problem_path;
 				genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
@@ -252,8 +256,6 @@ namespace KCL_rosplan {
 					return false;
 				}
 				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
-			} else {
-				ROS_INFO("KCL: (PS) Skipping problem generation.");
 			}
 
 			// run planner; generate a plan
@@ -274,13 +276,10 @@ namespace KCL_rosplan {
 			plan_start_time = ros::WallTime::now().toSec();
 			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser->action_list, mission_start_time, plan_start_time);
 			
-			if (!planSucceeded)
-			{
+			if (!planSucceeded) {
 				ROS_INFO("KCL: (PS) (%s) The plan failed!", problem_path.c_str());
-			}
-			else
-			{
-				ROS_INFO("KCL: (PS) (%s) ANOTHER SUCCESSFUL DISPATCH!", problem_path.c_str());
+			} else {
+				ROS_INFO("KCL: (PS) (%s) Dispatch completed.", problem_path.c_str());
 			}
 		}
 		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_path.c_str());
@@ -329,7 +328,7 @@ namespace KCL_rosplan {
 		
 		while(!planfile.eof() && !solved) {
 			getline(planfile, line);
-			if (line.find("; Time", 0) != std::string::npos)
+			if (line.find("; Plan found", 0) != std::string::npos)
 				solved = true;
 			if (line.find("ff: found legal plan as follows", 0) != std::string::npos)
 				solved = true;
@@ -385,10 +384,10 @@ namespace KCL_rosplan {
 		// start a problem generation service
 		bool genProb = true;
 		nh.getParam("/rosplan_planning_system/generate_default_problem", genProb);
-		planningSystem.generate_problem = !genProb;
+		planningSystem.generate_problem = genProb;
 
 		if(genProb) {
-			ROS_INFO("KCL: (PS) Not using a PDDL problem generator.");
+			ROS_INFO("KCL: (PS) Using the standard PDDL problem generator.");
 		} else {
 			ROS_INFO("KCL: (PS) Using an alternative PDDL problem generator.");
 		}

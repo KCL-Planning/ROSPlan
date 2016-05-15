@@ -83,32 +83,7 @@ namespace KCL_rosplan {
 			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 			
-			// simple add effects
-			for(int i=0; i<op.at_start_add_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_start_add_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
-				diagnostic_msgs::KeyValue pair;
-				for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_start_add_effects[i].typed_parameters[j].key;
-					pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
-				}
-				update_knowledge_client.call(updatePredSrv);
-			}
-
-			for(int i=0; i<op.at_end_add_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_end_add_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
-				diagnostic_msgs::KeyValue pair;
-				for(size_t j=0; j<op.at_end_add_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_end_add_effects[i].typed_parameters[j].key;
-					pair.value = boundParameters[op.at_end_add_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
-				}
-				update_knowledge_client.call(updatePredSrv);
-			}
-
-			// simple del effects
+			// simple start del effects
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 			for(int i=0; i<op.at_start_del_effects.size(); i++) {
 				updatePredSrv.request.knowledge.attribute_name = op.at_start_del_effects[i].name;
@@ -122,6 +97,20 @@ namespace KCL_rosplan {
 				update_knowledge_client.call(updatePredSrv);
 			}
 
+			// simple start add effects
+			for(int i=0; i<op.at_start_add_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_start_add_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_start_add_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			// simple END del effects
 			for(int i=0; i<op.at_end_del_effects.size(); i++) {
 				updatePredSrv.request.knowledge.attribute_name = op.at_end_del_effects[i].name;
 				updatePredSrv.request.knowledge.values.clear();
@@ -129,6 +118,19 @@ namespace KCL_rosplan {
 				for(size_t j=0; j<op.at_end_del_effects[i].typed_parameters.size(); j++) {
 					pair.key = op.at_end_del_effects[i].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_end_del_effects[i].typed_parameters[j].key];
+					updatePredSrv.request.knowledge.values.push_back(pair);
+				}
+				update_knowledge_client.call(updatePredSrv);
+			}
+
+			// simple END add effects
+			for(int i=0; i<op.at_end_add_effects.size(); i++) {
+				updatePredSrv.request.knowledge.attribute_name = op.at_end_add_effects[i].name;
+				updatePredSrv.request.knowledge.values.clear();
+				diagnostic_msgs::KeyValue pair;
+				for(size_t j=0; j<op.at_end_add_effects[i].typed_parameters.size(); j++) {
+					pair.key = op.at_end_add_effects[i].typed_parameters[j].key;
+					pair.value = boundParameters[op.at_end_add_effects[i].typed_parameters[j].key];
 					updatePredSrv.request.knowledge.values.push_back(pair);
 				}
 				update_knowledge_client.call(updatePredSrv);

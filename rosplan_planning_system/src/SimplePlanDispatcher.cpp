@@ -49,6 +49,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (PS) Dispatching plan");
 		replan_requested = false;
 		bool repeatAction = false;
+
 		while (ros::ok() && actionList.size() > current_action) {
 
 			// loop while dispatch is paused
