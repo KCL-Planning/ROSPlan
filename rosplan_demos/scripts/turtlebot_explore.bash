@@ -29,4 +29,14 @@ knowledge:
   - {key: 'wp', value: 'wp$i'}
   function_value: 0.0"
 done;
+rosservice call /kcl_rosplan/update_knowledge_base "update_type: 0
+knowledge:
+knowledge_type: 1
+instance_type: ''
+instance_name: ''
+attribute_name: 'robot_at'
+  values:
+  - {key: 'v', value: 'kenny'}
+  - {key: 'wp', value: 'wp0'}
+function_value: 0.0";
 rosservice call /kcl_rosplan/planning_server;
