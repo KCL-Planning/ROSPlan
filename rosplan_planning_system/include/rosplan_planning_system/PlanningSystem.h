@@ -3,12 +3,17 @@
  * TODO document
  */
 #include "ros/ros.h"
+#include "actionlib/server/simple_action_server.h"
+
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/CompletePlan.h"
+#include "rosplan_dispatch_msgs/PlanningService.h"
+#include "rosplan_dispatch_msgs/PlanAction.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
-#include "std_srvs/Empty.h"
+#include "rosplan_knowledge_msgs/GenerateProblemService.h"
 #include "std_msgs/String.h"
+#include "std_srvs/Empty.h"
 #include "PlanningEnvironment.h"
 #include "PDDLProblemGenerator.h"
 #include "PlanParser.h"
@@ -16,6 +21,7 @@
 #include "PlanDispatcher.h"
 #include "SimplePlanDispatcher.h"
 #include "EsterelPlanDispatcher.h"
+#include "CFFPlanParser.h"
 
 #ifndef KCL_planning_system
 #define KCL_planning_system
@@ -28,6 +34,8 @@ namespace KCL_rosplan {
 	class PlanningSystem
 	{
 	private:
+
+		ros::NodeHandle nh_;
 
 		/* simulation information */
 		bool use_plan_visualisation;
@@ -42,6 +50,7 @@ namespace KCL_rosplan {
 		std::string data_path;
 
 		/* planning */
+		actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>* plan_server;
 		double mission_start_time;
 		double plan_start_time;
 		bool runPlanner();
@@ -51,11 +60,17 @@ namespace KCL_rosplan {
 		size_t planning_attempts;
 
 	public:
-
+		PlanningSystem(ros::NodeHandle& nh);
+		virtual ~PlanningSystem();
+		
 		SystemStatus system_status;
 
 		void commandCallback(const std_msgs::String::ConstPtr& msg);
-		bool runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		bool runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		bool runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
+		void runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal);
+		bool runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand);
+
 
 		/* knowledge */
 		PlanningEnvironment environment;
@@ -63,8 +78,11 @@ namespace KCL_rosplan {
 		void notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg);
 
 		/* planning */
+		ros::ServiceClient generate_problem_client;
 		PDDLProblemGenerator pddl_problem_generator;
-		POPFPlanParser plan_parser;
+		PlanParser* plan_parser;
+		bool generate_problem;
+		bool generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res);
 		void publishFilter();
 	
 		/* dispatch class */

@@ -1,5 +1,7 @@
 #include "rosplan_interface_mapping/RPSimpleMapServer.h"
 
+#include <tf/transform_listener.h>
+
 /* implementation of rosplan_interface_mapping::RPSimpleMapServer.h */
 namespace KCL_rosplan {
 
@@ -150,12 +152,17 @@ namespace KCL_rosplan {
 		curr=next+1; next=line.find(",",curr);
 
 		pose.pose.position.y = (double)atof(line.substr(curr,next-curr).c_str());
-		curr=next+1; next=line.find(",",curr);
+		curr=next+1; next=line.find("]",curr);
 
-		pose.pose.orientation.x = 0.0;
-		pose.pose.orientation.y = 0.0;
-		pose.pose.orientation.w = (double)atof(line.substr(curr,next-curr).c_str());
-		pose.pose.orientation.z = sqrt(1 - pose.pose.orientation.w * pose.pose.orientation.w);
+		float theta = atof(line.substr(curr,next-curr).c_str());
+		tf::Quaternion q;
+		q.setEuler(theta, 0 ,0);
+
+
+		pose.pose.orientation.x = q.x();
+		pose.pose.orientation.y = q.z();
+		pose.pose.orientation.w = q.w();
+		pose.pose.orientation.z = q.y();
 	}
 
 	bool RPSimpleMapServer::setupRoadmap(std::string filename) {
@@ -213,7 +220,7 @@ namespace KCL_rosplan {
 
 		// params
 		std::string filename("waypoints.txt");
-		std::string fixed_frame("world");
+		std::string fixed_frame("map");
 		nh.param("/waypoint_file", filename, filename);
 		nh.param("fixed_frame", fixed_frame, fixed_frame);
 

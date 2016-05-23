@@ -21,6 +21,10 @@ namespace KCL_rosplan {
 		return current_action;
 	}
 
+	void SimplePlanDispatcher::setCurrentAction(size_t freeActionID) {
+		current_action = freeActionID;
+	}
+
 	void SimplePlanDispatcher::reset() {
 		replan_requested = false;
 		dispatch_paused = false;
@@ -45,6 +49,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (PS) Dispatching plan");
 		replan_requested = false;
 		bool repeatAction = false;
+
 		while (ros::ok() && actionList.size() > current_action) {
 
 			// loop while dispatch is paused

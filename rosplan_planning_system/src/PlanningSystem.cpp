@@ -3,8 +3,43 @@
 #include <sstream>
 #include <string>
 #include <ctime>
+#include <string>
 
 namespace KCL_rosplan {
+
+	/*-------------*/
+	/* constructor */
+	/*-------------*/
+
+	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
+		: system_status(READY),
+		  plan_parser(new POPFPlanParser()),
+		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
+	{
+		// dispatcher
+		plan_dispatcher = new SimplePlanDispatcher();//*dynamic_cast<POPFPlanParser*>(plan_parser));
+
+		// publishing system_state
+		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
+
+		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
+		plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
+		plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
+		plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
+
+		// problem generation client
+		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
+
+		// start planning action server
+		plan_server->start();
+	}
+	
+	PlanningSystem::~PlanningSystem()
+	{
+		delete plan_parser;
+		delete plan_dispatcher;
+		delete plan_server;
+	}
 
 	/**
 	 * Runs external commands
@@ -20,6 +55,18 @@ namespace KCL_rosplan {
 		return data;
 	}
 
+	/*----------------------------*/
+	/* PDDL2.1 problem generation */
+	/*----------------------------*/
+
+	/**
+	 * generate a default PDDL2.1 problem instance with goals from the Knowledge Base
+	 */
+	bool PlanningSystem::generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res) {
+		ROS_INFO("KCL: (PS) Beginning default problem generation");
+		// pddl_problem_generator.generatePDDLProblemFile(environment, req.problem_path);	
+	}
+
 	/*-----------*/
 	/* Knowledge */
 	/*-----------*/
@@ -29,8 +76,9 @@ namespace KCL_rosplan {
 	 * It is here that the real reasoning takes place.
 	 */
 	void PlanningSystem::notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg) {
-		ROS_INFO("KCL: (PS) Notification received; plan invalidated; replanning.");
+		ROS_INFO("KCL: (PS) (%s) Notification received; plan invalidated; replanning.", problem_path.c_str());
 		plan_dispatcher->replan_requested = true;
+		
 	}
 
 	/**
@@ -44,27 +92,33 @@ namespace KCL_rosplan {
 		filter_publisher.publish(filterMessage);
 
 		// push the new filter
-		ROS_INFO("KCL: (PS) Clean and update knowledge filter");
+		ROS_INFO("KCL: (PS) (%s) Clean and update knowledge filter", problem_path.c_str());
 		filterMessage.function = rosplan_knowledge_msgs::Filter::ADD;
-		filterMessage.knowledge_items = plan_parser.knowledge_filter;
+		filterMessage.knowledge_items = plan_parser->knowledge_filter;
 		filter_publisher.publish(filterMessage);
 	}
 
-	/*----------------------*/
-	/* Planning system loop */
-	/*----------------------*/
+	/*--------------------------*/
+	/* Planning system commands */
+	/*--------------------------*/
 
 	void PlanningSystem::commandCallback(const std_msgs::String::ConstPtr& msg) {
-		ROS_INFO("KCL: (PS) Command received: %s", msg->data.c_str());
-		if(msg->data == "plan") {
+		ROS_INFO("KCL: (PS) (%s) Command received: %s", problem_path.c_str(),  msg->data.c_str());
+		if(msg->data.substr(0,4) == "plan") {
+			// get free action ID
+			if(msg->data.length() > 4) {
+				size_t aid = atoi(msg->data.substr(5).c_str());
+				plan_dispatcher->setCurrentAction(aid);
+			}
+			// start planning and executing
 			if(system_status == READY) {
-				ROS_INFO("KCL: (PS) Processing planning request");
+				ROS_INFO("KCL: (PS) (%s) Processing planning request", problem_path.c_str());
 				std_srvs::Empty srv;
-				runPlanningServer(srv.request,srv.response);
+				runPlanningServerDefault(srv.request,srv.response);
 			}
 		} else if(msg->data == "pause") {
 			if(system_status == DISPATCHING && !plan_dispatcher->dispatch_paused) {
-				ROS_INFO("KCL: (PS) Pausing dispatch");
+				ROS_INFO("KCL: (PS) (%s) Pausing dispatch", problem_path.c_str());
 				plan_dispatcher->dispatch_paused = true;
 				system_status = PAUSED;
 				// produce status message
@@ -72,7 +126,7 @@ namespace KCL_rosplan {
 				statusMsg.data = "Paused";
 				state_publisher.publish(statusMsg);
 			} else if(system_status == PAUSED) {
-				ROS_INFO("KCL: (PS) Resuming dispatch");
+				ROS_INFO("KCL: (PS) (%s) Resuming dispatch", problem_path.c_str());
 				plan_dispatcher->dispatch_paused = false;
 				system_status = DISPATCHING;
 				// produce status message
@@ -85,7 +139,7 @@ namespace KCL_rosplan {
 				case PLANNING:
 				case DISPATCHING:
 				case PAUSED:
-					ROS_INFO("KCL: (PS) Cancelling");
+					ROS_INFO("KCL: (PS) (%s) Cancelling", problem_path.c_str());
 					plan_dispatcher->plan_cancelled = true;
 					break;
 			}
@@ -100,12 +154,66 @@ namespace KCL_rosplan {
 		}
 	}
 
+	/*--------------------------*/
+	/* Service and Action hooks */
+	/*--------------------------*/
+
+	/* planning system service method; loads parameters and calls method below */
+	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+
+		ros::NodeHandle nh("~");
+
+		// setup environment
+		nh.param("/domain_path", domain_path, std::string("common/domain.pddl"));
+		nh.param("data_path", data_path, std::string("common/"));
+		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
+		nh.param("planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
+		
+		// call planning server
+		plan_dispatcher->setCurrentAction(0);
+		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
+	}
+
+	/* planning system service hook with parameters */
+	bool PlanningSystem::runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
+		// call planning server
+		plan_dispatcher->setCurrentAction(0);
+		return runPlanningServer(req.domain_path, req.problem_path, req.data_path, req.planner_command);
+	}
+
+	/* planning system action hook */
+	void PlanningSystem::runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal) {
+		
+		// set the starting action ID
+		plan_dispatcher->setCurrentAction(goal->start_action_id);
+
+		// call planning server TODO preemption and feedback
+		ROS_INFO("KCL: (PS) (%s) Planning Action recieved.", goal->problem_path.c_str());
+		if(runPlanningServer(goal->domain_path, goal->problem_path, goal->data_path, goal->planner_command)) {
+			plan_server->setSucceeded();
+		} else {
+			plan_server->setAborted();
+		}
+	}
+	
+	/*----------------------*/
+	/* Planning system loop */
+	/*----------------------*/
+
 	/**
 	 * planning system service method; prepares planning; main loop.
 	 */
-	bool PlanningSystem::runPlanningServer(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+	bool PlanningSystem::runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand) {
 
-		if(system_status != READY) return false;
+		data_path = dataPath;
+		domain_path = domainPath;
+		problem_path = problemPath;
+		planner_command = plannerCommand;
+		
+		if(system_status != READY) {
+			ROS_INFO("PlanningSystem::runPlanningServer is not READY!");
+			return false;
+		}
 
 		system_status = PLANNING;
 		std_msgs::String statusMsg;
@@ -114,21 +222,17 @@ namespace KCL_rosplan {
 
 		ros::NodeHandle nh("~");
 
-		// setup environment
-		nh.param("/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.param("data_path", data_path, std::string("common/"));
-		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("planner_command", planner_command, std::string("timeout 10 common/bin/popf -n"));
-
+		// parse domain
 		environment.parseDomain(domain_path);
-
+		
 		// dispatch plan
-		plan_parser.reset();
+		plan_parser->reset();
 		plan_dispatcher->reset();
 		plan_dispatcher->environment = environment;
 
 		bool planSucceeded = false;
 		mission_start_time = ros::WallTime::now().toSec();
+		
 		while(!planSucceeded && !plan_dispatcher->plan_cancelled) {
 
 			statusMsg.data = "Planning";
@@ -138,30 +242,52 @@ namespace KCL_rosplan {
 			// update the environment from the ontology
 			environment.update(nh);
 
-			// generate PDDL problem
-			pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+			// generate PDDL problem (and problem-specific domain)
+			if(generate_problem) {
+				pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
+			} else {
+				// ROS_INFO("KCL: (PS) Skipping problem generation.");
+				rosplan_knowledge_msgs::GenerateProblemService genSrv;
+				genSrv.request.problem_path = problem_path;
+				genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
+				if (!generate_problem_client.call(genSrv)) {
+					ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_path.c_str());
+					return false;
+				}
+				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_path.c_str());
+			}
 
 			// run planner; generate a plan
-			runPlanner();
+			if(!runPlanner()) return false;
 
 			// publish plan
 			rosplan_dispatch_msgs::CompletePlan planMsg;
-			planMsg.plan = plan_parser.action_list;
+			planMsg.plan = plan_parser->action_list;
 			plan_publisher.publish(planMsg);
+
+			// re-parse the (problem-specific) domain
+			environment.parseDomain(domain_path);
 
 			// dispatch plan
 			system_status = DISPATCHING;
 			statusMsg.data = "Dispatching";
 			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
-			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser.action_list, mission_start_time, plan_start_time);
+			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser->action_list, mission_start_time, plan_start_time);
+			
+			if (!planSucceeded) {
+				ROS_INFO("KCL: (PS) (%s) The plan failed!", problem_path.c_str());
+			} else {
+				ROS_INFO("KCL: (PS) (%s) Dispatch completed.", problem_path.c_str());
+			}
 		}
-		ROS_INFO("KCL: (PS) Planning System Finished");
+		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_path.c_str());
 
 		system_status = READY;
 		statusMsg.data = "Ready";
 		state_publisher.publish(statusMsg);
-
+		
 		return planSucceeded;
 	}
 
@@ -177,32 +303,39 @@ namespace KCL_rosplan {
 
 		// save previous plan
 		planning_attempts++;
-		if(plan_parser.action_list.size() > 0) {
-			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(plan_parser.action_list);
+		if(plan_parser->action_list.size() > 0) {
+			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(plan_parser->action_list);
 			plan_list.push_back(oldplan);
 		}
 
-		// run the planner (TODO standardised PDDL2.1 input)
-		std::string commandString = planner_command
-				+ " " + domain_path + " " + problem_path
-				 + " > " + data_path + "plan.pddl";
-		ROS_INFO("KCL: (PS) Running: %s", commandString.c_str());
+		// run the planner
+		std::string str = planner_command;
+		std::size_t dit = str.find("DOMAIN");
+		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
+		std::size_t pit = str.find("PROBLEM");
+		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
+		
+		std::string commandString = str + " > " + data_path + "plan.pddl";
+		ROS_INFO("KCL: (PS) (%s) Running: %s", problem_path.c_str(),  commandString.c_str());
 		std::string plan = runCommand(commandString.c_str());
-		ROS_INFO("KCL: (PS) Planning complete");
+		ROS_INFO("KCL: (PS) (%s) Planning complete", problem_path.c_str());
 
 		// check the planner solved the problem (TODO standardised PDDL2.1 output)
 		std::ifstream planfile;
 		planfile.open((data_path + "plan.pddl").c_str());
 		std::string line;
 		bool solved = false;
+		
 		while(!planfile.eof() && !solved) {
 			getline(planfile, line);
-			if (line.find("; Time", 0) != std::string::npos)
+			if (line.find("; Plan found", 0) != std::string::npos)
+				solved = true;
+			if (line.find("ff: found legal plan as follows", 0) != std::string::npos)
 				solved = true;
 		}
 		if(!solved) {
 				planfile.close();
-				ROS_INFO("KCL: (PS) Plan was unsolvable! Try again?");
+				ROS_INFO("KCL: (PS) (%s) Plan was unsolvable! Try again?", problem_path.c_str());
 				return false;
 		}
 
@@ -218,7 +351,7 @@ namespace KCL_rosplan {
 		dest.close();
 
 		// Convert plan into message list for dispatch
-		plan_parser.preparePlan(data_path, environment, plan_dispatcher->getCurrentAction());
+		plan_parser->preparePlan(data_path, environment, plan_dispatcher->getCurrentAction());
 
 		// publish the filter to the knowledge base
 		publishFilter();
@@ -239,19 +372,8 @@ namespace KCL_rosplan {
 		ros::init(argc,argv,"rosplan_planning_system");
 		ros::NodeHandle nh;
 
-		KCL_rosplan::PlanningSystem planningSystem;
+		KCL_rosplan::PlanningSystem planningSystem(nh);
 
-		// plan dispatcher
-		KCL_rosplan::SimplePlanDispatcher spd;
-		planningSystem.plan_dispatcher = &spd;
-
-		// publishing system_state
-		planningSystem.state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
-
-		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
-		planningSystem.plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
-		planningSystem.plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
-		planningSystem.plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, planningSystem.plan_dispatcher);
 		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);
 
@@ -259,12 +381,25 @@ namespace KCL_rosplan {
 		planningSystem.filter_publisher = nh.advertise<rosplan_knowledge_msgs::Filter>("/kcl_rosplan/planning_filter", 10, true);
 		ros::Subscriber notification_sub = nh.subscribe("/kcl_rosplan/notification", 10, &KCL_rosplan::PlanningSystem::notificationCallBack, &planningSystem);
 
-		// start the planning service
-		ros::ServiceServer service = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServer, &planningSystem);
-		planningSystem.system_status = KCL_rosplan::READY;
+		// start a problem generation service
+		bool genProb = true;
+		nh.getParam("/rosplan_planning_system/generate_default_problem", genProb);
+		planningSystem.generate_problem = genProb;
+
+		if(genProb) {
+			ROS_INFO("KCL: (PS) Using the standard PDDL problem generator.");
+		} else {
+			ROS_INFO("KCL: (PS) Using an alternative PDDL problem generator.");
+		}
+		
+		// start the planning services
+		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);
+		ros::ServiceServer service1 = nh.advertiseService("/kcl_rosplan/planning_server_params", &KCL_rosplan::PlanningSystem::runPlanningServerParams, &planningSystem);
+
 		std_msgs::String statusMsg;
 		statusMsg.data = "Ready";
 		planningSystem.state_publisher.publish(statusMsg);
+
 		ROS_INFO("KCL: (PS) Ready to receive");
 		ros::spin();
 

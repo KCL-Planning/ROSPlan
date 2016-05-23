@@ -1,4 +1,5 @@
 <library path="src">
+
   <class name="ROSPlanDispatcher" type="rosplan_rqt.dispatcher.ROSPlanDispatcher" base_class_type="rqt_gui_py::Plugin">
     <description>
       Information on the current plan, actions and dispatch state in ROSPlan.
@@ -14,4 +15,21 @@
       <statustip>ROSPlan dispatch info pane.</statustip>
     </qtgui>
   </class>
+
+  <class name="ROSPlanActionDispatcher" type="rosplan_rqt.action_dispatcher.ROSPlanActionDispatcher" base_class_type="rqt_gui_py::Plugin">
+    <description>
+		Dispatch PDDL actions by hand.
+    </description>
+    <qtgui>
+      <group>
+        <icon type="theme">folder</icon>
+        <label>ROSPlan</label>
+        <statustip>Plugins related to the ROSPlan PDDL planning system.</statustip>
+      </group>
+      <label>ROSPlan action dispatcher</label>
+      <icon type="theme">applications-science</icon>
+      <statustip>ROSPlan action dispatch.</statustip>
+    </qtgui>
+  </class>
+
 </library>

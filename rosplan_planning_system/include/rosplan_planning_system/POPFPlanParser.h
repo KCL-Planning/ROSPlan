@@ -27,6 +27,8 @@ namespace KCL_rosplan {
 
 	public:
 
+		virtual ~POPFPlanParser();
+
 		/* post process plan */
 		double total_plan_duration;
 

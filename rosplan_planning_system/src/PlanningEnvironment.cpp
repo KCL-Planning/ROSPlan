@@ -34,39 +34,48 @@ namespace KCL_rosplan {
 		std::string domainFileName = (domainPath);
 		ROS_INFO("KCL: (PS) Parsing domain: %s.", domainFileName.c_str());
 
+		
 		// save filename for VAL
 		std::vector<char> writable(domainFileName.begin(), domainFileName.end());
 		writable.push_back('\0');
-		current_filename = &writable[0];
-
-		// parse domain
+		current_filename = &writable[0];		
+		
 		VAL::current_analysis = &VAL::an_analysis;
 		std::ifstream domainFile;
 		domainFile.open(domainFileName.c_str());
 		yydebug = 0;
-
 		VAL::yfl = new yyFlexLexer;
 
-		if (domainFile.bad()) {
+		if (!domainFile.is_open() || domainFile.fail() || domainFile.bad()) {
 			ROS_ERROR("KCL: (PS) Failed to open domain file.");
 			line_no = 0;
 			VAL::log_error(VAL::E_FATAL,"Failed to open file");
 		} else {
+			
+			ROS_INFO("KCL: (PS) File does exist: %s.", domainFileName.c_str());
+
+			
 			line_no = 1;
 			VAL::yfl->switch_streams(&domainFile,&std::cout);
 			yyparse();
-
+			
 			// domain name
 			VAL::domain* domain = VAL::current_analysis->the_domain;
+			if (domain == NULL)
+			{
+				ROS_ERROR("KCL: (PS) Domain could not be parsed!");
+				return;
+			}
+			
 			domainName = domain->name;
-
+			
 			// types
 			VAL::pddl_type_list* types = domain->types;
 			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 				const VAL::pddl_type* type = *ci;
 				domain_types.push_back(type->getName());
 			}
-
+			
 			// predicates
 			VAL::pred_decl_list* predicates = domain->predicates;
 			if(predicates) {
@@ -81,7 +90,7 @@ namespace KCL_rosplan {
 					}
 				}
 			}
-
+			
 			// functions
 			VAL::func_decl_list* functions = domain->functions;
 			if(functions) {
@@ -96,7 +105,7 @@ namespace KCL_rosplan {
 					}
 				}
 			}
-
+			
 			// operators
 			VAL::operator_list* operators = domain->ops;
 			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
@@ -117,6 +126,8 @@ namespace KCL_rosplan {
 		}
 		domainFile.close();
 		delete VAL::yfl;
+		
+		ROS_INFO("KCL: (PS) Finished parsing domain: %s.", domainFileName.c_str());
 	}
 
 	/**
@@ -210,18 +221,21 @@ namespace KCL_rosplan {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_instances: %s", instanceSrv.request.type_name.c_str());
 			}
 		}
-
+		ROS_INFO("KCL: (PS) Fetch attributes and functions");
 
 		// get domain attributes and functions
 		std::map<std::string,std::vector<std::string> >::iterator ait;
 		for(ait = domain_predicates.begin(); ait != domain_predicates.end(); ait++) {
 			rosplan_knowledge_msgs::GetAttributeService domainAttrSrv;
 			domainAttrSrv.request.predicate_name = ait->first;
+			
 			if (GetDomainAttrsClient.call(domainAttrSrv)) {
 				for(size_t j=0;j<domainAttrSrv.response.attributes.size();j++) {
 					rosplan_knowledge_msgs::KnowledgeItem attr = domainAttrSrv.response.attributes[j];
 					if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT && attr.attribute_name.compare(ait->first)==0)
+					{
 						domain_attributes.push_back(attr);
+					}
 				}
 			} else {
 				ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_domain_attributes %s", domainAttrSrv.request.predicate_name.c_str());
@@ -242,6 +256,7 @@ namespace KCL_rosplan {
 		}
 
 		// get current goals
+		ROS_INFO("KCL: (PS) Fetch goals");
 		rosplan_knowledge_msgs::GetAttributeService currentGoalSrv;
 		if (GetCurrentGoalsClient.call(currentGoalSrv)) {
 			for(size_t j=0;j<currentGoalSrv.response.attributes.size();j++) {
@@ -252,5 +267,7 @@ namespace KCL_rosplan {
 		} else {
 			ROS_ERROR("KCL: (PS) Failed to call service /kcl_rosplan/get_current_goals");
 		}
+		
+		ROS_INFO("KCL: (PS) Update complete");
 	}
 } // close namespace

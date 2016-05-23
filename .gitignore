@@ -22,3 +22,9 @@
 
 # Mergetool
 *.orig
+
+#python
+*.pyc
+
+#gedit
+*~

@@ -1,34 +1,39 @@
+<?xml version="1.0"?>
 <launch>
 
+	<!-- data paths -->
+	<param name="data_path" value="$(find rosplan_planning_system)/common/" />
+	<param name="planner_path" value="$(find rosplan_planning_system)/common/bin/" />
+
+	<!-- domain file -->
 	<param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
 
 	<!-- knowledge base -->
-	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
-	</node>
-
+	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
 
 	<!-- scene database (MongoDB) -->
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
 	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
 	</node>
-	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
-	</node>
-
+	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
 
 	<!-- planning system -->
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 		<!-- directory for generated files -->
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
-		<!-- to run the planner -->
-	    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />
-	</node>
+		<param name="strl_file_path" value="$(find rosplan_planning_system)/common/plan.strl" />
 
+		<!-- to run the planner -->
+	    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+		<param name="generate_default_problem" value="true" />
+	</node>
 
 	<!-- interfaces -->
-	<include file="$(find rosplan_interface_mapping)/launch/rosplan_roadmap_server.launch" >
-	</include>
-	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
-	</node>
+	<include file="$(find rosplan_interface_mapping)/launch/rosplan_roadmap_server.launch" />
 
+	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
+		<param name="action_server" value="/move_base" />
+		<param name="pddl_action_name" value="goto_waypoint" />
+	</node>
 </launch>

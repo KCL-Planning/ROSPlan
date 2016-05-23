@@ -7,7 +7,17 @@ knowledge:
   instance_name: 'kenny'
   attribute_name: ''
   function_value: 0.0";
-for i in 0 1 2 3 4 5 6 7 8 9
+rosservice call /kcl_rosplan/update_knowledge_base "update_type: 0
+knowledge:
+  knowledge_type: 1
+  instance_type: ''
+  instance_name: ''
+  attribute_name: 'robot_at'
+  values:
+  - {key: 'v', value: 'kenny'}
+  - {key: 'wp', value: 'wp0'}
+  function_value: 0.0";
+for i in $(seq 0 $(( $(rosservice call /kcl_rosplan/get_current_instances "type_name: 'waypoint'" | sed 's/wp/\n/g' | wc -l) - 2)) )
 do
 rosservice call /kcl_rosplan/update_knowledge_base "update_type: 1
 knowledge:

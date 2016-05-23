@@ -1,19 +1,10 @@
 #include <ros/ros.h>
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <boost/foreach.hpp>
 
 #include "rosplan_action_interface/RPActionInterface.h"
 
-#include "actionlib/client/simple_action_client.h"
-#include "move_base_msgs/MoveBaseAction.h"
-#include "mongodb_store/message_store.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "std_srvs/Empty.h"
-
-#ifndef KCL_movebase
-#define KCL_movebase
+#ifndef KCL_simulatedaction
+#define KCL_simulatedaction
 
 /**
  * This file defines the RPMoveBase class.
@@ -23,19 +14,18 @@
  */
 namespace KCL_rosplan {
 
-	class RPMoveBase: public RPActionInterface
+	class RPSimulatedActionInterface: public RPActionInterface
 	{
 
 	private:
 
-		mongodb_store::MessageStoreProxy message_store;
-		actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> action_client;
-		ros::ServiceClient clear_costmaps_client;
+		double action_duration;
+		double action_probability;
 
 	public:
 
 		/* constructor */
-		RPMoveBase(ros::NodeHandle &nh, std::string &actionserver);
+		RPSimulatedActionInterface(ros::NodeHandle &nh);
 
 		/* listen to and process action_dispatch topic */
 		bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
