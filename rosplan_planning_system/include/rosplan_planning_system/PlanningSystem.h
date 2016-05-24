@@ -93,6 +93,7 @@ namespace KCL_rosplan {
 
 		/* ROS interface */
 		ros::Publisher filter_publisher;
+		ros::Publisher problem_publisher;
 		ros::Publisher plan_publisher;
 		ros::Publisher state_publisher;
 	};

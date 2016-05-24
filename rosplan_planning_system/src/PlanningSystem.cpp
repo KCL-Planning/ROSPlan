@@ -4,6 +4,7 @@
 #include <string>
 #include <ctime>
 #include <string>
+#include <streambuf>
 
 namespace KCL_rosplan {
 
@@ -24,6 +25,7 @@ namespace KCL_rosplan {
 
 		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
 		plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
+		problem_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/problem", 5, true);
 		plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
 		plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
 
@@ -274,6 +276,14 @@ namespace KCL_rosplan {
 					return false;
 				}
 				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
+			}
+
+			// publish problem
+			std::ifstream problemIn(problem_path.c_str());
+			if(problemIn) {
+				std_msgs::String problemMsg;
+				problemMsg.data = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
+				problem_publisher.publish(problemMsg);
 			}
 
 			// run planner; generate a plan
