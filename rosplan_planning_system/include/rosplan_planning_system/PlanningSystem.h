@@ -47,6 +47,7 @@ namespace KCL_rosplan {
 		std::string planner_command;
 		std::string domain_path;
 		std::string problem_path;
+		std::string problem_name;
 		std::string data_path;
 
 		/* planning */
@@ -58,6 +59,8 @@ namespace KCL_rosplan {
 		/* plan list (for remembering previous plans) */
 		std::vector< std::vector<rosplan_dispatch_msgs::ActionDispatch> > plan_list;
 		size_t planning_attempts;
+		size_t dispatch_attempts;
+		int max_dispatch_attempts;
 
 	public:
 		PlanningSystem(ros::NodeHandle& nh);
