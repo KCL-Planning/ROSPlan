@@ -75,20 +75,9 @@ namespace KCL_rosplan {
 			}
 
 			// find the PDDL parameters in the KnowledgeItem
-			bool writeAttribute = true;
-			for(size_t j=0; j<ait->second.size(); j++) {
-				bool found = false;
-				for(size_t k=0; k<environment.domain_attributes[i].values.size(); k++) {
-					if(0 == environment.domain_attributes[i].values[k].key.compare(ait->second[j])) {
-						ss << " " << environment.domain_attributes[i].values[k].value;
-						found = true;
-					}
-				}
-				if(!found)
-				{
-					writeAttribute = false; 
-				}
-			};
+			for(size_t k=0; k<environment.domain_attributes[i].values.size(); k++) {
+				ss << " " << environment.domain_attributes[i].values[k].value;
+			}
 			ss << ")";
 
 			// output function value
@@ -96,7 +85,7 @@ namespace KCL_rosplan {
 				ss << " " << environment.domain_attributes[i].function_value << ")";
 			};
 
-			if(writeAttribute) pFile << ss.str() << std::endl;
+			pFile << ss.str() << std::endl;
 		}
 
 		// add knowledge to the initial state
