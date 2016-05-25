@@ -1,9 +1,8 @@
-/**
- * This file includes the main loop of the planning node.
- * TODO document
- */
 #include "ros/ros.h"
 #include "actionlib/server/simple_action_server.h"
+
+#include "std_msgs/String.h"
+#include "std_srvs/Empty.h"
 
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_dispatch_msgs/CompletePlan.h"
@@ -12,20 +11,25 @@
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "rosplan_knowledge_msgs/GenerateProblemService.h"
-#include "std_msgs/String.h"
-#include "std_srvs/Empty.h"
+
 #include "PlanningEnvironment.h"
 #include "PDDLProblemGenerator.h"
+
 #include "PlanParser.h"
 #include "POPFPlanParser.h"
+#include "POPFEsterelPlanParser.h"
+#include "CFFPlanParser.h"
+
 #include "PlanDispatcher.h"
 #include "SimplePlanDispatcher.h"
 #include "EsterelPlanDispatcher.h"
-#include "CFFPlanParser.h"
 
 #ifndef KCL_planning_system
 #define KCL_planning_system
 
+/**
+ * This file includes the main loop of the planning node.
+ */
 namespace KCL_rosplan {
 
 	/* status */

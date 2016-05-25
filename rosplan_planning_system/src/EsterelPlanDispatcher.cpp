@@ -13,7 +13,24 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
 
-		cff_pp = &parser;
+		plan_nodes = &(parser.plan_nodes);
+		plan_edges = &(parser.plan_edges);
+
+		current_action = 0;
+
+		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
+		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
+	}
+
+	EsterelPlanDispatcher::EsterelPlanDispatcher(POPFEsterelPlanParser &parser)
+		: action_id_offset(0)
+	{
+		ros::NodeHandle nh("~");
+		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
+
+		plan_nodes = &parser.plan_nodes;
+		plan_edges = &parser.plan_edges;
+
 		current_action = 0;
 
 		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
@@ -160,13 +177,13 @@ namespace KCL_rosplan {
 		
 		// initialise machine
 		std::map<StrlEdge*,bool> edge_values;
-		for(std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ci++)
+		for(std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ci++)
 			edge_values[*ci] = false;
 		
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
 
-		for (std::vector<StrlEdge*>::const_iterator ci = cff_pp->plan_edges.begin(); ci != cff_pp->plan_edges.end(); ++ci) {
+		for (std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ++ci) {
 			StrlEdge* edge = *ci;
 			
 			if (edge->external_conditions.empty()) {
@@ -210,7 +227,7 @@ namespace KCL_rosplan {
 			}
 
 			// for each module
-			for(std::vector<StrlNode*>::const_iterator ci = cff_pp->plan_nodes.begin(); ci != cff_pp->plan_nodes.end(); ci++) {
+			for(std::vector<StrlNode*>::const_iterator ci = plan_nodes->begin(); ci != plan_nodes->end(); ci++) {
 				
 				StrlNode* strl_node = *ci;
 				
@@ -301,7 +318,7 @@ namespace KCL_rosplan {
 			} // end loop (nodes)
 			
 			// copy new edge values for next loop
-			for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit != cff_pp->plan_edges.end(); eit++) {
+			for(std::vector<StrlEdge*>::iterator eit = plan_edges->begin(); eit != plan_edges->end(); eit++) {
 				(*eit)->active = edge_values[*eit];
 				edge_values[*eit] = false;
 			}
@@ -332,7 +349,7 @@ namespace KCL_rosplan {
 
 		// find action
 		bool found = false;
-		for(std::vector<StrlNode*>::iterator it = cff_pp->plan_nodes.begin(); it!=cff_pp->plan_nodes.end(); it++) {
+		for(std::vector<StrlNode*>::iterator it = plan_nodes->begin(); it!=plan_nodes->end(); it++) {
 			if((*it)->node_id == msg->action_id - action_id_offset)
 				found = true;
 		}
@@ -384,7 +401,7 @@ namespace KCL_rosplan {
 		dest << "digraph plan_" << action_id_offset << " {" << std::endl;
 
 		// nodes
-		for(std::vector<StrlNode*>::iterator nit = cff_pp->plan_nodes.begin(); nit!=cff_pp->plan_nodes.end(); nit++) {
+		for(std::vector<StrlNode*>::iterator nit = plan_nodes->begin(); nit!=plan_nodes->end(); nit++) {
 
 			std::string name = (*nit)->node_name.substr(0, (*nit)->node_name.find(" "));
 			dest <<  (*nit)->node_id << "[ label=\"" << name;
@@ -394,7 +411,7 @@ namespace KCL_rosplan {
 		}
 
 		// edges
-		for(std::vector<StrlEdge*>::iterator eit = cff_pp->plan_edges.begin(); eit!=cff_pp->plan_edges.end(); eit++) {
+		for(std::vector<StrlEdge*>::iterator eit = plan_edges->begin(); eit!=plan_edges->end(); eit++) {
 			for(int i=0; i<(*eit)->sources.size(); i++) {
 				for(int j=0; j<(*eit)->sinks.size(); j++) {
 					dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\";" << std::endl;

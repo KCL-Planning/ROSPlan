@@ -1,6 +1,3 @@
-#ifndef KCL_popf_esterel_parser
-#define KCL_popf_esterel_parser
-
 #include <stdlib.h>
 #include <string>
 #include <fstream>
@@ -17,6 +14,9 @@
 #include "PlanningEnvironment.h"
 #include "PlanParser.h"
 #include "EsterelPlan.h"
+
+#ifndef KCL_popf_esterel_parser
+#define KCL_popf_esterel_parser
 
 /**
  * This class describes the POPFEsterelPlanParser, which parses the output of popf and generates an Esterel plan.
@@ -45,7 +45,7 @@ namespace KCL_rosplan {
 		 * @param node The node that is created based on @ref{action_name}.
 		 * @param edge The edge that is created based on @ref{action_name}.
 		 */
-		void createNodeAndEdge(const std::string& action_name, double dispatchTime, double duration, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge) {
+		void createNodeAndEdge(const std::string& action_name, double dispatchTime, double duration, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
 
 	public:
 

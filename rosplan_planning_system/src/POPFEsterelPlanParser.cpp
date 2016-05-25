@@ -173,15 +173,14 @@ namespace KCL_rosplan {
 		node.dispatch_msg.name = action_name;
 
 		// check for parameters
-		bool paramsExist = (action_name.find(" ",curr) != std::string::npos);
-
 		int curr = 0;
-		int next = 0;		
+		int next = 0;	
+		bool paramsExist = (action_name.find(" ",curr) != std::string::npos);	
 		if(paramsExist) {
 
 			// name
-			next = line.find(" ",curr);
-			node.dispatch_msg.name = line.substr(curr,next-curr).c_str();
+			next = action_name.find(" ",curr);
+			node.dispatch_msg.name = action_name.substr(curr,next-curr).c_str();
 		
 			// parameters
 			int parameter_index = 0;
@@ -193,12 +192,13 @@ namespace KCL_rosplan {
 					next = action_name.length();
 				
 				diagnostic_msgs::KeyValue pair;
-				pair.key = environment.domain_operators[operator_name][parameter_index];
+				pair.key = environment.domain_operators[node.dispatch_msg.name][parameter_index];
 				pair.value = action_name.substr(curr,next-curr);
 				node.dispatch_msg.parameters.push_back(pair);
 				++parameter_index;
 			}
 		}
+
 		preparePDDLConditions(node, environment);
 		plan_nodes.push_back(&node);
 		action_list.push_back(node.dispatch_msg);
@@ -212,6 +212,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (POPFEsterelPlanParser) Loading plan from file: %s. Initial action ID: %zu", ((dataPath + "plan.pddl").c_str()), freeActionID);
 
 		// load plan file
+		StrlEdge* last_edge = NULL;
 		std::ifstream infile((dataPath + "plan.pddl").c_str());
 		int curr,next,nodeCount;
 		std::string line;
@@ -235,7 +236,7 @@ namespace KCL_rosplan {
 				planRead = false;
 
 				// The last edge that will lead to the next action.
-				StrlEdge* last_edge = NULL;
+				last_edge = NULL;
 
 			} else if (line.substr(0,6).compare("; Time")!=0) {
 				//consume useless lines

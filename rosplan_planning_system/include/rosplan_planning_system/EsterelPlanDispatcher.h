@@ -1,14 +1,17 @@
-#include "PlanDispatcher.h"
-#include "EsterelPlan.h"
-#include "CFFPlanParser.h"
-#include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "std_msgs/String.h"
 #include <stdlib.h> 
 #include <map>
 #include <iostream>
 #include <string>
 #include <boost/regex.hpp>
 #include <boost/concept_check.hpp>
+
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "std_msgs/String.h"
+
+#include "PlanDispatcher.h"
+#include "EsterelPlan.h"
+#include "CFFPlanParser.h"
+#include "POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
@@ -25,7 +28,8 @@ namespace KCL_rosplan
 		ros::ServiceClient query_knowledge_client;
 
 		/* plan description from parser */
-		CFFPlanParser *cff_pp;
+		std::vector<StrlNode*> * plan_nodes;
+		std::vector<StrlEdge*> * plan_edges;
 
 		/* plan description from Esterel file */
 		std::string strl_file;
@@ -44,6 +48,7 @@ namespace KCL_rosplan
 
 		/* constructor */
 		EsterelPlanDispatcher(CFFPlanParser &parser);
+		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);
 
 		/* access */
 		int getCurrentAction();

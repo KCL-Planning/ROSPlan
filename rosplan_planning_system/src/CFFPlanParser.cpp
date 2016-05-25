@@ -11,7 +11,7 @@
 namespace KCL_rosplan {
 
 	/* constructor */
-	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh) : node_handle(&nh), message_store(nh)
+	CFFPlanParser::CFFPlanParser(ros::NodeHandle &nh) : node_handle(&nh)
 	{
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");

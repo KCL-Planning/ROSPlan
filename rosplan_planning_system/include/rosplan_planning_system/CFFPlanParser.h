@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 #include "std_srvs/Trigger.h"
 #include "diagnostic_msgs/KeyValue.h"
-#include "mongodb_store/message_store.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
@@ -25,9 +24,6 @@ namespace KCL_rosplan {
 		// ROS node handle.
 		ros::NodeHandle* node_handle;
 		
-		// Scene database
-		mongodb_store::MessageStoreProxy message_store;
-
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
 
