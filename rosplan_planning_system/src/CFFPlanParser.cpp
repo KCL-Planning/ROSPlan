@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <ctype.h>
 
-/* implementation of rosplan_interface_mapping::CFFPlanParser.h */
+/* implementation of rosplan_planning_system::CFFPlanParser.h */
 namespace KCL_rosplan {
 
 	/* constructor */
