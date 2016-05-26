@@ -181,11 +181,12 @@ namespace KCL_rosplan {
 			// name
 			next = action_name.find(" ",curr);
 			node.dispatch_msg.name = action_name.substr(curr,next-curr).c_str();
-		
+
 			// parameters
 			int parameter_index = 0;
 			std::vector<std::string> params;
 			while(next < action_name.length()) {
+
 				curr = next + 1;
 				next = action_name.find(" ",curr);
 				if(next == std::string::npos)
@@ -198,7 +199,6 @@ namespace KCL_rosplan {
 				++parameter_index;
 			}
 		}
-
 		preparePDDLConditions(node, environment);
 		plan_nodes.push_back(&node);
 		action_list.push_back(node.dispatch_msg);
@@ -225,7 +225,7 @@ namespace KCL_rosplan {
 			std::getline(infile, line);
 			toLowerCase(line);
 			
-			if (line.substr(0,6).compare("; Plan") == 0) {
+			if (line.substr(0,6).compare("; plan") == 0) {
 
 				// prepare plan
 				plan_nodes.clear();
@@ -238,11 +238,11 @@ namespace KCL_rosplan {
 				// The last edge that will lead to the next action.
 				last_edge = NULL;
 
-			} else if (line.substr(0,6).compare("; Time")!=0) {
+			} else if (line.substr(0,6).compare("; time")!=0) {
 				//consume useless lines
 
 			} else if (!planRead) {
-				
+
 				nodeCount = freeActionID;
 				std::vector<std::string> parentEdge;
 
@@ -256,8 +256,9 @@ namespace KCL_rosplan {
 						break;
 
 					// dispatchTime
-					curr=line.find(":");
+					curr = line.find(":");
 					double dispatchTime = (double)atof(line.substr(0,curr).c_str());
+					curr += 3;
 
 					// action
 					next=line.find(")",curr);
@@ -267,13 +268,12 @@ namespace KCL_rosplan {
 					curr=line.find("[",curr)+1;
 					next=line.find("]",curr);
 					double duration = (double)atof(line.substr(curr,next-curr).c_str());
-
 					{
 						StrlNode* node = new StrlNode();
 						StrlEdge* edge = new StrlEdge();
 						createNodeAndEdge(name, dispatchTime, duration, nodeCount, environment, *node, *edge);
 						++nodeCount;
-						
+
 						if (last_edge != NULL)
 						{
 							node->input.push_back(last_edge);
@@ -285,6 +285,7 @@ namespace KCL_rosplan {
 				planRead = true;
 			}
 		}
+
 		// printPlan(plan);
 		produceEsterel();
 		infile.close();
