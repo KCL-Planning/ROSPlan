@@ -12,6 +12,7 @@ namespace KCL_rosplan {
 		nh.getParam("pddl_action_name", params.name);
 
 		// fetch action params
+		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details",ros::Duration(20));
 		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = params.name;
