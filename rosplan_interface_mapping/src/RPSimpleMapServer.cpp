@@ -11,7 +11,7 @@ namespace KCL_rosplan {
 
 		// config
 		std::string dataPath("common/");
-		nh.param("data_path", data_path, dataPath);
+		nh.param("/rosplan/data_path", data_path, dataPath);
 
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");

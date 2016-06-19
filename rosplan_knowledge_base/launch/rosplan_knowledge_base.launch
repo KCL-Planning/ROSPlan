@@ -1,6 +1,6 @@
 <launch>
 
-	<param name="domain_path" value="$(find rosplan_config)/planner/domain.pddl" />
+	<param name="/rosplan/domain_path" value="$(find rosplan_config)/planner/domain.pddl" />
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">

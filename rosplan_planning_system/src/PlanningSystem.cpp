@@ -170,11 +170,11 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		// setup environment
-		nh.param("/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.param("data_path", data_path, std::string("common/"));
-		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
-		nh.param("max_dispatch_attempts", max_dispatch_attempts, 1);
+		nh.param("/rosplan/domain_path", domain_path, std::string("common/domain.pddl"));
+		nh.param("/rosplan/data_path", data_path, std::string("common/"));
+		nh.param("/rosplan/problem_path", problem_path, std::string("common/problem.pddl"));
+		nh.param("/rosplan/planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
+		nh.param("/rosplan/max_dispatch_attempts", max_dispatch_attempts, 1);
 
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
