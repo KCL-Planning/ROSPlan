@@ -1,0 +1,170 @@
+---
+layout: post
+title: ROSPlan documentation, planner
+---
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+		<meta charset="UTF-8">
+		<title>ROSPlan by KCL-Planning</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/normalize.css" media="screen">
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/syntax.css" media="screen">
+	</head>
+	<body>
+
+		<section class="page-header">
+			<h1 class="project-name">ROSPlan</h1>
+			<a href="http://kcl-planning.github.io/ROSPlan/" class="btn">ROSPlan</a>
+			<a href="documentation.html" class="btn">Documentation</a>
+			<a href="https://github.com/KCL-Planning/ROSPlan" class="btn">View on GitHub</a>
+			<a href="https://github.com/KCL-Planning/ROSPlan/wiki" class="btn">Wiki</a>
+			<a href="https://github.com/KCL-Planning/ROSPlan/tarball/master" class="btn">Download .tar.gz</a>
+			<a href="contact.html" class="btn">Contact</a>
+		</section>
+
+		<section class="main-content">
+
+			<h2>Replacing the Planner</h2><a href="#planner"></a>
+			<p>The default planner in ROSPlan is a version of POPF, supporting anytime planning for PDDL2.1. This planner is for domains with temporal constraints and no uncertainty. To change planner there are three steps described below:</p>
+			<ol>
+			<li>Provide the command line that is used to call the planner.</li>
+			<li>Provide some code to parse the output of the planner.</li>
+			<li>Provide some code to generate a problem instance (if it is not PDDL2.1).</li>
+			</ol>
+
+			<img src="images/dia_plan.png" class="chart"/>
+
+			<p>Steps 2 and 3 are only required if: (for step 2) the output of the planner differs from POPF, or the dispatcher has also been replaced; and (for step 3) the planner does not support classical or temporal PDDL.</p>
+
+			<h4>1. Providing a command line to call the new planner</h4>
+
+			<p>The ROSPlan planning system calls the planner using a command line that can be changed in the launch file:</p>
+{% highlight xml linenos=table %}
+<!-- planning system -->
+<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+	<!-- other parameters removed -->
+	<!-- planner command line -->
+	<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+</node>
+{% endhighlight %}
+			<p>where: "DOMAIN" is to be replaced by the domain file path, and "PROBLEM" is to be replaced by the problem instance file path. For more information on the domain and problem file paths, have a look at [[planning system parameters]].</p>
+
+			<h4>2. Parsing the output of the new planner</h4>
+
+			<p>The output of a planner must be parsed into a data structure for dispatch. For example, the actions in the plan could be stored in a list for sequential execution. The data structure you use will depend upon the method of plan dispatch. Included in ROSPlan is sequential dispatch; and temporal, concurrent, contingent dispatch as Esterel. More information on the dispatch [[dispatch]].</p>
+
+			<p>The output of the planner is saved as a file, and also published as a ROS message. The file is saved in a location specified by a parameter in the launch file:</p>
+{% highlight xml linenos=table %}
+<!-- planning system -->
+<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+	<!-- other parameters removed -->
+    <!-- directory for generated files -->
+    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
+</node>
+{% endhighlight %}
+			<p>A file "plan.pddl" will be generated in data_path. For more information on file paths, have a look at [[planning system parameters]].</p>
+
+			<p>The plan is parsed by the class <em>rosplan_planning_system/PlanParser</em>:</p>
+
+{% highlight c++ linenos=table %}
+/**
+ * This file parses the output of a planner and generates a list of ActionDispatch messages.
+ */
+#include <string>
+#include "rosplan_dispatch_msgs/ActionDispatch.h"
+#include "rosplan_knowledge_msgs/Notification.h"
+#include "rosplan_knowledge_msgs/Filter.h"
+#include "PlanningEnvironment.h"
+
+#ifndef KCL_plan_parser
+#define KCL_plan_parser
+
+namespace KCL_rosplan {
+
+	class PlanParser
+	{
+	public:
+
+		virtual void reset() =0;
+
+		/* post process plan */
+		virtual void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) =0;
+		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
+	};
+} // close namespace
+
+#endif
+{% endhighlight %}
+
+			<p>You can find this file in the <em>rosplan_planning_system</em> package. It has two implementations:</p>
+			<ul>
+			<li>POPFPanParser: parses the output into an ordered sequence of ActionDispatch msgs.</li>
+			<li>POPFEsterelPanParser: parses the output into an Esterel representation. The associated ActionDispatch msgs are stored in a list.</li>
+			</ul>
+			<p>The reset method is called once before each planning attempt to reset any temporary variables set by the plan parser. The preparePlan method is called once after each planning attempt. The vector of ActionDispatch msgs is a convenient place to store the dispatch msgs, used by the default dispatchers.</p>
+
+			<p>If you want to parse the output of the plan into an Esterel Plan, for use with the POPFEsterelPlanDispatcher, then have a look here: [[Esterel plan]]</p>
+
+			<h4>3. Generating a problem instance</h4>
+
+			<p>The problem instance is (re)generated before each planning attempt. It is generated by requesting an up-to-date model from the Knowledge Management System (KMS). More information on the KMS can be found [[here]].</p>
+
+			<p>You can disable the generation of a default problem file using a launch parameter:
+{% highlight xml linenos=table %}
+<!-- planning system -->
+<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+	<!-- other parameters removed -->
+    <!-- to run the planner -->
+    <param name="generate_default_problem" value="false" />
+
+</node>
+{% endhighlight %}
+
+			<p>The default problem generated is a PDDL2.1 planning problem. The problem is generated by <em>rosplan_planning_system/PDDLProblemGenerator</em>. If you want to change the default problem generation, you should reimplement this file:</p> 
+{% highlight c++ linenos=table %}
+/**
+ * This class is responsible for generating the PDDL instance.
+ * This is done by using the objects already retrieved and stored (see PlanningEnvironment.h).
+ */
+#include <string>
+#include "PlanningEnvironment.h"
+
+#ifndef KCL_PDDLproblemgenerator
+#define KCL_PDDLproblemgenerator
+
+namespace KCL_rosplan {
+
+	class PDDLProblemGenerator
+	{
+	private:
+
+		void makeHeader(PlanningEnvironment environment, std::ofstream &pFile);
+		void makeInitialState(PlanningEnvironment environment, std::ofstream &pFile);
+		void makeGoals(PlanningEnvironment environment, std::ofstream &pFile);
+
+	public:
+
+		void generatePDDLProblemFile(PlanningEnvironment &environment, std::string &problemPath);
+
+	};
+} // close namespace
+
+#endif
+{% endhighlight %}
+
+			<p>[[More information on generating a problem instance]]</p>
+
+			<footer class="site-footer">
+				<span class="site-footer-owner"><a href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> is maintained by <a href="https://github.com/KCL-Planning">KCL-Planning</a>.</span>
+				<span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+			</footer>
+
+		</section>
+
+
+	</body>
+</html>
