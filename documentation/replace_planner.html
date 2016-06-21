@@ -13,20 +13,21 @@ title: ROSPlan documentation, planner
 		<link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
 		<link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
 		<link rel="stylesheet" type="text/css" href="../stylesheets/syntax.css" media="screen">
+		<script src="../jquery.js"></script> 
+		<script> 
+		$(function(){
+		  $("#includedContent").load("../templates/nav-main.html"); 
+		  $("#includedSideBar").load("../templates/nav-sidebar.html"); 
+		});
+		</script>
 	</head>
 	<body>
-
-		<section class="page-header">
-			<h1 class="project-name">ROSPlan</h1>
-			<a href="http://kcl-planning.github.io/ROSPlan/" class="btn">ROSPlan</a>
-			<a href="documentation.html" class="btn">Documentation</a>
-			<a href="https://github.com/KCL-Planning/ROSPlan" class="btn">View on GitHub</a>
-			<a href="https://github.com/KCL-Planning/ROSPlan/wiki" class="btn">Wiki</a>
-			<a href="https://github.com/KCL-Planning/ROSPlan/tarball/master" class="btn">Download .tar.gz</a>
-			<a href="contact.html" class="btn">Contact</a>
-		</section>
+    	<div id="includedContent"></div>
 
 		<section class="main-content">
+
+	    	<div id="includedSideBar"></div>
+			<section class="documentation-content">
 
 			<h2>Replacing the Planner</h2><a href="#planner"></a>
 			<p>The default planner in ROSPlan is a version of POPF, supporting anytime planning for PDDL2.1. This planner is for domains with temporal constraints and no uncertainty. To change planner there are three steps described below:</p>
@@ -36,7 +37,7 @@ title: ROSPlan documentation, planner
 			<li>Provide some code to generate a problem instance (if it is not PDDL2.1).</li>
 			</ol>
 
-			<img src="images/dia_plan.png" class="chart"/>
+			<img src="images/dia_planner.png" class="chart"/>
 
 			<p>Steps 2 and 3 are only required if: (for step 2) the output of the planner differs from POPF, or the dispatcher has also been replaced; and (for step 3) the planner does not support classical or temporal PDDL.</p>
 
@@ -157,6 +158,8 @@ namespace KCL_rosplan {
 {% endhighlight %}
 
 			<p>[[More information on generating a problem instance]]</p>
+
+			</section>
 
 			<footer class="site-footer">
 				<span class="site-footer-owner"><a href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> is maintained by <a href="https://github.com/KCL-Planning">KCL-Planning</a>.</span>
