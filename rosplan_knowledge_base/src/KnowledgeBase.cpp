@@ -419,6 +419,20 @@ namespace KCL_rosplan {
 		return false;
 	}
 
+	/* get domain predicate details */
+	bool KnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
+
+		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
+		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {			
+			if((*ci)->getPred()->symbol::getName() == req.name) {
+				pred_visitor.visit_pred_decl(*ci);
+				res.predicate = pred_visitor.msg;
+				return true;
+			}
+		}
+		return false;
+	}
+
 } // close namespace
 
 /*-------------*/
@@ -444,7 +458,9 @@ int main(int argc, char **argv)
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
+
 	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
+	ros::ServiceServer predDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
 
 	// query knowledge
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);

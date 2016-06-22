@@ -34,6 +34,7 @@ add_service_files(
   GetDomainTypeService.srv
   GetDomainOperatorService.srv  
   GetDomainOperatorDetailsService.srv  
+  GetDomainPredicateDetailsService.srv  
   CreatePRM.srv
   AddWaypoint.srv
   GenerateProblemService.srv

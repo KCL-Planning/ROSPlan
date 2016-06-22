@@ -13,6 +13,7 @@
 #include "rosplan_knowledge_msgs/GetDomainAttributeService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
+#include "rosplan_knowledge_msgs/GetDomainPredicateDetailsService.h"
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
@@ -26,6 +27,7 @@
 #include "PlanFilter.h"
 #include "DomainParser.h"
 #include "VALVisitorOperator.h"
+#include "VALVisitorPredicate.h"
 
 #ifndef KCL_knowledgebase
 #define KCL_knowledgebase
@@ -38,6 +40,7 @@ namespace KCL_rosplan {
 
 		// visit controllers for ROS message packing
 		VALVisitorOperator op_visitor;
+		VALVisitorPredicate pred_visitor;
 
 		// adding and removing items to and from the knowledge base
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
@@ -65,6 +68,7 @@ namespace KCL_rosplan {
 		bool getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
 		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
 		bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res);
+		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
 
 		// checking the model
 		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
