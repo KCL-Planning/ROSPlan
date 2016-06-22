@@ -170,6 +170,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		// clear previous roadmap from knowledge base
+		ros::service::waitForService("/kcl_rosplan/update_knowledge_base", ros::Duration(20));
 		ROS_INFO("KCL: (RPSimpleMapServer) Loading roadmap from file");
 
 		// load configuration file

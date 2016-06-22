@@ -1,32 +1,39 @@
+#include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <ctime>
+#include <algorithm>
+#include <ctype.h>
+
 #include "ros/ros.h"
-#include "std_srvs/Trigger.h"
 #include "diagnostic_msgs/KeyValue.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
-#include "rosplan_knowledge_msgs/Notification.h"
-#include "rosplan_knowledge_msgs/Filter.h"
 #include "PlanningEnvironment.h"
 #include "PlanParser.h"
 #include "EsterelPlan.h"
 
-#ifndef KCL_cff_plan_parser
-#define KCL_cff_plan_parser
+#ifndef KCL_popf_esterel_parser
+#define KCL_popf_esterel_parser
 
+/**
+ * This class describes the POPFEsterelPlanParser, which parses the output of popf and generates an Esterel plan.
+ */
 namespace KCL_rosplan {
 
-	/* Plan Parsing class definition */
-	class CFFPlanParser: public PlanParser
+	class POPFEsterelPlanParser: public PlanParser
 	{
-
 	private:
-		
+
 		// ROS node handle.
 		ros::NodeHandle* node_handle;
-		
+
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
 
+		/* post process plan */
 		void toLowerCase(std::string &str);
 		void preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment);
 		
@@ -38,8 +45,7 @@ namespace KCL_rosplan {
 		 * @param node The node that is created based on @ref{action_name}.
 		 * @param edge The edge that is created based on @ref{action_name}.
 		 */
-		void createNodeAndEdge(const std::string& action_name, int action_number, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
-		std::map<int, StrlNode*> jump_map;
+		void createNodeAndEdge(const std::string& action_name, double dispatchTime, double duration, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
 
 	public:
 
@@ -48,7 +54,7 @@ namespace KCL_rosplan {
 		std::vector<StrlEdge*> plan_edges;
 
 		/* constructor */
-		CFFPlanParser(ros::NodeHandle &nh);
+		POPFEsterelPlanParser(ros::NodeHandle &nh);
 
 		/* service to parse plans */
 		bool produceEsterel();
@@ -58,5 +64,6 @@ namespace KCL_rosplan {
 		void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID);
 		void generateFilter(PlanningEnvironment &environment);
 	};
-}
+} // close namespace
+
 #endif
