@@ -33,7 +33,33 @@ title: ROSPlan documentation, planner
 
 			<h4>Planning System</h4>
 
+			<table>
+			<tr><td><strong>Topic Name</strong></td><td><strong>Message Type</strong></td><td><strong>Description</strong></td></tr>
+			<tr><td>/kcl_rosplan/planning_commands</td><td>std_msgs/String</td><td><a href="planning_system_use.html">Using the Panning System</a></td></tr>
+			<tr><td>/kcl_rosplan/system_state</td><td>std_msgs/String</td><td><a href="planning_system_use.html">Using the Panning System</a></td></tr>
+			<tr><td>/kcl_rosplan/plan</td><td>rosplan_dispatch_msgs/CompletePlan</td><td><a href="planning_system_plans.html">Plan Representations</a></td></tr>
+			<tr><td>/kcl_rosplan/plan_graph</td><td>std_msgs/String</td><td><a href="planning_system_plans.html">Plan Representations</a></td></tr>
+			<tr><td>/kcl_rosplan/action_dispatch</td><td>rosplan_dispatch_msgs/ActionDispatch</td><td><a href="planning_system_dispatch.html">Plan Dispatch and Execution</a></td></tr>
+			<tr><td>/kcl_rosplan/action_feedback</td><td>rosplan_dispatch_msgs/ActionFeedback</td><td><a href="planning_system_dispatch.html">Plan Dispatch and Execution</a></td></tr>
+			<tr><td>/kcl_rosplan/problem</td><td>std_msgs/String</td><td><a href="planning_system_problem.html">Problem Generation</a></td></tr>
+			</table>
+
+			<br/>
+			<table>
+			<tr><td><strong>Planning Action Topics</strong> (using <a href="planning_system_dispatch.html">Actionlib</a>) </td></tr>
+			<tr><td>/kcl_rosplan/start_planning/cancel</td><td>actionlib_msgs/GoalID</td></tr>
+			<tr><td>/kcl_rosplan/start_planning/feedback</td><td>rosplan_dispatch_msgs/PlanActionFeedback</td></tr>
+			<tr><td>/kcl_rosplan/start_planning/goal</td><td>rosplan_dispatch_msgs/PlanActionGoal</td></tr>
+			<tr><td>/kcl_rosplan/start_planning/result</td><td>rosplan_dispatch_msgs/PlanActionResult</td></tr>
+			<tr><td>/kcl_rosplan/start_planning/status</td><td>actionlib_msgs/GoalStatusArray</td></tr>
+			</table>
+
 			<h4>Knowledge Base</h4>
+
+			<table>
+			<tr><td><strong>Topic Name</strong></td><td><strong>Message Type</strong></td><td><strong>Description</strong></td></tr>
+			<tr><td>/kcl_rosplan/notification</td><td>rosplan_knowledge_msgs/Notification</td><td><a href="knowledge_base_use.html">Using the Knowledge Base</a></td></tr>
+			</table>
 
 			</section>
 
