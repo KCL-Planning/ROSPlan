@@ -427,7 +427,7 @@ namespace KCL_rosplan {
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "KCL_knowledge_base");
+	ros::init(argc, argv, "rosplan_knowledge_base");
 	ros::NodeHandle n;
 
 	// parameters
