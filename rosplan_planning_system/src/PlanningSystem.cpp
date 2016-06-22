@@ -167,15 +167,21 @@ namespace KCL_rosplan {
 	/* planning system service method; loads parameters and calls method below */
 	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
-		ros::NodeHandle nh("~");
+		ros::NodeHandle nh;
+
+		data_path = "common/";
+		domain_path = "common/domain.pddl";
+		problem_path = "common/problem.pddl";
+		planner_command = "timeout 60 common/bin/popf -n DOMAIN PROBLEM";
+		max_dispatch_attempts = 1;
 
 		// setup environment
 		nh.param("/rosplan/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.param("/rosplan/data_path", data_path, std::string("common/"));
-		nh.param("/rosplan/problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("/rosplan/planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
-		nh.param("/rosplan/max_dispatch_attempts", max_dispatch_attempts, 1);
-
+		nh.getParam("/rosplan_planning_system/data_path", data_path);
+		nh.getParam("/rosplan_planning_system/problem_path", problem_path);
+		nh.getParam("/rosplan_planning_system/planner_command", planner_command);
+		nh.getParam("/rosplan_planning_system/max_dispatch_attempts", max_dispatch_attempts);
+std::cout << "OKKKES " << problem_path << std::endl;
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
