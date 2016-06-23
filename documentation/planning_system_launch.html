@@ -33,17 +33,19 @@ title: ROSPlan documentation, planner
 			<p>The planning system can be launched by adding the following node to your launch file:</p>
 {% highlight xml linenos=table %}
 <!-- domain file -->
-<param name="domain_path" value="$(find rosplan_planning_system)/common/domain_turtlebot.pddl" />
+<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
 
 <!-- planning system -->
 <node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 	<!-- directory for generated files -->
-    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
-    <param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
+	<param name="data_path" value="$(find rosplan_config)/planner/" />
+	<param name="problem_path" value="$(find rosplan_config)/planner/problem.pddl" />
+	<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
 
 	<!-- to run the planner -->
-    <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+	<param name="planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
 	<param name="generate_default_problem" value="true" />
+	<param name="max_dispatch_attempts" value="2" />
 </node>
 {% endhighlight %}
 
@@ -54,6 +56,7 @@ title: ROSPlan documentation, planner
 			<p><strong>problem_path</strong><br/>Path to place automatically generated problem instance.</p>
 			<p><strong>planner_command</strong><br/>Command line used to run planner. The strings "DOMAIN" and "PROBLEM" will be replaced with paths to the PDDL domain model and problem instance files respectively. The default line shown above will run the planner POPF, with the flag "-n", and a timeout of 10 seconds.</p>
 			<p><strong>generate_default_problem</strong><br/>If true, then a fresh PDDL2.1 problem instance will be generated before each planning attempt. It is generated from the PDDL model stored in the Knowledge Base. If false, then a problem will not be generated. This is useful if the command line does not run a planner, or if the problem instance is generated through some other means.</p>
+			<p><strong>max_dispatch_attempts</strong><br/>Number of times the system will replan and retry dispatch upon plan failure.</p>
 
 			</section>
 
