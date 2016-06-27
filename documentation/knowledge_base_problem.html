@@ -29,35 +29,46 @@ title: ROSPlan documentation, planner
 	    	<div id="includedSideBar"></div>
 			<section class="documentation-content">
 
-			<h2>Launching the Knowledge Base</h2>
-			<p>The Knowledge Base can be launched by adding the following parameters and nodes to your launch file:</p>
-{% highlight xml linenos=table %}
-<!-- data paths -->
-<param name="data_path" value="$(find rosplan_planning_system)/common/" />
+			<h2>Fetching the problem instance</h2>
 
-<!-- domain file -->
-<param name="domain_path" value="$(find rosplan_planning_system)/common/domain_turtlebot.pddl" />
+			<h4>Contents:</h4>
+			<ul>
+			<li><a href="#g">get_current_goals</a></li>
+			<li><a href="#i">get_current_instances</a></li>
+			<li><a href="#k">get_current_knowledge</a></li>
+			</ul>
+			<p>Fetching grounded information from the Knowledge Base uses the <em>KnowledgeItem</em> descibed in [[using the KMS]].</p>
 
-<!-- knowledge base -->
-<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
-
-<!-- scene database (MongoDB) -->
-<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
-    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
-</node>
-<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+<a id="g"></a>
+<h4>Current goals</h4>
+<p>Topic: <em>/kcl_rosplan/get_current_goals</em>
+<br/>Message: <em>rosplan_knowledge_msgs/GetAttributeService</em></p>
+{% highlight python linenos=table %}string predicate_name
+---
+rosplan_knowledge_msgs/KnowledgeItem[] attributes
 {% endhighlight %}
+<p>Returns a complete list of goal propositions from the Knowledge Base.</p>
 
-			<h4>Nodes</h4>
+<a id="i"></a>
+<h4>Current instances</h4>
+<p>Topic: <em>/kcl_rosplan/get_current_instances</em>
+<br/>Message: <em>rosplan_knowledge_msgs/GetInstanceService</em></p>
+{% highlight python linenos=table %}
+string type_name
+---
+string[] instances
+{% endhighlight %}
+<p>Returns a list of object instance names of the given type. If the type is left empty, then all object instances are returned.</p>
 
-			<p><strong>rosplan_knowledge_base</strong><br/>The Knowledge Base Node stores the PDDL model. It can be queried for information on the PDDL domain model, and problem instance. It should be updated by state estimation.</p>
-			<p><strong>rosplan_scene_database</strong> and <strong>rosplan_scene_message_store</strong><br/>These nodes are ROS interfaces to a MongoDB, maintained by the University of Birmingham. <a href="http://wiki.ros.org/mongodb_store">mongodb_store</a> on ROS wiki.</p>
-
-			<h4>Parameters</h4>
-
-			<p><strong>data_path</strong><br/>Path to place automatically generated files, such as plan files.</p>
-			<p><strong>domain_path</strong><br/>Path to the PDDL domain file.</p>
-
+<a id="k"></a>
+<h4>Current knowledge</h4>
+<p>Topic: <em>/kcl_rosplan/get_current_knowledge</em>
+<br/>Message: <em>rosplan_knowledge_msgs/GetAttributeService</em></p>
+{% highlight python linenos=table %}string predicate_name
+---
+rosplan_knowledge_msgs/KnowledgeItem[] attributes
+{% endhighlight %}
+<p>Returns a complete list of propositions or functions from the Knowledge Base with the given name. If the name is left blank, then all propositions are returned.</p>
 			</section>
 
 			<footer class="site-footer">
