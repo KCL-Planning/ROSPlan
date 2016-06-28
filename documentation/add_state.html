@@ -28,46 +28,10 @@ title: ROSPlan documentation, planner
 	    	<div id="includedSideBar"></div>
 			<section class="documentation-content">
 
-			<h2>Fetching the problem instance</h2>
+			<h2>Adding state estimation</h2>
 
-			<h4>Contents:</h4>
-			<ul>
-			<li><a href="#g">get_current_goals</a></li>
-			<li><a href="#i">get_current_instances</a></li>
-			<li><a href="#k">get_current_knowledge</a></li>
-			</ul>
-			<p>Fetching grounded information from the Knowledge Base uses the <em>KnowledgeItem</em> descibed in [[using the KMS]].</p>
+			<h4>Under construction</h4>
 
-<a id="g"></a>
-<h4>Current goals</h4>
-<p>Topic: <em>/kcl_rosplan/get_current_goals</em>
-<br/>Message: <em>rosplan_knowledge_msgs/GetAttributeService</em></p>
-{% highlight python linenos=table %}string predicate_name
----
-rosplan_knowledge_msgs/KnowledgeItem[] attributes
-{% endhighlight %}
-<p>Returns a complete list of goal propositions from the Knowledge Base.</p>
-
-<a id="i"></a>
-<h4>Current instances</h4>
-<p>Topic: <em>/kcl_rosplan/get_current_instances</em>
-<br/>Message: <em>rosplan_knowledge_msgs/GetInstanceService</em></p>
-{% highlight python linenos=table %}
-string type_name
----
-string[] instances
-{% endhighlight %}
-<p>Returns a list of object instance names of the given type. If the type is left empty, then all object instances are returned.</p>
-
-<a id="k"></a>
-<h4>Current knowledge</h4>
-<p>Topic: <em>/kcl_rosplan/get_current_knowledge</em>
-<br/>Message: <em>rosplan_knowledge_msgs/GetAttributeService</em></p>
-{% highlight python linenos=table %}string predicate_name
----
-rosplan_knowledge_msgs/KnowledgeItem[] attributes
-{% endhighlight %}
-<p>Returns a complete list of propositions or functions from the Knowledge Base with the given name. If the name is left blank, then all propositions are returned.</p>
 			</section>
 
 			<footer class="site-footer">
