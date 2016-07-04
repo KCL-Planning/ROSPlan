@@ -344,6 +344,57 @@ a {
 
 
 /*--------*/
+/* panels */
+/*--------*/
+
+.indexpanel {
+	margin-right:1em;
+	margin-bottom:1em;;
+	float: left;
+	display: inline-block;
+	border: 1px solid #900020;
+    font-size: 1.1rem;
+}
+
+@media screen and (min-width: 80em) {
+  .indexpanel {
+    width: 20em;
+    padding: 0em;
+    font-size: 1.1rem;
+  }
+}
+@media screen and (min-width: 42em) and (max-width: 80em) {
+  .indexpanel {
+    width: 20em;
+    padding: 0em;
+  }
+}
+@media screen and (max-width: 42em) {
+  .indexpanel {
+    width: 100%;
+    padding: 0em;
+  }
+}
+
+.indexpanel h4 {
+    font-size: 1.5rem;
+	color: #fff;
+	text-align: center;
+	background-color: #e33030;
+	background-image: linear-gradient(120deg, #900020, #e33030);
+	margin: 0em;
+	padding: 0.5em;
+}
+
+.indexpanel img.panel {
+	margin: 0em;
+  max-width: 100%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*--------*/
 /* footer */
 /*--------*/
 
@@ -356,28 +407,25 @@ a {
 
 .site-footer-owner {
   display: block;
-  font-weight: bold; }
+  font-weight: bold;
+}
 
 .site-footer-credits {
-  color: #819198; }
+  color: #819198;
+}
 
 @media screen and (min-width: 80em) {
   .site-footer {
-    font-size: 1rem;
+    font-size: 0.75rem;
   }
 }
 @media screen and (min-width: 42em) and (max-width: 80em) {
   .site-footer {
-    font-size: 1rem;
+    font-size: 0.75rem;
   }
 }
 @media screen and (max-width: 42em) {
   .site-footer {
-    font-size: 0.9rem;
+    font-size: 0.5rem;
   }
-}
-
-.site-footer-credits {
-  margin-top: 0rem;
-  font-size: 0.5rem;
 }

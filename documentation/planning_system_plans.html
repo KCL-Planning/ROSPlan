@@ -30,8 +30,149 @@ title: ROSPlan documentation, planner
 
 			<h2>Plan Representations</h2>
 
-			<h4>Under construction</h4>
+			<p>PDDL actions are dispatched in ROS using the ActionDispatch message. ROSPlan includes two default data structures for storing a collection of these messages as a plan:</p>
+			<ol>
+			<li>A list, for purely sequential plans.</li>
+			<li>An Esterel program, in which ActionDispatch messages are linked to outgoing signals in the program. This is used for temporal, contingent plans, with concurrency.</li>
+			</ol> 
 
+			<img src="images/dia_plan.png" class="chart"/>
+
+			<p>The plan is parsed by a plan parser, which can be replaced as described here: [[plan parsing]].</p>
+
+			<p>The plan is dispatched by a plan dispatcher, which can be replaced as described here: [[plan dispatch]].</p>
+
+			<h4>Contents:</h4>
+			<ul>
+			<li><a href="#a">The ActionDispatch message</a></li>
+			<li><a href="#p">PlanParser</a></li>
+			<li><a href="#s">Sequential Plans</a></li>
+			<li><a href="#e">Esterel Plans</a></li>
+			</ul>
+
+			<a id="a"></a>
+			<h4>The ActionDispatch Message</h4>
+
+			<p>The ActionDispatch message is used to represent a grounded PDDL (durative) action.</p>
+			<p>Message: <em>rosplan_dispatch_msgs/ActionDispatch</em></p>
+{% highlight python linenos=table %}
+int32 action_id
+string name
+diagnostic_msgs/KeyValue[] parameters
+float32 duration
+float32 dispatch_time
+{% endhighlight %}
+
+			<p><strong>action_id</strong><br/>A unique integer assigned while processing the plan that idnetifies the action.</p>
+			<p><strong>name</strong><br/>The PDDL action name.</p>
+			<p><strong>parameters</strong><br/>A key/value list of the action's parameters. The key is the parameter label, the corresponding value is the object instance name.</p>
+			<p><strong>duration</strong><br/>The expected duration of the action in the plan.</p>
+			<p><strong>dispatch_time</strong><br/>The expected dispatch_time of the action in the plan.</p>
+
+			<a id="p"></a>
+			<h4>PlanParser</h4>
+
+			<p>The plan parser reads the output from the planner and creates a list of ActionDispatch messages. There are two default plan parsers in ROSPlan: a sequential plan parser for plans without concurrency, and an Esterel plan parser for plans with more structures. The plan parser can be replaced to include different structures, such as temporal task networks; or to post-process the plan, for example, to add execution rules.</p>
+
+			<p>Both plan parsers extend the <em>rosplan_planning_system::PlanParser</em> class. You can find more about reimplementing this class in [[Replacing the plan parser]].</p>
+
+{% highlight cpp linenos=table %}
+/**
+ * This file parses the output of a planner and generates a list of ActionDispatch messages.
+ */
+#include <string>
+#include "rosplan_dispatch_msgs/ActionDispatch.h"
+#include "rosplan_knowledge_msgs/Notification.h"
+#include "rosplan_knowledge_msgs/Filter.h"
+#include "PlanningEnvironment.h"
+
+#ifndef KCL_plan_parser
+#define KCL_plan_parser
+
+namespace KCL_rosplan {
+
+	class PlanParser
+	{
+	public:
+
+		virtual void reset() =0;
+
+		/* post process plan */
+		virtual void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) =0;
+		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
+
+		/* plan knowledge filter */
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> knowledge_filter;
+		virtual void generateFilter(PlanningEnvironment &environment) =0;
+	};
+} // close namespace
+
+#endif
+{% endhighlight %}
+
+			<a id="s"></a>
+			<h4>Sequential Plans</h4>
+
+			<p>A sequential plan is stored only as a list of ActionDispatch msgs. The <em>action_list</em> vector of <em>rosplan_planning_system::PlanParser</em> stores these messages.</p>
+
+			<a id="e"></a>
+			<h4>Esterel Plans</h4>
+
+			<h4>(under construction)</h4>
+
+			<p>The Esterel plan stores the plan as a program in the <a href="https://en.wikipedia.org/wiki/Esterel">esterel language</a>. The plan is represented in the program as graph of nodes and edges. The nodes of the graph correspond to ActionDispatch messages, and possess temporal conditions upon their execution. The edges of the graph correspond to causal edges between node (internal signals), and action conditions checked against queries from the Knowledge Base (external signals).</p>
+
+{% highlight cpp linenos=table %}
+#include <rosplan_dispatch_msgs/ActionDispatch.h>
+#include <rosplan_knowledge_msgs/KnowledgeItem.h>
+#include <ostream>
+#include <vector>
+
+#ifndef KCL_esterel_plan
+#define KCL_esterel_plan
+
+namespace KCL_rosplan
+{
+
+	enum SignalType { ACTION, CONDITION, TIME };
+
+	struct StrlNode;
+	
+	/* Plan edge definition */
+	struct StrlEdge
+	{
+		SignalType signal_type;
+		std::string edge_name;
+		std::vector<StrlNode*> sources;
+		std::vector<StrlNode*> sinks;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> external_conditions;
+		bool active;
+	};
+	
+	/* Plan node definition */
+	struct StrlNode
+	{
+		std::string node_name;
+		int node_id;
+		std::vector<StrlEdge*> input;
+		std::vector<StrlEdge*> output;
+
+		//std::vector<bool> await_input;
+		bool dispatched;
+		bool completed;
+
+		rosplan_dispatch_msgs::ActionDispatch dispatch_msg;
+	};
+}
+
+std::ostream& operator<<(std::ostream& os, const KCL_rosplan::StrlEdge& edge);
+std::ostream& operator<<(std::ostream& os, const KCL_rosplan::StrlNode& edge);
+
+#endif
+{% endhighlight %}
+
+
+			<p>The POPFEsterelPlanParser class extends <em>rosplan_planning_system::PlanParser</em>. This subclass processes the output of the POPF and OPTIC planners, generating this representation.</p>
 			</section>
 
 			<footer class="site-footer">

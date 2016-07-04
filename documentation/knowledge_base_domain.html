@@ -141,60 +141,19 @@ predicate:
 ---
 rosplan_knowledge_msgs/DomainOperator op
   rosplan_knowledge_msgs/DomainFormula formula
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
+
   rosplan_knowledge_msgs/DomainFormula[] at_start_add_effects
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] at_start_del_effects
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] at_end_add_effects
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] at_end_del_effects
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
+
   rosplan_knowledge_msgs/DomainFormula[] at_start_simple_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] over_all_simple_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] at_end_simple_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
+
   rosplan_knowledge_msgs/DomainFormula[] at_start_neg_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] over_all_neg_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
   rosplan_knowledge_msgs/DomainFormula[] at_end_neg_condition
-    string name
-    diagnostic_msgs/KeyValue[] typed_parameters
-      string key
-      string value
 {% endhighlight %}
 <p>Returns the details of a single operator, as a <em>rosplan_knowledge_msgs/DomainOperator</em> message. This message includes lists of predicates that for the operator's simple propositional conditions and effects. The conditions are divided into start, end, and invariant conditions. The effects are split into add and delete effects, and further into start and end effects. For a non-durative action, all conditions and effects are at start. For example:</p>
 <blockquote><pre>

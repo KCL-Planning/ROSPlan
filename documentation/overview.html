@@ -30,11 +30,34 @@ title: ROSPlan documentation, planner
 
 			<h2>ROSPlan Overview</h2>
 
-			<img src="images/overview.png" class="chart" style="width: 50%"/>
+			<img src="images/overview.png" class="chart"/>
+			<p>The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. ROSPlan has a modular design, intended to be modified.</p>
+			<p>The <strong>Knowledge Base</strong> is used to store a PDDL model.</p>
+
+			<p>The <strong>Planning System</strong> is used to interface with a planner. It contains three modules: problem generation, planning, and plan dispatch. Any of these can be replaced.</p>
 
 			<h3>Knowledge Base</h3>
 
+			<img src="images/dia_state.png" class="chart"/>
+			<p>The Knowledge Base stores the PDDL model. It stores both a domain model and the current problem instance. Unless it is modified, the Knowledge Base:</p>
+			<ol>
+			<li>Loads a PDDL domain from file.</li>
+			<li>Stores the state as a PDDL instance.</li>
+			<li>Is updated by ROS messages.</li>
+			<li>Can be queried.</li>
+			</ol>
+			<p>Most of the time there will also be information to store that is not a part of the PDDL model. For this purpose we use ROS mongoDB by default.</p>
+
 			<h3>Planning System</h3>
+
+			<img src="images/dia_system.png" class="chart"/>
+			<p>The planning system integrates with the planner. Unless it is modified, the planning system will:</p>
+			<ol>
+			<li>Fetch information from the knowledge base and generate a PDDL problem file.</li>
+			<li>Call a planner and process the output plan.</li>
+			<li>Dispatches the plan via ROS messages.</li>
+			</ol>
+			<p>The planning system can handle replanning attempts upon planning or action failure, or plan invalidation. The number of replanning attempts, and a number of other parameters can be altered without replacing any modules of the planning system.</p>
 
 			</section>
 
