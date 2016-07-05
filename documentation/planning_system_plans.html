@@ -32,49 +32,31 @@ title: ROSPlan documentation, planner
 
 			<p>PDDL actions are dispatched in ROS using the ActionDispatch message. ROSPlan includes two default data structures for storing a collection of these messages as a plan:</p>
 			<ol>
-			<li>A list, for purely sequential plans.</li>
+			<li>A list.</li>
 			<li>An Esterel program, in which ActionDispatch messages are linked to outgoing signals in the program. This is used for temporal, contingent plans, with concurrency.</li>
 			</ol> 
 
 			<img src="images/dia_plan.png" class="chart"/>
 
-			<p>The plan is parsed by a plan parser, which can be replaced as described here: [[plan parsing]].</p>
+			<p>The plan is parsed by a plan parser, which can be replaced as described here: <a href="http://kcl-planning.github.io/ROSPlan/documentation/replace_planner.html">replacing the planner</a>.</p>
 
-			<p>The plan is dispatched by a plan dispatcher, which can be replaced as described here: [[plan dispatch]].</p>
+			<p>The plan is dispatched by a plan dispatcher, which can be replaced as described here: <a href="http://kcl-planning.github.io/ROSPlan/documentation/replace_dispatch.html">replacing the plan dispatch</a>.</p>
 
 			<h4>Contents:</h4>
 			<ul>
-			<li><a href="#a">The ActionDispatch message</a></li>
 			<li><a href="#p">PlanParser</a></li>
-			<li><a href="#s">Sequential Plans</a></li>
-			<li><a href="#e">Esterel Plans</a></li>
+			<li><a href="#s">Sequential plans</a></li>
+			<li><a href="#e">Esterel plans</a></li>
+			<li><a href="#cpt">Complete plan topic</a></li>
+			<li><a href="#pgt">Plan graph topic</a></li>
 			</ul>
-
-			<a id="a"></a>
-			<h4>The ActionDispatch Message</h4>
-
-			<p>The ActionDispatch message is used to represent a grounded PDDL (durative) action.</p>
-			<p>Message: <em>rosplan_dispatch_msgs/ActionDispatch</em></p>
-{% highlight python linenos=table %}
-int32 action_id
-string name
-diagnostic_msgs/KeyValue[] parameters
-float32 duration
-float32 dispatch_time
-{% endhighlight %}
-
-			<p><strong>action_id</strong><br/>A unique integer assigned while processing the plan that idnetifies the action.</p>
-			<p><strong>name</strong><br/>The PDDL action name.</p>
-			<p><strong>parameters</strong><br/>A key/value list of the action's parameters. The key is the parameter label, the corresponding value is the object instance name.</p>
-			<p><strong>duration</strong><br/>The expected duration of the action in the plan.</p>
-			<p><strong>dispatch_time</strong><br/>The expected dispatch_time of the action in the plan.</p>
 
 			<a id="p"></a>
 			<h4>PlanParser</h4>
 
-			<p>The plan parser reads the output from the planner and creates a list of ActionDispatch messages. There are two default plan parsers in ROSPlan: a sequential plan parser for plans without concurrency, and an Esterel plan parser for plans with more structures. The plan parser can be replaced to include different structures, such as temporal task networks; or to post-process the plan, for example, to add execution rules.</p>
+			<p>The plan parser reads the output from the planner and creates a list of ActionDispatch messages. There are two default plan parsers in ROSPlan: a simple plan parser for generating a list of action messages, and an Esterel plan parser for generating an Esterel program. The plan parser can be replaced, for example (a) to include different structures, such as temporal task networks; or (b) to post-process the plan, adding execution rules.</p>
 
-			<p>Both plan parsers extend the <em>rosplan_planning_system::PlanParser</em> class. You can find more about reimplementing this class in [[Replacing the plan parser]].</p>
+			<p>Both plan parsers extend the <em>rosplan_planning_system::PlanParser</em> class. You can find more about reimplementing this class in <a href="http://kcl-planning.github.io/ROSPlan/documentation/replace_planner.html">replacing the planner</a>.</p>
 
 {% highlight cpp linenos=table %}
 /**
@@ -111,12 +93,12 @@ namespace KCL_rosplan {
 {% endhighlight %}
 
 			<a id="s"></a>
-			<h4>Sequential Plans</h4>
+			<h4>Sequential plans</h4>
 
 			<p>A sequential plan is stored only as a list of ActionDispatch msgs. The <em>action_list</em> vector of <em>rosplan_planning_system::PlanParser</em> stores these messages.</p>
 
 			<a id="e"></a>
-			<h4>Esterel Plans</h4>
+			<h4>Esterel plans</h4>
 
 			<h4>(under construction)</h4>
 
@@ -173,6 +155,28 @@ std::ostream& operator<<(std::ostream& os, const KCL_rosplan::StrlNode& edge);
 
 
 			<p>The POPFEsterelPlanParser class extends <em>rosplan_planning_system::PlanParser</em>. This subclass processes the output of the POPF and OPTIC planners, generating this representation.</p>
+
+			<a id="cpt"></a>
+			<h4>Complete Plan topic</h4>
+
+			<p>The planning system publishes every complete plan on this topic.
+				<br/>Topic: <em>/kcl_rosplan/plan</em>
+				<br/>Message: <em>rosplan_dispatch_msgs/CompletePlan</em>
+			<br/>The complete plan message contains a list of ActionDispatch messages:</p>
+
+{% highlight python linenos=table %}
+rosplan_dispatch_msgs/ActionDispatch[] plan
+{% endhighlight %}
+
+			<a id="pgt"></a>
+			<h4>Plan graph topic</h4>
+
+			<p>When using the Esterel plan representation, the plan can be published as a DOT graph. The EsterelPlanDispatcher automatically publishes the current plan in this way as the plan is dispatched.
+				<br/>Topic: <em>/kcl_rosplan/plan_graph</em>
+				<br/>Message: <em>std_msgs/String</em>
+
+			<img src="images/plan_graph.png" class="chart"/>
+
 			</section>
 
 			<footer class="site-footer">

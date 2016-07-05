@@ -30,7 +30,23 @@ title: ROSPlan documentation, planner
 
 			<h2>Adding an action</h2>
 
-			<h4>Under construction</h4>
+			<p>By default, a PDDL action in ROSPlan is dispatched as an ActionDispatch message.</p>
+			<p>Topic Name: <em>kcl_rosplan/action_dispatch</em><br/>
+			Message Type: <em>rosplan_dispatch_msgs/ActionDispatch</em></p>
+
+			<p>Similarly, feedback is published as an ActionFeedback message.</p>
+			<p>Topic Name: <em>kcl_rosplan/action_feedback</em><br/>
+			Message Type: <em>rosplan_dispatch_msgs/ActionFeedback</em></p>
+
+			<p>To link a new action, there is one of two ways. Either:</p>
+			<ol>
+			<li>Write a new node that uses these two topics; or</li>
+			<li>Write a subclass of <em>rosplan_action_interface::ActionInterface</em></li>
+			</ol>
+
+			<img src="images/dia_action.png" class="chart"/>
+
+			<p>Option 2 (writing a subclass) is the simplest method. The class <em>rosplan_action_interface::ActionInterface</em> handles recieving the action, action feedback, and updating the knowledge base. Linking an action to ROSPlan in this way is described in detail in the <a href="https://github.com/KCL-Planning/ROSPlan/wiki/g.-Writing-a-Component#writing-an-action-component">ROSPlan github wiki</p>
 
 			</section>
 

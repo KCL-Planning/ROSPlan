@@ -40,7 +40,15 @@ title: ROSPlan documentation, planner
 
 			<p>Steps 2 and 3 are only required if: (for step 2) the output of the planner differs from POPF, or the dispatcher has also been replaced; and (for step 3) the planner does not support classical or temporal PDDL.</p>
 
-			<h4>1. Providing a command line to call the new planner</h4>
+			<h4>Contents:</h4>
+			<ul>
+			<li><a href="#cl">Providing a command line to call the new planner</a></li>
+			<li><a href="#po">Parsing the output of the new planner</a></li>
+			<li><a href="#pi">Generating a problem instance</a></li>
+			</ul>
+
+			<a id="cl"></a>
+			<h4>Providing a command line to call the new planner</h4>
 
 			<p>The ROSPlan planning system calls the planner using a command line that can be changed in the launch file:</p>
 {% highlight xml linenos=table %}
@@ -51,11 +59,12 @@ title: ROSPlan documentation, planner
 	<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
 </node>
 {% endhighlight %}
-			<p>where: "DOMAIN" is to be replaced by the domain file path, and "PROBLEM" is to be replaced by the problem instance file path. For more information on the domain and problem file paths, have a look at [[planning system parameters]].</p>
+			<p>where: "DOMAIN" is to be replaced by the domain file path, and "PROBLEM" is to be replaced by the problem instance file path. For more information on the domain and problem file paths, have a look at <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_launch.html">launching the planning system</a>.</p>
 
-			<h4>2. Parsing the output of the new planner</h4>
+			<a id="po"></a>
+			<h4>Parsing the output of the new planner</h4>
 
-			<p>The output of a planner must be parsed into a data structure for dispatch. For example, the actions in the plan could be stored in a list for sequential execution. The data structure you use will depend upon the method of plan dispatch. Included in ROSPlan is sequential dispatch; and temporal, concurrent, contingent dispatch as Esterel. More information on the dispatch [[dispatch]].</p>
+			<p>The output of a planner must be parsed into a data structure for dispatch. For example, the actions in the plan could be stored in a list for sequential execution. The data structure you use will depend upon the method of plan dispatch. Included in ROSPlan is sequential dispatch; and temporal, concurrent, contingent dispatch as Esterel. More information on the dispatch look at <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_dispatch.html">plan dispatch and execution</a>.</p>
 
 			<p>The output of the planner is saved as a file, and also published as a ROS message. The file is saved in a location specified by a parameter in the launch file:</p>
 {% highlight xml linenos=table %}
@@ -66,9 +75,9 @@ title: ROSPlan documentation, planner
     <param name="data_path" value="$(find rosplan_planning_system)/common/" />
 </node>
 {% endhighlight %}
-			<p>A file "plan.pddl" will be generated in data_path. For more information on file paths, have a look at [[planning system parameters]].</p>
+			<p>A file "plan.pddl" will be generated in data_path. For more information on file paths, have a look at <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_launch.html">launching the planning system</a>.</p>
 
-			<p>The plan is parsed by the class <em>rosplan_planning_system/PlanParser</em>:</p>
+			<p>The plan is parsed by the class <em>rosplan_planning_system::PlanParser</em>:</p>
 
 {% highlight c++ linenos=table %}
 /**
@@ -102,16 +111,17 @@ namespace KCL_rosplan {
 
 			<p>You can find this file in the <em>rosplan_planning_system</em> package. It has two implementations:</p>
 			<ul>
-			<li>POPFPanParser: parses the output into an ordered sequence of ActionDispatch msgs.</li>
-			<li>POPFEsterelPanParser: parses the output into an Esterel representation. The associated ActionDispatch msgs are stored in a list.</li>
+			<li><em>POPFPanParser</em>: parses the output into an ordered sequence of ActionDispatch msgs.</li>
+			<li><em>POPFEsterelPanParser</em>: parses the output into an Esterel representation. The associated ActionDispatch msgs are stored in a list.</li>
 			</ul>
 			<p>The reset method is called once before each planning attempt to reset any temporary variables set by the plan parser. The preparePlan method is called once after each planning attempt. The vector of ActionDispatch msgs is a convenient place to store the dispatch msgs, used by the default dispatchers.</p>
 
-			<p>If you want to parse the output of the plan into an Esterel Plan, for use with the POPFEsterelPlanDispatcher, then have a look here: [[Esterel plan]]</p>
+			<p>If you want to parse the output of the plan into an Esterel Plan, for use with the POPFEsterelPlanDispatcher, then look at <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_plans.html">plan representations</a>.</p>
 
-			<h4>3. Generating a problem instance</h4>
+			<a id="pi"></a>
+			<h4>Generating a problem instance</h4>
 
-			<p>The problem instance is (re)generated before each planning attempt. It is generated by requesting an up-to-date model from the Knowledge Management System (KMS). More information on the KMS can be found [[here]].</p>
+			<p>The problem instance is (re)generated before each planning attempt. It is generated by requesting an up-to-date model from the Knowledge Base.</p>
 
 			<p>You can disable the generation of a default problem file using a launch parameter:
 {% highlight xml linenos=table %}
@@ -124,7 +134,7 @@ namespace KCL_rosplan {
 </node>
 {% endhighlight %}
 
-			<p>The default problem generated is a PDDL2.1 planning problem. The problem is generated by <em>rosplan_planning_system/PDDLProblemGenerator</em>. If you want to change the default problem generation, you should reimplement this file:</p> 
+			<p>The default problem generated is a PDDL2.1 planning problem. The problem is generated by <em>rosplan_planning_system::PDDLProblemGenerator</em>. If you want to change the default problem generation, you should reimplement this file:</p> 
 {% highlight c++ linenos=table %}
 /**
  * This class is responsible for generating the PDDL instance.
@@ -156,7 +166,7 @@ namespace KCL_rosplan {
 #endif
 {% endhighlight %}
 
-			<p>[[More information on generating a problem instance]]</p>
+			<p>More information on problem generation is in <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_problem.html">generating a problem instance</a>.</p>
 
 			</section>
 

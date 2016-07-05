@@ -350,7 +350,6 @@ a {
 .indexpanel {
 	margin-right:1em;
 	margin-bottom:1em;;
-	float: left;
 	display: inline-block;
 	border: 1px solid #900020;
     font-size: 1.1rem;

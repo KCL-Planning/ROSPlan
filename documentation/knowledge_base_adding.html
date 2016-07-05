@@ -36,7 +36,7 @@ title: ROSPlan documentation, planner
 			<li><a href="#u">update_knowledge_base</a></li>
 			<li><a href="#ua">update_knowledge_base_array</a></li>
 			</ul>
-			<p>Fetching grounded information from the Knowledge Base uses the <em>KnowledgeItem</em> descibed in [[using the KMS]].</p>
+			<p>Fetching grounded information from the Knowledge Base uses the <em>KnowledgeItem</em> descibed in <a href="http://kcl-planning.github.io/ROSPlan/documentation/knowledge_base_use.html">using the knowledge base</a>.</p>
 
 <a id="c"></a>
 <h4>Clear knowledge base</h4>
@@ -58,7 +58,7 @@ rosplan_knowledge_msgs/KnowledgeItem knowledge
 ---
 bool success
 {% endhighlight %}
-<p>Adding information to the Knowledge Base, using the <em>KnowledgeItem</em> descibed in [[using the KMS]].</p>
+<p>Adding information to the Knowledge Base, using the <em>KnowledgeItem</em> descibed in <a href="http://kcl-planning.github.io/ROSPlan/documentation/knowledge_base_use.html">using the knowledge base</a>.</p>
 <p><strong>update_type</strong><br/>Determines whether the update is adding or removing elements from the knowledge base, and whether a goal or current state estimate is to be added to or removed from the Knowledge Base.</p>
 <p><strong>knowledge</strong><br/>The knowledge message to add or remove.</p>
 <p>It is possible to leave fields blank in the knowledge item. This has the effect of matching multiple items in the knowledge base.</p>
@@ -101,7 +101,7 @@ rosplan_knowledge_msgs/KnowledgeItem knowledge[]
 ---
 bool success
 {% endhighlight %}
-<p>Adding information to the Knowledge Base, using the <em>KnowledgeItem</em> descibed in [[using the KMS]]. This service behaves in the same was as the singular <em>update_knowledge_base</em> service. However, an array of knowledge items is used.</p>
+<p>Adding information to the Knowledge Base, using the <em>KnowledgeItem</em> descibed in <a href="http://kcl-planning.github.io/ROSPlan/documentation/knowledge_base_use.html">using the knowledge base</a>. This service behaves in the same was as the singular <em>update_knowledge_base</em> service. However, an array of knowledge items is used.</p>
 			</section>
 
 			<footer class="site-footer">

@@ -30,11 +30,69 @@ title: ROSPlan documentation, planner
 
 			<h2>Plan Dispatch and Execution</h2>
 
-			<p>The plan plan dispatch is ROSPlan is carried out through ROS messages. The actionDispatch ROS message, described in [[plan representation]], and the ActionFeedback ROS message described below. Once the plan has been processed, actions are dispatched by a plan dispatcher. The dispatcher internally handles action feedback, timeout, and failure. The dispatcher can return that a plan has succeeded, or that the plan has failed, which may trigger a replan.</p>
+			<p>Once the plan has been processed, actions are dispatched by a plan dispatcher.</p>
+			<ul>
+			<li>By default, the plan dispatch in ROSPlan is carried out through ROS messages: the ActionDispatch ROS message and the ActionFeedback ROS message.</li>
+			<li>The dispatcher internally handles action feedback, timeout, and failure.</li>
+			<li>The dispatcher can return that a plan has succeeded, or that the plan has failed, which may trigger a replan.</li>
+			</ul>
 
 			<img src="images/dia_dispatch.png" class="chart"/>
 
-			<p>The plan dispatch depends upon the plan representation, and should be modified together. ROSPlan includes implementations of the plan dispatcher: SimplePlanDispatcher and EsterelPlanDispatcher.</p>
+			<h4>Contents:</h4>
+			<ul>
+			<li><a href="#adm">ActionDispatch message</a></li>
+			<li><a href="#afm">ActionFeedback message</a></li>
+			<li><a href="#pd">Plan dispatch</a></li>
+			</ul>
+
+			<a id="adm"></a>
+			<h4>ActionDispatch Message</h4>
+
+			<p>The ActionDispatch message is used to represent a grounded PDDL (durative) action.</p>
+			<p>Message: <em>rosplan_dispatch_msgs/ActionDispatch</em></p>
+{% highlight python linenos=table %}
+int32 action_id
+string name
+diagnostic_msgs/KeyValue[] parameters
+float32 duration
+float32 dispatch_time
+{% endhighlight %}
+
+			<p><strong>action_id</strong><br/>A unique integer assigned while processing the plan that idnetifies the action.</p>
+			<p><strong>name</strong><br/>The PDDL action name.</p>
+			<p><strong>parameters</strong><br/>A key/value list of the action's parameters. The key is the parameter label, the corresponding value is the object instance name.</p>
+			<p><strong>duration</strong><br/>The expected duration of the action in the plan.</p>
+			<p><strong>dispatch_time</strong><br/>The expected dispatch_time of the action in the plan.</p>
+
+			<a id="afm"></a>
+			<h4>ActionFeedback Message</h4>
+
+			<p>The ActionFeedback message is used to report action feedback to the ROSPlan dispatcher.</p>
+			<p>Message: <em>rosplan_dispatch_msgs/ActionFeedback</em></p>
+{% highlight python linenos=table %}
+int32 action_id
+string status
+diagnostic_msgs/KeyValue[] information
+{% endhighlight %}
+
+			<p><strong>action_id</strong><br/>A unique integer assigned while processing the plan that idnetifies the action.</p>
+			<p><strong>status</strong><br/>The status of the PDDL action.</p>
+			<p><strong>information</strong><br/>A key/value list of additional information. This field is optional and not used by default.</p>
+			
+			<p>Using the default dispatch in ROSPlan, the normal status fields are:</p>
+			<p><strong>action_enabled</strong><br/>Sent when the action has been recieved and execution begun.</p>
+			<p><strong>action_achieved</strong><br/>Sent when the action is completed successfully.</p>
+			<p><strong>action_failed</strong><br/>Sent when the action is completed unsuccessfully.</p>
+
+			<a id="pd"></a>
+			<h4>Plan dispatch</h4>
+
+			<p>In ROSPlan the plan dispatcher is an implementation of <em>rosplan_planning_system::PlanDispatcher</em>. The task of the plan dispatcher is to send the PDDL actions to the lower level controllers, and handle feedback.</p>
+
+			<p>An implementation of this class can be given to provide alternate dispatch behaviour, or to wrap an existing dispatch controller.</p>
+
+			<p>The default plan dispatchers are: <em>rosplan_planning_system::SimplePlanDispatcher</em> and <em>rosplan_planning_system::EsterelPlanDispatcher</em>. The dispatcher used depends upon the plan representation, described in <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_plans.html">plan representations</a>.</p>
 
 {% highlight cpp linenos=table %}
 /**

@@ -28,22 +28,102 @@ title: ROSPlan documentation, planner
 	    	<div id="includedSideBar"></div>
 			<section class="documentation-content">
 
-			<h2>Replacing the Plan Dispatch</h2><a href="#dispatch"></a>
+			<h2>Replacing the Plan Dispatch</h2>
 
-			<h4>Under construction</h4>
+			<p>The default plan dispatch is an implementation of <em>rosplan_planning_system::PlanDispatcher</em>.  There are two default implementations: <em>rosplan_planning_system::SimplePlanDispatcher</em> and <em>rosplan_planning_system::EsterelPlanDispatcher</em>.</p>
 
-			<p>The default plan dispatch... The dispatch is defined by <em>...</em>. The default implementations are <em>...</em>.</p>
+			<p>A new implementation of this class can be given to provide different dispatch behaviour, or to wrap an existing dispatch controller. The way in which a plan is dispatched can be swapped completely.</p>
+
 			<p>If you want to replace the plan dispatch, then there is one or two steps:</p>
 			<ol>
-			<li>Provide a new implementation of ...; and</li>
+			<li>Provide a new implementation of <em>rosplan_planning_system::PlanDispatcher</em>; and</li>
 			<li>Optionally, provide a new plan representation.</li>
 			</ol>
 
 			<img src="images/dia_dispatch.png" class="chart"/>
 
-			<p>The new implementation of ... can be an interface to an existing dispatch and execution framework.</p>
+			<p>The new implementation of <em>rosplan_planning_system::PlanDispatcher</em> can be an interface to an existing dispatch and execution framework.</p>
 
-			<h4>Reimplementing the plan dispatch.</h4>
+			<p>Step 2 is only required if the dispatch requires a specific data structure for the plan.</p>
+
+			<h4>Contents:</h4>
+			<ul>
+			<li><a href="#pr">Provide new plan representation</a></li>
+			<li><a href="#pd">Reimplementing the plan dispatch</a></li>
+			</ul>
+
+			<a id="pr"></a>
+			<h4>Provide new plan representation</h4>
+
+			<p>The dispatch of a plan relies heavily upon its representation. The dispatcher can contain the plan data structure internally, or it can be separate.</p>
+
+			<p>The output from the planner must be processed and stored in the data structure, wherever it is. This is done by <em>rosplan_planning_system::PlanParser</em>, which is described in more detail in <a href="http://kcl-planning.github.io/ROSPlan/documentation/planning_system_plans.html">plan representations</a>. The default plan representations are also described.</p>
+
+			<p>If you want to change the plan representation, for example: passing the plan to a black-box execution framework, then you should reimplement <em>rosplan_planning_system::PlanParser</em>. This is described in more detail in <a href="http://kcl-planning.github.io/ROSPlan/documentation/replace_planner.html#po">replacing the planner</a>.</p>
+
+			<a id="pd"></a>
+			<h4>Reimplementing the plan dispatch</h4>
+
+			<p>The plan is dispatched by <em>rosplan_planning_system::PlanDispatcher</em>. If you want to swap out the existing plan dispatch the you should reimplement this class:</p>
+
+{% highlight cpp linenos=table %}
+/**
+ * This file describes the class that dispatches a plan.
+ */
+#include "ros/ros.h"
+#include "rosplan_dispatch_msgs/ActionDispatch.h"
+#include "rosplan_dispatch_msgs/ActionFeedback.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
+#include "PlanningEnvironment.h"
+
+#ifndef KCL_dispatcher
+#define KCL_dispatcher
+
+namespace KCL_rosplan
+{
+
+	class PlanDispatcher
+	{
+	protected:
+
+		/* action dispatch list (current plan) */
+		size_t current_action;
+
+		/* dispatch state */
+		std::map<int,bool> action_received;
+		std::map<int,bool> action_completed;
+
+	public:
+
+		/* knowledge */
+		PlanningEnvironment environment;
+
+		/* dispatch modes */
+		bool dispatch_paused;
+		bool plan_cancelled;
+		bool replan_requested;
+
+		/* access */
+		virtual int getCurrentAction() =0;
+		virtual void setCurrentAction(size_t freeActionID) =0;
+		virtual void reset() =0;
+
+		/* action dispatch methods */
+		virtual bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart) =0;
+
+		/* action feedback methods */
+		virtual void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;
+		virtual void actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;
+
+		/* ROS interface */
+		ros::Publisher action_publisher;
+		ros::Publisher action_feedback_pub;
+	};
+}
+
+#endif
+{% endhighlight %}
 
 			</section>
 
