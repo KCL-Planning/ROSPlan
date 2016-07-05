@@ -12,6 +12,7 @@
 	<script> 
     $(function(){
       $("#includedContent").load("templates/nav-main.html"); 
+      $("#includedSideBar").load("templates/nav-sidebar.html"); 
     });
     </script>
   </head>
@@ -20,6 +21,9 @@
 
     <section class="main-content">
 			
+	    	<div id="includedSideBar"></div>
+			<section class="documentation-content">
+
 			<p><strong>What is ROSPlan?</strong><br/>The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch.</p>
 
 			<p>It possesses a simple interface, and includes some basic interfaces to common ROS libraries. It serves as a framework to test:</p>
@@ -44,6 +48,8 @@
 			</div>
 			</div>
 			<div style="clear: both"></div>
+
+			</section>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> is maintained by <a href="https://github.com/KCL-Planning">KCL-Planning</a>.</span>
