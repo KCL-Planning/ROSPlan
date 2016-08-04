@@ -324,7 +324,8 @@ namespace KCL_rosplan {
 		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 			const VAL::pddl_type* type = *ci;
 			res.types.push_back(type->getName());
-			res.super_types.push_back(type->type->getName());
+			if(type->type) res.super_types.push_back(type->type->getName());
+			else res.super_types.push_back("");
 		}	
 		return true;
 	}		
