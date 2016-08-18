@@ -28,3 +28,12 @@
 
 #gedit
 *~
+
+#qtcreator
+*.user
+
+#mongodb
+**/mongoDB/
+
+#vim
+*.swp
