@@ -1,7 +1,18 @@
 <?xml version="1.0"?>
 <launch>
 
-	<param name="/rosplan/domain_path" value="$(find rosplan_config)/planner/domain.pddl" />
+	<arg name="working_dir" default="/tmp" />
+
+        <param name="/rosplan/domain_path" value="$(find rosplan_config)/planner/domain.pddl" />
+        <!-- directory for generated files -->
+        <param name="/rosplan/data_path" value="$(arg working_dir)/" />
+        <param name="/rosplan/problem_path" value="$(arg working_dir)/problem.pddl" />
+        <param name="/rosplan/strl_file_path" value="$(arg working_dir)/plan.strl" />
+
+        <!-- to run the planner -->
+        <param name="/rosplan/planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
+        <param name="/rosplan/generate_default_problem" value="true" />
+        <param name="/rosplan/max_dispatch_attempts" value="2" />
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
@@ -17,15 +28,6 @@
 
 	<!-- planning system -->
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
-		<!-- directory for generated files -->
-		<param name="data_path" value="$(find rosplan_config)/planner/" />
-		<param name="problem_path" value="$(find rosplan_config)/planner/problem.pddl" />
-		<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
-
-		<!-- to run the planner -->
-		<param name="planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
-		<param name="generate_default_problem" value="true" />
-		<param name="max_dispatch_attempts" value="2" />
 	</node>
 	
 </launch>
