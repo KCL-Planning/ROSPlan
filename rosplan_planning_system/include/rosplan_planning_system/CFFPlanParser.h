@@ -1,7 +1,6 @@
 #include "ros/ros.h"
 #include "std_srvs/Trigger.h"
 #include "diagnostic_msgs/KeyValue.h"
-#include "mongodb_store/message_store.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
@@ -9,31 +8,12 @@
 #include "rosplan_knowledge_msgs/Filter.h"
 #include "PlanningEnvironment.h"
 #include "PlanParser.h"
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <ctime>
-#include <stdlib.h>
+#include "EsterelPlan.h"
 
 #ifndef KCL_cff_plan_parser
 #define KCL_cff_plan_parser
 
 namespace KCL_rosplan {
-
-	/* Plan node definition */
-	struct PlanNode
-	{
-		PlanNode(const int &nodeID, const std::string &actionName)
-			: id(nodeID), action_name(actionName) {}
-
-		PlanNode()
-			: id(-1), action_name("GHOST_ACTION") {}
-		
-		int id;
-		rosplan_dispatch_msgs::ActionDispatch dispatch_msg;
-		std::string action_name;
-		std::vector<int> inc_edges;
-	};
 
 	/* Plan Parsing class definition */
 	class CFFPlanParser: public PlanParser
@@ -41,22 +21,37 @@ namespace KCL_rosplan {
 
 	private:
 		
-		// Scene database
-		mongodb_store::MessageStoreProxy message_store;
-
+		// ROS node handle.
+		ros::NodeHandle* node_handle;
+		
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
+
+		void toLowerCase(std::string &str);
+		void preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment);
 		
+		/**
+		 * Create an Estrel node based on the name of the action.
+		 * @param action_name The name of the action.
+		 * @param node_id The id that should be given to the node.
+		 * @param environment The planning environment.
+		 * @param node The node that is created based on @ref{action_name}.
+		 * @param edge The edge that is created based on @ref{action_name}.
+		 */
+		void createNodeAndEdge(const std::string& action_name, int action_number, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
+		std::map<int, StrlNode*> jump_map;
+
 	public:
 
-		std::vector<PlanNode> plan;
+		/* plan description in Esterel */
+		std::vector<StrlNode*> plan_nodes;
+		std::vector<StrlEdge*> plan_edges;
 
 		/* constructor */
 		CFFPlanParser(ros::NodeHandle &nh);
 
 		/* service to parse plans */
-		bool printPlan(std::vector<PlanNode> &plan);
-		bool produceEsterel(std::vector<PlanNode> &plan);
+		bool produceEsterel();
 
 		/* virtual methods */
 		void reset();

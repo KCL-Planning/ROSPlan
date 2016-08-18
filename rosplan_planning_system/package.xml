@@ -3,7 +3,7 @@
   <name>rosplan_planning_system</name>
   <version>0.0.4</version>
   <description>Deliberative layer of ROSPlan.  Deals with automatic problem generation, planning, dispatch, and replanning.</description>
-  <maintainer email="marc@hanheide.net">Marc Hanheide</maintainer>
+  <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
   <license>BSD</license>
   <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
 
@@ -11,6 +11,7 @@
 
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>actionlib</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
@@ -22,6 +23,7 @@
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>actionlib</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>diagnostic_msgs</run_depend>

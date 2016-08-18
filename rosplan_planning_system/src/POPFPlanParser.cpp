@@ -8,6 +8,8 @@
 
 namespace KCL_rosplan {
 
+	POPFPlanParser::~POPFPlanParser() {}
+
 	void POPFPlanParser::reset() {
 		filter_objects.clear();
 		filter_attributes.clear();

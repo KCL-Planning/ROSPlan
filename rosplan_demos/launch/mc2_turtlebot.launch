@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!-- ROSPlan turtlebot -->
 <launch>
 
@@ -17,26 +18,32 @@
 	<!-- ROSPlan -->
 	<!-- ******* -->
 
-	<param name="domain_path" value="$(find rosplan_planning_system)/common/domain_turtlebot.pddl" />
+	<!-- data paths -->
+	<param name="/rosplan/data_path" value="$(find rosplan_config)/planner/" />
+	<param name="/rosplan/planner_path" value="$(find rosplan_config)/planner/bin/" />
+
+	<!-- domain file -->
+	<param name="/rosplan/domain_path" value="$(find rosplan_config)/planner/domain.pddl" />
 
 	<!-- knowledge base -->
-	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
-	</node>
+	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
 
 	<!-- scene database (MongoDB) -->
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
-	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
+	    <param name="database_path" value="$(find rosplan_config)/knowledge_base/mongoDB" />
 	</node>
-	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
-	</node>
+	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
 
 	<!-- planning system -->
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
 		<!-- directory for generated files -->
-		<param name="data_path" value="$(find rosplan_planning_system)/common/" />
-		<param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
+	    <param name="data_path" value="$(find rosplan_config)/planner/" />
+	    <param name="problem_path" value="$(find rosplan_config)/planner/problem.pddl" />
+		<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
+
 		<!-- to run the planner -->
-		<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n" />
+	    <param name="planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
+		<param name="generate_default_problem" value="true" />
 	</node>
 
 	<!-- ********** -->
@@ -47,9 +54,15 @@
 
 	<node name="rosplan_roadmap_server" pkg="rosplan_interface_mapping" type="rpsimplemapServer" respawn="false" output="screen">
 	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
+	    <param name="fixed_frame" value="map" />
 	</node>
+
+	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen">
+		<param name="action_server" value="/move_base" />
+		<param name="pddl_action_name" value="goto_waypoint" />
+	</node>
+
 	<node name="rosplan_interface_localiser" pkg="rosplan_interface_turtlebot2" type="rplocaliser" respawn="false" output="screen"></node>
-	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="screen"></node>
 	<node name="rosplan_interface_docker" pkg="rosplan_interface_turtlebot2" type="rpdocker" respawn="false" output="screen"></node>
 	<node name="rosplan_interface_talker" pkg="rosplan_interface_turtlebot2" type="rptalker" respawn="false" output="screen"></node>
 

@@ -38,10 +38,9 @@ catkin_package(
 ###########
 
 ## include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include
-)
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+include_directories(src/VALfiles)
 
 ## val sources
 set(VAL_SOURCES
@@ -82,7 +81,9 @@ set(KNOWLEDGE_SOURCES
 	src/KnowledgeBase.cpp
 	src/PlanFilter.cpp
 	src/KnowledgeComparitor.cpp
-	src/DomainParser.cpp)
+	src/DomainParser.cpp
+	src/VALVisitorOperator.cpp
+	src/VALVisitorPredicate.cpp)
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})

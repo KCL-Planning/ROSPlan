@@ -1,0 +1,6 @@
+# starts the planning and dispatch
+string domain_path
+string problem_path
+string data_path
+string planner_command
+---

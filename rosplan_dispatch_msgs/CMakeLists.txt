@@ -4,6 +4,7 @@ project(rosplan_dispatch_msgs)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  actionlib_msgs
   diagnostic_msgs
   roscpp
   rospy
@@ -19,9 +20,20 @@ add_message_files(
    ActionFeedback.msg
 )
 
+add_service_files(
+  FILES
+  PlanningService.srv
+)
+
+add_action_files(
+  FILES
+  Plan.action
+)
+
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
+   actionlib_msgs
    diagnostic_msgs
    std_msgs
 )

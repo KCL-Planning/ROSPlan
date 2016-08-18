@@ -1,0 +1,16 @@
+# Planning action definition
+# goal definition
+string domain_path
+string problem_path
+string data_path
+string planner_command
+uint64 start_action_id
+---
+# result definition
+string result_status
+---
+# feedback definition
+string current_phase
+string current_status
+int32 percent_completed
+

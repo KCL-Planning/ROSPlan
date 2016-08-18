@@ -44,7 +44,10 @@ namespace KCL_rosplan {
 
 			if(!present) {
 				res.all_true = false;
+				res.results.push_back(false);
 				res.false_knowledge.push_back(*iit);
+			} else {
+				res.results.push_back(true);
 			}
 		}
 
@@ -65,6 +68,21 @@ namespace KCL_rosplan {
 			removeKnowledge(req.knowledge);
 		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
 			removeMissionGoal(req.knowledge);
+
+		res.success = true;
+		return true;
+	}
+
+	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+
+		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
+			for(int i=0;i<req.knowledge.size();i++) addKnowledge(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
+			for(int i=0;i<req.knowledge.size();i++) addMissionGoal(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
+			for(int i=0;i<req.knowledge.size();i++) removeKnowledge(req.knowledge[i]);
+		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
+			for(int i=0;i<req.knowledge.size();i++) removeMissionGoal(req.knowledge[i]);
 
 		res.success = true;
 		return true;
@@ -136,7 +154,6 @@ namespace KCL_rosplan {
 					if(pit==model_facts.end()) break;
 				}
 			}
-
 		}
 	}
 
@@ -205,8 +222,9 @@ namespace KCL_rosplan {
 			// add domain attribute
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
-				if(KnowledgeComparitor::containsKnowledge(msg, *pit))
+				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					return;
+				}
 			}
 			ROS_INFO("KCL: (KB) Adding domain attribute (%s)", msg.attribute_name.c_str());
 			model_facts.push_back(msg);
@@ -300,27 +318,38 @@ namespace KCL_rosplan {
 	/* get domain types */
 	bool KnowledgeBase::getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
 
-		std::vector<std::string>::iterator iit;
-		for(iit = domain_parser.domain_types.begin(); iit!=domain_parser.domain_types.end(); iit++)
-			res.types.push_back(*iit);
+		if(!domain_parser.domain_parsed) return false;
+
+		VAL::pddl_type_list* types = domain_parser.domain->types;
+		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
+			const VAL::pddl_type* type = *ci;
+			res.types.push_back(type->getName());
+		}	
 		return true;
 	}		
 
 	/* get domain predicates */
 	bool KnowledgeBase::getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
 
-		std::map< std::string, PDDLAtomicFormula>::iterator iit;
-		for(iit = domain_parser.domain_predicates.begin(); iit!=domain_parser.domain_predicates.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
-			for(size_t i=0; i<iit->second.vars.size(); i++) {
-				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.vars[i].name;
-				param.value = iit->second.vars[i].type;
-				formula.typed_parameters.push_back(param);
+		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
+		if(predicates) {
+			for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
+				const VAL::pred_decl* predicate = *ci;
+
+				// predicate name
+				rosplan_knowledge_msgs::DomainFormula formula;
+				formula.name = predicate->getPred()->symbol::getName();
+
+				// predicate variables
+				for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
+					const VAL::var_symbol* var = *vi;
+					diagnostic_msgs::KeyValue param;
+					param.key = var->pddl_typed_symbol::getName();
+					param.value = var->type->getName();
+					formula.typed_parameters.push_back(param);
+				}
+				res.items.push_back(formula);
 			}
-			res.items.push_back(formula);
 		}
 		return true;
 	}
@@ -328,19 +357,25 @@ namespace KCL_rosplan {
 	/* get domain functions */
 	bool KnowledgeBase::getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
 
-		std::map< std::string, PDDLAtomicFormula>::iterator iit;
-		for(iit = domain_parser.domain_functions.begin(); iit!=domain_parser.domain_functions.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
+		VAL::func_decl_list* functions = domain_parser.domain->functions;
+		if(functions) {
+			for (VAL::func_decl_list::const_iterator ci = functions->begin(); ci != functions->end(); ci++) {
+				const VAL::func_decl* function = *ci;
 
-			for(size_t i=0; i<iit->second.vars.size(); i++) {
-				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.vars[i].name;
-				param.value = iit->second.vars[i].type;
-				formula.typed_parameters.push_back(param);
+				// function name
+				rosplan_knowledge_msgs::DomainFormula formula;
+				formula.name = function->getFunction()->symbol::getName();
+
+				// parameters
+				for (VAL::var_symbol_list::const_iterator vi = function->getArgs()->begin(); vi != function->getArgs()->end(); vi++) {
+					const VAL::var_symbol* var = *vi;
+					diagnostic_msgs::KeyValue param;
+					param.key = var->pddl_typed_symbol::getName();
+					param.value = var->type->getName();
+					formula.typed_parameters.push_back(param);
+				}
+				res.items.push_back(formula);
 			}
-			res.items.push_back(formula);
 		}
 		return true;
 	}
@@ -348,21 +383,54 @@ namespace KCL_rosplan {
 	/* get domain operators */
 	bool KnowledgeBase::getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) {
 
-		std::map< std::string, PDDLOperator>::iterator iit;
-		for(iit = domain_parser.domain_operators.begin(); iit!=domain_parser.domain_operators.end(); iit++) {
-			
-			rosplan_knowledge_msgs::DomainFormula formula;
-			formula.name = iit->second.name;
+		VAL::operator_list* operators = domain_parser.domain->ops;
+		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			const VAL::operator_* op = *ci;
 
-			for(size_t i=0; i<iit->second.parameters.size(); i++) {
+			// name
+			rosplan_knowledge_msgs::DomainFormula formula;
+			formula.name = op->name->symbol::getName();
+
+			// parameters
+			for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
+				const VAL::var_symbol* var = *vi;
 				diagnostic_msgs::KeyValue param;
-				param.key = iit->second.parameters[i].name;
-				param.value = iit->second.parameters[i].type;
+				param.key = var->pddl_typed_symbol::getName();
+				param.value = var->type->getName();
 				formula.typed_parameters.push_back(param);
 			}
+
 			res.operators.push_back(formula);
 		}
 		return true;
+	}
+
+	/* get domain operator details */
+	bool KnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
+
+		VAL::operator_list* operators = domain_parser.domain->ops;
+		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			if((*ci)->name->symbol::getName() == req.name) {
+				op_visitor.visit_operator_(*ci);
+				res.op = op_visitor.msg;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/* get domain predicate details */
+	bool KnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
+
+		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
+		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {			
+			if((*ci)->getPred()->symbol::getName() == req.name) {
+				pred_visitor.visit_pred_decl(*ci);
+				res.predicate = pred_visitor.msg;
+				return true;
+			}
+		}
+		return false;
 	}
 
 } // close namespace
@@ -373,12 +441,12 @@ namespace KCL_rosplan {
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "KCL_knowledge_base");
+	ros::init(argc, argv, "rosplan_knowledge_base");
 	ros::NodeHandle n;
 
 	// parameters
 	std::string domainPath;
-	n.param("/domain_path", domainPath, std::string("common/domain.pddl"));
+	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
 
 	KCL_rosplan::KnowledgeBase kb;
 	ROS_INFO("KCL: (KB) Parsing domain");
@@ -391,11 +459,15 @@ int main(int argc, char **argv)
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
 
+	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
+	ros::ServiceServer predDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
+
 	// query knowledge
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
 
 	// update knowledge
-	ros::ServiceServer updateServer = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer updateServer1 = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer updateServer2 = n.advertiseService("/kcl_rosplan/update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
 	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
 
 	// fetch knowledge
@@ -418,3 +490,4 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+

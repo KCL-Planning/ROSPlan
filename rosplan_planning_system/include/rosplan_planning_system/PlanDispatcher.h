@@ -37,6 +37,7 @@ namespace KCL_rosplan
 
 		/* access */
 		virtual int getCurrentAction() =0;
+		virtual void setCurrentAction(size_t freeActionID) =0;
 		virtual void reset() =0;
 
 		/* action dispatch methods */

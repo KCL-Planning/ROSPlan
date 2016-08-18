@@ -20,13 +20,11 @@ namespace KCL_rosplan {
 
 			// check fact or function
 			if(a.attribute_name!="" && 0!=a.attribute_name.compare(b.attribute_name)) return false;
+			if(a.is_negative != b.is_negative) return false;
+			if(a.values.size() != b.values.size()) return false;
 			for(size_t i=0;i<a.values.size();i++) {
-				bool match = false;
-				for(size_t j=0;j<b.values.size();j++) {
-					if(a.values[i].key == b.values[j].key && (""==a.values[i].value || a.values[i].value == b.values[j].value))
-						match = true;
-				}
-				if(!match) return false;
+				if(""!=a.values[i].value && a.values[i].value != b.values[i].value)
+					return false;
 			}
 		}
 

@@ -1,47 +1,58 @@
+#include <stdlib.h> 
+#include <map>
+#include <iostream>
+#include <string>
+#include <boost/regex.hpp>
+#include <boost/concept_check.hpp>
+
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "std_msgs/String.h"
+
 #include "PlanDispatcher.h"
+#include "EsterelPlan.h"
+#include "CFFPlanParser.h"
+#include "POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
 
 namespace KCL_rosplan
 {
-	struct StrlEdge
-	{
-		int signal_type;
-		std::string edge_name;
-		bool active;
-	};
-
-	struct StrlNode
-	{
-		std::string node_name;
-		std::vector<std::string> input;
-		std::vector<std::string> output;
-
-		std::vector<bool> await_input;
-		bool dispatched;
-		bool completed;
-	};
-
 	class EsterelPlanDispatcher: public PlanDispatcher
 	{
 	private:
 
-		/* Esterel filename */
+		bool printPlan(const std::string& path);
+
+		/* mapping PDDL conditions and esterel inputs */
+		ros::ServiceClient query_knowledge_client;
+
+		/* plan description from parser */
+		std::vector<StrlNode*> * plan_nodes;
+		std::vector<StrlEdge*> * plan_edges;
+
+		/* plan description from Esterel file */
 		std::string strl_file;
 		bool readEsterelFile(std::string strlFile);
+		
+		/* action offset */
+		int action_id_offset;
 
-		/* plan description in Esterel */
-		std::map<std::string,StrlNode> plan_description;
-		std::map<std::string,StrlEdge> plan_edges;
+		/* plan graph publisher */
+		ros::Publisher plan_graph_publisher;
+		
+		/* mapping between the node ids and the node */
+		std::map<int, StrlNode*> strl_node_mapping;
 
 	public:
 
 		/* constructor */
-		EsterelPlanDispatcher();
+		EsterelPlanDispatcher(CFFPlanParser &parser);
+		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);
 
 		/* access */
 		int getCurrentAction();
+		void setCurrentAction(size_t freeActionID);
 		void reset();
 
 		/* action dispatch methods */

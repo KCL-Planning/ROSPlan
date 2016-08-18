@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
   rospy
+  actionlib
   std_msgs
   std_srvs
   diagnostic_msgs
@@ -20,8 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS} src/VALfiles
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
+  LIBRARIES ${PROJECT_NAME} rosplan_action_interface
+  CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
 )
 
@@ -81,19 +82,35 @@ set(PLANNING_SOURCES
 	src/EsterelPlanDispatcher.cpp
 	src/POPFPlanParser.cpp
 	src/CFFPlanParser.cpp
+	src/POPFEsterelPlanParser.cpp
 	src/PDDLProblemGenerator.cpp
-	src/PlanningEnvironment.cpp)
+	src/PlanningEnvironment.cpp
+	src/EsterelPlan.cpp)
 
 ## Declare cpp executables
 add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
+add_executable(planGraphListener src/PlanGraphListener.cpp)
+add_executable(simulatedAction src/RPSimulatedActionInterface.cpp src/RPActionInterface.cpp)
+
+## Add dependencies
 add_dependencies(planner ${catkin_EXPORTED_TARGETS})
+add_dependencies(planGraphListener ${catkin_EXPORTED_TARGETS})
+add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(planner ${catkin_LIBRARIES})
+target_link_libraries(planGraphListener ${catkin_LIBRARIES})
+target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+add_library(rosplan_action_interface src/RPActionInterface.cpp)
+add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
 
 install(TARGETS ${PROJECT_NAME} planner
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

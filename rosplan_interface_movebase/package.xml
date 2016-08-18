@@ -3,7 +3,7 @@
   <name>rosplan_interface_movebase</name>
   <version>0.0.4</version>
   <description>ROSPlan dispatch interface for the movebase library. Adapts PDDL actions dispatched from ROSPlan to the movebase ROS actions.</description>
-  <maintainer email="marc@hanheide.net">Marc Hanheide</maintainer>
+  <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
   <license>BSD</license>
   <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
 
@@ -18,6 +18,7 @@
   <build_depend>move_base_msgs</build_depend>
   <build_depend>rosplan_dispatch_msgs</build_depend>
   <build_depend>rosplan_knowledge_msgs</build_depend>
+  <build_depend>rosplan_planning_system</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>mongodb_store</build_depend>
   
@@ -28,6 +29,7 @@
   <run_depend>diagnostic_msgs</run_depend>
   <run_depend>rosplan_dispatch_msgs</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
+  <run_depend>rosplan_planning_system</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>mongodb_store</run_depend>
 

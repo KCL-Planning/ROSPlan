@@ -1,0 +1,5 @@
+# simple service for generating a PDDL problem with goals from the KMS
+string problem_path
+bool contingent
+---
+string message
