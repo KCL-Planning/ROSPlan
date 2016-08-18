@@ -178,11 +178,11 @@ namespace KCL_rosplan {
 
 		// setup environment
 		nh.param("/rosplan/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.getParam("/rosplan_planning_system/data_path", data_path);
-		nh.getParam("/rosplan_planning_system/problem_path", problem_path);
-		nh.getParam("/rosplan_planning_system/planner_command", planner_command);
-		nh.getParam("/rosplan_planning_system/max_dispatch_attempts", max_dispatch_attempts);
-std::cout << "OKKKES " << problem_path << std::endl;
+		nh.param("/rosplan/data_path", data_path, std::string("common/"));
+		nh.param("/rosplan/problem_path", problem_path, std::string("common/problem.pddl"));
+		nh.param("/rosplan/planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
+		nh.param("/rosplan/max_dispatch_attempts", max_dispatch_attempts, 1);
+
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
@@ -245,17 +245,6 @@ std::cout << "OKKKES " << problem_path << std::endl;
 		state_publisher.publish(statusMsg);
 
 		ros::NodeHandle nh("~");
-
-		// setup environment
-		std::string pkg_path = ros::package::getPath("rosplan_planning_system");
-
-		nh.param("/domain_path", domain_path, pkg_path + std::string("/common/domain.pddl"));
-		nh.param("data_path", data_path, pkg_path + std::string("/common/"));
-		nh.param("problem_path", problem_path, pkg_path + std::string("/common/problem.pddl"));
-		nh.param("planner_command", planner_command, 
-			  std::string("timeout 10 ") 
-			+ pkg_path
-			+ std::string("/common/bin/popf -n"));
 
 		// parse domain
 		environment.parseDomain(domain_path);
