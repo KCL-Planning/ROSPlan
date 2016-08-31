@@ -324,7 +324,10 @@ namespace KCL_rosplan {
 		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 			const VAL::pddl_type* type = *ci;
 			res.types.push_back(type->getName());
-			res.super_types.push_back(type->type->getName());
+			if (type->type)
+				res.super_types.push_back(type->type->getName());
+			else
+				res.super_types.push_back("");
 		}	
 		return true;
 	}		
@@ -411,6 +414,7 @@ namespace KCL_rosplan {
 
 		VAL::operator_list* operators = domain_parser.domain->ops;
 		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			std::cout << "Get Operator Details: Compare " << (*ci)->name->symbol::getName() << " to "  << req.name << "." << std::endl;
 			if((*ci)->name->symbol::getName() == req.name) {
 				op_visitor.visit_operator_(*ci);
 				res.op = op_visitor.msg;

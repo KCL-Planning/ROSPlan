@@ -100,5 +100,7 @@ namespace KCL_rosplan {
 		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, dynamic_cast<KCL_rosplan::RPActionInterface*>(&rpmb));
 		rpmb.runActionInterface();
 
+		ros::spin();
+		
 		return 0;
 	}

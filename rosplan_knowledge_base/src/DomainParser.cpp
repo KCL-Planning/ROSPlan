@@ -37,13 +37,23 @@ namespace KCL_rosplan {
 			line_no = 0;
 			VAL::log_error(VAL::E_FATAL,"Failed to open file");
 		} else {
+			ROS_INFO("KCL: (KB) %s exists, start parsing.", domainFileName.c_str());
 			line_no = 1;
 			VAL::yfl->switch_streams(&domainFile, &std::cout);
 			yyparse();
 
+			ROS_INFO("KCL: (KB) Finished parsing.");
+			
+			if (VAL::current_analysis->the_domain == NULL)
+			{
+				ROS_ERROR("KCL: (KB) Error parsing the domain file.");
+			}
+			
 			// domain name
 			domain = VAL::current_analysis->the_domain;
 			domain_name = domain->name;
+			
+			ROS_INFO("KCL: (KB) Finished parsing. Domain name:", domain_name.c_str());
 		}
 		delete VAL::yfl;
 		domainFile.close();
