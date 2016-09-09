@@ -1,0 +1,24 @@
+digraph plan_0 {
+0[ label="enter" style="fill: #7f7; "];
+1[ label="observe-lighton" style="fill: #fff; "];
+2[ label="turn_off" style="fill: #fff; "];
+3[ label="shed_knowledge" style="fill: #fff; "];
+4[ label="exit" style="fill: #fff; "];
+5[ label="enter" style="fill: #fff; "];
+6[ label="observe-lighton" style="fill: #fff; "];
+7[ label="turn_off" style="fill: #fff; "];
+8[ label="shed_knowledge" style="fill: #fff; "];
+9[ label="exit" style="fill: #fff; "];
+"0" -> "1"
+"1" -> "3" [ label="(not (lighton r1))" ];
+"1" -> "2" [ label="(lighton r1)" ];
+"2" -> "3"
+"3" -> "4"
+"4" -> "5"
+"5" -> "6"
+"6" -> "8" [ label="(not (lighton r2))" ];
+"6" -> "7" [ label="(lighton r2)" ];
+"7" -> "8"
+"8" -> "9"
+}
+

@@ -197,7 +197,7 @@ namespace KCL_rosplan {
 			next = action_name.find(" ",curr);
 			node.dispatch_msg.name = operator_name;
 			int parameter_index = 0;
-			
+
 			// parameters
 			std::vector<std::string> params;
 			while(next < action_name.length()) {
@@ -206,14 +206,18 @@ namespace KCL_rosplan {
 				if(next == std::string::npos)
 					next = action_name.length();
 				
-				diagnostic_msgs::KeyValue pair;
-				pair.key = environment.domain_operators[operator_name][parameter_index];
-				pair.value = action_name.substr(curr,next-curr);
-				node.dispatch_msg.parameters.push_back(pair);
-				++parameter_index;
+				if("observe-" != operator_name.substr(0, 8) && "shed" != operator_name.substr(0, 4)) {
+					diagnostic_msgs::KeyValue pair;
+					pair.key = environment.domain_operators[operator_name][parameter_index];
+					pair.value = action_name.substr(curr,next-curr);
+					node.dispatch_msg.parameters.push_back(pair);
+					++parameter_index;
+				}
 			}
 		}
+
 		preparePDDLConditions(node, environment);
+
 		plan_nodes.push_back(&node);
 		jump_map.insert(std::pair<int, StrlNode*>(action_number,&node));
 	}
@@ -298,10 +302,7 @@ namespace KCL_rosplan {
 						// are no more states on the stack, so we can make
 						// this action follow all of the leafs.
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
-						if (!last_node_is_jump)
-						{
-							current_leafs->push_back(last_edge);
-						}
+						if (!last_node_is_jump && last_edge!=NULL) current_leafs->push_back(last_edge);
 						leafs.pop_back();
 						
 						// Make the shed action the next action for all leafs.
@@ -314,21 +315,34 @@ namespace KCL_rosplan {
 						}
 						delete current_leafs;
 						
+						// Check if this action is dependend on an observation outcome.
+						if (observation_is_active)
+						{
+							StrlEdge* conditional_edge = active_branch_edge[active_branch_edge.size() - 1];
+							node->input.push_back(conditional_edge);
+							conditional_edge->sinks.push_back(node);
+							active_branch_edge.pop_back();
+						}
+
 						last_edge = edge;
 						observation_is_active = false;
 
 					} else if("pop" == name.substr(0,3)) {
-						
+
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
-						current_leafs->push_back(last_edge);
+						if(last_edge!=NULL) {
+							current_leafs->push_back(last_edge);
+							last_edge = NULL;
+						}
 						
 						// When a pop action is executed we go back to the last node where we 
 						// branched due to an observation that has been made.
-						last_edge = conditional_branch_stack[conditional_branch_stack.size() - 1];
-						conditional_branch_stack.pop_back();
+						//last_edge = conditional_branch_stack[conditional_branch_stack.size() - 1];
+						//conditional_branch_stack.pop_back();
 						observation_is_active = true;
-						
+
 					} else if("assume" == name.substr(0,6)) {
+
 						// When a knowledge base is assumed, we need to prepare the dispatches for the 
 						// 'shed' action. When this action occurs we need to link all the 'leafs' of 
 						// all branches that were formed whilst this knowledge base was active to the 
@@ -376,8 +390,8 @@ namespace KCL_rosplan {
 						{
 							// IF WE ARE IN A BRANCH we go back to the last node where we 
 							// branched due to an observation that has been made.
-							last_edge = conditional_branch_stack.back();
-							conditional_branch_stack.pop_back();
+							//last_edge = conditional_branch_stack.back();
+							//conditional_branch_stack.pop_back();
 							observation_is_active = true;
 						}
 						last_node_is_jump = true;
@@ -407,10 +421,11 @@ namespace KCL_rosplan {
 							observation_is_active = false;
 							active_branch_edge.pop_back();
 						}
-						
+
 						// Check if this is an observation action. If so then we prepare the negative and 
 						// possitive branches.
 						if ("observe-" == name.substr(0, 8)) {
+
 							std::string observation_fact = name.substr(8);
 							
 							// Create the possitive first.
@@ -419,10 +434,11 @@ namespace KCL_rosplan {
 							StrlEdge* possitive_edge = new StrlEdge();
 							possitive_edge->signal_type = CONDITION;
 							possitive_edge->edge_name = ss.str();
+							possitive_edge->sources.push_back(node);
 							possitive_edge->active = false;
 							
 							//plan_edges.push_back(edge);
-							
+
 							// Make the observation outcome a condition.
 							rosplan_knowledge_msgs::KnowledgeItem condition;
 							condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
@@ -437,7 +453,7 @@ namespace KCL_rosplan {
 								counter = new_counter + 1;
 							}
 							tokens.push_back(observation_fact.substr(counter));
-							
+
 							// create edge name
 							condition.attribute_name = tokens[0];
 							
@@ -446,39 +462,49 @@ namespace KCL_rosplan {
 
 							// Populate parameters
 							int index = 1;
+							/*
 							std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
 							for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+							*/
+							while(index < tokens.size()-3) {
 								// set parameter label to predicate label
 								diagnostic_msgs::KeyValue param;
-								param.key = *pit;
+								param.key = "";
 								param.value = tokens[index];
 								condition.values.push_back(param);
 								++index;
 							}
-							
+
 							// Remove the last parameter (state).
-							condition.values.erase(condition.values.begin() + condition.values.size() - 1);
+							// if(condition.values.size()>=3) condition.values.erase(condition.values.begin() + condition.values.size() - 3);
 							
 							possitive_edge->external_conditions.push_back(condition);
-							
+
 							// Next create the negative branch.
 							ss.str(std::string());
 							ss << name << "_FALSE";
-							StrlEdge* negative_edge = new StrlEdge(*possitive_edge);
+							StrlEdge* negative_edge = new StrlEdge();
+							negative_edge->signal_type = CONDITION;
 							negative_edge->edge_name = ss.str();
-							negative_edge->external_conditions.clear();
+							negative_edge->sources.push_back(node);
+							negative_edge->active = false;
+
 							condition.is_negative = true;
 							negative_edge->external_conditions.push_back(condition);
+
+
 							active_branch_edge.push_back(negative_edge);
 							active_branch_edge.push_back(possitive_edge);
-							
+
 							plan_edges.push_back(negative_edge);
 							plan_edges.push_back(possitive_edge);
 							
 							// Flag that the next action is conditional on an observation.
 							observation_is_active = true;
-							
-							conditional_branch_stack.push_back(edge);
+
+							//conditional_branch_stack.push_back(edge);
+
+							last_edge = NULL;
 						}
 					}
 				}

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!-- ROSPlan PN testing -->
+<launch>
+
+	<!-- ******* -->
+	<!-- ROSPlan -->
+	<!-- ******* -->
+
+	<!-- data paths -->
+	<param name="/rosplan/data_path" value="$(find rosplan_config)/planner/" />
+	<param name="/rosplan/planner_path" value="$(find rosplan_config)/planner/bin/" />
+
+	<!-- domain file -->
+	<param name="/rosplan/domain_path" value="$(find rosplan_demos)/common/domain_lights.pddl" />
+
+	<!-- knowledge base -->
+	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
+
+	<!-- scene database (MongoDB) -->
+	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
+	    <param name="database_path" value="$(find rosplan_config)/knowledge_base/mongoDB" />
+	</node>
+	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+
+	<!-- planning system -->
+	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+		<!-- directory for generated files -->
+	    <param name="data_path" value="$(find rosplan_config)/planner/" />
+	    <param name="problem_path" value="$(find rosplan_demos)/common/problem_lights.pddl" />
+		<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
+
+		<!-- to run the planner -->
+	    <param name="planner_command" value="cat $(find rosplan_demos)/common/plan_lights_conditional.pddl" />
+		<param name="generate_default_problem" value="false" />
+	</node>
+
+</launch>

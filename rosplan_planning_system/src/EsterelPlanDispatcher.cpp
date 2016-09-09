@@ -177,9 +177,12 @@ namespace KCL_rosplan {
 		
 		// initialise machine
 		std::map<StrlEdge*,bool> edge_values;
-		for(std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ci++)
+		for(std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ci++) {
 			edge_values[*ci] = false;
-		
+		}
+
+		printPlan(data_path);
+
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
 
@@ -402,7 +405,6 @@ namespace KCL_rosplan {
 
 		// nodes
 		for(std::vector<StrlNode*>::iterator nit = plan_nodes->begin(); nit!=plan_nodes->end(); nit++) {
-
 			std::string name = (*nit)->node_name.substr(0, (*nit)->node_name.find(" "));
 			dest <<  (*nit)->node_id << "[ label=\"" << name;
 			if((*nit)->completed) dest << "\" style=\"fill: #77f; \"];" << std::endl;
@@ -412,9 +414,30 @@ namespace KCL_rosplan {
 
 		// edges
 		for(std::vector<StrlEdge*>::iterator eit = plan_edges->begin(); eit!=plan_edges->end(); eit++) {
+
+			std::stringstream label;
+			if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()>0) {
+				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = (*eit)->external_conditions.begin();
+				if(cit->is_negative)
+					label << "(not ";
+				label << "(" << cit->attribute_name;
+				for(int i=0; i<cit->values.size(); i++) {
+					label << " " << cit->values[i].value;
+				}
+				label << ")";
+				if(cit->is_negative)
+					label << ")";
+			}
+
 			for(int i=0; i<(*eit)->sources.size(); i++) {
 				for(int j=0; j<(*eit)->sinks.size(); j++) {
-					dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\";" << std::endl;
+					if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()>0) {
+						// add edge with label of external condition
+						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\" [ label=\"" << label.str()/*(*eit)->edge_name*/ << "\" ];" << std::endl;
+					} else {
+						// add edge without any label
+						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\"" << std::endl;
+					}
 				}
 			}
 		}

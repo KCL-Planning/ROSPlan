@@ -1,0 +1,10 @@
+(define (problem lightsoff_pb)
+	(:domain lights)
+	(:init  (in_C))
+	(:goal (and
+		(lighton R1)
+		(lighton R2)
+		(lighton R3)
+		(lighton R4)
+		(lighton R5)))
+)
