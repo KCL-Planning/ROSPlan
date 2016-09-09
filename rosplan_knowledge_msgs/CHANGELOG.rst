@@ -2,6 +2,25 @@
 Changelog for package rosplan_knowledge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added getDomainPredicateDetails service.
+  Service is used by the sample action interface to know the correct parameter labels with which to update the state.
+* Added domain operator details service
+* homogenised versions to 0.0.0
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* ROSPlan can now dispatch contingent plans.
+  Observations are not checked properly.
+  KnowledgeItems can now be negative
+* updated query service to return bool array
+* Generate contingent problem calls
+* Updated DOT output
+* Merge branch 'squirrel' of https://github.com/KCL-Planning/rosplan into squirrel
+* Knowledge Array and some parsing
+* problem gen as service
+* Contributors: Bram Ridder, Marc Hanheide, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 

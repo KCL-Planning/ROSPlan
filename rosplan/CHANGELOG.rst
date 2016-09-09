@@ -2,6 +2,16 @@
 Changelog for package rosplan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
+* Adding rosplan_rqt to meta package (`#4 <https://github.com/LCAS/ROSPlan/issues/4>`_)
+  Not sure if this is supposed to be in there but it is currently missing and hence not install when installing `ros-indigo-rosplan`. Please, just reject if it should not be installed by default.
+* created "rosplan_config" package to store common information as MongoDB and planner binaries.
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* Contributors: Christian Dondrup, Diego Escudero, Marc Hanheide
+
 0.0.4 (2016-04-21)
 ------------------
 

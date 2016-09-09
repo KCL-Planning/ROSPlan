@@ -2,6 +2,18 @@
 Changelog for package rosplan_interface_movebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
+* action interface automatically updates knwoledge base
+* action feedback and parameter check moved into super
+* action interface
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* movebase interface changes
+* removed odd line from RPMoveBase and added plan to graph
+* Contributors: Marc Hanheide, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 

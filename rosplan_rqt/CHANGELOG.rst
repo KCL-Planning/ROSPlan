@@ -2,6 +2,18 @@
 Changelog for package rosplan_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
+* rqt problem view
+* fixed bug, sending wrong value in rqt action dispatch
+* fixed action feedback bug
+* knowledge base to VAL; rqt dispatcher
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* Esterel plan graph
+* Contributors: Marc Hanheide, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 

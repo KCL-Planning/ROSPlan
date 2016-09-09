@@ -2,6 +2,30 @@
 Changelog for package rosplan_knowledge_base
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixing duplicated parameter list in operators service (`#7 <https://github.com/LCAS/ROSPlan/issues/7>`_)
+* Exposing domain_path in launch files.
+* Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
+* Added getDomainPredicateDetails service.
+  Service is used by the sample action interface to know the correct parameter labels with which to update the state.
+* Added default domain file to stop KB failing.
+* updated code and launch files to use "/rosplan/" as prefix of configuration parameters instead nodes names.
+* removed old MongoDB directory in "knowledge_base" package, now it is stored in "rosplan_config".
+* created "rosplan_config" package to store common information as MongoDB and planner binaries.
+* updating squirrel branch to fix bug in turtle demo
+* Updated action interface to make KB changes
+* Added domain operator details service
+* knowledge base to VAL; rqt dispatcher
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* ROSPlan can now dispatch contingent plans.
+  Observations are not checked properly.
+  KnowledgeItems can now be negative
+* updated query service to return bool array
+* Knowledge Array and some parsing
+* Contributors: Bram Ridder, Christian Dondrup, Diego Escudero, Marc Hanheide, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 

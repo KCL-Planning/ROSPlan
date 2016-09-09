@@ -2,6 +2,21 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixed parameters. Problem was not loaded correctly; no extra rosplan namespace inside node namespace. param->getParam
+* Merge remote-tracking branch 'origin/devel'
+* created "rosplan_config" package to store common information as MongoDB and planner binaries.
+* moved domain files used in demos to 'ros_demos' package.
+* added wait for service in action clientwq
+* added fixed frame to mc2_turtlebot launch
+* Merge branch 'master' into devel
+  Conflicts:
+  rosplan_planning_system/CMakeLists.txt
+* updating squirrel branch to fix bug in turtle demo
+* updated turtlebot package name in mc2 launch
+* Contributors: Diego Escudero, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 

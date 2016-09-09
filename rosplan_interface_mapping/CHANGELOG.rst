@@ -2,6 +2,19 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
+* Merge remote-tracking branch 'origin/devel'
+* updated code and launch files to use "/rosplan/" as prefix of configuration parameters instead nodes names.
+* created "rosplan_config" package to store common information as MongoDB and planner binaries.
+* added wait for service in action clientwq
+* returned to global params
+* Revert "changed maintainer to not sending emails to the wrong people"
+  This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.
+* Fix setting the quaternion.
+* Contributors: Diego Escudero, Marc Hanheide, Senka212, m312z
+
 0.0.4 (2016-04-21)
 ------------------
 * removed ~ which is incorrectly introduced
