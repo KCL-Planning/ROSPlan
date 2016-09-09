@@ -2,8 +2,8 @@
 Changelog for package rosplan_dispatch_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * homogenised versions to 0.0.0
 * Revert "changed maintainer to not sending emails to the wrong people"
   This reverts commit a041b5defb4c41ac131b209a72df57ff6358f7fe.

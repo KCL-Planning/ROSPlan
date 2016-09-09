@@ -2,8 +2,8 @@
 Changelog for package rosplan_interface_movebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
 * action interface automatically updates knwoledge base
 * action feedback and parameter check moved into super

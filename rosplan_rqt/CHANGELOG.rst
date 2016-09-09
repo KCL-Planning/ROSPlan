@@ -2,8 +2,8 @@
 Changelog for package rosplan_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
 * rqt problem view
 * fixed bug, sending wrong value in rqt action dispatch

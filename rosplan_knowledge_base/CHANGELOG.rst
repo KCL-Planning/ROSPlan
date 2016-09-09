@@ -2,8 +2,8 @@
 Changelog for package rosplan_knowledge_base
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Fixing duplicated parameter list in operators service (`#7 <https://github.com/LCAS/ROSPlan/issues/7>`_)
 * Exposing domain_path in launch files.
 * Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream

@@ -2,8 +2,8 @@
 Changelog for package rosplan_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Update package.xml
 * modified example domain file to remove turtlebot interface specifics.
 * Added default domain file to stop KB failing.

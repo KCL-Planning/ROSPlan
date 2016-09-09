@@ -2,8 +2,8 @@
 Changelog for package rosplan_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * fixed parameters. Problem was not loaded correctly; no extra rosplan namespace inside node namespace. param->getParam
 * Merge remote-tracking branch 'origin/devel'
 * created "rosplan_config" package to store common information as MongoDB and planner binaries.

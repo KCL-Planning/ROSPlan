@@ -2,8 +2,8 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
 * Merge remote-tracking branch 'origin/devel'
 * updated code and launch files to use "/rosplan/" as prefix of configuration parameters instead nodes names.

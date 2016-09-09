@@ -2,8 +2,8 @@
 Changelog for package rosplan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Merge branch 'master' of https://github.com/KCL-Planning/ROSPlan into merge-upstream
 * Adding rosplan_rqt to meta package (`#4 <https://github.com/LCAS/ROSPlan/issues/4>`_)
   Not sure if this is supposed to be in there but it is currently missing and hence not install when installing `ros-indigo-rosplan`. Please, just reject if it should not be installed by default.

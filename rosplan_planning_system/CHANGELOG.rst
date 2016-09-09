@@ -2,8 +2,8 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Exposing domain_path in launch files.
 * Fixing wrong parameter handling
 * 'common' of package ros_planning_system does not exist any more and is should not be installed.

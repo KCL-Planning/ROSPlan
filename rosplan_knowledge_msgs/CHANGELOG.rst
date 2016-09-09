@@ -2,8 +2,8 @@
 Changelog for package rosplan_knowledge_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.5 (2016-09-09)
+------------------
 * Added getDomainPredicateDetails service.
   Service is used by the sample action interface to know the correct parameter labels with which to update the state.
 * Added domain operator details service
