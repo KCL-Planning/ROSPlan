@@ -2,6 +2,11 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* added missing install target
+* Contributors: Marc Hanheide
+
 0.0.6 (2016-09-12)
 ------------------
 

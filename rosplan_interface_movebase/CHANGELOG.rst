@@ -2,6 +2,9 @@
 Changelog for package rosplan_interface_movebase
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.6 (2016-09-12)
 ------------------
 
