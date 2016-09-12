@@ -2,6 +2,9 @@
 Changelog for package rosplan_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.5 (2016-09-09)
 ------------------
 * Update package.xml

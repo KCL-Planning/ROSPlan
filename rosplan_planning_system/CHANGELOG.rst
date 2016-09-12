@@ -2,6 +2,9 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.5 (2016-09-09)
 ------------------
 * Exposing domain_path in launch files.
