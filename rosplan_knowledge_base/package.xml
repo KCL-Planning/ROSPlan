@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosplan_knowledge_base</name>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
   <description>Sample Knowledge base for ROSPlan. Used to collect and store information used to build the planning model. The knowledge base is queried by the planning system to construct the model, and possibly by controllers to retrieve continuous information.</description>
   <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
   <license>BSD</license>

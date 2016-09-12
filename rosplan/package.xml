@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<name>rosplan</name>
-	<version>0.0.5</version>
+	<version>0.0.6</version>
 	<description>ROSPlan metapackage</description>
 	<maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
 	<license>BSD</license>
