@@ -123,6 +123,13 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
 )
 
+install(DIRECTORY include/rosplan_action_interface/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/../rosplan_action_interface
+  PATTERN ".svn" EXCLUDE
+)
+
+
+
 install(DIRECTORY src/VALfiles/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
