@@ -1,6 +1,9 @@
 ROSPlan Framework
 =================
 
+The main ROSPlan website and documentation is available here:
+http://kcl-planning.github.io/ROSPlan/
+
 The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. It possesses a simple interface, and already includes interfaces to common ROS libraries.
 
 ### Installation
