@@ -66,6 +66,9 @@ namespace KCL_rosplan {
 		size_t dispatch_attempts;
 		int max_dispatch_attempts;
 
+		void readParams();
+		void preemptCallback();
+
 	public:
 		PlanningSystem(ros::NodeHandle& nh);
 		virtual ~PlanningSystem();
@@ -76,7 +79,7 @@ namespace KCL_rosplan {
 		bool runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 		bool runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
 		void runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal);
-		bool runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand);
+		bool runPlanningServer(std::string domainPath="", std::string problemPath="", std::string dataPath="", std::string plannerCommand="");
 
 
 		/* knowledge */

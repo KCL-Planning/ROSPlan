@@ -32,7 +32,7 @@ namespace KCL_rosplan {
 
 		// problem generation client
 		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
-
+		plan_server->registerPreemptCallback(boost::bind(&PlanningSystem::preemptCallback, this));
 		// start planning action server
 		plan_server->start();
 	}
@@ -165,9 +165,7 @@ namespace KCL_rosplan {
 	/* Service and Action hooks */
 	/*--------------------------*/
 
-	/* planning system service method; loads parameters and calls method below */
-	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-
+	void PlanningSystem::readParams() {
 		ros::NodeHandle nh;
 
 		data_path = "common/";
@@ -182,10 +180,18 @@ namespace KCL_rosplan {
 		nh.param("/rosplan/problem_path", problem_path, std::string("common/problem.pddl"));
 		nh.param("/rosplan/planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
 		nh.param("/rosplan/max_dispatch_attempts", max_dispatch_attempts, 1);
+	}
 
+	void PlanningSystem::preemptCallback() {
+		ROS_INFO("KCL: (PS) Cancelling");
+		plan_dispatcher->plan_cancelled = true;
+	}
+
+	/* planning system service method; loads parameters and calls method below */
+	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
-		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
+		return runPlanningServer();
 	}
 
 	/* planning system action hook */
@@ -221,10 +227,12 @@ namespace KCL_rosplan {
 	 */
 	bool PlanningSystem::runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand) {
 
-		data_path = dataPath;
-		domain_path = domainPath;
-		problem_path = problemPath;
-		planner_command = plannerCommand;
+		readParams();
+
+		data_path = dataPath.compare("") != 0 ? dataPath : data_path;
+		domain_path = domainPath.compare("") != 0 ? domainPath : domain_path;
+		problem_path = problemPath.compare("") != 0 ? problemPath : problem_path;
+		planner_command = plannerCommand.compare("") != 0 ? plannerCommand : planner_command;
 		
 		// set problem name for ROS_INFO
 		std::size_t lastDivide = problem_path.find_last_of("/\\");
