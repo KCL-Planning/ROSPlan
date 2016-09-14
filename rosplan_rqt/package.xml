@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<name>rosplan_rqt</name>
-	<version>0.0.8</version>
+	<version>0.0.9</version>
 	<description>The rosplan_rqt package</description>
 	<maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
 	<license>BSD</license>

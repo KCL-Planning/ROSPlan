@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosplan_demos</name>
-  <version>0.0.8</version>
+  <version>0.0.9</version>
   <description>Demos for ROSPlan: launch files, scripts, and rviz configs.</description>
   <maintainer email="marc@hanheide.net">Marc Hanheide</maintainer>
   <license>TODO</license>
