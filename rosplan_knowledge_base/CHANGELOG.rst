@@ -2,6 +2,12 @@
 Changelog for package rosplan_knowledge_base
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removing mongodb from launch files. (`#9 <https://github.com/LCAS/ROSPlan/issues/9>`_)
+  Also commented the two lines that drop the message store in knowledge base.
+* Contributors: Christian Dondrup
+
 0.0.8 (2016-09-12)
 ------------------
 

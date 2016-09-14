@@ -2,6 +2,9 @@
 Changelog for package rosplan_interface_mapping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.8 (2016-09-12)
 ------------------
 

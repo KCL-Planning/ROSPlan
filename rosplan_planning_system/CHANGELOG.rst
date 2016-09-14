@@ -2,6 +2,14 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Removing mongodb from launch files. (`#9 <https://github.com/LCAS/ROSPlan/issues/9>`_)
+  Also commented the two lines that drop the message store in knowledge base.
+* Adding preemption for action server.
+  Allowing to only specify parts of the parameters or none when calling the action or service where the rest is taken from the parameter server.
+* Contributors: Christian Dondrup
+
 0.0.8 (2016-09-12)
 ------------------
 * hack to install headers...
