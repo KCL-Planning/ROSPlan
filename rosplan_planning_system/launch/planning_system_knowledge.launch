@@ -19,12 +19,12 @@
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
 
-	<!-- scene database (MongoDB) -->
+	<!-- scene database (MongoDB)
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
 	    <param name="database_path" value="$(find rosplan_config)/knowledge_base/mongoDB" />
 	</node>
 	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
-	</node>
+	</node -->
 
 
 	<!-- planning system -->

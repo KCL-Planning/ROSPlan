@@ -481,9 +481,9 @@ int main(int argc, char **argv)
 	ros::Subscriber missionFilterSub = n.subscribe("/kcl_rosplan/plan_filter", 100, &KCL_rosplan::PlanFilter::missionFilterCallback, &kb.plan_filter);
 
 	// wait for and clear mongoDB 
-	ROS_INFO("KCL: (KB) Waiting for MongoDB");
-	ros::service::waitForService("/message_store/delete",-1);
-	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
+//	ROS_INFO("KCL: (KB) Waiting for MongoDB");
+//	ros::service::waitForService("/message_store/delete",-1);
+//	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
 
 	ROS_INFO("KCL: (KB) Ready to receive");
 	ros::spin();
