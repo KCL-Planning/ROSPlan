@@ -11,7 +11,7 @@
 	<param name="/rosplan/planner_path" value="$(find rosplan_config)/planner/bin/" />
 
 	<!-- domain file -->
-	<param name="/rosplan/domain_path" value="$(find rosplan_demos)/common/domain_lights.pddl" />
+	<param name="/rosplan/domain_path" value="$(find rosplan_demos)/common/d.pddl" />
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
@@ -30,7 +30,7 @@
 		<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
 
 		<!-- to run the planner -->
-	    <param name="planner_command" value="cat $(find rosplan_demos)/common/plan_lights_conditional.pddl" />
+	    <param name="planner_command" value="(cd $(find rosplan_demos)/common &amp;&amp; $(find rosplan_demos)/common/run-clg.sh -1)" />
 		<param name="generate_default_problem" value="false" />
 	</node>
 

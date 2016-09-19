@@ -7,6 +7,21 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
+	EsterelPlanDispatcher::EsterelPlanDispatcher(CLGPlanParser &parser)
+		: action_id_offset(0)
+	{
+		ros::NodeHandle nh("~");
+		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
+
+		plan_nodes = &(parser.plan_nodes);
+		plan_edges = &(parser.plan_edges);
+
+		current_action = 0;
+
+		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
+		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
+	}
+
 	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser)
 		: action_id_offset(0)
 	{
@@ -182,6 +197,10 @@ namespace KCL_rosplan {
 		}
 
 		printPlan(data_path);
+
+		// TODO wait here for PNP;;;
+
+		return true;
 
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
@@ -434,6 +453,9 @@ namespace KCL_rosplan {
 					if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()>0) {
 						// add edge with label of external condition
 						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\" [ label=\"" << label.str()/*(*eit)->edge_name*/ << "\" ];" << std::endl;
+					} else if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()==0) {
+						// add edge with label of condition, references by edge name
+						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\" [ label=\"" << (*eit)->edge_name << "\" ];" << std::endl;
 					} else {
 						// add edge without any label
 						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\"" << std::endl;
