@@ -30,7 +30,7 @@
 		<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
 
 		<!-- to run the planner -->
-	    <param name="planner_command" value="(cd $(find rosplan_demos)/common &amp;&amp; $(find rosplan_demos)/common/run-clg.sh -1)" />
+	    <param name="planner_command" value="(cd $(find rosplan_demos)/common &amp;&amp; $(find rosplan_demos)/common/run-clg.sh -1 d.pddl p.pddl)" />
 		<param name="generate_default_problem" value="false" />
 	</node>
 
