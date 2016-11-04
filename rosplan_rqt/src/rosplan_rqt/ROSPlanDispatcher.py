@@ -16,7 +16,8 @@ from rosplan_knowledge_msgs.msg import *
 
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import Qt, QTimer, Signal, Slot
-from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QWidget
+from python_qt_binding.QtGui import QIcon
+from python_qt_binding.QtWidgets import QHeaderView, QTreeWidgetItem, QListWidgetItem, QWidget
 
 class PlanViewWidget(QWidget):
 
@@ -86,7 +87,7 @@ class PlanViewWidget(QWidget):
         self._plugin = plugin
         self.planView.sortByColumn(0, Qt.AscendingOrder)
         header = self.planView.header()
-        header.setResizeMode(QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # setup plan view columns
         self._column_index = {}
