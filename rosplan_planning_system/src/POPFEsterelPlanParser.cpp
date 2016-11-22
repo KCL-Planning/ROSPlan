@@ -302,8 +302,8 @@ namespace KCL_rosplan {
 
 		// output file
 		std::string strl_file;
-		ros::NodeHandle nh("~");
-		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
+		ros::NodeHandle nh;
+		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
 		
 		ROS_INFO("KCL: (POPFEsterelPlanParser) Write the esterel plan: %s", strl_file.c_str());
 		

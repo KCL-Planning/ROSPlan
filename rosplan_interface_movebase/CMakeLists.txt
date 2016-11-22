@@ -48,3 +48,28 @@ add_dependencies(rpmovebase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(rpmovebase ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+# add_dependencies(rpmovebase ${learning_actionlib_EXPORTED_TARGETS})
+
+##########
+## Test ##
+##########
+# please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
+# see test documentation: http://wiki.ros.org/gtest
+#add_rostest_gtest(${PROJECT_NAME}_utest test/utest.cpp)
+#target_link_libraries(testPlanningSystem ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
+
+#############
+## Install ##
+#############
+
+install(TARGETS rpmovebase 
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)

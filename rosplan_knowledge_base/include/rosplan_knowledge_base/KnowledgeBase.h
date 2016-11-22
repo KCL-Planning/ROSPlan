@@ -36,17 +36,17 @@ namespace KCL_rosplan {
 
 	class KnowledgeBase
 	{
-	private:
+	protected:
 
 		// visit controllers for ROS message packing
 		VALVisitorOperator op_visitor;
 		VALVisitorPredicate pred_visitor;
 
 		// adding and removing items to and from the knowledge base
-		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
-		void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
-		void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
-		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
+		virtual void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
+		virtual void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
+		virtual void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
+		virtual void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 	public:
 
@@ -63,25 +63,26 @@ namespace KCL_rosplan {
 		PlanFilter plan_filter;
 
 		/* fetching the domain */
-		bool getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);		
-		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
-		bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res);
-		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
+		virtual bool getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);		
+		virtual bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
+		virtual bool getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
+		virtual bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
+		virtual bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res);
+		virtual bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
 
 		// checking the model
-		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
+		virtual bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
 
 		// fetching the model
-		bool getCurrentInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
-		bool getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
-		bool getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
+		virtual bool getCurrentInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
+		virtual bool getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
+		virtual bool getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 
 		// adding and removing items to and from the knowledge base
-		bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
-		bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
-		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+		virtual bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
+		virtual bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
+        virtual bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+        virtual bool clearGoals(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
 	};
 }
 #endif

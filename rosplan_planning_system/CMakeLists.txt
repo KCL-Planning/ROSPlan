@@ -4,6 +4,7 @@ project(rosplan_planning_system)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   rospy
   actionlib
   std_msgs
@@ -111,7 +112,7 @@ add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} planner rosplan_action_interface
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -122,7 +123,19 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
 )
 
+install(DIRECTORY include/rosplan_action_interface/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/../rosplan_action_interface
+  PATTERN ".svn" EXCLUDE
+)
+
+
+
 install(DIRECTORY src/VALfiles/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+

@@ -21,15 +21,6 @@ namespace KCL_rosplan {
 
 		msg.formula.name = op->name->symbol::getName();
 
-		// parameters
-		for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
-			const VAL::var_symbol* var = *vi;
-			diagnostic_msgs::KeyValue param;
-			param.key = var->pddl_typed_symbol::getName();
-			param.value = var->type->getName();
-			msg.formula.typed_parameters.push_back(param);
-		}
-
 		// prepare message
 		msg.at_start_add_effects.clear();
 		msg.at_start_del_effects.clear();
@@ -41,6 +32,16 @@ namespace KCL_rosplan {
 		msg.at_start_neg_condition.clear();
 		msg.over_all_neg_condition.clear();
 		msg.at_end_neg_condition.clear();
+		msg.formula.typed_parameters.clear();
+
+		// parameters
+		for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
+			const VAL::var_symbol* var = *vi;
+			diagnostic_msgs::KeyValue param;
+			param.key = var->pddl_typed_symbol::getName();
+			param.value = var->type->getName();
+			msg.formula.typed_parameters.push_back(param);
+		}
 
 		// effects
 		op->effects->visit(this);
