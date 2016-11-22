@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>rosplan_interface_mapping</name>
-  <version>0.0.9</version>
+  <version>0.0.10</version>
   <description>Interfaces ROSPlan with ros mapping, with tools for constructing waypoints.</description>
   <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
   <license>BSD</license>

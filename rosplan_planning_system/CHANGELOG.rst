@@ -2,8 +2,8 @@
 Changelog for package rosplan_planning_system
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.10 (2016-11-22)
+-------------------
 * Making the knowledge base persistent using mongodb (`#10 <https://github.com/LCAS/ROSPlan/issues/10>`_)
   * Moving main function into main.cpp
   Making functions in KnowledgeBase virtual to override
