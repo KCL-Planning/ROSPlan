@@ -2,6 +2,27 @@
 Changelog for package rosplan_knowledge_base
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Making the knowledge base persistent using mongodb (`#10 <https://github.com/LCAS/ROSPlan/issues/10>`_)
+  * Moving main function into main.cpp
+  Making functions in KnowledgeBase virtual to override
+  Adding Mongodb interface class
+  Adding persistent knowledge base
+  Adding/querying knowledge/goals done.
+  Still missing: removing knowledge.
+  * most of the functionality replaced with mongo queries. Instance query still missing.
+  Needs clean-up.
+  * First working version of persistent knowledge base
+  * Allowing to start the persistent or non persistent version based on param and cleanup of prints and unused params.
+  * Making mongo-cxx-driver optional for compilation
+  * Adding db params to launch files.
+  * Fixing a bug where a query that would not return a result deletes the whole DB
+  * Adding a clear goals service.
+  * Setting the planner timeout to 1 second
+  * Advertising new service
+* Contributors: Christian Dondrup
+
 0.0.9 (2016-09-14)
 ------------------
 * Removing mongodb from launch files. (`#9 <https://github.com/LCAS/ROSPlan/issues/9>`_)
