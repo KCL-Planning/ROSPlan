@@ -171,6 +171,17 @@ namespace KCL_rosplan {
 		model_goals.clear();
 	}
 
+    /**
+     * remove all goals
+     */
+    bool KnowledgeBase::clearGoals(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
+
+        ROS_INFO("KCL: (KB) Removing all goals");
+
+        // model
+        model_goals.clear();
+    }
+
 	/**
 	 * remove mission goal
 	 */
@@ -434,60 +445,3 @@ namespace KCL_rosplan {
 	}
 
 } // close namespace
-
-/*-------------*/
-/* main method */
-/*-------------*/
-
-int main(int argc, char **argv)
-{
-	ros::init(argc, argv, "rosplan_knowledge_base");
-	ros::NodeHandle n;
-
-	// parameters
-	std::string domainPath;
-	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
-
-	KCL_rosplan::KnowledgeBase kb;
-	ROS_INFO("KCL: (KB) Parsing domain");
-	kb.domain_parser.domain_parsed = false;
-	kb.domain_parser.parseDomain(domainPath);
-
-	// fetch domain info
-	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTyes, &kb);
-	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
-	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
-	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
-
-	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
-	ros::ServiceServer predDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
-
-	// query knowledge
-	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
-
-	// update knowledge
-	ros::ServiceServer updateServer1 = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
-	ros::ServiceServer updateServer2 = n.advertiseService("/kcl_rosplan/update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
-	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
-
-	// fetch knowledge
-	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
-	ros::ServiceServer currentKnowledgeServer = n.advertiseService("/kcl_rosplan/get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
-	ros::ServiceServer currentGoalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
-
-	// planning and mission filter
-	kb.plan_filter.notification_publisher = n.advertise<rosplan_knowledge_msgs::Notification>("/kcl_rosplan/notification", 10, true);
-	ros::Subscriber planningFilterSub = n.subscribe("/kcl_rosplan/plan_filter", 100, &KCL_rosplan::PlanFilter::planningFilterCallback, &kb.plan_filter);
-	ros::Subscriber missionFilterSub = n.subscribe("/kcl_rosplan/plan_filter", 100, &KCL_rosplan::PlanFilter::missionFilterCallback, &kb.plan_filter);
-
-	// wait for and clear mongoDB 
-//	ROS_INFO("KCL: (KB) Waiting for MongoDB");
-//	ros::service::waitForService("/message_store/delete",-1);
-//	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
-
-	ROS_INFO("KCL: (KB) Ready to receive");
-	ros::spin();
-
-	return 0;
-}
-

@@ -1,6 +1,14 @@
 <launch>
 	<arg name="domain_path" default="$(find rosplan_planning_system)/common/domain.pddl" />
+	<arg name="persistent" default="false" />
+	<arg name="db_host" default="localhost" />
+        <arg name="db_port" default="62345" />
+        <arg name="db_name" default="kcl_knowledge_base" />
 	<param name="/rosplan/domain_path" value="$(arg domain_path)"/>
+	<param name="/rosplan/knowledge_base/persistent" value="$(arg persistent)"/>
+	<param name="/rosplan/db_host" value="$(arg db_host)"/>
+        <param name="/rosplan/db_port" value="$(arg db_port)"/>
+	<param name="/rosplan/knowledge_base/db_name" value="$(arg db_name)"/>
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">

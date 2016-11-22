@@ -3,29 +3,33 @@
 
 	<arg name="working_dir" default="/tmp" />
         <arg name="domain_path" default="$(find rosplan_planning_system)/common/domain.pddl" />
+        <arg name="persistent" default="false" />
+        <arg name="db_host" default="localhost" />
+        <arg name="db_port" default="62345" />
+        <arg name="db_name" default="kcl_knowledge_base" />
 
-        <param name="/rosplan/domain_path" value="$(arg domain_path)"/>
+        <!-- Domain -->
+	<param name="/rosplan/domain_path" value="$(arg domain_path)"/>
+
+	<!-- Database -->
+	<param name="/rosplan/db_host" value="$(arg db_host)"/>
+	<param name="/rosplan/db_port" value="$(arg db_port)"/>
+	
 	<!-- directory for generated files -->
         <param name="/rosplan/data_path" value="$(arg working_dir)/" />
         <param name="/rosplan/problem_path" value="$(arg working_dir)/problem.pddl" />
         <param name="/rosplan/strl_file_path" value="$(arg working_dir)/plan.strl" />
 
         <!-- to run the planner -->
-        <param name="/rosplan/planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
+        <param name="/rosplan/planner_command" value="timeout 1 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
         <param name="/rosplan/generate_default_problem" value="true" />
         <param name="/rosplan/max_dispatch_attempts" value="2" />
 
 	<!-- knowledge base -->
+        <param name="/rosplan/knowledge_base/db_name" value="$(arg db_name)"/>
+        <param name="/rosplan/knowledge_base/persistent" value="$(arg persistent)"/>
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 	</node>
-
-	<!-- scene database (MongoDB)
-	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
-	    <param name="database_path" value="$(find rosplan_config)/knowledge_base/mongoDB" />
-	</node>
-	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log">
-	</node -->
-
 
 	<!-- planning system -->
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">

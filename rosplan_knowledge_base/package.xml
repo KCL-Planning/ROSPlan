@@ -18,7 +18,7 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
-  <build_depend>mongodb_store</build_depend>
+  <build_depend>mongo-cxx-driver</build_depend>
   <build_depend>rosplan_knowledge_msgs</build_depend>
   <build_depend>tf</build_depend>
 
@@ -31,7 +31,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
-  <run_depend>mongodb_store</run_depend>
+  <run_depend>mongo-cxx-driver</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>tf</run_depend>
 

@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   rosplan_knowledge_msgs
   nav_msgs
-  mongodb_store
   geometry_msgs
   diagnostic_msgs
   visualization_msgs
@@ -17,6 +16,14 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(FLEX REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(MONGO mongo-cxx-driver)
+if(${MONGO_FOUND})
+	message(STATUS "Mongo CXX drivers have been found. Compiling with persistent KB.")
+	add_definitions(-DUSE_MONGO_CXX)
+else(${MONGO_FOUND})
+	message(WARNING "Mongo CXX drivers could not be found. Compiling without persistent KB.")
+endif(${MONGO_FOUND})
 
 find_package(Boost REQUIRED COMPONENTS
   filesystem
@@ -29,7 +36,7 @@ find_package(Boost REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs geometry_msgs diagnostic_msgs visualization_msgs tf
   DEPENDS
 )
 
@@ -41,6 +48,9 @@ catkin_package(
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(src/VALfiles)
+if(${MONGO_FOUND})
+	include_directories(${MONGO_INCLUDE_DIRS})
+endif(${MONGO_FOUND})
 
 ## val sources
 set(VAL_SOURCES
@@ -78,6 +88,7 @@ set(VAL_SOURCES
 
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
+	src/main.cpp
 	src/KnowledgeBase.cpp
 	src/PlanFilter.cpp
 	src/KnowledgeComparitor.cpp
@@ -85,11 +96,22 @@ set(KNOWLEDGE_SOURCES
 	src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp)
 
+if(${MONGO_FOUND})
+	set(KNOWLEDGE_SOURCES
+		${KNOWLEDGE_SOURCES}
+		src/KnowledgeBasePersistent.cpp
+		src/MongoInterface.cpp
+	)
+endif(${MONGO_FOUND})
+
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})
 add_dependencies(knowledgeBase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
+if(${MONGO_FOUND})
+	target_link_libraries(knowledgeBase ${MONGO_LIBRARIES})
+endif(${MONGO_FOUND})
 target_link_libraries(knowledgeBase ${catkin_LIBRARIES})
 
 ##########
