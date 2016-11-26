@@ -12,7 +12,7 @@ namespace KCL_rosplan {
 		// config
 		std::string dataPath("common/");
 		std::string staticMapService("/static_map");
-		nh.param("data_path", data_path, dataPath);
+		nh.param("/rosplan/data_path", data_path, dataPath);
 		nh.param("static_map_service", static_map_service, staticMapService);
 		nh.param("use_static_map", use_static_map, false);
 

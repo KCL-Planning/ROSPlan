@@ -316,7 +316,7 @@ namespace KCL_rosplan {
 	/*-----------------*/
 
 	/* get domain types */
-	bool KnowledgeBase::getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
+	bool KnowledgeBase::getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
 
 		if(!domain_parser.domain_parsed) return false;
 
@@ -324,6 +324,8 @@ namespace KCL_rosplan {
 		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 			const VAL::pddl_type* type = *ci;
 			res.types.push_back(type->getName());
+			if(type->type) res.super_types.push_back(type->type->getName());
+			else res.super_types.push_back("");
 		}	
 		return true;
 	}		
@@ -419,6 +421,20 @@ namespace KCL_rosplan {
 		return false;
 	}
 
+	/* get domain predicate details */
+	bool KnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
+
+		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
+		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {			
+			if((*ci)->getPred()->symbol::getName() == req.name) {
+				pred_visitor.visit_pred_decl(*ci);
+				res.predicate = pred_visitor.msg;
+				return true;
+			}
+		}
+		return false;
+	}
+
 } // close namespace
 
 /*-------------*/
@@ -427,12 +443,12 @@ namespace KCL_rosplan {
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "KCL_knowledge_base");
+	ros::init(argc, argv, "rosplan_knowledge_base");
 	ros::NodeHandle n;
 
 	// parameters
 	std::string domainPath;
-	n.param("/domain_path", domainPath, std::string("common/domain.pddl"));
+	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
 
 	KCL_rosplan::KnowledgeBase kb;
 	ROS_INFO("KCL: (KB) Parsing domain");
@@ -440,11 +456,13 @@ int main(int argc, char **argv)
 	kb.domain_parser.parseDomain(domainPath);
 
 	// fetch domain info
-	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTyes, &kb);
+	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
+
 	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
+	ros::ServiceServer predDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
 
 	// query knowledge
 	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);

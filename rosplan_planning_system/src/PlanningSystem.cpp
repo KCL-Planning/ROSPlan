@@ -61,13 +61,65 @@ namespace KCL_rosplan {
 	/* PDDL2.1 problem generation */
 	/*----------------------------*/
 
-	/**
-	 * generate a default PDDL2.1 problem instance with goals from the Knowledge Base
-	bool PlanningSystem::generatePDDLProblemFile(rosplan_knowledge_msgs::GenerateProblemService::Request &req, rosplan_knowledge_msgs::GenerateProblemService::Response &res) {
-		ROS_INFO("KCL: (PS) Beginning default problem generation");
-		// pddl_problem_generator.generatePDDLProblemFile(environment, req.problem_path);	
+	/* problem service hook with parameters */
+	bool PlanningSystem::runProblemServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
+		return runProblemServer(req.domain_path, req.problem_path, req.data_path);
 	}
+
+	/**
+	 * planning system service method; prepares planning; main loop.
 	 */
+	bool PlanningSystem::runProblemServer(std::string domainPath, std::string problemPath, std::string dataPath) {
+
+		data_path = dataPath;
+		domain_path = domainPath;
+		problem_path = problemPath;
+		
+		// set problem name for ROS_INFO
+		std::size_t lastDivide = problem_path.find_last_of("/\\");
+		if(lastDivide != std::string::npos) {
+			problem_name = problem_path.substr(lastDivide+1);
+		} else {
+			problem_name = problem_path;
+		}
+
+		if(system_status != READY) {
+			ROS_INFO("PlanningSystem::runPlanningServer is not READY!");
+			return false;
+		}
+
+		system_status = PLANNING;
+		std_msgs::String statusMsg;
+		statusMsg.data = "Planning";
+		state_publisher.publish(statusMsg);
+
+		ros::NodeHandle nh("~");
+
+		// parse domain
+		environment.parseDomain(domain_path);
+	
+		// update the environment from the ontology
+		environment.update(nh);
+
+		// generate PDDL problem (and problem-specific domain)
+		pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+		ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
+
+		// publish problem
+		std::ifstream problemIn(problem_path.c_str());
+		if(problemIn) {
+			std_msgs::String problemMsg;
+			problemMsg.data = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
+			problem_publisher.publish(problemMsg);
+		}
+
+		system_status = READY;
+		statusMsg.data = "Ready";
+		state_publisher.publish(statusMsg);
+		
+		return true;
+	}
+
 
 	/*-----------*/
 	/* Knowledge */
@@ -167,14 +219,20 @@ namespace KCL_rosplan {
 	/* planning system service method; loads parameters and calls method below */
 	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
-		ros::NodeHandle nh("~");
+		ros::NodeHandle nh;
+
+		data_path = "common/";
+		domain_path = "common/domain.pddl";
+		problem_path = "common/problem.pddl";
+		planner_command = "timeout 60 common/bin/popf -n DOMAIN PROBLEM";
+		max_dispatch_attempts = 1;
 
 		// setup environment
-		nh.param("/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.param("data_path", data_path, std::string("common/"));
-		nh.param("problem_path", problem_path, std::string("common/problem.pddl"));
-		nh.param("planner_command", planner_command, std::string("timeout 60 common/bin/popf -n DOMAIN PROBLEM"));
-		nh.param("max_dispatch_attempts", max_dispatch_attempts, 1);
+		nh.param("/rosplan/domain_path", domain_path, std::string("common/domain.pddl"));
+		nh.getParam("/rosplan_planning_system/data_path", data_path);
+		nh.getParam("/rosplan_planning_system/problem_path", problem_path);
+		nh.getParam("/rosplan_planning_system/planner_command", planner_command);
+		nh.getParam("/rosplan_planning_system/max_dispatch_attempts", max_dispatch_attempts);
 
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
@@ -426,8 +484,9 @@ namespace KCL_rosplan {
 		}
 		
 		// start the planning services
-		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);
-		ros::ServiceServer service1 = nh.advertiseService("/kcl_rosplan/planning_server_params", &KCL_rosplan::PlanningSystem::runPlanningServerParams, &planningSystem);
+		ros::ServiceServer service1 = nh.advertiseService("/kcl_rosplan/planning_server", &KCL_rosplan::PlanningSystem::runPlanningServerDefault, &planningSystem);
+		ros::ServiceServer service2 = nh.advertiseService("/kcl_rosplan/planning_server_params", &KCL_rosplan::PlanningSystem::runPlanningServerParams, &planningSystem);
+		ros::ServiceServer service4 = nh.advertiseService("/kcl_rosplan/problem_server_params", &KCL_rosplan::PlanningSystem::runProblemServerParams, &planningSystem);
 
 		std_msgs::String statusMsg;
 		statusMsg.data = "Ready";

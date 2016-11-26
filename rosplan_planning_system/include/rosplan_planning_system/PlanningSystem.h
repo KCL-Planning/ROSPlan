@@ -84,6 +84,10 @@ namespace KCL_rosplan {
 		bool generatePlanningProblem(ros::NodeHandle nh, std::string &problemPath);
 		void notificationCallBack(const rosplan_knowledge_msgs::Notification::ConstPtr& msg);
 
+		/* problem generation */
+		bool runProblemServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
+		bool runProblemServer(std::string domainPath, std::string problemPath, std::string dataPath);
+
 		/* planning */
 		ros::ServiceClient generate_problem_client;
 		PDDLProblemGenerator pddl_problem_generator;

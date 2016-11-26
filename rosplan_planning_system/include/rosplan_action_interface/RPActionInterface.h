@@ -7,6 +7,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
+#include "rosplan_knowledge_msgs/GetDomainPredicateDetailsService.h"
 #include "diagnostic_msgs/KeyValue.h"
 
 #ifndef KCL_action_interface
@@ -28,12 +29,13 @@ namespace KCL_rosplan {
 	protected:
 
 		/* PDDL info and publisher */
+		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> predicates;
 		rosplan_knowledge_msgs::DomainFormula params;
 		rosplan_knowledge_msgs::DomainOperator op;
-		ros::Publisher action_feedback_pub;
+		ros::Publisher pddl_action_parameters_pub;
 
 		/* action feedback to planning system */
-		ros::Publisher pddl_action_parameters_pub;
+		ros::Publisher action_feedback_pub;
 
 		/* service handle to PDDL knowledge base */
 		ros::ServiceClient update_knowledge_client;

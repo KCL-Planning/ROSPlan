@@ -11,7 +11,7 @@ namespace KCL_rosplan {
 		: action_id_offset(0)
 	{
 		ros::NodeHandle nh("~");
-		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
+		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
 
 		plan_nodes = &(parser.plan_nodes);
 		plan_edges = &(parser.plan_edges);
@@ -167,7 +167,7 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 		
 		std::string data_path;
-		nh.param("/data_path", data_path, std::string("common/"));
+		nh.param("/rosplan/data_path", data_path, std::string("common/"));
 
 		// dispatch plan
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");

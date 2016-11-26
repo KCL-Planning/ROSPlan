@@ -21,6 +21,69 @@ namespace KCL_rosplan {
 			op = srv.response.op;
 		} else {
 			ROS_ERROR("KCL: (RPActionInterface) could not call Knowledge Base for operator details, %s", params.name.c_str());
+			return;
+		}
+
+		// collect predicates from operator description
+		std::vector<std::string> predicateNames;
+
+		// effects
+		std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator pit = op.at_start_add_effects.begin();
+		for(; pit!=op.at_start_add_effects.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.at_start_del_effects.begin();
+		for(; pit!=op.at_start_del_effects.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.at_end_add_effects.begin();
+		for(; pit!=op.at_end_add_effects.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.at_end_del_effects.begin();
+		for(; pit!=op.at_end_del_effects.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		// simple conditions
+		pit = op.at_start_simple_condition.begin();
+		for(; pit!=op.at_start_simple_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.over_all_simple_condition.begin();
+		for(; pit!=op.over_all_simple_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.at_end_simple_condition.begin();
+		for(; pit!=op.at_end_simple_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		// negative conditions
+		pit = op.at_start_neg_condition.begin();
+		for(; pit!=op.at_start_neg_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.over_all_neg_condition.begin();
+		for(; pit!=op.over_all_neg_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		pit = op.at_end_neg_condition.begin();
+		for(; pit!=op.at_end_neg_condition.end(); pit++)
+			predicateNames.push_back(pit->name);
+
+		// fetch and store predicate details
+		ros::service::waitForService("/kcl_rosplan/get_domain_predicate_details",ros::Duration(20));
+		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>("/kcl_rosplan/get_domain_predicate_details");
+		std::vector<std::string>::iterator nit = predicateNames.begin();
+		for(; nit!=predicateNames.end(); nit++) {
+			if (predicates.find(*nit) != predicates.end()) continue;
+			rosplan_knowledge_msgs::GetDomainPredicateDetailsService predSrv;
+			predSrv.request.name = *nit;
+			if(predClient.call(predSrv)) {
+				predicates.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainFormula>(*nit, predSrv.response.predicate));
+			} else {
+				ROS_ERROR("KCL: (RPActionInterface) could not call Knowledge Base for predicate details, %s", params.name.c_str());
+				return;
+			}
 		}
 
 		// create PDDL info publisher
@@ -91,7 +154,7 @@ namespace KCL_rosplan {
 				updatePredSrv.request.knowledge.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_start_del_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_start_del_effects[i].typed_parameters[j].key;
+					pair.key = predicates[op.at_start_del_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_start_del_effects[i].typed_parameters[j].key];
 					updatePredSrv.request.knowledge.values.push_back(pair);
 				}
@@ -106,7 +169,7 @@ namespace KCL_rosplan {
 				updatePredSrv.request.knowledge.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_start_add_effects[i].typed_parameters[j].key;
+					pair.key = predicates[op.at_start_add_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
 					updatePredSrv.request.knowledge.values.push_back(pair);
 				}
@@ -121,7 +184,7 @@ namespace KCL_rosplan {
 				updatePredSrv.request.knowledge.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_end_del_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_end_del_effects[i].typed_parameters[j].key;
+					pair.key = predicates[op.at_end_del_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_end_del_effects[i].typed_parameters[j].key];
 					updatePredSrv.request.knowledge.values.push_back(pair);
 				}
@@ -136,7 +199,7 @@ namespace KCL_rosplan {
 				updatePredSrv.request.knowledge.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_end_add_effects[i].typed_parameters.size(); j++) {
-					pair.key = op.at_end_add_effects[i].typed_parameters[j].key;
+					pair.key = predicates[op.at_end_add_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_end_add_effects[i].typed_parameters[j].key];
 					updatePredSrv.request.knowledge.values.push_back(pair);
 				}
