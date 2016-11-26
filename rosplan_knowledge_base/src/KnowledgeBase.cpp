@@ -316,7 +316,7 @@ namespace KCL_rosplan {
 	/*-----------------*/
 
 	/* get domain types */
-	bool KnowledgeBase::getTyes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
+	bool KnowledgeBase::getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
 
 		if(!domain_parser.domain_parsed) return false;
 
@@ -324,6 +324,8 @@ namespace KCL_rosplan {
 		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
 			const VAL::pddl_type* type = *ci;
 			res.types.push_back(type->getName());
+			if(type->type) res.super_types.push_back(type->type->getName());
+			else res.super_types.push_back("");
 		}	
 		return true;
 	}		
@@ -454,7 +456,7 @@ int main(int argc, char **argv)
 	kb.domain_parser.parseDomain(domainPath);
 
 	// fetch domain info
-	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTyes, &kb);
+	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
 	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
