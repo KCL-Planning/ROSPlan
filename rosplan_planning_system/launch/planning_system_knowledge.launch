@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
 
 	<param name="domain_path" value="$(find rosplan_planning_system)/common/domain.pddl" />
