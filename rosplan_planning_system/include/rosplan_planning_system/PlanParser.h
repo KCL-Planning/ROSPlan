@@ -1,6 +1,5 @@
 /**
- * This file parses the output of popf and generates a list of ActionDispatch messages.
- * TODO Document
+ * This file parses the output of a planner and generates a list of ActionDispatch messages.
  */
 #include <string>
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
