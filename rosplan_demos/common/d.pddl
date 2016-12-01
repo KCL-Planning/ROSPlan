@@ -88,7 +88,7 @@
 		:precondition (available_to_check_s ?q)
 		:observe (available_s ?q)
 	)
-			
+
 	;; Wait for something (not question answers); from actions:
 	;; waitfor_HRIreceived;
 	;; waitfor_screentouched;

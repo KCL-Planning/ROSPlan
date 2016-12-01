@@ -480,8 +480,6 @@ int main(int argc, char **argv)
 	kb.domain_parser.parseDomain(domainPath);
 	kb.use_unknowns = useUnknowns;
 
-std::cout << "XXXXXXXXXXXXXXXX " << useUnknowns << " " << kb.use_unknowns << std::endl;
-
 	// fetch domain info
 	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);

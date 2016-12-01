@@ -20,11 +20,15 @@
 		<param name="use_unknowns" value="True" />
 	</node>
 
-	<!-- scene database (MongoDB) -->
+	<!-- scene database (MongoDB) 
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
 		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
 	</node>
 	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+	-->
+	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
+		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
+	</include>
 
 	<!-- planning system -->
 	<node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
