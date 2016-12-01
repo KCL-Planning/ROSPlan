@@ -341,7 +341,7 @@ namespace KCL_rosplan {
 		// run everything
 		nit = plan_nodes.begin();
 		if(nit!=plan_nodes.end()) {
-			dest << "run action" << (*nit)->node_id << std::endl;
+			dest << "run action" << (*(nit++))->node_id << std::endl;
 			for(; nit!=plan_nodes.end(); nit++) {
 				dest << " || action" << (*nit)->node_id << std::endl;
 			}
