@@ -22,9 +22,21 @@ namespace KCL_rosplan {
 			if(a.attribute_name!="" && 0!=a.attribute_name.compare(b.attribute_name)) return false;
 			if(a.is_negative != b.is_negative) return false;
 			if(a.values.size() != b.values.size()) return false;
+
 			for(size_t i=0;i<a.values.size();i++) {
-				if(""!=a.values[i].value && a.values[i].value != b.values[i].value)
-					return false;
+
+				// don't care about this parameter
+				if(""==a.values[i].value) continue;
+
+				// find matching object in parameters of b
+				bool found = false;
+				for(size_t i=0;i<b.values.size();i++) {
+					 if(a.values[i].key == b.values[i].key && a.values[i].value == b.values[i].value) {
+						found = true;
+						break;
+					}
+				}
+				if(!found) return false;
 			}
 		}
 
