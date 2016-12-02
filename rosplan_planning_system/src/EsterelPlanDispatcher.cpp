@@ -198,10 +198,6 @@ namespace KCL_rosplan {
 
 		printPlan(data_path);
 
-		// TODO wait here for PNP;;;
-
-		return true;
-
 		// query KMS for condition edges
 		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
 
