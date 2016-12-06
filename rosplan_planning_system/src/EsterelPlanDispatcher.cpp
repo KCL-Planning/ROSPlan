@@ -235,23 +235,20 @@ namespace KCL_rosplan {
 				if (strl_node->dispatched && !strl_node->completed)
 					finished_execution = false;
 				
-				if(!strl_node->dispatched) {
+				if(!strl_node->dispatched && !strl_node->completed) {
 				
 					// check action edges
-					int action_edge_count = 0;
-					bool activate_action = false;
+					bool activate_action = true;
 					for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci) {
-						if ((*ci)->signal_type == ACTION) {
-							action_edge_count++;
-							if ((*ci)->active) {
-								activate_action = true;
-							}
+						// Check if any action edge is unfinished
+						if ((*ci)->signal_type == ACTION && !(*ci)->active) {
+							activate_action = false;
 						}
 					}
 
 					// query KMS for condition edges
 					bool activate = true;
-					if(action_edge_count==0 || activate_action) {
+					if(activate_action) {
 						for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci) {
 							StrlEdge* edge = *ci;
 							if ((*ci)->signal_type == CONDITION && !edge->external_conditions.empty()) {
@@ -271,7 +268,7 @@ namespace KCL_rosplan {
 						}
 					}
 					
-					if(activate && (action_edge_count==0 || activate_action)) {
+					if(activate && activate_action) {
 
 						finished_execution = false;
 						state_changed = true;
@@ -320,7 +317,10 @@ namespace KCL_rosplan {
 			// copy new edge values for next loop
 			for(std::vector<StrlEdge*>::iterator eit = plan_edges->begin(); eit != plan_edges->end(); eit++) {
 				(*eit)->active = edge_values[*eit];
-				edge_values[*eit] = false;
+				// Reset edge values for unless they are from actions (completed action will always be complete)
+				if ((*eit)->signal_type != ACTION) {
+					edge_values[*eit] = false;
+				}
 			}
 
 			if(state_changed)
