@@ -376,7 +376,7 @@ namespace KCL_rosplan {
 			if((*nit)->input.size() > 0) {
 				dest << "  await ";
 				for(int j=0;j<(*nit)->input.size();j++) {
-					if(j>0) dest << " or ";
+					if(j>0) dest << " and ";
 					dest << (*nit)->input[j]->edge_name;
 				}
 				dest << ";" << std::endl;
