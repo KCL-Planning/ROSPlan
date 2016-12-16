@@ -409,7 +409,7 @@ namespace KCL_rosplan {
 
 	/* get domain operator details */
 	bool KnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
-
+		VALVisitorOperator op_visitor;
 		VAL::operator_list* operators = domain_parser.domain->ops;
 		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
 			if((*ci)->name->symbol::getName() == req.name) {
@@ -423,7 +423,7 @@ namespace KCL_rosplan {
 
 	/* get domain predicate details */
 	bool KnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
-
+		VALVisitorPredicate pred_visitor;
 		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
 		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {			
 			if((*ci)->getPred()->symbol::getName() == req.name) {
