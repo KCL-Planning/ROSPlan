@@ -15,8 +15,7 @@ title: ROSPlan documentation, planner
 		<script src="../jquery.js"></script> 
 		<script> 
 		$(function(){
-		  $("#includedContent").load("../templates/nav-main.html"); 
-		  $("#includedSideBar").load("../templates/nav-sidebar.html"); 
+		  $("#includedContent").load("../templates/nav-main.html");
 		});
 		</script>
 	</head>
@@ -25,19 +24,30 @@ title: ROSPlan documentation, planner
 
 		<section class="main-content">
 
+	    	<section class="sidebar">
+			<ul>
+				<li style="text-align: center"><strong>Overview</strong></li>
+				<li><a href="#part1">Part 1: AI Planning in Hybrid Domains</a></li>
+				<li><a href="#part2">Part 2: Integrating AI Planning in ROS</a></li>
+				<li><a href="#part3">Part 3: Open discussion on AI Planning for Robot Control</a></li>
+			</ul>
+			</section>
+		
+			<section class="documentation-content">
+
 			<h2>ICRA 2017 Tutorial on AI Planning for Robotics</h2>
 
 			<h2>Tutorial Content</h2>
 			
-			<h3>Part 1: AI Planning in Hybrid Domains</h3>
+			<h3>Part 1: AI Planning in Hybrid Domains</h3><a label="part1"></a>
 			
 			The first part will focus on modelling and solving P\&S problems for robotics systems, including an brief introduction to the Robot Operating System (ROS) and some examples of P\&S solutions for robotic platforms, taken from different teams working on various domains.
 			
-			<h3>Part 2: Integrating AI Planning in ROS</h3>
+			<h3>Part 2: Integrating AI Planning in ROS</h3><a label="part2"></a>
 			
 			The second part of the tutorial will focus on plan execution. This will include an introduction on integrating a planner and a robotic platform, and will cover some case studies in ROSPlan (mobile base, AUV, quadcopter).
 			
-			<h3>Part 3: Open discussion on AI Planning for Robot Control</h3>
+			<h3>Part 3: Open discussion on AI Planning for Robot Control</h3><a label="part3"></a>
 			
 			The final part of the tutorial will discuss open issues and new opportunities (where we expect to report on the recent news from the Dagstuhl Workshop on Planning and Robotics, to be held on January 10-15, 2017).
 			
@@ -54,6 +64,7 @@ title: ROSPlan documentation, planner
 			<br>Website: <a href="http://www.inf.kcl.ac.uk/staff/danmag/">http://www.inf.kcl.ac.uk/staff/danmag/</a>
 			<br>Email: daniele.magazzeni at kcl.ac.uk
 			</li></ul>
+			</section>
 
 			<footer class="site-footer">
 				<span class="site-footer-owner"><a href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> is maintained by <a href="https://github.com/KCL-Planning">KCL-Planning</a>.</span>
