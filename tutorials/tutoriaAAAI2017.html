@@ -1,0 +1,95 @@
+---
+title: ROSPlan documentation, planner
+---
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+		<meta charset="UTF-8">
+		<title>Planning and Robotics Tutorial ICRA 2017</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/normalize.css" media="screen">
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" type="text/css" href="../stylesheets/stylesheet.css" media="screen">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/github-light.css" media="screen">
+		<link rel="stylesheet" type="text/css" href="../stylesheets/syntax.css" media="screen">
+		<script src="../jquery.js"></script> 
+		<script> 
+		$(function(){
+		  $("#includedContent").load("../templates/nav-main.html");
+		});
+		</script>
+	</head>
+	<body>
+    	<div id="includedContent"></div>
+
+		<section class="main-content">
+
+	    	<section class="sidebar">
+			<ul>
+				<li style="text-align: center"><strong>Overview</strong></li>
+				<li><a href="#part1">Part 1: AI Planning in Hybrid Domains</a></li>
+				<li><a href="#part2">Part 2: Integrating AI Planning in ROS</a></li>
+				<li><a href="#part3">Part 3: Open discussion on AI Planning for Robot Control</a></li>
+				<li><a href="#resources">Resources</a></li>
+				<li><a href="#people">People</a></li>
+			</ul>
+			</section>
+		
+			<section class="documentation-content">
+
+			<h2>AAAI 2017 Tutorial on AI Planning for Robotics</h2>
+						
+			The main goal of this tutorial is to show how state-of-the-art formalisms in planning and scheduling (P&S) are used to model robotics domains; some of the challenges and solutions involved in dispatching plans on-board robotic platforms; and to provide an overview of the ROSPlan framework. By so doing, we hope to encourage the rapid development of P&S techniques for robotics. Moreover, the tutorial aims to use the ICRA forum as a means to discuss the main challenges related to planning for autonomous robots (deliberative, reactive, continuous planning and execution etc.).
+			
+			<h2>Tutorial Content</h2>
+			
+			<h3>Part 1: AI Planning in Hybrid Systems</h3><a label="part1"></a>
+			
+			Hybrid systems are systems with both continuous control variables and discrete logical modes. Many interesting robotics problems are hybrid systems. Planning in these domains requires rich models to capture the interaction between discrete and continuous change, and methods for reasoning with temporal, spatial and continuous constraints. PDDL+ is the extension of PDDL for modelling hybrid systems, through continuous processes and events.
+			
+			This part provides an overview of planning for hybrid systems, showing some concrete examples on how to model hybrid domains using PDDL+ and an overview of existing techniques for PDDL+ planning. We focus on modelling and solving P&S problems for robotics systems, including some examples of P&S solutions for robotic platforms, taken from different teams working on various domains.
+			
+			<h3>Part 2: Integrating AI Planning in ROS</h3><a label="part2"></a>
+			
+			The second part of the tutorial will focus on integrating AI Planning and Scheduling into a ROS system, and cover the challenges that arise, such as dealing with incomplete knowledge, state estimation, plan execution, and error detection and recovery. This will cover some case studies in ROSPlan (using mobile bases, AUVs, quadcopters).
+			
+			<h3>Part 3: Open discussion on AI Planning for Robot Control</h3><a label="part3"></a>
+			
+			The final part of the tutorial will discuss open issues and new opportunities. We expect to report on the recent news from the Dagstuhl Workshop on Planning and Robotics, to be held on January 10-15, 2017.
+			
+			<h2>Resources</h2><a label="resources"></a>
+			
+			<ul>
+			<li>ROSPlan is a generic framework for task planning in a ROS system. (<a href="http://kcl-planning.github.io/ROSPlan">http://kcl-planning.github.io/ROSPlan</a>)</li>
+			<li>SMTPlan+ is a PDDL+ planner for hybrid systems with continuous non-linear dynamics. (<a href="http://kcl-planning.github.io/SMTPlan">http://kcl-planning.github.io/SMTPlan</a>)</li>
+			</ul>
+			
+			<ul>
+			<li>ROSPlan is a generic framework for task planning in a ROS system. (<a href="http://kcl-planning.github.io/ROSPlan">http://kcl-planning.github.io/ROSPlan</a>)</li>
+			<li>SMTPlan+ is a PDDL+ planner for hybrid systems with continuous non-linear dynamics. (<a href="http://kcl-planning.github.io/SMTPlan">http://kcl-planning.github.io/SMTPlan</a>)</li>
+			<li>Domain Models for robotics (coming soon)</li>
+			</ul>
+			
+			<h2>Organisers</h2><a label="people"></a>
+			
+			<ul><li>
+			<b>Michael Cashmore</b>
+			<br>Website: <a href="http://www.inf.kcl.ac.uk/staff/cashmore/">http://www.inf.kcl.ac.uk/staff/cashmore/</a>
+			<br>Email: michael.cashmore at kcl.ac.uk
+			</li></ul>
+
+			<ul><li>
+			<b>Daniele Magazzeni</b>
+			<br>Website: <a href="http://www.inf.kcl.ac.uk/staff/danmag/">http://www.inf.kcl.ac.uk/staff/danmag/</a>
+			<br>Email: daniele.magazzeni at kcl.ac.uk
+			</li></ul>
+			</section>
+
+			<footer class="site-footer">
+				<span class="site-footer-owner"><a href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> is maintained by <a href="https://github.com/KCL-Planning">KCL-Planning</a>.</span>
+				<span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+			</footer>
+			
+		</section>
+	</body>
+</html>
