@@ -352,11 +352,10 @@ namespace KCL_rosplan {
 			return false;
 		}
 
-		// delete old waypoint
-		message_store.deleteID(req.id);
+		// clear old waypoint
+		clearWaypoint(req.id);
 
 		// add new waypoint
-		
 		occupancy_grid_utils::Cell start_cell = occupancy_grid_utils::pointCell(map.info, req.waypoint.pose.position);
 		Waypoint* new_wp = new Waypoint(req.id, start_cell.x, start_cell.y, map.info);
 		waypoints[new_wp->wpID] = new_wp;
@@ -388,18 +387,9 @@ namespace KCL_rosplan {
 			}
 		}
 
-		rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
-
-		// remove instance
-		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
-		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
-		updateSrv.request.knowledge.instance_type = "waypoint";
-		updateSrv.request.knowledge.instance_name = new_wp->wpID;
-		if (!update_knowledge_client.call(updateSrv)) {
-			ROS_INFO("Failed to remove old waypoint instance.");
-		}
 
 		// instance
+		rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
 		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
 		updateSrv.request.knowledge.instance_type = "waypoint";
@@ -481,6 +471,49 @@ namespace KCL_rosplan {
 
 		return true;
 	}
+
+	bool RPRoadmapServer::removeWaypoint(rosplan_knowledge_msgs::RemoveWaypoint::Request &req, rosplan_knowledge_msgs::RemoveWaypoint::Response &res) {
+
+		ros::NodeHandle nh("~");
+		if ( clearWaypoint(req.id) ) {
+			// publish visualization
+			publishWaypointMarkerArray(nh);
+			publishEdgeMarkerArray(nh);
+		}
+		return true;
+	}
+
+	bool RPRoadmapServer::clearWaypoint(const std::string &name) {
+
+		if ( db_name_map.count( name ) == 0 ) {
+			return false;
+		}
+
+		message_store.deleteID(db_name_map[name]);
+		db_name_map.erase(name);
+		waypoints.erase(name);
+
+		std::vector<Edge>::iterator eit = edges.begin();
+		while( eit != edges.end() ) {
+			if ( name == eit->start || name == eit->end ) {
+				eit = edges.erase( eit );
+			} else {
+				eit++;
+			}
+		}
+		// remove instance
+		rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
+		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
+		updateSrv.request.knowledge.instance_type = "waypoint";
+		updateSrv.request.knowledge.instance_name = name;
+		if (!update_knowledge_client.call(updateSrv)) {
+			ROS_INFO("Failed to remove old waypoint instance.");
+		}
+
+		return true;
+
+	}
 } // close namespace
 
 	/*-------------*/
@@ -505,6 +538,7 @@ namespace KCL_rosplan {
 		ros::Subscriber map_sub = nh.subscribe<nav_msgs::OccupancyGrid>(costMapTopic, 1, &KCL_rosplan::RPRoadmapServer::costMapCallback, &rms);
 		ros::ServiceServer createPRMService = nh.advertiseService("/kcl_rosplan/roadmap_server/create_prm", &KCL_rosplan::RPRoadmapServer::generateRoadmap, &rms);
 		ros::ServiceServer addWaypointService = nh.advertiseService("/kcl_rosplan/roadmap_server/add_waypoint", &KCL_rosplan::RPRoadmapServer::addWaypoint, &rms);
+		ros::ServiceServer removeWaypointService = nh.advertiseService("/kcl_rosplan/roadmap_server/remove_waypoint", &KCL_rosplan::RPRoadmapServer::removeWaypoint, &rms);
 
 		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive. Cost map topic: %s", costMapTopic.c_str());
 		ros::spin();
