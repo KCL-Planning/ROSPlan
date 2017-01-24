@@ -352,6 +352,9 @@ namespace KCL_rosplan {
 			return false;
 		}
 
+		// delete old waypoint
+		message_store.deleteID(req.id);
+
 		// add new waypoint
 		
 		occupancy_grid_utils::Cell start_cell = occupancy_grid_utils::pointCell(map.info, req.waypoint.pose.position);
@@ -385,8 +388,18 @@ namespace KCL_rosplan {
 			}
 		}
 
-		// instance
 		rosplan_knowledge_msgs::KnowledgeUpdateService updateSrv;
+
+		// remove instance
+		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
+		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
+		updateSrv.request.knowledge.instance_type = "waypoint";
+		updateSrv.request.knowledge.instance_name = new_wp->wpID;
+		if (!update_knowledge_client.call(updateSrv)) {
+			ROS_INFO("Failed to remove old waypoint instance.");
+		}
+
+		// instance
 		updateSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 		updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
 		updateSrv.request.knowledge.instance_type = "waypoint";
@@ -400,7 +413,7 @@ namespace KCL_rosplan {
 		publishWaypointMarkerArray(nh);
 		publishEdgeMarkerArray(nh);
 		
-		ROS_INFO("Process the %d neighbours of this new waypoint.", new_wp->neighbours.size());
+		ROS_INFO("Process the %lu neighbours of this new waypoint.", new_wp->neighbours.size());
 			
 		// predicates
 		for (std::vector<std::string>::iterator nit=new_wp->neighbours.begin(); nit!=new_wp->neighbours.end(); ++nit) {
