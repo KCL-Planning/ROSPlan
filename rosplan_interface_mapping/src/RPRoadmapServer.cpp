@@ -464,7 +464,7 @@ namespace KCL_rosplan {
 		}
 
 		//data
-		std::string id(message_store.insertNamed(new_wp->wpID, req.waypoint));
+		std::string id(message_store.insertNamed(req.id, req.waypoint));
 		db_name_map[new_wp->wpID] = id;
 
 		ROS_INFO("KCL: (RPRoadmapServer) Finished adding new waypoint");
