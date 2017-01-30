@@ -37,6 +37,7 @@ add_service_files(
   GetDomainPredicateDetailsService.srv  
   CreatePRM.srv
   AddWaypoint.srv
+  RemoveWaypoint.srv
   GenerateProblemService.srv
 )
 
