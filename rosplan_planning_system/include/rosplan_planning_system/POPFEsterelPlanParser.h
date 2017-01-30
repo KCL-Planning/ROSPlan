@@ -33,6 +33,9 @@ namespace KCL_rosplan {
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
 
+		// Configuration parameters
+		std::set<std::string> concurrency_constraining_types;
+
 		/* post process plan */
 		void toLowerCase(std::string &str);
 		void preparePDDLConditions(StrlNode &node, PlanningEnvironment &environment);
