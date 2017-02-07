@@ -10,6 +10,7 @@
 	<include file="$(find turtlebot_bringup)/launch/minimal.launch" >
 	</include>
 	<include file="$(find turtlebot_navigation)/launch/amcl_mc2.launch" >
+		<arg name="map_file" value="/home/michael/maps/map_studies.yaml" />
 	</include>
 	<include file="$(find kobuki_auto_docking)/launch/minimal.launch" >
 	</include>
