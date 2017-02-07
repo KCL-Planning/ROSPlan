@@ -10,13 +10,13 @@
 #include "PlanParser.h"
 #include "EsterelPlan.h"
 
-#ifndef KCL_cff_plan_parser
-#define KCL_cff_plan_parser
+#ifndef KCL_clg_plan_parser
+#define KCL_clg_plan_parser
 
 namespace KCL_rosplan {
 
 	/* Plan Parsing class definition */
-	class CFFPlanParser: public PlanParser
+	class CLGPlanParser: public PlanParser
 	{
 
 	private:
@@ -26,24 +26,23 @@ namespace KCL_rosplan {
 		
 		// Knowledge base
 		ros::ServiceClient update_knowledge_client;
-		
-		/* Contingent-FF assigned action IDs and branches */
-		std::map<std::string,StrlNode*> cff_node_map;
-		std::map<std::string,std::vector<StrlEdge*> > incoming_edge_map;
-
-		/* operator observation and parameter mappings */
-		std::map<std::string, std::string> operator_observation_map;
-		std::map<std::string, std::vector<std::string> > operator_parameter_map;
 
 		void toLowerCase(std::string &str);
-		unsigned int split(const std::string &txt, std::vector<std::string> &strs, char ch);
-
+		void preparePDDLConditions(StrlEdge* last_edge, StrlEdge* other_edge, StrlNode* node);
 		void parseDomain();
-		void preparePDDLObservation(std::string &operator_name, std::vector<std::string> &parameters, StrlEdge &edge, bool isNegative);
-		void preparePDDLConditions(std::string operator_name, std::vector<std::string> parameters, StrlNode &node, PlanningEnvironment &environment);
 
-		void createNode(std::vector<std::string> &s, const std::string& operator_name, int node_id, PlanningEnvironment &environment, StrlNode& node);
-		void createEdge(std::string &child_cffid, StrlNode &node, StrlEdge &edge);
+		/* operator observation mappings */
+		std::map<std::string, std::string> operator_observation_map;
+		std::map<std::string, std::vector<std::string> > operator_parameter_map;
+		/**
+		 * Create an Estrel node based on the name of the action.
+		 * @param action_name The name of the action.
+		 * @param node_id The id that should be given to the node.
+		 * @param environment The planning environment.
+		 * @param node The node that is created based on @ref{action_name}.
+		 * @param edge The edge that is created based on @ref{action_name}.
+		 */
+		void createNodeAndEdge(const std::string& action_name, int node_id, PlanningEnvironment &environment, StrlNode& node, StrlEdge& edge);
 
 	public:
 
@@ -52,7 +51,7 @@ namespace KCL_rosplan {
 		std::vector<StrlEdge*> plan_edges;
 
 		/* constructor */
-		CFFPlanParser(ros::NodeHandle &nh);
+		CLGPlanParser(ros::NodeHandle &nh);
 
 		/* service to parse plans */
 		bool produceEsterel();

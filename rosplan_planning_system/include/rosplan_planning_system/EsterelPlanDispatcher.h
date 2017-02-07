@@ -11,6 +11,7 @@
 #include "PlanDispatcher.h"
 #include "EsterelPlan.h"
 #include "CFFPlanParser.h"
+#include "CLGPlanParser.h"
 #include "POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
@@ -47,6 +48,7 @@ namespace KCL_rosplan
 	public:
 
 		/* constructor */
+		EsterelPlanDispatcher(CLGPlanParser &parser);
 		EsterelPlanDispatcher(CFFPlanParser &parser);
 		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);
 

@@ -320,8 +320,9 @@ namespace KCL_rosplan {
 			// generate PDDL problem (and problem-specific domain)
 			if(generate_problem) {
 				pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
-				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
+				ROS_INFO("KCL: (PS) (%s) The problem was generated.", problem_name.c_str());
 			} else {
+				/* TODO check and remove
 				// ROS_INFO("KCL: (PS) Skipping problem generation.");
 				rosplan_knowledge_msgs::GenerateProblemService genSrv;
 				genSrv.request.problem_path = problem_path;
@@ -333,7 +334,8 @@ namespace KCL_rosplan {
 					state_publisher.publish(statusMsg);
 					return false;
 				}
-				ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
+				*/
+				ROS_INFO("KCL: (PS) (%s) Skipping default problem generation.", problem_name.c_str());
 			}
 
 			// publish problem
@@ -421,7 +423,7 @@ namespace KCL_rosplan {
 			getline(planfile, line);
 			if (line.find("; Plan found", 0) != std::string::npos)
 				solved = true;
-			if (line.find("ff: found legal plan as follows", 0) != std::string::npos)
+			if (line.find("ff: found", 0) != std::string::npos)
 				solved = true;
 		}
 		if(!solved) {
