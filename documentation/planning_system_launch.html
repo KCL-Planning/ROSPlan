@@ -29,6 +29,43 @@ title: ROSPlan documentation, planner
 			<section class="documentation-content">
 
 			<h2>Launching the Planning System</h2>
+
+			<h4>Contents:</h4>
+			<p>There are two ways to launch the planning system, depending on which functionality is required.</p>
+			<ul>
+			<li>Launching the planner interface provides services for generating problem instances and for calling the planner. The plan is not dispatched.</li>
+			<li>Launching the planning system includes the planner interface, but also includes the automatic dispatch of the plan.</li>
+			</ul>
+
+			<ul>
+			<li><a href="#pi">Launching the Planner Interface</a></li>
+			<li><a href="#ps">Launching the Planning System</a></li>
+			<li><a href="#pa">Parameters</a></li>
+			</ul>
+
+			<a id="pi"></a>
+			<h4>Launching the Planning Interface</h4>
+			<img src="images/dia_planner.png" class="chart"/>
+			<p>The planning interface launches a single node that will provide services for problem generation and planning. It can be launched by adding the following node to your launch file:</p>
+{% highlight xml linenos=table %}
+<!-- domain file -->
+<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+
+<!-- planning system -->
+<node name="rosplan_planner_interface" pkg="rosplan_planner_interface" type="plannerInterface" respawn="false" output="screen">
+	<!-- directory for generated files -->
+	<param name="data_path" value="$(find rosplan_config)/planner/" />
+	<param name="problem_path" value="$(find rosplan_config)/planner/problem.pddl" />
+	<param name="strl_file_path" value="$(find rosplan_config)/planner/plan.strl" />
+
+	<!-- to run the planner -->
+	<param name="planner_command" value="timeout 10 $(find rosplan_config)/planner/bin/popf -n DOMAIN PROBLEM" />
+</node>
+{% endhighlight %}
+
+			<a id="ps"></a>
+			<h4>Launching the Planning System</h4>
+			<img src="images/dia_system.png" class="chart"/>
 			<p>The planning system can be launched by adding the following node to your launch file:</p>
 {% highlight xml linenos=table %}
 <!-- domain file -->
@@ -48,6 +85,7 @@ title: ROSPlan documentation, planner
 </node>
 {% endhighlight %}
 
+			<a id="pa"></a>
 			<h4>Parameters</h4>
 
 			<p><strong>domain_path</strong><br/>Path to the PDDL domain file.</p>
