@@ -240,15 +240,23 @@ namespace KCL_rosplan {
 			}
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-
 			// add domain attribute
+
+			std::string param_str;
+			for (size_t i = 0; i < msg.values.size(); ++i) {
+				param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
+			}
+
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+          ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
+                   msg.attribute_name.c_str(), param_str.c_str());
 					return;
 				}
 			}
-			ROS_INFO("KCL: (KB) Adding domain attribute (%s)", msg.attribute_name.c_str());
+			ROS_INFO("KCL: (KB) Adding domain attribute (%s%s)",
+			         msg.attribute_name.c_str(), param_str.c_str());
 			model_facts.push_back(msg);
 			plan_filter.checkFilters(msg, true);
 
@@ -275,12 +283,22 @@ namespace KCL_rosplan {
 	 */
 	void KnowledgeBase::addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg) {
 
+		std::string param_str;
+		for (size_t i = 0; i < msg.values.size(); ++i) {
+			param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
+		}
+
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 		for(pit=model_goals.begin(); pit!=model_goals.end(); pit++) {
-			if(KnowledgeComparitor::containsKnowledge(msg, *pit))
+			if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+				ROS_WARN("KCL: (KB) Goal (%s%s) already posted",
+				         msg.attribute_name.c_str(), param_str.c_str());
 				return;
+			}
 		}
-		ROS_INFO("KCL: (KB) Adding mission goal (%s)", msg.attribute_name.c_str());
+		
+		ROS_INFO("KCL: (KB) Adding mission goal (%s%s)",
+		         msg.attribute_name.c_str(), param_str.c_str());
 		model_goals.push_back(msg);
 	}
 
