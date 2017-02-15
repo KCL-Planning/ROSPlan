@@ -31,16 +31,13 @@ namespace KCL_rosplan {
 				if("" == a.values[i].value) continue;
 
 				// find matching object in parameters of b
-				bool found = false;
 				for(size_t i=0;i<b.values.size();i++) {
-					if(boost::iequals(a.values[i].key, b.values[i].key) &&
-					   boost::iequals(a.values[i].value, b.values[i].value))
+					if(! boost::iequals(a.values[i].key, b.values[i].key) ||
+					   ! boost::iequals(a.values[i].value, b.values[i].value))
 					{
-						found = true;
-						break;
+						return false;
 					}
 				}
-				if(!found) return false;
 			}
 		}
 
