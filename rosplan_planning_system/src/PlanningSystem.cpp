@@ -367,6 +367,7 @@ namespace KCL_rosplan {
 			statusMsg.data = "Dispatching";
 			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
+			dispatch_attempts += 1;
 			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser->action_list, mission_start_time, plan_start_time);
 			
 			if (!planSucceeded) {
@@ -376,6 +377,11 @@ namespace KCL_rosplan {
 			}
 		}
 		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_name.c_str());
+
+		if (! planSucceeded && dispatch_attempts >= max_dispatch_attempts) {
+			ROS_INFO("KCL: (PS) (%s) Maximum dispatch attempts (%i) exceeded",
+			         problem_name.c_str(), max_dispatch_attempts);
+    }
 
 		system_status = READY;
 		statusMsg.data = "Ready";
