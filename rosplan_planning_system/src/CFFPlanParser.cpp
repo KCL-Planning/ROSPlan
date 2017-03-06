@@ -178,6 +178,8 @@ namespace KCL_rosplan {
 		edge.active = false;
 		plan_edges.push_back(&edge);
 		
+		//std::cout << "[createNodeAndEdge] " << ss.str() << std::endl;
+		
 		// prepare message
 		node.output.push_back(&edge);
 		node.dispatch_msg.action_id = node.node_id;
@@ -187,16 +189,19 @@ namespace KCL_rosplan {
 		
 		std::string operator_name = action_name.substr(0, action_name.find(" "));
 		
+		//std::cout << "[createNodeAndEdge] Operator name=" << operator_name << std::endl;
+		
 		// check for parameters
 		int curr = operator_name.length();
 		int next = 0;
 		bool paramsExist = (action_name.find(" ",curr) != std::string::npos);
 		if(paramsExist) {
-
 			// name
 			next = action_name.find(" ",curr);
 			node.dispatch_msg.name = operator_name;
 			int parameter_index = 0;
+			
+			//std::cout << "We have parameters. " << curr << "-" << next << ". Max: " << action_name.length() << std::endl;
 			
 			// parameters
 			std::vector<std::string> params;
@@ -206,13 +211,19 @@ namespace KCL_rosplan {
 				if(next == std::string::npos)
 					next = action_name.length();
 				
+				//std::cout << "Param [" << parameter_index << "] " << curr << "-" << next << ". Max: " << action_name.length() << std::endl;
+				
 				diagnostic_msgs::KeyValue pair;
 				pair.key = environment.domain_operators[operator_name][parameter_index];
 				pair.value = action_name.substr(curr,next-curr);
 				node.dispatch_msg.parameters.push_back(pair);
 				++parameter_index;
+				
+				//std::cout << pair.key << " -> " << pair.value << std::endl;
 			}
 		}
+		
+		//std::cout << "Prepare PDDL conditions." << std::endl;
 		preparePDDLConditions(node, environment);
 		plan_nodes.push_back(&node);
 		jump_map.insert(std::pair<int, StrlNode*>(action_number,&node));
@@ -231,6 +242,10 @@ namespace KCL_rosplan {
 		
 		// Manage shed / assume knowledge bases.
 		std::vector<std::vector<StrlEdge*>* > leafs;
+		
+		// The current knowlege base is the global one.
+		std::vector<StrlEdge*>* global_knowledge_base = new std::vector<StrlEdge*>();
+		leafs.push_back(global_knowledge_base);
 		
 		// Keep a stack of the observation actions that still have to be resolved.
 		std::vector<StrlEdge*> conditional_branch_stack;
@@ -255,6 +270,8 @@ namespace KCL_rosplan {
 			std::getline(infile, line);
 			toLowerCase(line);
 			
+			std::cout << "Process: " << line << std::endl;
+			
 			if (line.compare("ff: found legal plan as follows") == 0) {
 				planFound = true;
 			} else if (!planFound) {
@@ -268,6 +285,8 @@ namespace KCL_rosplan {
 
 					std::getline(infile, line);
 					toLowerCase(line);
+					
+					std::cout << "Process: " << line << std::endl;
 					
 					if(line.substr(0,10).compare("time spent")==0)
 						break;
@@ -318,7 +337,7 @@ namespace KCL_rosplan {
 						observation_is_active = false;
 
 					} else if("pop" == name.substr(0,3)) {
-						
+						//std::cout << "Process POP: " << conditional_branch_stack.size() << std::endl;
 						std::vector<StrlEdge*>* current_leafs = leafs[leafs.size() - 1];
 						current_leafs->push_back(last_edge);
 						
@@ -339,10 +358,13 @@ namespace KCL_rosplan {
 
 					} else if("jump" == name.substr(0,4)) {
 
+						//std::cout << "Jump!" << std::endl;
 						StrlNode* node = new StrlNode();
 						StrlEdge* edge = new StrlEdge();
 						createNodeAndEdge(name, action_number,  nodeCount, environment, *node, *edge);
 						++nodeCount;
+						
+						//std::cout << "Nodes and edges created!" << std::endl;
 						
 						if (last_edge != NULL)
 						{
@@ -354,6 +376,7 @@ namespace KCL_rosplan {
 						// Check if this action is dependend on an observation outcome.
 						if (observation_is_active)
 						{
+							//std::cout << "Jump is dependent on an observation outcome. " << active_branch_edge.size() << std::endl;
 							StrlEdge* conditional_edge = active_branch_edge[active_branch_edge.size() - 1];
 							node->input.push_back(conditional_edge);
 							conditional_edge->sinks.push_back(node);
@@ -412,7 +435,7 @@ namespace KCL_rosplan {
 						// possitive branches.
 						if ("observe-" == name.substr(0, 8)) {
 							std::string observation_fact = name.substr(8);
-							
+							//std::cout << "[Observe] " << observation_fact << std::endl;
 							// Create the possitive first.
 							std::stringstream ss;
 							ss << name << "_TRUE";
@@ -438,19 +461,31 @@ namespace KCL_rosplan {
 							}
 							tokens.push_back(observation_fact.substr(counter));
 							
+							//std::cout << "Found " << tokens.size() << " tokens." << std::endl;
+							
 							// create edge name
 							condition.attribute_name = tokens[0];
 							
 							ss.str(std::string());
 							ss << condition.attribute_name;
 
+							std::map<std::string, std::vector<std::string> >::const_iterator pit = environment.domain_predicates.find(condition.attribute_name);
+							if (pit == environment.domain_predicates.end())
+							{
+								std::cerr << "Failed to find the predicate: " << condition.attribute_name << std::endl;
+							}
+							const std::vector<std::string>& predicates = (*pit).second;
+							//std::cout << "Found " << predicates.size() << " predicates." << std::endl;
+							
+							
 							// Populate parameters
 							int index = 1;
-							std::vector<std::string>::iterator pit = environment.domain_predicates[condition.attribute_name].begin();
-							for(; pit!=environment.domain_predicates[condition.attribute_name].end(); pit++) {
+							for(std::vector<std::string>::const_iterator ci = predicates.begin(); ci != predicates.end(); ++ci)
+							{
+								//std::cout << "Process the parameter: [" << index << "] " << *ci << std::endl;
 								// set parameter label to predicate label
 								diagnostic_msgs::KeyValue param;
-								param.key = *pit;
+								param.key = *ci;
 								param.value = tokens[index];
 								condition.values.push_back(param);
 								++index;
@@ -485,7 +520,7 @@ namespace KCL_rosplan {
 				planRead = true;
 			}
 		}
-		// printPlan(plan);
+		//printPlan(plan);
 		produceEsterel();
 		infile.close();
 	}

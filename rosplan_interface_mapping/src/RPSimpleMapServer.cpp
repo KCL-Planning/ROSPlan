@@ -231,6 +231,6 @@ namespace KCL_rosplan {
 		sms.setupRoadmap(filename);
 
 		ROS_INFO("KCL: (RPSimpleMapServer) Ready to receive.");
-		ros::spin();
+		while(ros::ok() && ros::master::check()){ros::spinOnce();}
 		return 0;
 	}

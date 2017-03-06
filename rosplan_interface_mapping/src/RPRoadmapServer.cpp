@@ -494,6 +494,6 @@ namespace KCL_rosplan {
 		ros::ServiceServer addWaypointService = nh.advertiseService("/kcl_rosplan/roadmap_server/add_waypoint", &KCL_rosplan::RPRoadmapServer::addWaypoint, &rms);
 
 		ROS_INFO("KCL: (RPRoadmapServer) Ready to receive. Cost map topic: %s", costMapTopic.c_str());
-		ros::spin();
+		while(ros::ok() && ros::master::check()){ros::spinOnce();}
 		return 0;
 	}

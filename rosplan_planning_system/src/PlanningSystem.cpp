@@ -494,7 +494,7 @@ namespace KCL_rosplan {
 		planningSystem.state_publisher.publish(statusMsg);
 
 		ROS_INFO("KCL: (PS) Ready to receive");
-		ros::spin();
+		while(ros::ok() && ros::master::check()){ros::spinOnce();}
 
 		return 0;
 	}

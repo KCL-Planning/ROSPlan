@@ -414,13 +414,15 @@ namespace KCL_rosplan {
 
 		VAL::operator_list* operators = domain_parser.domain->ops;
 		for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
-			std::cout << "Get Operator Details: Compare " << (*ci)->name->symbol::getName() << " to "  << req.name << "." << std::endl;
+			//std::cout << "Get Operator Details: Compare " << (*ci)->name->symbol::getName() << " to "  << req.name << "." << std::endl;
 			if((*ci)->name->symbol::getName() == req.name) {
 				op_visitor.visit_operator_(*ci);
 				res.op = op_visitor.msg;
+				//std::cout << "Success!" << std::endl;
 				return true;
 			}
 		}
+		//std::cout << "Fail!" << std::endl;
 		return false;
 	}
 
@@ -428,13 +430,16 @@ namespace KCL_rosplan {
 	bool KnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
 
 		VAL::pred_decl_list* predicates = domain_parser.domain->predicates;
-		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {			
+		for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
+			//std::cout << "Get Predicate Details: Compare " << (*ci)->getPred()->symbol::getName() << " to "  << req.name << "." << std::endl;
 			if((*ci)->getPred()->symbol::getName() == req.name) {
 				pred_visitor.visit_pred_decl(*ci);
 				res.predicate = pred_visitor.msg;
+				//std::cout << "Success!" << std::endl;
 				return true;
 			}
 		}
+		//std::cout << "Fail!" << std::endl;
 		return false;
 	}
 
@@ -454,9 +459,13 @@ int main(int argc, char **argv)
 	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
 
 	KCL_rosplan::KnowledgeBase kb;
-	ROS_INFO("KCL: (KB) Parsing domain");
-	kb.domain_parser.domain_parsed = false;
-	kb.domain_parser.parseDomain(domainPath);
+	
+	if (domainPath != "")
+	{
+		ROS_INFO("KCL: (KB) Parsing domain");
+		kb.domain_parser.domain_parsed = false;
+		kb.domain_parser.parseDomain(domainPath);
+	}
 
 	// fetch domain info
 	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
@@ -491,7 +500,7 @@ int main(int argc, char **argv)
 	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
 
 	ROS_INFO("KCL: (KB) Ready to receive");
-	ros::spin();
+	while(ros::ok() && ros::master::check()){ros::spinOnce();}
 
 	return 0;
 }

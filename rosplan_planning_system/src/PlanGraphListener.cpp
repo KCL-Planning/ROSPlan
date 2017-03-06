@@ -26,6 +26,6 @@ int main(int argc, char **argv)
 	desired_graph_id = "plan_0";
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("/kcl_rosplan/plan_graph", 1000, graphCallback);
-	ros::spin();
+	while(ros::ok() && ros::master::check()){ros::spinOnce();}
 	return 0;
 }

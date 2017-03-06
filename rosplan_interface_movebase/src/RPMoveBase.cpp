@@ -44,6 +44,9 @@ namespace KCL_rosplan {
 			// dispatch MoveBase action
 			move_base_msgs::MoveBaseGoal goal;
 			geometry_msgs::PoseStamped &pose = *results[0];
+			
+			std::cout << "Send the pose: (" << pose.pose.position.x << ", " << pose.pose.position.y << ", " << pose.pose.position.z << ") to movebase for waypoint: " << wpID << "." << std::endl;
+			
 			goal.target_pose = pose;
 			action_client.sendGoal(goal);
 
@@ -75,7 +78,7 @@ namespace KCL_rosplan {
 			}
 		} else {
 			// no KMS connection (failed)
-			ROS_INFO("KCL: (%s) aborting action dispatch; query to sceneDB failed", params.name.c_str());
+			ROS_INFO("KCL: (%s) aborting action dispatch; query to sceneDB failed; wpID %s", params.name.c_str(), wpID.c_str());
 			return false;
 		}
 	}
@@ -100,7 +103,7 @@ namespace KCL_rosplan {
 		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, dynamic_cast<KCL_rosplan::RPActionInterface*>(&rpmb));
 		rpmb.runActionInterface();
 
-		ros::spin();
+		while(ros::ok() && ros::master::check()){ros::spinOnce();}
 		
 		return 0;
 	}

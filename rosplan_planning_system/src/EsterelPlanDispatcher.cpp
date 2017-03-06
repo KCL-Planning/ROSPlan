@@ -170,7 +170,7 @@ namespace KCL_rosplan {
 		nh.param("/rosplan/data_path", data_path, std::string("common/"));
 
 		// dispatch plan
-		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");
+		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan %s", data_path.c_str());
 		
 		replan_requested = false;
 		bool repeatAction = false;

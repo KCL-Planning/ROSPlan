@@ -1,3 +1,6 @@
+#ifndef KCL_planning_system
+#define KCL_planning_system
+
 #include "ros/ros.h"
 #include "actionlib/server/simple_action_server.h"
 
@@ -23,9 +26,6 @@
 #include "PlanDispatcher.h"
 #include "SimplePlanDispatcher.h"
 #include "EsterelPlanDispatcher.h"
-
-#ifndef KCL_planning_system
-#define KCL_planning_system
 
 /**
  * This file includes the main loop of the planning node.

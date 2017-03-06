@@ -12,6 +12,7 @@ namespace KCL_rosplan {
 		nh.getParam("pddl_action_name", params.name);
 
 		// fetch action params
+		//std::cout << "Find the action interface: " << params.name << std::endl;
 		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details",ros::Duration(20));
 		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
@@ -75,9 +76,17 @@ namespace KCL_rosplan {
 		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>("/kcl_rosplan/get_domain_predicate_details");
 		std::vector<std::string>::iterator nit = predicateNames.begin();
 		for(; nit!=predicateNames.end(); nit++) {
-			if (predicates.find(*nit) != predicates.end()) continue;
+			//std::cout << "Check for predicate: " << *nit << std::endl;
+			if (predicates.find(*nit) != predicates.end())
+			{
+				//std::cout<< "Not found in the list of predicates!" << std::endl;
+				continue;
+			}
 			rosplan_knowledge_msgs::GetDomainPredicateDetailsService predSrv;
 			predSrv.request.name = *nit;
+			
+			//std::cout << "Get the predicate info for: " << *nit << std::endl;
+			
 			if(predClient.call(predSrv)) {
 				predicates.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainFormula>(*nit, predSrv.response.predicate));
 			} else {
@@ -99,7 +108,7 @@ namespace KCL_rosplan {
 		ros::Rate loopRate(1);
 		ROS_INFO("KCL: (%s) Ready to receive", params.name.c_str());
 
-		while(ros::ok()) {
+		while(ros::ok() && ros::master::check()) {
 
 			pddl_action_parameters_pub.publish(params);
 

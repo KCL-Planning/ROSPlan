@@ -81,12 +81,14 @@ namespace KCL_rosplan {
 			if(predicates) {
 				for (VAL::pred_decl_list::const_iterator ci = predicates->begin(); ci != predicates->end(); ci++) {
 					const VAL::pred_decl* predicate = *ci;
+					//std::cout << "Add predicate: " << predicate->getPred()->getName() << std::endl;
 					// predicate name
 					domain_predicates[predicate->getPred()->symbol::getName()];
 					// parameters
 					for (VAL::var_symbol_list::const_iterator vi = predicate->getArgs()->begin(); vi != predicate->getArgs()->end(); vi++) {
 						const VAL::var_symbol* var = *vi;
 						domain_predicates[predicate->getPred()->symbol::getName()].push_back(var->pddl_typed_symbol::getName());
+						//std::cout << "\tArg: " << var->getName() << std::endl;
 					}
 				}
 			}
@@ -110,6 +112,7 @@ namespace KCL_rosplan {
 			VAL::operator_list* operators = domain->ops;
 			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
 				const VAL::operator_* op = *ci;
+				
 				// operator name
 				domain_operators[op->name->symbol::getName()];
 				// parameters

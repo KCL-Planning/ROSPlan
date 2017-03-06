@@ -3,6 +3,11 @@
  * The domain is parsed from the PDDL domain file.
  * The problem instance is fetched from the Knowledge Base.
  */
+
+
+#ifndef KCL_environment
+#define KCL_environment
+
 #include "ros/ros.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
@@ -13,9 +18,6 @@
 #include <string>
 #include <cstdio>
 #include <iostream>
-
-#ifndef KCL_environment
-#define KCL_environment
 
 extern int yyparse();
 extern int yydebug;

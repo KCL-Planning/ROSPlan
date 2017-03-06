@@ -5,7 +5,9 @@ project(rosplan_planning_system)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  genmsg
   actionlib
+  actionlib_msgs
   std_msgs
   std_srvs
   diagnostic_msgs
@@ -21,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS} src/VALfiles
   LIBRARIES ${PROJECT_NAME} rosplan_action_interface
-  CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
+  CATKIN_DEPENDS roscpp rospy genmsg actionlib actionlib_msgs std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
 )
 
