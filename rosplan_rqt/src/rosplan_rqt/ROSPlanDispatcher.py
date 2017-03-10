@@ -14,9 +14,13 @@ from rosplan_dispatch_msgs.msg import *
 from rosplan_knowledge_msgs.srv import *
 from rosplan_knowledge_msgs.msg import *
 
-from python_qt_binding import loadUi
+from python_qt_binding import loadUi, QT_BINDING_VERSION
 from python_qt_binding.QtCore import Qt, QTimer, Signal, Slot
-from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QWidget
+if QT_BINDING_VERSION.startswith('4'):
+    from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QWidget
+else:
+    from python_qt_binding.QtWidgets import QHeaderView, QTreeWidgetItem, QListWidgetItem, QWidget
+    from python_qt_binding.QtGui import QIcon
 
 class PlanViewWidget(QWidget):
 
@@ -86,7 +90,10 @@ class PlanViewWidget(QWidget):
         self._plugin = plugin
         self.planView.sortByColumn(0, Qt.AscendingOrder)
         header = self.planView.header()
-        header.setResizeMode(QHeaderView.ResizeToContents)
+        if QT_BINDING_VERSION.startswith('4'):
+            header.setResizeMode(QHeaderView.ResizeToContents)
+        else:
+            header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # setup plan view columns
         self._column_index = {}

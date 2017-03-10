@@ -14,9 +14,12 @@ from rosplan_dispatch_msgs.msg import *
 from rosplan_knowledge_msgs.srv import *
 from rosplan_knowledge_msgs.msg import *
 
-from python_qt_binding import loadUi
+from python_qt_binding import loadUi, QT_BINDING_VERSION
 from python_qt_binding.QtCore import Qt, QTimer, QUrl, Signal, Slot
-from python_qt_binding.QtGui import *
+if QT_BINDING_VERSION.startswith('4'):
+    from python_qt_binding.QtGui import  QWidget
+else:
+    from python_qt_binding.QtWidgets import QWidget
 
 class ProblemViewerWidget(QWidget):
 

@@ -1,5 +1,7 @@
 #include "rosplan_knowledge_base/KnowledgeComparitor.h"
 
+#include <boost/algorithm/string.hpp>
+
 /* implementation of KnowledgeComparitor.h */
 namespace KCL_rosplan {
 
@@ -14,29 +16,28 @@ namespace KCL_rosplan {
 			
 			// check instance knowledge
 			if(0!=a.instance_type.compare(b.instance_type)) return false;
-			if(a.instance_name!="" && 0!=a.instance_name.compare(b.instance_name)) return false;
+			if(a.instance_name!="" && ! boost::iequals(a.instance_name, b.instance_name)) return false;
 
 		} else {
 
 			// check fact or function
-			if(a.attribute_name!="" && 0!=a.attribute_name.compare(b.attribute_name)) return false;
+			if(a.attribute_name!="" && ! boost::iequals(a.attribute_name, b.attribute_name)) return false;
 			if(a.is_negative != b.is_negative) return false;
 			if(a.values.size() != b.values.size()) return false;
 
 			for(size_t i=0;i<a.values.size();i++) {
 
 				// don't care about this parameter
-				if(""==a.values[i].value) continue;
+				if("" == a.values[i].value) continue;
 
 				// find matching object in parameters of b
-				bool found = false;
 				for(size_t i=0;i<b.values.size();i++) {
-					 if(a.values[i].key == b.values[i].key && a.values[i].value == b.values[i].value) {
-						found = true;
-						break;
+					if(! boost::iequals(a.values[i].key, b.values[i].key) ||
+					   ! boost::iequals(a.values[i].value, b.values[i].value))
+					{
+						return false;
 					}
 				}
-				if(!found) return false;
 			}
 		}
 
@@ -52,7 +53,7 @@ namespace KCL_rosplan {
 			return true;
 
 		for(size_t i=0;i<a.values.size();i++) {
-			if(0==a.values[i].value.compare(name))
+			if(boost::iequals(a.values[i].value, name))
 				return true;
 		}
 

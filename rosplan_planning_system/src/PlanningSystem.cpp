@@ -26,8 +26,8 @@ namespace KCL_rosplan {
 		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
 		plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
 		problem_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/problem", 5, true);
-		plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, true);
-		plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, true);
+		plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, /* latch */ false);
+		plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, /* latch */ false);
 
 		// problem generation client
 		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
@@ -367,6 +367,7 @@ namespace KCL_rosplan {
 			statusMsg.data = "Dispatching";
 			state_publisher.publish(statusMsg);
 			plan_start_time = ros::WallTime::now().toSec();
+			dispatch_attempts += 1;
 			planSucceeded = plan_dispatcher->dispatchPlan(plan_parser->action_list, mission_start_time, plan_start_time);
 			
 			if (!planSucceeded) {
@@ -376,6 +377,11 @@ namespace KCL_rosplan {
 			}
 		}
 		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_name.c_str());
+
+		if (! planSucceeded && dispatch_attempts >= max_dispatch_attempts) {
+			ROS_INFO("KCL: (PS) (%s) Maximum dispatch attempts (%i) exceeded",
+			         problem_name.c_str(), max_dispatch_attempts);
+    }
 
 		system_status = READY;
 		statusMsg.data = "Ready";
