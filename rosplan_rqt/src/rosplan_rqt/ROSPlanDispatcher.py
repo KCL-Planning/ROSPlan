@@ -109,6 +109,7 @@ class PlanViewWidget(QWidget):
         rospy.Subscriber("/kcl_rosplan/plan", CompletePlan, self.plan_callback)
         rospy.Subscriber("/kcl_rosplan/action_feedback", ActionFeedback, self.action_feedback_callback)
         rospy.Subscriber("/kcl_rosplan/system_state", String, self.system_status_callback)
+        self._plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
 
         self.refresh_model()
 
@@ -220,24 +221,21 @@ class PlanViewWidget(QWidget):
     """
     def _handle_plan_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('plan')
+        self._plan_pub.publish('plan')
 
     """
     called when the plan button is clicked; sends a planning request
     """
     def _handle_pause_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('pause')
+        self._plan_pub.publish('pause')
 
     """
     called when the plan button is clicked; sends a planning request
     """
     def _handle_cancel_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('cancel')
+        self._plan_pub.publish('cancel')
 
     """
     callback for complete_plan
