@@ -10,7 +10,6 @@ class ROSPlanProblemViewer(Plugin):
 
         self._widget = ProblemViewerWidget(self)
 
-        self._widget.start()
         if context.serial_number() > 1:
             self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
         context.add_widget(self._widget)

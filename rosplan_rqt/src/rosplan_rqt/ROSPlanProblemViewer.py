@@ -15,7 +15,7 @@ from rosplan_knowledge_msgs.srv import *
 from rosplan_knowledge_msgs.msg import *
 
 from python_qt_binding import loadUi, QT_BINDING_VERSION
-from python_qt_binding.QtCore import Qt, QTimer, QUrl, Signal, Slot
+from python_qt_binding.QtCore import Qt, QTimer, QUrl, Signal, Slot, pyqtSignal
 if QT_BINDING_VERSION.startswith('4'):
     from python_qt_binding.QtGui import  QWidget
 else:
@@ -24,6 +24,7 @@ else:
 class ProblemViewerWidget(QWidget):
 
     _problem_text = ""
+    _update_signal = pyqtSignal()
 
     def __init__(self, plugin=None):
         super(ProblemViewerWidget, self).__init__()
@@ -34,25 +35,19 @@ class ProblemViewerWidget(QWidget):
         self.setObjectName('ROSPlanProblemViewer')
 
         self._plugin = plugin
-        rospy.Subscriber("/kcl_rosplan/problem", String, self.refresh_problem)
+        rospy.Subscriber("/kcl_rosplan/problem", String, self.problem_received)
 
-        # init and start update timers
-        self._timer_set_problem = QTimer(self)
-        self._timer_set_problem.timeout.connect(self.set_problem)
-
-        self.start()
-
-    def start(self):
-        self._timer_set_problem.start(1000)
+        self._update_signal.connect(self.update_problem)
 
     """
     updating problem view
     """
-    def refresh_problem(self, msg):
+    def problem_received(self, msg):
         self._problem_text = msg.data
+        self._update_signal.emit()
 
-    def set_problem(self):
-        self.textEdit.setPlainText(self._problem_text)
+    def update_problem(self):
+	    self.textEdit.setPlainText(self._problem_text)
 
     """
     Qt methods
