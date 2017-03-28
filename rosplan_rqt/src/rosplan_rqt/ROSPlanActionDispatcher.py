@@ -14,9 +14,13 @@ from rosplan_dispatch_msgs.msg import *
 from rosplan_knowledge_msgs.srv import *
 from rosplan_knowledge_msgs.msg import *
 
-from python_qt_binding import loadUi
+from python_qt_binding import loadUi, QT_BINDING_VERSION
 from python_qt_binding.QtCore import Qt, QTimer, Signal, Slot
-from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QComboBox, QWidget
+if QT_BINDING_VERSION.startswith('4'):
+    from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QComboBox, QWidget
+else:
+    from python_qt_binding.QtWidgets import QHeaderView, QTreeWidgetItem, QListWidgetItem, QComboBox, QWidget
+    from python_qt_binding.QtGui import QIcon
 
 class ActionDispatchWidget(QWidget):
 

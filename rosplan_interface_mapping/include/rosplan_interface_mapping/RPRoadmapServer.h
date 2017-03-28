@@ -13,6 +13,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/CreatePRM.h"
 #include "rosplan_knowledge_msgs/AddWaypoint.h"
+#include "rosplan_knowledge_msgs/RemoveWaypoint.h"
 #include "occupancy_grid_utils/coordinate_conversions.h"
 
 #include <fstream>
@@ -125,6 +126,7 @@ namespace KCL_rosplan {
 		std::map<std::string, Waypoint*> waypoints;
 		std::map<std::string, std::string> db_name_map;
 		std::vector<Edge> edges;
+		bool clearWaypoint(const std::string &id);
 
 		// visualisation
 		ros::Publisher waypoints_pub;
@@ -152,6 +154,7 @@ namespace KCL_rosplan {
 		/* service to (re)generate waypoints */
 		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);
 		bool addWaypoint(rosplan_knowledge_msgs::AddWaypoint::Request &req, rosplan_knowledge_msgs::AddWaypoint::Response &res);
+		bool removeWaypoint(rosplan_knowledge_msgs::RemoveWaypoint::Request &req, rosplan_knowledge_msgs::RemoveWaypoint::Response &res);
 		void createPRM(nav_msgs::OccupancyGrid map, unsigned int nr_waypoints, double min_distance, double casting_distance, double connecting_distance, int occupancy_threshold, int total_attempts);
 		void odomCallback( const nav_msgs::OdometryConstPtr& msg );
 		void costMapCallback( const nav_msgs::OccupancyGridConstPtr& msg );

@@ -38,10 +38,6 @@ namespace KCL_rosplan {
 	{
 	private:
 
-		// visit controllers for ROS message packing
-		VALVisitorOperator op_visitor;
-		VALVisitorPredicate pred_visitor;
-
 		// adding and removing items to and from the knowledge base
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
