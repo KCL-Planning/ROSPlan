@@ -46,20 +46,29 @@ namespace KCL_rosplan {
 
 	public:
 
+		// conditional planning flags
+		bool use_unknowns;
+
 		// domain
 		DomainParser domain_parser;
 
 		// model
+		// TODO add constants to KB
+		std::map<std::string, std::vector<std::string> > model_constants;
 		std::map<std::string, std::vector<std::string> > model_instances;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_facts;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_functions;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_goals;
 
+		// conditional planning constraints
+		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
+
 		// plan and mission filter
+		// TODO remove plan filter
 		PlanFilter plan_filter;
 
 		/* fetching the domain */
-		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);		
+		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);
 		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
 		bool getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
 		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
@@ -67,17 +76,23 @@ namespace KCL_rosplan {
 		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
 
 		// checking the model
+		// TODO function inequalities in queryKnowledge
 		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
 
 		// fetching the model
 		bool getCurrentInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
 		bool getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 		bool getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
+		// TODO bool getCurrentConstraintsOneOf(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 
 		// adding and removing items to and from the knowledge base
 		bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
 		bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+
+		// conditional planning services
+		bool updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
+		// TODO bool updateKnowledgeConstraintsUnknowns(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 	};
 }
 #endif

@@ -54,6 +54,28 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+	/*--------------------*/
+	/* adding constraints */
+	/*--------------------*/
+
+	bool KnowledgeBase::updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+
+		int count = 0;
+		for(int i=0;i<req.knowledge.size();i++) {
+			// check if fact is true
+			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+				if(KnowledgeComparitor::containsKnowledge(req.knowledge[i], *pit)) {
+					count++;
+				}
+			}
+		}
+		if(count>1)	ROS_ERROR("KCL: (KB) Warning: more than one Knowledge Item is true in new OneOf constraint!");
+		model_oneof_constraints.push_back(req.knowledge);
+		res.success = true;
+		return true;
+	}
+
 	/*------------------*/
 	/* knowledge update */
 	/*------------------*/
@@ -218,15 +240,23 @@ namespace KCL_rosplan {
 			}
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-
 			// add domain attribute
+
+			std::string param_str;
+			for (size_t i = 0; i < msg.values.size(); ++i) {
+				param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
+			}
+
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+          ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
+                   msg.attribute_name.c_str(), param_str.c_str());
 					return;
 				}
 			}
-			ROS_INFO("KCL: (KB) Adding domain attribute (%s)", msg.attribute_name.c_str());
+			ROS_INFO("KCL: (KB) Adding domain attribute (%s%s)",
+			         msg.attribute_name.c_str(), param_str.c_str());
 			model_facts.push_back(msg);
 			plan_filter.checkFilters(msg, true);
 
@@ -253,12 +283,22 @@ namespace KCL_rosplan {
 	 */
 	void KnowledgeBase::addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg) {
 
+		std::string param_str;
+		for (size_t i = 0; i < msg.values.size(); ++i) {
+			param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
+		}
+
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 		for(pit=model_goals.begin(); pit!=model_goals.end(); pit++) {
-			if(KnowledgeComparitor::containsKnowledge(msg, *pit))
+			if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+				ROS_WARN("KCL: (KB) Goal (%s%s) already posted",
+				         msg.attribute_name.c_str(), param_str.c_str());
 				return;
+			}
 		}
-		ROS_INFO("KCL: (KB) Adding mission goal (%s)", msg.attribute_name.c_str());
+		
+		ROS_INFO("KCL: (KB) Adding mission goal (%s%s)",
+		         msg.attribute_name.c_str(), param_str.c_str());
 		model_goals.push_back(msg);
 	}
 
@@ -444,16 +484,19 @@ namespace KCL_rosplan {
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "rosplan_knowledge_base");
-	ros::NodeHandle n;
+	ros::NodeHandle n("~");
 
 	// parameters
 	std::string domainPath;
+	bool useUnknowns;
 	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
+	n.param("use_unknowns", useUnknowns, false);
 
 	KCL_rosplan::KnowledgeBase kb;
 	ROS_INFO("KCL: (KB) Parsing domain");
 	kb.domain_parser.domain_parsed = false;
 	kb.domain_parser.parseDomain(domainPath);
+	kb.use_unknowns = useUnknowns;
 
 	// fetch domain info
 	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
@@ -470,6 +513,7 @@ int main(int argc, char **argv)
 	// update knowledge
 	ros::ServiceServer updateServer1 = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
 	ros::ServiceServer updateServer2 = n.advertiseService("/kcl_rosplan/update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
+	ros::ServiceServer updateServer3 = n.advertiseService("/kcl_rosplan/update_knowledge_base_constraints_oneof", &KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, &kb);
 	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
 
 	// fetch knowledge

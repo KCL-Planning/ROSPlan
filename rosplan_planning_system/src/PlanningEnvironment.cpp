@@ -108,7 +108,7 @@ namespace KCL_rosplan {
 			
 			// operators
 			VAL::operator_list* operators = domain->ops;
-			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {			
+			for (VAL::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {
 				const VAL::operator_* op = *ci;
 				// operator name
 				domain_operators[op->name->symbol::getName()];

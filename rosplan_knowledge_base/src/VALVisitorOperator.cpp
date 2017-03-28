@@ -20,6 +20,7 @@ namespace KCL_rosplan {
 	void VALVisitorOperator::visit_operator_(VAL::operator_ * op) {
 
 		msg.formula.name = op->name->symbol::getName();
+		msg.formula.typed_parameters.clear();
 
 		// parameters
 		for (VAL::var_symbol_list::const_iterator vi = op->parameters->begin(); vi != op->parameters->end(); vi++) {
