@@ -12,6 +12,7 @@
 	<script> 
     $(function(){
       $("#includedContent").load("templates/nav-main.html"); 
+      $("#includedUpdates").load("updates.html"); 
       $("#includedSideBar").load("news.html"); 
     });
     </script>
@@ -20,33 +21,29 @@
     <div id="includedContent"></div>
 
     <section class="main-content">
-			
+
 	    <div id="includedSideBar"></div>
-		<section class="documentation-content">
+	    <div id="includedUpdates"></div>
+		<section class="sidebar" style="float:none">
 
 		<p><strong>What is ROSPlan?</strong><br/>The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch.</p>
 
-		<p>It possesses a simple interface, and includes some basic interfaces to common ROS libraries. It serves as a framework to test:</p>
-		<ul>
-		<li>alternate approaches to state estimation;</li>
-		<li>planners for robotics;</li>
-		<li>plan representations;</li>
-		<li>dispatch and execution of plans.</li>
-		</ul>
+		<p>It possesses a simple interface, and includes some basic interfaces to common ROS libraries. It serves as a framework to test: alternate approaches to state estimation; planners for robotics; plan representations; and dispatch and execution of plans.</p>
 
-		<div style="width:100%; text-align: center">
-		<div class="indexpanel">
+		<div style="text-align: center">
+		<div class="indexpanel" style="width:100%">
 			<h4></h4>
 			<a href="http://kcl-planning.github.io/ROSPlan/documentation" ><img class="panel" src="documentation/images/panel-image.png"/></a>
 			<h4>Documentation</h4>
 		</div>
 
-		<div class="indexpanel">
+		<div class="indexpanel" style="width:100%">
 			<h4></h4>
 			<a href="http://kcl-planning.github.io/ROSPlan/demonstration" ><img class="panel" src="demonstration/images/komodo.png"/></a>
 			<h4>Demonstrations</h4>
 		</div>
 		</div>
+
 		<div style="clear: both"></div>
 
 		</section>
