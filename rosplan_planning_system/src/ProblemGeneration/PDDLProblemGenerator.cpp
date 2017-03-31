@@ -55,7 +55,6 @@ namespace KCL_rosplan {
 		// add knowledge to the initial state
 		for(size_t i=0; i<environment.domain_attributes.size(); i++) {
 
-            is_negated = false;			
 			std::stringstream ss;			
 			ss << "    (";
 
@@ -66,7 +65,6 @@ namespace KCL_rosplan {
             
             //Check if the attribute is negated
             if(environment.domain_attributes[i].is_negative){
-                is_negated = true;
                 ss << "not (";
             }
 
@@ -99,7 +97,7 @@ namespace KCL_rosplan {
 			};
 			ss << ")";
 
-            if(is_negated)
+            if(environment.domain_attributes[i].is_negative)
                 ss << ")";
 
 			// output function value
