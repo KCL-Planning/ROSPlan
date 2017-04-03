@@ -154,11 +154,16 @@ class PlanViewWidget(QWidget):
             self.modelView.clear()
             self._fact_list.clear()
             for attribute in resp.attributes:
+                attributeText = ''
                 item = QListWidgetItem(self.modelView)
-                attributeText = '(' + attribute.attribute_name
+                if attribute.is_negative:
+                    attributeText = '(not '
+                attributeText = attributeText + '(' + attribute.attribute_name
                 for keyval in attribute.values:
                      attributeText = attributeText + ' ' + keyval.value
                 attributeText = attributeText + ')'
+                if attribute.is_negative:
+                    attributeText = attributeText + ')'
                 item.setText(attributeText)
                 self._fact_list[attributeText] = attribute
                 if attributeText in selected_list:
