@@ -405,9 +405,12 @@ namespace KCL_rosplan {
 
 			std::string name = (*nit)->node_name.substr(0, (*nit)->node_name.find(" "));
 			dest <<  (*nit)->node_id << "[ label=\"" << name;
-			if((*nit)->completed) dest << "\" style=\"fill: #77f; \"];" << std::endl;
-			else if((*nit)->dispatched) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
-			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
+			//if((*nit)->completed) dest << "\" style=\"fill: #77f; \"];" << std::endl;
+			//else if((*nit)->dispatched) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
+			//else dest << "\" style=\"fill: #fff; \"];" << std::endl;
+			if((*nit)->completed) dest << "\" style=\"filled\", " << "color=\"#7777ff\"];" << std::endl;
+			else if((*nit)->dispatched) dest << "\" style=\"filled\", " << "color=\"#77ff77\"];" << std::endl;
+			else dest << "\" style=\"filled\", " << "color=\"#ffffff\"];" << std::endl;
 		}
 
 		// edges
