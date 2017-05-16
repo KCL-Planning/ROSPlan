@@ -28,3 +28,6 @@
 
 #gedit
 *~
+
+# MongoDB database files
+/rosplan_knowledge_base/common/mongoDB

@@ -14,9 +14,13 @@ from rosplan_dispatch_msgs.msg import *
 from rosplan_knowledge_msgs.srv import *
 from rosplan_knowledge_msgs.msg import *
 
-from python_qt_binding import loadUi
+from python_qt_binding import loadUi, QT_BINDING_VERSION
 from python_qt_binding.QtCore import Qt, QTimer, Signal, Slot
-from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QWidget
+if QT_BINDING_VERSION.startswith('4'):
+    from python_qt_binding.QtGui import QHeaderView, QIcon, QTreeWidgetItem, QListWidgetItem, QWidget
+else:
+    from python_qt_binding.QtWidgets import QHeaderView, QTreeWidgetItem, QListWidgetItem, QWidget
+    from python_qt_binding.QtGui import QIcon
 
 class PlanViewWidget(QWidget):
 
@@ -86,7 +90,10 @@ class PlanViewWidget(QWidget):
         self._plugin = plugin
         self.planView.sortByColumn(0, Qt.AscendingOrder)
         header = self.planView.header()
-        header.setResizeMode(QHeaderView.ResizeToContents)
+        if QT_BINDING_VERSION.startswith('4'):
+            header.setResizeMode(QHeaderView.ResizeToContents)
+        else:
+            header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # setup plan view columns
         self._column_index = {}
@@ -102,6 +109,7 @@ class PlanViewWidget(QWidget):
         rospy.Subscriber("/kcl_rosplan/plan", CompletePlan, self.plan_callback)
         rospy.Subscriber("/kcl_rosplan/action_feedback", ActionFeedback, self.action_feedback_callback)
         rospy.Subscriber("/kcl_rosplan/system_state", String, self.system_status_callback)
+        self._plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
 
         self.refresh_model()
 
@@ -146,11 +154,16 @@ class PlanViewWidget(QWidget):
             self.modelView.clear()
             self._fact_list.clear()
             for attribute in resp.attributes:
+                attributeText = ''
                 item = QListWidgetItem(self.modelView)
-                attributeText = '(' + attribute.attribute_name
+                if attribute.is_negative:
+                    attributeText = '(not '
+                attributeText = attributeText + '(' + attribute.attribute_name
                 for keyval in attribute.values:
                      attributeText = attributeText + ' ' + keyval.value
                 attributeText = attributeText + ')'
+                if attribute.is_negative:
+                    attributeText = attributeText + ')'
                 item.setText(attributeText)
                 self._fact_list[attributeText] = attribute
                 if attributeText in selected_list:
@@ -213,24 +226,21 @@ class PlanViewWidget(QWidget):
     """
     def _handle_plan_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('plan')
+        self._plan_pub.publish('plan')
 
     """
     called when the plan button is clicked; sends a planning request
     """
     def _handle_pause_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('pause')
+        self._plan_pub.publish('pause')
 
     """
     called when the plan button is clicked; sends a planning request
     """
     def _handle_cancel_clicked(self, checked):
         self._status_list.clear()
-        plan_pub = rospy.Publisher('/kcl_rosplan/planning_commands', String, queue_size=10)
-        plan_pub.publish('cancel')
+        self._plan_pub.publish('cancel')
 
     """
     callback for complete_plan

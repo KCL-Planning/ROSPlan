@@ -6,7 +6,7 @@
 	<param name="/rosplan/planner_path" value="$(find rosplan_planning_system)/common/bin/" />
 
 	<!-- domain file -->
-	<param name="/rosplan/domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+	<param name="/rosplan/domain_path" value="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
@@ -17,7 +17,7 @@
 
 	<!-- scene database (MongoDB) -->
 	<node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
-		<param name="database_path" value="$(find rosplan_config)/knowledge_base/mongoDB" />
+		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
 	</node>
 	<node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
 
