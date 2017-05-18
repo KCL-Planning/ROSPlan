@@ -48,3 +48,13 @@ add_dependencies(rpmovebase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(rpmovebase ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+#############
+## Install ##
+#############
+
+install(TARGETS rpmovebase
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
