@@ -135,3 +135,14 @@ install(DIRECTORY src/VALfiles/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
+
+# This should probably go to the package bin directory,
+# but there is no simple way to determine this path from
+# within a launch file similar to "$(find ...)".
+# The chosen path allows to use the same roslaunch parameter,
+# when run from the workspace or when installed.
+file(GLOB COMMON_BINS common/bin/*)
+install(PROGRAMS ${COMMON_BINS}
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin
+)
+
