@@ -68,3 +68,12 @@ target_link_libraries(rpsimplemapServer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 # please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
 
+#############
+## Install ##
+#############
+
+install(TARGETS rproadmapServer rpsimplemapServer
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
