@@ -36,21 +36,22 @@
 
 #include <ros/ros.h>
 #include <rosplan_dispatch_msgs/CompletePlan.h>
+#include <rosplan_dispatch_msgs/ActionDispatch.h>
 
 #include <cstdio>
 
 void
 plan_cb(const rosplan_dispatch_msgs::CompletePlan::ConstPtr& msg)
 {
-/*	for (const auto &a : msg->plan) {
+	for (int i=0; i<msg->plan.size(); i++) {
 		std::string s;
-		for (const auto &p : a.parameters) {
-			s += " " + p.value;
+		for (int j=0; j<msg->plan[i].parameters.size(); j++) {
+			s += " " + msg->plan[i].parameters[j].value;
 		}
-		printf("%7.3f: (%s %s)  [%.3f]\n", a.dispatch_time, a.name.c_str(), s.c_str(), a.duration);
+		printf("%7.3f: (%s %s)  [%.3f]\n", msg->plan[i].dispatch_time, msg->plan[i].name.c_str(), s.c_str(), msg->plan[i].duration);
 	}
 	ros::shutdown();
-*/}
+}
 
 
 
