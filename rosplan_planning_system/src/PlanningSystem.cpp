@@ -379,9 +379,8 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (PS) (%s) Planning System Finished", problem_name.c_str());
 
 		if (! planSucceeded && dispatch_attempts >= max_dispatch_attempts) {
-			ROS_INFO("KCL: (PS) (%s) Maximum dispatch attempts (%i) exceeded",
-			         problem_name.c_str(), max_dispatch_attempts);
-    }
+			ROS_INFO("KCL: (PS) (%s) Maximum dispatch attempts (%i) exceeded",problem_name.c_str(), max_dispatch_attempts);
+    	}
 
 		system_status = READY;
 		statusMsg.data = "Ready";
