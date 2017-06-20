@@ -97,3 +97,13 @@ target_link_libraries(knowledgeBase ${catkin_LIBRARIES})
 ##########
 
 # please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
+
+#############
+## Install ##
+#############
+
+install(TARGETS knowledgeBase
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
