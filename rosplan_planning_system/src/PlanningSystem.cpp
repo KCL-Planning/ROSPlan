@@ -102,7 +102,7 @@ namespace KCL_rosplan {
 		environment.update(nh);
 
 		// generate PDDL problem (and problem-specific domain)
-		pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+		pddl_problem_generator.generatePDDLProblemFile(problem_path);
 		ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
 
 		// publish problem
@@ -319,7 +319,7 @@ namespace KCL_rosplan {
 
 			// generate PDDL problem (and problem-specific domain)
 			if(generate_problem) {
-				pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+				pddl_problem_generator.generatePDDLProblemFile(problem_path);
 				ROS_INFO("KCL: (PS) (%s) The problem was generated.", problem_name.c_str());
 			} else {
 				/* TODO check and remove

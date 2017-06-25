@@ -1,4 +1,4 @@
-#include "rosplan_planning_system/EsterelPlanDispatcher.h"
+#include "rosplan_planning_system/PlanDispatch/EsterelPlanDispatcher.h"
 
 
 namespace KCL_rosplan {

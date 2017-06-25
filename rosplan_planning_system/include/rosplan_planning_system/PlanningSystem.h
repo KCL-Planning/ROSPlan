@@ -13,17 +13,17 @@
 #include "rosplan_knowledge_msgs/GenerateProblemService.h"
 
 #include "PlanningEnvironment.h"
-#include "PDDLProblemGenerator.h"
+#include "ProblemGeneration/PDDLProblemGenerator.h"
 
-#include "PlanParser.h"
-#include "POPFPlanParser.h"
-#include "POPFEsterelPlanParser.h"
-#include "CFFPlanParser.h"
-#include "CLGPlanParser.h"
+#include "PlanParsing/PlanParser.h"
+#include "PlanParsing/POPFPlanParser.h"
+#include "PlanParsing/POPFEsterelPlanParser.h"
+#include "PlanParsing/CFFPlanParser.h"
+#include "PlanParsing/CLGPlanParser.h"
 
-#include "PlanDispatcher.h"
-#include "SimplePlanDispatcher.h"
-#include "EsterelPlanDispatcher.h"
+#include "PlanDispatch/PlanDispatcher.h"
+#include "PlanDispatch/SimplePlanDispatcher.h"
+#include "PlanDispatch/EsterelPlanDispatcher.h"
 
 #ifndef KCL_planning_system
 #define KCL_planning_system

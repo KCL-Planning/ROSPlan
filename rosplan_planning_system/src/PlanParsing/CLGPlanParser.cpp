@@ -1,4 +1,4 @@
-#include "rosplan_planning_system/CLGPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/CLGPlanParser.h"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -261,7 +261,7 @@ namespace KCL_rosplan {
 	 */
 	void CLGPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
-		ROS_INFO("KCL: (CLGPlanParser) Loading plan from file: %s. Initial action ID: %zu", ((dataPath + "plan.pddl").c_str()), freeActionID);
+		ROS_INFO("KCL: (%s) Loading plan from file: %s. Initial action ID: %zu", ros::this_node::getName().c_str(), ((dataPath + "plan.pddl").c_str()), freeActionID);
 		
 		// prepare plan
 		plan_nodes.clear();
@@ -359,7 +359,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
 		
-		ROS_INFO("KCL: (CLGPlanParser) Write the esterel plan: %s", strl_file.c_str());
+		ROS_INFO("KCL: (%s) Write the esterel plan: %s", ros::this_node::getName().c_str(), strl_file.c_str());
 		
 		std::ofstream dest;
 		dest.open(strl_file.c_str());

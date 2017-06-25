@@ -78,58 +78,55 @@ set(VAL_SOURCES
 	src/VALfiles/Utils.cpp)
 
 ## planning system sources
-set(PLANNING_SOURCES
-	src/PlanningSystem.cpp
-	src/PlanDispatch/SimplePlanDispatcher.cpp
-	src/PlanDispatch/EsterelPlanDispatcher.cpp
-	src/PlanParsing/POPFPlanParser.cpp
-	src/PlanParsing/CFFPlanParser.cpp
-	src/PlanParsing/CLGPlanParser.cpp
-	src/PlanParsing/POPFEsterelPlanParser.cpp
-	src/ProblemGeneration/PDDLProblemGenerator.cpp
-	src/PlanningEnvironment.cpp
-	src/EsterelPlan.cpp)
-
-## planning system sources
-set(PLANNING_INTERFACE_SOURCES
-	src/PlannerInterface.cpp
-	src/PlanParsing/POPFPlanParser.cpp
-	src/PlanParsing/CFFPlanParser.cpp
-	src/PlanParsing/CLGPlanParser.cpp
-	src/PlanParsing/POPFEsterelPlanParser.cpp
-	src/ProblemGeneration/PDDLProblemGenerator.cpp
-	src/PlanningEnvironment.cpp
-	src/EsterelPlan.cpp)
+#set(PLANNING_SOURCES
+#	src/PlanningSystem.cpp
+#	src/PlanDispatch/SimplePlanDispatcher.cpp
+#	src/PlanParsing/POPFPlanParser.cpp
+#	src/ProblemGeneration/PDDLProblemGenerator.cpp
+#	src/PlanningEnvironment.cpp
+#	src/Plans/EsterelPlan.cpp)
 
 ## Declare cpp executables
-add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
-add_executable(plannerInterface ${PLANNING_INTERFACE_SOURCES} ${VAL_SOURCES})
-add_executable(simulatedAction src/RPSimulatedActionInterface.cpp src/RPActionInterface.cpp)
+# add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
+add_executable(plannerInterface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
+add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp)
+add_executable(popf_simple_plan_parser src/PlanParsing/POPFPlanParser.cpp src/PlanParsing/PlanParser.cpp)
+add_executable(popf_esterel_plan_parser src/PlanParsing/POPFEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
+add_executable(planDispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
+add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cpp src/ActionInterface/RPActionInterface.cpp)
 add_executable(print_plan src/print_plan.cpp)
 
 ## Add dependencies
-add_dependencies(planner ${catkin_EXPORTED_TARGETS})
+# add_dependencies(planner ${catkin_EXPORTED_TARGETS})
 add_dependencies(plannerInterface ${catkin_EXPORTED_TARGETS})
+add_dependencies(problemInterface ${catkin_EXPORTED_TARGETS})
+add_dependencies(popf_simple_plan_parser ${catkin_EXPORTED_TARGETS})
+add_dependencies(popf_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
+add_dependencies(planDispatcher ${catkin_EXPORTED_TARGETS})
 add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 add_dependencies(print_plan ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
-target_link_libraries(planner ${catkin_LIBRARIES})
+# target_link_libraries(planner ${catkin_LIBRARIES})
 target_link_libraries(plannerInterface ${catkin_LIBRARIES})
+target_link_libraries(problemInterface ${catkin_LIBRARIES})
+target_link_libraries(popf_simple_plan_parser ${catkin_LIBRARIES})
+target_link_libraries(popf_esterel_plan_parser ${catkin_LIBRARIES})
+target_link_libraries(planDispatcher ${catkin_LIBRARIES})
 target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 target_link_libraries(print_plan ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-add_library(rosplan_action_interface src/RPActionInterface.cpp)
+add_library(rosplan_action_interface src/ActionInterface/RPActionInterface.cpp)
 add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME} rosplan_action_interface planner print_plan simulatedAction
+install(TARGETS ${PROJECT_NAME} rosplan_action_interface print_plan simulatedAction
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

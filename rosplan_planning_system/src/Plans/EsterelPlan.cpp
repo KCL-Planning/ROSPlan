@@ -1,4 +1,4 @@
-#include "rosplan_planning_system/EsterelPlan.h"
+#include "rosplan_planning_system/Plans/EsterelPlan.h"
 
 #include <vector>
 #include <string>

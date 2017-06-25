@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- planning system -->
+	<node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="plannerInterface" respawn="false" output="screen">
+
+		<!-- directory for files -->
+		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+		<param name="data_path" value="$(find rosplan_planning_system)/common/" />
+		<param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
+
+		<!-- to run the planner -->
+		<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+	</node>
+
+</launch>
