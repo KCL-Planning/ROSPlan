@@ -159,7 +159,7 @@ namespace KCL_rosplan {
 				while(!finished && !infile.eof()) {
 					for(std::string::iterator it = params.begin(); it != params.end(); ++it) {
 						switch (state) {
-							case 0://looking for predicate started with ?
+							case 0://looking for parameter started with ?
 							if (*it == '?') {
 								count_start = count_start + count_length;
 								count_length = 0;
@@ -167,7 +167,7 @@ namespace KCL_rosplan {
 							}
 							break;
 							
-							case 1://getting predicate
+							case 1://getting parameter
 							if (*it == ' ' || *it == ')') {
 								operator_parameter_map[action_name].push_back(params.substr(count_start,count_length));
 								state =0;
