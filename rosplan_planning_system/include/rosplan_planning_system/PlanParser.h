@@ -3,6 +3,7 @@
  * TODO Document
  */
 #include <string>
+#include <vector>
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
@@ -13,6 +14,9 @@
 
 namespace KCL_rosplan {
 
+	class StrlNode;
+	class StrlEdge;
+	
 	class PlanParser
 	{
 	public:
@@ -20,12 +24,20 @@ namespace KCL_rosplan {
 		virtual void reset() =0;
 
 		/* post process plan */
-		virtual void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) =0;
+		virtual void preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) = 0;
 		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;
 
 		/* plan knowledge filter */
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> knowledge_filter;
-		virtual void generateFilter(PlanningEnvironment &environment) =0;
+		virtual void generateFilter(PlanningEnvironment &environment) = 0;
+		
+		std::vector<StrlNode*>& getPlanNodes() { return plan_nodes; }
+		std::vector<StrlEdge*>& getPlanEdges() { return plan_edges; }
+		
+	protected:
+		/* plan description in Esterel */
+		std::vector<StrlNode*> plan_nodes;
+		std::vector<StrlEdge*> plan_edges;
 	};
 } // close namespace
 

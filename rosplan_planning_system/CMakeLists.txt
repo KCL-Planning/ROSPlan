@@ -84,6 +84,7 @@ set(PLANNING_SOURCES
 	src/POPFPlanParser.cpp
 	src/CFFPlanParser.cpp
 	src/POPFEsterelPlanParser.cpp
+	src/POPF3EsterelPlanParser.cpp
 	src/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp
 	src/EsterelPlan.cpp)
@@ -128,3 +129,4 @@ install(DIRECTORY src/VALfiles/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
+

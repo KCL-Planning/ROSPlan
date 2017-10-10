@@ -10,14 +10,14 @@
 
 #include "PlanDispatcher.h"
 #include "EsterelPlan.h"
-#include "CFFPlanParser.h"
-#include "POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
 
 namespace KCL_rosplan
 {
+	class PlanParser;
+	
 	class EsterelPlanDispatcher: public PlanDispatcher
 	{
 	private:
@@ -47,8 +47,7 @@ namespace KCL_rosplan
 	public:
 
 		/* constructor */
-		EsterelPlanDispatcher(CFFPlanParser &parser);
-		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);
+		EsterelPlanDispatcher(PlanParser &parser);
 
 		/* access */
 		int getCurrentAction();

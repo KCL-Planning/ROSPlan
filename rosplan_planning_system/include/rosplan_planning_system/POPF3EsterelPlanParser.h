@@ -15,15 +15,15 @@
 #include "PlanParser.h"
 #include "EsterelPlan.h"
 
-#ifndef KCL_popf_esterel_parser
-#define KCL_popf_esterel_parser
+#ifndef KCL_popf3_esterel_parser
+#define KCL_popf3_esterel_parser
 
 /**
- * This class describes the POPFEsterelPlanParser, which parses the output of popf and generates an Esterel plan.
+ * This class describes the POPF3EsterelPlanParser, which parses the output of popf and generates an Esterel plan.
  */
 namespace KCL_rosplan {
 
-	class POPFEsterelPlanParser: public PlanParser
+	class POPF3EsterelPlanParser: public PlanParser
 	{
 	private:
 
@@ -50,7 +50,7 @@ namespace KCL_rosplan {
 	public:
 
 		/* constructor */
-		POPFEsterelPlanParser(ros::NodeHandle &nh);
+		POPF3EsterelPlanParser(ros::NodeHandle &nh);
 
 		/* service to parse plans */
 		bool produceEsterel();

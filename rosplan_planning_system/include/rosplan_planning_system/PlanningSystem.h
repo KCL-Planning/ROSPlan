@@ -21,6 +21,7 @@
 #include "PlanParser.h"
 #include "POPFPlanParser.h"
 #include "POPFEsterelPlanParser.h"
+#include "POPF3EsterelPlanParser.h"
 #include "CFFPlanParser.h"
 
 #include "PlanDispatcher.h"

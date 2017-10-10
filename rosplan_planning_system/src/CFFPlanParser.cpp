@@ -239,6 +239,7 @@ namespace KCL_rosplan {
 		// prepare plan
 		plan_nodes.clear();
 		plan_edges.clear();
+		jump_map.clear();
 		
 		// Manage shed / assume knowledge bases.
 		std::vector<std::vector<StrlEdge*>* > leafs;

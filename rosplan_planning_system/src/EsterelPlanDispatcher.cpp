@@ -1,5 +1,5 @@
 #include "rosplan_planning_system/EsterelPlanDispatcher.h"
-
+#include "rosplan_planning_system/PlanParser.h"
 
 namespace KCL_rosplan {
 
@@ -7,36 +7,21 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser)
+	EsterelPlanDispatcher::EsterelPlanDispatcher(PlanParser &parser)
 		: action_id_offset(0)
 	{
 		ros::NodeHandle nh("~");
 		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
 
-		plan_nodes = &(parser.plan_nodes);
-		plan_edges = &(parser.plan_edges);
+		plan_nodes = &parser.getPlanNodes();
+		plan_edges = &parser.getPlanEdges();
 
 		current_action = 0;
 
 		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
 		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
 	}
-
-	EsterelPlanDispatcher::EsterelPlanDispatcher(POPFEsterelPlanParser &parser)
-		: action_id_offset(0)
-	{
-		ros::NodeHandle nh("~");
-		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
-
-		plan_nodes = &parser.plan_nodes;
-		plan_edges = &parser.plan_edges;
-
-		current_action = 0;
-
-		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
-	}
-
+	
 	/*---------------*/
 	/* public access */
 	/*---------------*/
@@ -134,7 +119,7 @@ namespace KCL_rosplan {
 							edge.edge_name = (*iter)[1];
 							plan_edges[(*iter)[1]] = edge;
 						}
-						plan_description[currentNode].output.push_back((*iter)[1]);
+						plan_description[curren	tNode].output.push_back((*iter)[1]);
 					}
 				}
 			} else {
