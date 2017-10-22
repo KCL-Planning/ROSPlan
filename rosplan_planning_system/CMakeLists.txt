@@ -86,6 +86,7 @@ set(PLANNING_SOURCES
 	src/PlanParsing/CFFPlanParser.cpp
 	src/PlanParsing/CLGPlanParser.cpp
 	src/PlanParsing/POPFEsterelPlanParser.cpp
+	src/PlanParsing/FFPlanParser.cpp
 	src/ProblemGeneration/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp
 	src/EsterelPlan.cpp)
@@ -124,6 +125,10 @@ add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 add_library(rosplan_action_interface src/RPActionInterface.cpp)
 add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
+
+###########
+## Tests ##
+###########
 
 #############
 ## Install ##

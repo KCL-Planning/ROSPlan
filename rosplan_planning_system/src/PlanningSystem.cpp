@@ -3,8 +3,8 @@
 #include <sstream>
 #include <string>
 #include <ctime>
-#include <string>
 #include <streambuf>
+#include <map>
 
 namespace KCL_rosplan {
 
@@ -12,36 +12,60 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
-		: system_status(READY),
-		  plan_parser(new POPFEsterelPlanParser(nh)),
-		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
-	{
-		// dispatcher
-		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPFEsterelPlanParser*>(plan_parser));
+    PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
+        : system_status(READY),
+            plan_parser(0),
+            plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
+    {
+        // planners: command, parser and dispatcher.
+        planner_list["popf-esterel"] = PlannerInfo(new POPFEsterelPlanParser(nh), std::string("timeout 10 PLANNER_PATH/bin/popf -n DOMAIN PROBLEM"));
+        planner_list["popf-esterel"].dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPFEsterelPlanParser*>(planner_list["popf-esterel"].parser));
+        planner_list["popf"] = PlannerInfo(new POPFPlanParser(), std::string("timeout 10 PLANNER_PATH/popf -n DOMAIN PROBLEM"));
+        planner_list["popf"].dispatcher = new SimplePlanDispatcher();
+        planner_list["ff"] = PlannerInfo(new FFPlanParser(), std::string("timeout 10 PLANNER_PATH/ff -o DOMAIN -f PROBLEM"));
+        planner_list["ff"].dispatcher = new SimplePlanDispatcher();
+                
+        // publishing "action_dispatch", "action_feedback" and add to the dispatchers
+      	ros::Publisher action_publisher;
+		ros::Publisher action_feedback_pub;
+      
+        action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, /* latch */ false);
+        action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, /* latch */ false);
+                
+        std::map<std::string, PlannerInfo>::iterator it;
+        for(it = planner_list.begin(); it != planner_list.end(); it++) {
+            it->second.dispatcher->action_publisher = action_publisher;
+            it->second.dispatcher->action_feedback_pub = action_feedback_pub;
+        }
+        
+        // publishing plan and problem
+        plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
+        problem_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/problem", 5, true);        
+        // publishing system_state
+        state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);  
+        // problem generation client
+        generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
 
-		// publishing system_state
-		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
+        // default parser and dispatcher
+        plan_parser =  planner_list["popf-esterel"].parser;
+        plan_dispatcher = planner_list["popf-esterel"].dispatcher;
+      
+        // start planning action server
+        plan_server->start();
+    }
 
-		// publishing "action_dispatch", "action_feedback", "plan"; listening "action_feedback"
-		plan_publisher = nh.advertise<rosplan_dispatch_msgs::CompletePlan>("/kcl_rosplan/plan", 5, true);
-		problem_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/problem", 5, true);
-		plan_dispatcher->action_publisher = nh.advertise<rosplan_dispatch_msgs::ActionDispatch>("/kcl_rosplan/action_dispatch", 1000, /* latch */ false);
-		plan_dispatcher->action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 5, /* latch */ false);
+    PlanningSystem::~PlanningSystem()
+    {
+        // planners        
+        std::map<std::string, PlannerInfo>::iterator it;
+        for(it = planner_list.begin(); it != planner_list.end(); it++) {
+            delete it->second.parser;
+            delete it->second.dispatcher;
+        }
+        planner_list.clear();
 
-		// problem generation client
-		generate_problem_client = nh.serviceClient<rosplan_knowledge_msgs::GenerateProblemService>("/kcl_rosplan/generate_planning_problem");
-
-		// start planning action server
-		plan_server->start();
-	}
-	
-	PlanningSystem::~PlanningSystem()
-	{
-		delete plan_parser;
-		delete plan_dispatcher;
-		delete plan_server;
-	}
+        delete plan_server;
+}
 
 	/**
 	 * Runs external commands
@@ -220,7 +244,11 @@ namespace KCL_rosplan {
 	bool PlanningSystem::runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
 		ros::NodeHandle nh;
-
+		std::string domain_path;
+		std::string problem_path;
+		std::string planner_command;
+		std::string data_path;
+		
 		data_path = "common/";
 		domain_path = "common/domain.pddl";
 		problem_path = "common/problem.pddl";
@@ -229,11 +257,12 @@ namespace KCL_rosplan {
 
 		// setup environment
 		nh.param("/rosplan/domain_path", domain_path, std::string("common/domain.pddl"));
-		nh.getParam("/rosplan_planning_system/data_path", data_path);
 		nh.getParam("/rosplan_planning_system/problem_path", problem_path);
+		nh.getParam("/rosplan_planning_system/planner_path", planner_path);
 		nh.getParam("/rosplan_planning_system/planner_command", planner_command);
 		nh.getParam("/rosplan_planning_system/max_dispatch_attempts", max_dispatch_attempts);
-
+        nh.getParam("/rosplan_planning_system/data_path", data_path);
+		
 		// call planning server
 		plan_dispatcher->setCurrentAction(0);
 		return runPlanningServer(domain_path, problem_path, data_path, planner_command);
@@ -296,10 +325,25 @@ namespace KCL_rosplan {
 		state_publisher.publish(statusMsg);
 
 		ros::NodeHandle nh("~");
-
+		
+        // prepare planner, parser and dispatcher
+		std::string planner_name = planner_command;
+		
+		// select planner based on information in planner_command parameter
+		// planner command as type of planner: "popf", "ff", etc.
+		// in any other case use default planner command that is POPFEsterel.       
+        if (planner_list.find(planner_name) == planner_list.end()) {
+			planner_name = "popf-esterel";
+		}		
+		planner_app = planner_list[planner_name].command;        			
+		plan_parser = planner_list[planner_name].parser;
+        plan_dispatcher  = planner_list[planner_name].dispatcher;        
+        
+		ROS_INFO("KCL: (PS) Planner: %s, command: %s", planner_name.c_str(), planner_app.c_str());
+     
 		// parse domain
 		environment.parseDomain(domain_path);
-		
+        
 		// dispatch plan
 		plan_parser->reset();
 		plan_dispatcher->reset();
@@ -381,7 +425,7 @@ namespace KCL_rosplan {
 		if (! planSucceeded && dispatch_attempts >= max_dispatch_attempts) {
 			ROS_INFO("KCL: (PS) (%s) Maximum dispatch attempts (%i) exceeded",
 			         problem_name.c_str(), max_dispatch_attempts);
-    }
+    	}
 
 		system_status = READY;
 		statusMsg.data = "Ready";
@@ -398,21 +442,27 @@ namespace KCL_rosplan {
 	 * passes the problem to the Planner; the plan to post-processing.
 	 * This method is popf-specific.
 	 */
+	 
 	bool PlanningSystem::runPlanner() {
 
+        ROS_INFO("KCL: (PS) Run planner");
+        
 		// save previous plan
 		planning_attempts++;
 		if(plan_parser->action_list.size() > 0) {
 			std::vector<rosplan_dispatch_msgs::ActionDispatch> oldplan(plan_parser->action_list);
 			plan_list.push_back(oldplan);
 		}
-
+   
 		// run the planner
-		std::string str = planner_command;
-		std::size_t dit = str.find("DOMAIN");
+		std::string str = planner_app;
+		std::size_t dit;
+        dit = str.find("PLANNER_PATH");
+        if(dit!=std::string::npos) str.replace(dit,12,planner_path);
+        dit = str.find("DOMAIN");
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
-		std::size_t pit = str.find("PROBLEM");
-		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
+		dit = str.find("PROBLEM");
+		if(dit!=std::string::npos) str.replace(dit,7,problem_path);
 		
 		std::string commandString = str + " > " + data_path + "plan.pddl";
 		ROS_INFO("KCL: (PS) (%s) Running: %s", problem_name.c_str(),  commandString.c_str());
