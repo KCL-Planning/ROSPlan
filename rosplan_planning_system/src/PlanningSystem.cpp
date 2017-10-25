@@ -14,13 +14,15 @@ namespace KCL_rosplan {
 
 	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
 		: system_status(READY),
-		  plan_parser(new POPF3EsterelPlanParser(nh)),
+		  //plan_parser(new POPF3EsterelPlanParser(nh)),
 		  //plan_parser(new POPFEsterelPlanParser(nh)),
-		  //plan_parser(new CFFPlanParser(nh)),
+		  plan_parser(new CFFPlanParser(nh)),
 		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
 	{
 		// dispatcher
-		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPF3EsterelPlanParser*>(plan_parser));
+		//plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPF3EsterelPlanParser*>(plan_parser));
+		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<CFFPlanParser*>(plan_parser));
+		//plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPFEsterelPlanParser*>(plan_parser));
 
 		// publishing system_state
 		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
@@ -278,7 +280,7 @@ namespace KCL_rosplan {
 		domain_path = domainPath;
 		problem_path = problemPath;
 		planner_command = plannerCommand;
-		
+
 		// set problem name for ROS_INFO
 		std::size_t lastDivide = problem_path.find_last_of("/\\");
 		if(lastDivide != std::string::npos) {
