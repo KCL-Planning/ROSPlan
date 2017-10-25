@@ -44,8 +44,8 @@ namespace KCL_rosplan {
 	public:
 
 		/* plan description in Esterel */
-		std::vector<StrlNode*> plan_nodes;
-		std::vector<StrlEdge*> plan_edges;
+		//std::vector<StrlNode*> plan_nodes;
+		//std::vector<StrlEdge*> plan_edges;
 
 		/* constructor */
 		CFFPlanParser(ros::NodeHandle &nh);
