@@ -126,10 +126,6 @@ add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 add_library(rosplan_action_interface src/RPActionInterface.cpp)
 add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 
-###########
-## Tests ##
-###########
-
 #############
 ## Install ##
 #############
