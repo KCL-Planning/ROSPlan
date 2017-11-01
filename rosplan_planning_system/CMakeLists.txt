@@ -86,6 +86,7 @@ set(PLANNING_SOURCES
 	src/PlanParsing/CFFPlanParser.cpp
 	src/PlanParsing/CLGPlanParser.cpp
 	src/PlanParsing/POPFEsterelPlanParser.cpp
+	src/PlanParsing/FFPlanParser.cpp
 	src/ProblemGeneration/PDDLProblemGenerator.cpp
 	src/PlanningEnvironment.cpp
 	src/EsterelPlan.cpp)
