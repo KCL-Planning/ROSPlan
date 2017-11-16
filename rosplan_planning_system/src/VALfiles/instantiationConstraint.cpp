@@ -80,9 +80,12 @@ void instantiatedOp::writeAll(ostream & o)
 OpStore instantiatedOp::instOps;
 map<VAL::pddl_type *,vector<VAL::const_symbol*> > instantiatedOp::values;
 
-
+/**
+ * Instantiate the operator, discard any that are not applicable.
+ */
 void instantiatedOp::instantiate(const VAL::operator_ * op,const VAL::problem * prb,VAL::TypeChecker & tc)
 {
+	std::cout << "[instantiatedOp::instantiate] Instantiate: " << op->name << std::endl;
 	FastEnvironment e(static_cast<const id_var_symbol_table*>(op->symtab)->numSyms());
 	vector<vector<VAL::const_symbol*>::const_iterator> vals(op->parameters->size());
 	vector<vector<VAL::const_symbol*>::const_iterator> starts(op->parameters->size());
@@ -90,6 +93,8 @@ void instantiatedOp::instantiate(const VAL::operator_ * op,const VAL::problem * 
 	vector<VAL::var_symbol *> vars(op->parameters->size());
 	int i = 0;
 	int c = 1;
+	
+	// For every parameter, determine all possible instantiations.
 	for(var_symbol_list::const_iterator p = op->parameters->begin();
 			p != op->parameters->end();++p,++i)
 	{
@@ -104,11 +109,14 @@ void instantiatedOp::instantiate(const VAL::operator_ * op,const VAL::problem * 
 		vars[i] = *p;
 		c *= values[(*p)->type].size();
 	};
-//	cout << c << " candidates to consider\n";
+	cout << "[instantiatedOp::instantiate] " << c << " candidates to consider" << std::endl;
 	if(!i)
 	{
 		SimpleEvaluator se(&e);
 		op->visit(&se);
+		
+		cout << "[instantiatedOp::instantiate] Evaluated the operator." << std::endl;
+		
 		if(!se.reallyFalse())
 		{
 			FastEnvironment * ecpy = e.copy();
@@ -116,9 +124,12 @@ void instantiatedOp::instantiate(const VAL::operator_ * op,const VAL::problem * 
 			if(instOps.insert(o))
 			{
 				delete o;
-			};
-				
-		};
+			}	
+		}
+		else
+		{
+			std::cout << "[instantiatedOp::instantiate] Operator is not applicable, skipping." << std::endl;
+		}
 		return;
 	};
 	--i;

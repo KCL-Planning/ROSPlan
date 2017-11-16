@@ -159,7 +159,7 @@ namespace KCL_rosplan {
 		
 		replan_requested = false;
 		bool repeatAction = false;
-		
+
 		// initialise machine
 		std::map<StrlEdge*,bool> edge_values;
 		for(std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ci++)
@@ -170,7 +170,7 @@ namespace KCL_rosplan {
 
 		for (std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ++ci) {
 			StrlEdge* edge = *ci;
-			
+
 			if (edge->external_conditions.empty()) {
 				continue;
 			}
@@ -185,6 +185,7 @@ namespace KCL_rosplan {
 			if (query_knowledge_client.call(querySrv)) {
 				if (querySrv.response.all_true) {
 					edge->active = true;
+				} else {
 				}
 			} else {
 				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
@@ -237,17 +238,35 @@ namespace KCL_rosplan {
 					// query KMS for condition edges
 					bool activate = true;
 					if(action_edge_count==0 || activate_action) {
+						std::cout << "==================CHeck external conditions! [" << strl_node->node_id << "] " << strl_node->node_name << std::endl;
 						for (std::vector<StrlEdge*>::const_iterator ci = strl_node->input.begin(); ci != strl_node->input.end(); ++ci) {
 							StrlEdge* edge = *ci;
+							std::cout << "Check: " << edge->edge_name << std::endl;
 							if ((*ci)->signal_type == CONDITION && !edge->external_conditions.empty()) {
 								// Check if all external conditions have been satisfied.
 								rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
 								querySrv.request.knowledge = edge->external_conditions;
+								
+								for (std::vector<rosplan_knowledge_msgs::KnowledgeItem>::const_iterator ci = edge->external_conditions.begin(); ci != edge->external_conditions.end(); ++ci)
+								{
+									const rosplan_knowledge_msgs::KnowledgeItem& ki = *ci;
+									std::cout << "(" << ki.attribute_name;
+									for (std::vector<diagnostic_msgs::KeyValue>::const_iterator ci2 = ki.values.begin(); ci2 != ki.values.end(); ++ci2)
+									{
+										const diagnostic_msgs::KeyValue& kv = *ci2;
+										std::cout << " " << kv.key << "=" << kv.value;
+									}
+									std::cout << ")" << std::endl;
+								}
+								
 								if (query_knowledge_client.call(querySrv)) {
 									edge_values[edge] = querySrv.response.all_true;
 									if (!querySrv.response.all_true) {
 										activate = false;
+										
 										break;
+									} else {
+										
 									}
 								} else {
 									ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");

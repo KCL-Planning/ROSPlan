@@ -13,7 +13,8 @@ namespace KCL_rosplan {
 
 		// fetch action params
 		//std::cout << "Find the action interface: " << params.name << std::endl;
-		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details",ros::Duration(20));
+		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details");
+		ROS_ERROR("KCL: (RPActionInterface) Knowledge Base operator details, service active for ", params.name.c_str());
 		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = params.name;
