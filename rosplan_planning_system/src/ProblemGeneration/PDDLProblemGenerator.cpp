@@ -48,12 +48,11 @@ namespace KCL_rosplan {
 	/*---------------*/
 
 	void PDDLProblemGenerator::makeInitialState(PlanningEnvironment environment, std::ofstream &pFile) {
-
 		pFile << "(:init" << std::endl;
 
 		// add knowledge to the initial state
 		for(size_t i=0; i<environment.domain_attributes.size(); i++) {
-			
+
 			std::stringstream ss;			
 			ss << "    (";
 
@@ -61,6 +60,11 @@ namespace KCL_rosplan {
 			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
 				ss << "= (";
 			};
+            
+            //Check if the attribute is negated
+            if(environment.domain_attributes[i].is_negative){
+                ss << "not (";
+            }
 
 			ss << environment.domain_attributes[i].attribute_name;
 			
@@ -81,7 +85,7 @@ namespace KCL_rosplan {
 				for(size_t k=0; k<environment.domain_attributes[i].values.size(); k++) {
 					if(0 == environment.domain_attributes[i].values[k].key.compare(ait->second[j])) {
 						ss << " " << environment.domain_attributes[i].values[k].value;
-						found = true;
+                        found = true;
 					}
 				}
 				if(!found)
@@ -90,6 +94,9 @@ namespace KCL_rosplan {
 				}
 			};
 			ss << ")";
+
+            if(environment.domain_attributes[i].is_negative)
+                ss << ")";
 
 			// output function value
 			if(environment.domain_attributes[i].knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {

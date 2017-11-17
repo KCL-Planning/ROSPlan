@@ -42,7 +42,7 @@
 void
 plan_cb(const rosplan_dispatch_msgs::CompletePlan::ConstPtr& msg)
 {
-	for (const auto &a : msg->plan) {
+/*	for (const auto &a : msg->plan) {
 		std::string s;
 		for (const auto &p : a.parameters) {
 			s += " " + p.value;
@@ -50,7 +50,7 @@ plan_cb(const rosplan_dispatch_msgs::CompletePlan::ConstPtr& msg)
 		printf("%7.3f: (%s %s)  [%.3f]\n", a.dispatch_time, a.name.c_str(), s.c_str(), a.duration);
 	}
 	ros::shutdown();
-}
+*/}
 
 
 
