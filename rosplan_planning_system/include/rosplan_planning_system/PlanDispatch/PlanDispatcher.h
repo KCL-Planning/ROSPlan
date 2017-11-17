@@ -45,7 +45,7 @@ namespace KCL_rosplan
 		ros::Publisher action_dispatch_publisher;
 		ros::Publisher action_feedback_publisher;
 
-		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) =0;
 	};
 }
 

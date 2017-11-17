@@ -90,10 +90,17 @@ namespace KCL_rosplan {
 		pddl_action_parameters_pub = nh.advertise<rosplan_knowledge_msgs::DomainFormula>("/kcl_rosplan/pddl_action_parameters", 10, true);
 
 		// create the action feedback publisher
-		action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>("/kcl_rosplan/action_feedback", 10, true);
+		std::string aft = "default_feedback_topic";
+		nh.getParam("action_feedback_topic", aft);
+		action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>(aft, 10, true);
 
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+
+		// listen for action dispatch
+		std::string adt = "default_dispatch_topic";
+		nh.getParam("action_dispatch_topic", adt);
+		ros::Subscriber ds = nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
 
 		// loop
 		ros::Rate loopRate(1);

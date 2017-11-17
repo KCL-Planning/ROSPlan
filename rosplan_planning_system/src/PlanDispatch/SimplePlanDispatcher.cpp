@@ -1,5 +1,4 @@
 #include "rosplan_planning_system/PlanDispatch/SimplePlanDispatcher.h"
-#include <map>
 
 namespace KCL_rosplan {
 
@@ -21,6 +20,7 @@ namespace KCL_rosplan {
 		action_dispatch_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionDispatch>(action_dispatch_topic, 1, true);
 		action_feedback_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionFeedback>(action_feedback_topic, 1, true);
 
+		reset();
 	}
 
 	SimplePlanDispatcher::~SimplePlanDispatcher()
@@ -48,6 +48,21 @@ namespace KCL_rosplan {
 		current_plan = plan;
 	}
 
+	/*--------------------*/
+	/* Dispatch interface */
+	/*--------------------*/
+
+	/**
+	 * plan dispatch service method (1) 
+	 * dispatches plan as a service
+	 * @returns True iff every action was dispatched and returned success.
+	 */
+	bool SimplePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+		bool success = dispatchPlan(ros::WallTime::now().toSec(),0);
+		reset();
+		return success;
+	}
+
 	/*-----------------*/
 	/* action dispatch */
 	/*-----------------*/
@@ -61,7 +76,6 @@ namespace KCL_rosplan {
 
 		ros::Rate loop_rate(10);
 		replan_requested = false;
-		bool repeatAction = false;
 
 		while (ros::ok() && current_plan.plan.size() > current_action) {
 
@@ -117,8 +131,7 @@ namespace KCL_rosplan {
 			}
 
 			// get ready for next action
-			if(!repeatAction) current_action++;
-			repeatAction = false;
+			current_action++;
 			action_received[current_action] = false;
 			action_completed[current_action] = false;
 

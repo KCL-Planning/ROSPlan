@@ -36,8 +36,6 @@ namespace KCL_rosplan {
 		// create PDDL action subscriber
 		KCL_rosplan::RPSimulatedActionInterface rpsa(nh);
 
-		// listen for action dispatch
-		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, dynamic_cast<KCL_rosplan::RPActionInterface*>(&rpsa));
 		rpsa.runActionInterface();
 
 		return 0;

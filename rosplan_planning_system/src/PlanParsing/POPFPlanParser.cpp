@@ -46,6 +46,7 @@ namespace KCL_rosplan {
 		std::istringstream planfile(planner_output);
 		while (std::getline(planfile, line)) {
 
+			// TODO fix this so it uses ;;;;solution to check for plan found instead 9anwhere on line)
 			if (line.substr(0,6).compare("; Plan") == 0) {
 				expectedPlanDuration = atof(line.substr(25).c_str());
 			} else if (line.substr(0,6).compare("; Time")!=0) {
