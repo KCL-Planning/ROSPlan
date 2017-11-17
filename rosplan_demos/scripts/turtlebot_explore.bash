@@ -29,4 +29,3 @@ knowledge:
   - {key: 'v', value: 'kenny'}
   - {key: 'wp', value: 'wp0'}
   function_value: 0.0";
-rosservice call /kcl_rosplan/planning_server;
