@@ -75,18 +75,6 @@
 		<param name="turtlebot_name" value="kinba" />
 		</node>
 
-		
-
-
-
-
-
-
-
-
-
-
-
 		<!-- localize -->
 		<node name="rosplan_interface_localiser" pkg="rosplan_interface_turtlebot2" type="rplocaliser" respawn="false" output="screen">
 		<param name="filename" value="$(find rosplan_demos)/common/waypoints_floor.txt" />

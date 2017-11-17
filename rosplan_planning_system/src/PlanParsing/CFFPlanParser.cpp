@@ -1,4 +1,4 @@
-#include "rosplan_planning_system/CFFPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/CFFPlanParser.h"
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -302,7 +302,7 @@ namespace KCL_rosplan {
 	 */
 	void CFFPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
-		ROS_INFO("KCL: (CFFPlanParser) Loading plan from file: %s. Initial action ID: %zu", ((dataPath + "plan.pddl").c_str()), freeActionID);
+		ROS_INFO("KCL: (%s) Loading plan from file: %s. Initial action ID: %zu", ros::this_node::getName().c_str(), ((dataPath + "plan.pddl").c_str()), freeActionID);
 		
 		// prepare plan
 		reset();

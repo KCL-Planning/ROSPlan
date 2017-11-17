@@ -1,26 +1,34 @@
-#include "rosplan_planning_system/POPFEsterelPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/POPFEsterelPlanParser.h"
 
 /* implementation of rosplan_planning_system::POPFEsterelPlanParser.h */
 namespace KCL_rosplan {
 
 	/* constructor */
-	POPFEsterelPlanParser::POPFEsterelPlanParser(ros::NodeHandle &nh) : node_handle(&nh)
+	POPFEsterelPlanParser::POPFEsterelPlanParser(ros::NodeHandle &nh)
 	{
-		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		node_handle = &nh;
+
+		// publishing parsed plan
+		std::string planTopic = "complete_plan";
+		node_handle->getParam("plan_topic", planTopic);
+		plan_publisher = node_handle->advertise<rosplan_dispatch_msgs::EsterelPlan>(planTopic, 1, true);
+	}
+
+	POPFEsterelPlanParser::~POPFEsterelPlanParser()
+	{
+
 	}
 
 	void POPFEsterelPlanParser::reset() {
+		action_list.clear();
 		plan_nodes.clear();
 		plan_edges.clear();
 	}
 
-	void POPFEsterelPlanParser::generateFilter(PlanningEnvironment &environment) {
-		// do nothing yet
-	}
-
-	void POPFEsterelPlanParser::toLowerCase(std::string &str) {
-		std::transform(str.begin(), str.end(), str.begin(), tolower);
+	void POPFEsterelPlanParser::publishPlan() {
+		rosplan_dispatch_msgs::EsterelPlan msg;
+		msg.plan = action_list;
+		plan_publisher.publish(msg);
 	}
 
 	/*------------*/
@@ -209,7 +217,7 @@ namespace KCL_rosplan {
 	 */
 	void POPFEsterelPlanParser::preparePlan(std::string &dataPath, PlanningEnvironment &environment, size_t freeActionID) {
 
-		ROS_INFO("KCL: (POPFEsterelPlanParser) Loading plan from file: %s. Initial action ID: %zu", ((dataPath + "plan.pddl").c_str()), freeActionID);
+		ROS_INFO("KCL: (%s) Loading plan from file: %s. Initial action ID: %zu", ros::this_node::getName().c_str(), ((dataPath + "plan.pddl").c_str()), freeActionID);
 
 		// load plan file
 		StrlEdge* last_edge = NULL;
@@ -305,7 +313,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
 		
-		ROS_INFO("KCL: (POPFEsterelPlanParser) Write the esterel plan: %s", strl_file.c_str());
+		ROS_INFO("KCL: (%s) Write the esterel plan: %s", ros::this_node::getName().c_str(), strl_file.c_str());
 		
 		std::ofstream dest;
 		dest.open(strl_file.c_str());

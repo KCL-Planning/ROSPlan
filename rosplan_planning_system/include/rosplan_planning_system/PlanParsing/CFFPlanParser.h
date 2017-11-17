@@ -6,9 +6,9 @@
 #include "rosplan_dispatch_msgs/ActionDispatch.h"
 #include "rosplan_knowledge_msgs/Notification.h"
 #include "rosplan_knowledge_msgs/Filter.h"
-#include "PlanningEnvironment.h"
+#include "rosplan_planning_system/Plans/EsterelPlan.h"
+#include "../PlanningEnvironment.h"
 #include "PlanParser.h"
-#include "EsterelPlan.h"
 
 #ifndef KCL_cff_plan_parser
 #define KCL_cff_plan_parser

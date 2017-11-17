@@ -9,10 +9,10 @@
 #include "std_msgs/String.h"
 
 #include "PlanDispatcher.h"
-#include "EsterelPlan.h"
-#include "CFFPlanParser.h"
-#include "CLGPlanParser.h"
-#include "POPFEsterelPlanParser.h"
+#include "rosplan_planning_system/Plans/EsterelPlan.h"
+#include "rosplan_planning_system/PlanParsing/CFFPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/CLGPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
@@ -47,7 +47,7 @@ namespace KCL_rosplan
 
 	public:
 
-		/* constructor */
+		/* constructor TODO get rid of these */
 		EsterelPlanDispatcher(CLGPlanParser &parser);
 		EsterelPlanDispatcher(CFFPlanParser &parser);
 		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);

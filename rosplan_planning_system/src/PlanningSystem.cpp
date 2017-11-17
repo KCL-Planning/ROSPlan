@@ -102,7 +102,7 @@ namespace KCL_rosplan {
 		environment.update(nh);
 
 		// generate PDDL problem (and problem-specific domain)
-		pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+		pddl_problem_generator.generatePDDLProblemFile(problem_path);
 		ROS_INFO("KCL: (PS) (%s) The problem was generated!", problem_name.c_str());
 
 		// publish problem
@@ -319,22 +319,9 @@ namespace KCL_rosplan {
 
 			// generate PDDL problem (and problem-specific domain)
 			if(generate_problem) {
-				pddl_problem_generator.generatePDDLProblemFile(environment, problem_path);
+				pddl_problem_generator.generatePDDLProblemFile(problem_path);
 				ROS_INFO("KCL: (PS) (%s) The problem was generated.", problem_name.c_str());
 			} else {
-				/* TODO check and remove
-				// ROS_INFO("KCL: (PS) Skipping problem generation.");
-				rosplan_knowledge_msgs::GenerateProblemService genSrv;
-				genSrv.request.problem_path = problem_path;
-				genSrv.request.contingent = ("ff" == plannerCommand.substr(0,2));
-				if (!generate_problem_client.call(genSrv)) {
-					ROS_INFO("KCL: (PS) (%s) The problem was not generated.", problem_name.c_str());
-					system_status = READY;
-					statusMsg.data = "Ready";
-					state_publisher.publish(statusMsg);
-					return false;
-				}
-				*/
 				ROS_INFO("KCL: (PS) (%s) Skipping default problem generation.", problem_name.c_str());
 			}
 
