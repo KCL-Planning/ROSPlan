@@ -95,7 +95,6 @@ add_executable(popf_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher
 #add_executable(popf_esterel_plan_parser src/PlanParsing/POPFEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
 #add_executable(planDispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
 add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cpp src/ActionInterface/RPActionInterface.cpp)
-add_executable(print_plan src/print_plan.cpp)
 
 ## Add dependencies
 # add_dependencies(planner ${catkin_EXPORTED_TARGETS})
@@ -106,7 +105,6 @@ add_dependencies(popf_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
 #add_dependencies(popf_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
 #add_dependencies(planDispatcher ${catkin_EXPORTED_TARGETS})
 add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
-add_dependencies(print_plan ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 # target_link_libraries(planner ${catkin_LIBRARIES})
@@ -117,7 +115,6 @@ target_link_libraries(popf_simple_plan_dispatcher ${catkin_LIBRARIES})
 #target_link_libraries(popf_esterel_plan_parser ${catkin_LIBRARIES})
 # target_link_libraries(planDispatcher ${catkin_LIBRARIES})
 target_link_libraries(simulatedAction ${catkin_LIBRARIES})
-target_link_libraries(print_plan ${catkin_LIBRARIES})
 
 ## Declare libraries
 add_library(${PROJECT_NAME} ${PLANNING_SOURCES} ${VAL_SOURCES})
