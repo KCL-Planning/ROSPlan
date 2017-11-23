@@ -11,7 +11,7 @@
 #define KCL_problem_interface
 
 /**
- * This file contains an interface to the planner.
+ * This file contains an interface to the problem.
  */
 namespace KCL_rosplan {
 
