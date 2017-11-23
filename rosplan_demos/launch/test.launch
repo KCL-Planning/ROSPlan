@@ -41,7 +41,7 @@
 	</node>
 
 	<!-- plan parsing -->
-	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="popf_simple_plan_parser" respawn="false" output="screen">
+	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
 		<param name="planner_topic" value="/rosplan_planner_interface/planner_output" />
 		<param name="plan_topic" value="complete_plan" />
 	</node>

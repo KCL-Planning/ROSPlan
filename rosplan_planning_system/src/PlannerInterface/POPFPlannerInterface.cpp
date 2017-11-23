@@ -75,23 +75,34 @@ namespace KCL_rosplan {
 		std::ifstream planfile;
 		planfile.open((data_path + "plan.pddl").c_str());
 		std::string line;
+		std::stringstream ss;
+
+		int curr, next;
 		bool solved = false;
-		while(!planfile.eof() && !solved) {
-			getline(planfile, line);
+		double planDuration;
+
+		while (std::getline(planfile, line)) {
+
 			if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
 				solved = true;
-				break;
+			} else if (line.find("; Time", 0) == std::string::npos) {
+				// consume useless lines
+			} else {
+
+				// read a plan (might not be the last plan)
+				planDuration = 0;
+				ss.str("");
+				while (std::getline(planfile, line)) {
+
+					if (line.length()<2)
+						break;
+
+					ss << line << std::endl;
+				}
+				planner_output = ss.str();
 			}
 		}
 		planfile.close();
-
-		// save planner output
-		std::stringstream ss;
-		std::ifstream source;
-		source.open((data_path + "plan.pddl").c_str());
-		ss << source.rdbuf();
-		planner_output = ss.str();
-		source.close();
 
 		if(!solved) ROS_INFO("KCL: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
 		else ROS_INFO("KCL: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
