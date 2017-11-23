@@ -87,33 +87,24 @@ set(VAL_SOURCES
 #	src/Plans/EsterelPlan.cpp)
 
 ## Declare cpp executables
-# add_executable(planner ${PLANNING_SOURCES} ${VAL_SOURCES})
-add_executable(plannerInterface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp)
+add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(pddl_simple_plan_parser src/PlanParsing/PDDLSimplePlanParser.cpp src/PlanParsing/PlanParser.cpp)
-add_executable(popf_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp)
-#add_executable(popf_esterel_plan_parser src/PlanParsing/POPFEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
-#add_executable(planDispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
+add_executable(pddl_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp)
 add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cpp src/ActionInterface/RPActionInterface.cpp)
 
 ## Add dependencies
-# add_dependencies(planner ${catkin_EXPORTED_TARGETS})
-add_dependencies(plannerInterface ${catkin_EXPORTED_TARGETS})
 add_dependencies(problemInterface ${catkin_EXPORTED_TARGETS})
+add_dependencies(popf_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_parser ${catkin_EXPORTED_TARGETS})
-add_dependencies(popf_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
-#add_dependencies(popf_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
-#add_dependencies(planDispatcher ${catkin_EXPORTED_TARGETS})
+add_dependencies(pddl_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
 add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
-# target_link_libraries(planner ${catkin_LIBRARIES})
-target_link_libraries(plannerInterface ${catkin_LIBRARIES})
 target_link_libraries(problemInterface ${catkin_LIBRARIES})
+target_link_libraries(popf_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_parser ${catkin_LIBRARIES})
-target_link_libraries(popf_simple_plan_dispatcher ${catkin_LIBRARIES})
-#target_link_libraries(popf_esterel_plan_parser ${catkin_LIBRARIES})
-# target_link_libraries(planDispatcher ${catkin_LIBRARIES})
+target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 
 ## Declare libraries
@@ -126,7 +117,7 @@ add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 ## Install ##
 #############
 
-install(TARGETS ${PROJECT_NAME} rosplan_action_interface print_plan simulatedAction
+install(TARGETS ${PROJECT_NAME} rosplan_action_interface simulatedAction
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

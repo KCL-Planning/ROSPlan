@@ -22,7 +22,7 @@
 	</node>
 
 	<!-- planning system -->
-	<node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="plannerInterface" respawn="false" output="screen">
+	<node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
 
 		<!-- general options -->
 		<param name="use_problem_topic" value="true" />
@@ -47,7 +47,7 @@
 	</node>
 
 	<!-- plan dispatching -->
-	<node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="popf_simple_plan_dispatcher" respawn="false" output="screen">
+	<node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_simple_plan_dispatcher" respawn="false" output="screen">
 		<param name="plan_topic" value="/rosplan_parsing_interface/complete_plan" />
 		<param name="action_dispatch_topic" value="action_dispatch" />
 		<param name="action_feedback_topic" value="action_feedback" />
