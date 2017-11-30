@@ -88,15 +88,12 @@ namespace KCL_rosplan {
 			} else if (line.find("; Time", 0) == std::string::npos) {
 				// consume useless lines
 			} else {
-
 				// read a plan (might not be the last plan)
 				planDuration = 0;
 				ss.str("");
 				while (std::getline(planfile, line)) {
-
 					if (line.length()<2)
 						break;
-
 					ss << line << std::endl;
 				}
 				planner_output = ss.str();
