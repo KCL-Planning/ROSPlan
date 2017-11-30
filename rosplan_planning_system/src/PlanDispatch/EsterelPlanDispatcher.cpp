@@ -7,167 +7,66 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(CLGPlanParser &parser)
-		: action_id_offset(0)
-	{
-		ros::NodeHandle nh("~");
-		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
-
-		plan_nodes = &(parser.plan_nodes);
-		plan_edges = &(parser.plan_edges);
-
-		current_action = 0;
+	EsterelPlanDispatcher::EsterelPlanDispatcher(ros::NodeHandle& nh) {
+		
+		node_handle = &nh;
 
 		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
+		query_domain_client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+
+		std::string plan_graph_topic = "plan_graph";
+		nh.getParam("plan_graph_topic", plan_graph_topic);
+		plan_graph_publisher = node_handle->advertise<std_msgs::String>(plan_graph_topic, 1000, true);
+
+		action_dispatch_topic = "action_dispatch";
+		action_feedback_topic = "action_feedback";
+		nh.getParam("action_dispatch_topic", action_dispatch_topic);
+		nh.getParam("action_feedback_topic", action_feedback_topic);
+		action_dispatch_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionDispatch>(action_dispatch_topic, 1, true);
+		action_feedback_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionFeedback>(action_feedback_topic, 1, true);
+
+		reset();
 	}
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(CFFPlanParser &parser)
-		: action_id_offset(0)
+	EsterelPlanDispatcher::~EsterelPlanDispatcher()
 	{
-		ros::NodeHandle nh("~");
-		nh.param("/rosplan/strl_file_path", strl_file, std::string("common/plan.strl"));
 
-		plan_nodes = &(parser.plan_nodes);
-		plan_edges = &(parser.plan_edges);
-
-		current_action = 0;
-
-		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
-	}
-
-	EsterelPlanDispatcher::EsterelPlanDispatcher(POPFEsterelPlanParser &parser)
-		: action_id_offset(0)
-	{
-		ros::NodeHandle nh("~");
-		nh.param("strl_file_path", strl_file, std::string("common/plan.strl"));
-
-		plan_nodes = &parser.plan_nodes;
-		plan_edges = &parser.plan_edges;
-
-		current_action = 0;
-
-		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		plan_graph_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/plan_graph", 1000, true);
-	}
-
-	/*---------------*/
-	/* public access */
-	/*---------------*/
-
-	int EsterelPlanDispatcher::getCurrentAction() {
-		return current_action;
-	}
-
-	void EsterelPlanDispatcher::setCurrentAction(size_t freeActionID) {
-		action_id_offset = freeActionID;
 	}
 
 	void EsterelPlanDispatcher::reset() {
 		replan_requested = false;
 		dispatch_paused = false;
 		plan_cancelled = false;
-		current_action = 0;
 		action_received.clear();
 		action_completed.clear();
+		plan_recieved = false;
 	}
 
-	/*--------------*/
-	/* read Esterel */
-	/*--------------*/
-	/*
-	bool EsterelPlanDispatcher::readEsterelFile(std::string strlFile) {
+	/*-------------------*/
+	/* Plan subscription */
+	/*-------------------*/
 
-		// open file
-		std::ifstream planfile;
-		std::cout << strlFile.c_str() << std::endl;
-		planfile.open(strlFile.c_str());
-		
-		int curr, next; 
-		std::string line;
-		
-		double planDuration;
-		double expectedPlanDuration = 0;
-		plan_description.clear();
-		plan_edges.clear();
+	void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlan plan) {
+		ROS_INFO("KCL: (%s) Plan recieved.", ros::this_node::getName().c_str());
+		plan_recieved = true;
+		mission_start_time = ros::WallTime::now().toSec();
+		current_plan = plan;
+	}
 
-		bool readingModule = false;
-		std::string currentNode;
+	/*--------------------*/
+	/* Dispatch interface */
+	/*--------------------*/
 
-		if(!planfile.is_open())
-			return false;
-
-		while(!planfile.eof()) {
-
-			getline(planfile, line);
-
-			boost::regex e_whitespace("^[\f\r\t\v]*\%.*");
-			if (boost::regex_match(line,e_whitespace)) {
-				// line is a comment
-				continue;
-			}
-
-			boost::smatch what;
-			boost::regex e_parameters("[\\s]*([^,;]+)[,;]");
-			if(readingModule) {
-  				// "end module"
-				boost::regex e_module_end("^end module[\\s]*");
-				if (boost::regex_match(line,e_module_end))
-					readingModule = false;
-				// "input [i0], [i1], [i2];"
-				boost::regex e_input("^([\\s]*input[\\s]+).*$");
-				if (boost::regex_match(line,what,e_input)) {
-					std::string params = line.substr(what[1].length());
-					boost::sregex_iterator iter(params.begin(), params.end(), e_parameters);
-					boost::sregex_iterator end;
-					for(; iter != end; ++iter ) {
-						if(plan_edges.find((*iter)[1]) == plan_edges.end()) {
-							StrlEdge edge;
-							edge.signal_type = 0;
-							edge.edge_name = (*iter)[1];
-							if(edge.edge_name.length() > 3 && edge.edge_name.substr(0,4)=="cond") {
-								edge.signal_type = 1;
-								preparePDDLCondition(edge.edge_name);
-							}
-							plan_edges[(*iter)[1]] = edge;
-						}
-						plan_description[currentNode].input.push_back((*iter)[1]);
-						plan_description[currentNode].await_input.push_back(true);
-					}
-				}
-				// "output [i0], [i1], [i2];"
-				boost::regex e_output("^([\\s]*output[\\s]+).*$");
-				if (boost::regex_match(line,what,e_output)) {
-					std::string params = line.substr(what[1].length());
-					boost::sregex_iterator iter(params.begin(), params.end(), e_parameters);
-					boost::sregex_iterator end;
-					for(; iter != end; ++iter ) {
-						if(plan_edges.find((*iter)[1]) == plan_edges.end()) {
-							StrlEdge edge;
-							edge.signal_type = 0;
-							edge.edge_name = (*iter)[1];
-							plan_edges[(*iter)[1]] = edge;
-						}
-						plan_description[currentNode].output.push_back((*iter)[1]);
-					}
-				}
-			} else {
-  				// "module [module_name]:"
-				boost::regex e_module("^[\\s]*module[\\s+]([^:]+):.*");
-				if (boost::regex_match(line,what,e_module)) {
-					StrlNode node;
-					node.node_name = what[1];
-					plan_description[node.node_name] = node;
-					currentNode = node.node_name;
-					node.dispatched = false;
-					node.completed = false;
-					readingModule = true;
-				}
-			}
-		}
-		planfile.close();
-	}*/
+	/**
+	 * plan dispatch service method (1) 
+	 * dispatches plan as a service
+	 * @returns True iff every action was dispatched and returned success.
+	 */
+	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
+		reset();
+		return success;
+	}
 
 	/*-----------------*/
 	/* action dispatch */
@@ -176,19 +75,12 @@ namespace KCL_rosplan {
 	/*
 	 * Loop through and publish planned actions
 	 */
-	bool EsterelPlanDispatcher::dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart) {
+	bool EsterelPlanDispatcher::dispatchPlan(double missionStartTime, double planStartTime) {
 
-		ros::NodeHandle nh("~");
+		ROS_INFO("KCL: (%s) Dispatching plan.", ros::this_node::getName().c_str());
+
 		ros::Rate loop_rate(10);
-		
-		std::string data_path;
-		nh.param("/rosplan/data_path", data_path, std::string("common/"));
-
-		// dispatch plan
-		ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching plan");
-		
 		replan_requested = false;
-		bool repeatAction = false;
 		
 		// initialise machine
 		std::map<StrlEdge*,bool> edge_values;
@@ -196,10 +88,8 @@ namespace KCL_rosplan {
 			edge_values[*ci] = false;
 		}
 
-		printPlan(data_path);
-
 		// query KMS for condition edges
-		ROS_INFO("KCL: (EsterelPlanDispatcher) Initialise the external conditions.");
+		ROS_INFO("KCL: (%s) Initialise the external conditions.", ros::this_node::getName().c_str());
 
 		for (std::vector<StrlEdge*>::const_iterator ci = plan_edges->begin(); ci != plan_edges->end(); ++ci) {
 			StrlEdge* edge = *ci;
@@ -220,13 +110,13 @@ namespace KCL_rosplan {
 					edge->active = true;
 				}
 			} else {
-				ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+				ROS_ERROR("KCL: (%s) Query to KMS failed; no condition edges are made true.", ros::this_node::getName().c_str());
 			}
 		}
 		
 		// begin execution
-		bool finished_execution = false;
 		bool state_changed = false;
+		bool finished_execution = false;
 		while (ros::ok() && !finished_execution) {
 
 			finished_execution = true;
@@ -240,11 +130,11 @@ namespace KCL_rosplan {
 
 			// cancel plan
 			if(plan_cancelled) {
-				ROS_INFO("KCL: (EsterelPlanDispatcher) Plan has been cancelled!");
+				ROS_INFO("KCL: (%s) Plan cancelled.", ros::this_node::getName().c_str());
 				break;
 			}
 
-			// for each module
+			// for each node check completion, conditions, and dispatch
 			for(std::vector<StrlNode*>::const_iterator ci = plan_nodes->begin(); ci != plan_nodes->end(); ci++) {
 				
 				StrlNode* strl_node = *ci;
@@ -283,7 +173,7 @@ namespace KCL_rosplan {
 										break;
 									}
 								} else {
-									ROS_ERROR("KCL: (EsterelPlanDispatcher) Query to KMS failed; no condition edges are true.");
+									ROS_ERROR("KCL: (%s) Query to KMS failed.", ros::this_node::getName().c_str());
 								}
 							}
 						}
@@ -301,12 +191,17 @@ namespace KCL_rosplan {
 						action_completed[strl_node->node_id] = false;
 						rosplan_dispatch_msgs::ActionDispatch currentMessage = strl_node->dispatch_msg;
 						
-						currentMessage.action_id = currentMessage.action_id + action_id_offset;
+						currentMessage.action_id = currentMessage.action_id;
 						
 						// dispatch action
-						ROS_INFO("KCL: (EsterelPlanDispatcher) Dispatching action [%i, %s, %f, %f]", currentMessage.action_id, currentMessage.name.c_str(), (currentMessage.dispatch_time+planStart-missionStart), currentMessage.duration);
-						action_publisher.publish(currentMessage);
-						current_action = strl_node->node_id;
+						ROS_INFO("KCL: (%s) Dispatching action [%i, %s, %f, %f]",
+								ros::this_node::getName().c_str(), 
+								currentMessage.action_id,
+								currentMessage.name.c_str(),
+								(currentMessage.dispatch_time+planStartTime-missionStartTime),
+								currentMessage.duration);
+
+						action_dispatch_publisher.publish(currentMessage);
 					}
 
 				} else if(!strl_node->completed) {
@@ -318,7 +213,10 @@ namespace KCL_rosplan {
 						finished_execution = false;
 						state_changed = true;
 						
-						ROS_INFO("KCL: (EsterelPlanDispatcher) %i: action %s completed", strl_node->node_id, strl_node->node_name.c_str());
+						ROS_INFO("KCL: (%s) %i: action %s completed",
+								ros::this_node::getName().c_str(),
+								strl_node->node_id,
+								strl_node->node_name.c_str());
 
 						// emit output edges in next loop
 						for(int i=0;i<strl_node->output.size();i++) {
@@ -341,14 +239,13 @@ namespace KCL_rosplan {
 				edge_values[*eit] = false;
 			}
 
-			if(state_changed)
-				printPlan(data_path);
+			if(state_changed) printPlan();
 			ros::spinOnce();
 			loop_rate.sleep();
 
 			// cancel dispatch on replan
 			if(replan_requested) {
-				ROS_INFO("KCL: (EsterelPlanDispatcher) Replan requested");
+				ROS_INFO("KCL: (%s) Replan requested.", ros::this_node::getName().c_str());
 				return false;
 			}
 		}
@@ -368,55 +265,39 @@ namespace KCL_rosplan {
 		// find action
 		bool found = false;
 		for(std::vector<StrlNode*>::iterator it = plan_nodes->begin(); it!=plan_nodes->end(); it++) {
-			if((*it)->node_id == msg->action_id - action_id_offset)
+			if((*it)->node_id == msg->action_id)
 				found = true;
 		}
 		// no matching action
 		if(!found) return;
 
-		ROS_INFO("KCL: (EsterelPlanDispatcher) Feedback received [%i, %s]", msg->action_id, msg->status.c_str());
+		ROS_INFO("KCL: (%s) Feedback received [%i, %s]", ros::this_node::getName().c_str(), msg->action_id, msg->status.c_str());
 
 		// action enabled
-		int normalised_action_id = msg->action_id - action_id_offset;
-		if(!action_received[normalised_action_id] && (0 == msg->status.compare("action enabled")))
-			action_received[normalised_action_id] = true;
-		
-		// more specific feedback
-		actionFeedback(msg);
+		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled")))
+			action_received[msg->action_id] = true;
 
 		// action completed (successfuly)
-		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action achieved"))
-			action_completed[normalised_action_id] = true;
+		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
+			action_completed[msg->action_id] = true;
 
 		// action completed (failed)
-		if(!action_completed[normalised_action_id] && 0 == msg->status.compare("action failed")) {
+		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
 			replan_requested = true;
-			action_completed[normalised_action_id] = true;
+			action_completed[msg->action_id] = true;
 		}
 	}
 
-	/*---------------------------*/
-	/* Specific action responses */
-	/*---------------------------*/
+	/*-------------------*/
+	/* Produce DOT graph */
+	/*-------------------*/
 
-	/**
-	 * processes single action feedback message.
-	 * This method serves as the hook for defining more interesting behaviour on action feedback.
-	 */
-	void EsterelPlanDispatcher::actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
-		// nothing yet
-	}
+	bool EsterelPlanDispatcher::printPlan() {
 
-	/*--------------------*/
-	/* Produce DOT graphs */
-	/*--------------------*/
-
-	bool EsterelPlanDispatcher::printPlan(const std::string& path) {
-
-		// output file
+		// output stream
 		std::stringstream dest;
 
-		dest << "digraph plan_" << action_id_offset << " {" << std::endl;
+		dest << "digraph plan" << " {" << std::endl;
 
 		// nodes
 		for(std::vector<StrlNode*>::iterator nit = plan_nodes->begin(); nit!=plan_nodes->end(); nit++) {
@@ -467,14 +348,34 @@ namespace KCL_rosplan {
 		std_msgs::String msg;
 		msg.data = dest.str();
 		plan_graph_publisher.publish(msg);
-
-		// write to file
-		std::ofstream file;
-		std::stringstream ss;
-		ss << path << "/d3_viz/plan_" << action_id_offset << ".dot";
-		file.open(ss.str().c_str());
-		file << dest.str();
-		file.close();
-		
 	}
 } // close namespace
+
+	/*-------------*/
+	/* Main method */
+	/*-------------*/
+
+	int main(int argc, char **argv) {
+
+		ros::init(argc,argv,"rosplan_esterel_plan_dispatcher");
+		ros::NodeHandle nh("~");
+
+		KCL_rosplan::EsterelPlanDispatcher epd(nh);
+	
+		// subscribe to planner output
+		std::string planTopic = "complete_plan";
+		nh.getParam("plan_topic", planTopic);
+		ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::EsterelPlanDispatcher::planCallback, &epd);
+
+		std::string feedbackTopic = "action_feedback";
+		nh.getParam("action_feedback_topic", feedbackTopic);
+		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1, &KCL_rosplan::EsterelPlanDispatcher::feedbackCallback, &epd);
+
+		// start the plan parsing services
+		ros::ServiceServer service1 = nh.advertiseService("dispatch_plan", &KCL_rosplan::PlanDispatcher::dispatchPlanService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&epd));
+
+		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
+		ros::spin();
+
+		return 0;
+	}
