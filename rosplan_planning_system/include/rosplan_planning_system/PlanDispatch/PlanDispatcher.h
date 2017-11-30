@@ -1,5 +1,5 @@
 /**
- * This file describes the class that dispatches a plan.
+ * This file describes a class that dispatches a plan.
  */
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
@@ -30,22 +30,21 @@ namespace KCL_rosplan
 
 		/* dispatch modes */
 		bool dispatch_paused;
-		bool plan_cancelled;
 		bool replan_requested;
+		bool plan_cancelled;
 
 		virtual void reset() =0;
 
 		/* plan dispatch methods */
 		virtual bool dispatchPlan(double missionStartTime, double planStartTime) =0;
+		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) =0;
 
 		/* action feedback methods */
 		virtual void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;
 
-		/* ROS interface */
+		/* action publishers */
 		ros::Publisher action_dispatch_publisher;
 		ros::Publisher action_feedback_publisher;
-
-		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) =0;
 	};
 }
 

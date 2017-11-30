@@ -45,6 +45,7 @@ namespace KCL_rosplan {
 	void SimplePlanDispatcher::planCallback(const rosplan_dispatch_msgs::CompletePlan plan) {
 		ROS_INFO("KCL: (%s) Plan recieved.", ros::this_node::getName().c_str());
 		plan_recieved = true;
+		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
 	}
 
@@ -58,7 +59,7 @@ namespace KCL_rosplan {
 	 * @returns True iff every action was dispatched and returned success.
 	 */
 	bool SimplePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		bool success = dispatchPlan(ros::WallTime::now().toSec(),0);
+		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
 		reset();
 		return success;
 	}
@@ -191,7 +192,7 @@ namespace KCL_rosplan {
 			if(!querySrv.response.all_true) {
 				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kit;
 				for(kit=querySrv.response.false_knowledge.begin(); kit != querySrv.response.false_knowledge.end(); kit++)
-					ROS_INFO("KCL:\t[%s]", kit->attribute_name.c_str());
+					ROS_INFO("KCL: (%s) Precondition not achieved: %s", ros::this_node::getName().c_str(), kit->attribute_name.c_str());
 			}
 			return querySrv.response.all_true;
 
