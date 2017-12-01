@@ -25,12 +25,20 @@ namespace KCL_rosplan
 	class EsterelPlanDispatcher: public PlanDispatcher
 	{
 	private:
+
+		// esterel plan methods
+		void initialise();
 	
 		// current plan and time plan was recevied
 		rosplan_dispatch_msgs::EsterelPlan current_plan;
 		double mission_start_time;
-		std::vector<StrlNode*>* plan_nodes;
-		std::vector<StrlEdge*>* plan_edges;
+
+		// plan status
+		std::map<int,bool> edge_active;
+		std::map<int,bool> action_dispatched;
+
+		bool state_changed;
+		bool finished_execution;
 
 		/* plan graph publisher */
 		bool printPlan();

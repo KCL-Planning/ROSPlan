@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    EsterelPlan.msg
+   EsterelPlanEdge.msg
+   EsterelPlanNode.msg
    CompletePlan.msg
    ActionDispatch.msg
    ActionFeedback.msg
