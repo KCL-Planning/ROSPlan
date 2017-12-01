@@ -7,8 +7,6 @@
 
 #include "PlanDispatcher.h"
 
-#include "rosplan_planning_system/Plans/EsterelPlan.h"
-
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
 #include "rosplan_knowledge_msgs/DomainOperator.h"
