@@ -115,7 +115,7 @@ class PlanViewWidget(QWidget):
 
     def start(self):
         self._timer_refresh_plan.start(1000)
-        self._timer_refresh_goals.start(10000)
+        self._timer_refresh_goals.start(1000)
 
     """
     updating goal and model view
@@ -355,7 +355,7 @@ class PlanViewWidget(QWidget):
 
     """
     Qt methods
-    """ 
+    """
     def shutdown_plugin(self):
         pass
 

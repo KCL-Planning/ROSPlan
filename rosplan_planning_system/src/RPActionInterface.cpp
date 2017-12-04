@@ -3,6 +3,72 @@
 /* The implementation of RPMoveBase.h */
 namespace KCL_rosplan {
 
+
+
+	bool RPActionInterface::checkConditions(const std::vector<rosplan_knowledge_msgs::DomainFormula>& df,
+		const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg, bool positive)
+	{
+		bool ret = true;
+		std::vector<rosplan_knowledge_msgs::DomainFormula>::const_iterator pit;
+		for(pit = df.begin(); pit!=df.end(); pit++)
+		{
+			rosplan_knowledge_msgs::KnowledgeItem req_ki;
+			req_ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+			req_ki.attribute_name = pit->name;
+			req_ki.is_negative = !positive;
+
+			std::vector<diagnostic_msgs::KeyValue>::const_iterator it_op;
+			for(it_op = pit->typed_parameters.begin(); it_op != pit->typed_parameters.end(); ++it_op)
+			{
+				req_ki.instance_type = it_op->value;
+				std::vector<diagnostic_msgs::KeyValue>::const_iterator it_msg;
+				for(it_msg = msg->parameters.begin(); it_msg != msg->parameters.end(); ++it_msg)
+				{
+					if(it_msg->key == it_op->key)
+					{
+						diagnostic_msgs::KeyValue kv;
+
+						rosplan_knowledge_msgs::DomainFormula f = predicates[pit->name];
+						std::vector<diagnostic_msgs::KeyValue>::const_iterator it_pred;
+						for(it_pred=f.typed_parameters.begin(); it_pred!=f.typed_parameters.end(); ++it_pred)
+							if(it_op->value ==  it_pred->value)
+									kv.key = it_pred->key;
+						kv.value = it_msg->value;
+
+						req_ki.values.push_back(kv);
+					}
+				}
+			}
+
+			rosplan_knowledge_msgs::KnowledgeQueryService query;
+			query.request.knowledge.push_back(req_ki);
+
+			if(query_knowledge_client.call(query))
+				ret = ret && query.response.all_true;
+		}
+
+		return ret;
+
+	}
+
+	bool RPActionInterface::checkAtStartConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg)
+	{
+		return checkConditions(op.at_start_simple_condition, msg) &&
+					 checkConditions(op.at_start_neg_condition, msg, false);
+	}
+
+	bool RPActionInterface::checkAtEndConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg)
+	{
+		return checkConditions(op.at_end_simple_condition, msg) &&
+					 checkConditions(op.at_end_neg_condition, msg, false);
+
+	}
+	bool RPActionInterface::checkOverAllConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg)
+	{
+		return checkConditions(op.over_all_simple_condition, msg) &&
+					 checkConditions(op.over_all_neg_condition, msg, false);
+	}
+
 	/* run action interface */
 	void RPActionInterface::runActionInterface() {
 
@@ -47,28 +113,43 @@ namespace KCL_rosplan {
 		// simple conditions
 		pit = op.at_start_simple_condition.begin();
 		for(; pit!=op.at_start_simple_condition.end(); pit++)
+		{
+			//ROS_INFO("At start: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
+		}
 
 		pit = op.over_all_simple_condition.begin();
 		for(; pit!=op.over_all_simple_condition.end(); pit++)
+		{
+			//ROS_INFO("Over all: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
-
+		}
 		pit = op.at_end_simple_condition.begin();
 		for(; pit!=op.at_end_simple_condition.end(); pit++)
+		{
+			//ROS_INFO("At end: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
-
+		}
 		// negative conditions
 		pit = op.at_start_neg_condition.begin();
 		for(; pit!=op.at_start_neg_condition.end(); pit++)
+		{
+			//ROS_INFO("Not At start: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
-
+		}
 		pit = op.over_all_neg_condition.begin();
 		for(; pit!=op.over_all_neg_condition.end(); pit++)
+		{
+			//ROS_INFO("Not over all: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
+		}
 
 		pit = op.at_end_neg_condition.begin();
 		for(; pit!=op.at_end_neg_condition.end(); pit++)
+		{
+			//ROS_INFO("Not At end: [%s]", pit->name.c_str());
 			predicateNames.push_back(pit->name);
+		}
 
 		// fetch and store predicate details
 		ros::service::waitForService("/kcl_rosplan/get_domain_predicate_details",ros::Duration(20));
@@ -94,6 +175,7 @@ namespace KCL_rosplan {
 
 		// knowledge interface
 		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
 
 		// loop
 		ros::Rate loopRate(1);
@@ -108,6 +190,7 @@ namespace KCL_rosplan {
 		}
 	}
 
+
 	/* run action interface */
 	void RPActionInterface::dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
@@ -121,6 +204,7 @@ namespace KCL_rosplan {
 		for(size_t j=0; j<params.typed_parameters.size(); j++) {
 			for(size_t i=0; i<msg->parameters.size(); i++) {
 				if(params.typed_parameters[j].key == msg->parameters[i].key) {
+					ROS_ERROR("%s %s", params.typed_parameters[j].key.c_str(), msg->parameters[i].value.c_str());
 					boundParameters[msg->parameters[i].key] = msg->parameters[i].value;
 					found[j] = true;
 					break;
@@ -146,7 +230,7 @@ namespace KCL_rosplan {
 			// update knowledge base
 			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-			
+
 			// simple start del effects
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 			for(int i=0; i<op.at_start_del_effects.size(); i++) {

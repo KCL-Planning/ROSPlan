@@ -6,6 +6,7 @@
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
+#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
 #include "rosplan_knowledge_msgs/GetDomainPredicateDetailsService.h"
 #include "diagnostic_msgs/KeyValue.h"
@@ -28,6 +29,11 @@ namespace KCL_rosplan {
 
 	protected:
 
+		bool checkConditions(const std::vector<rosplan_knowledge_msgs::DomainFormula>& df, const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg, bool positive = true);
+		bool checkAtStartConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
+		bool checkAtEndConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
+		bool checkOverAllConditions(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
+
 		/* PDDL info and publisher */
 		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> predicates;
 		rosplan_knowledge_msgs::DomainFormula params;
@@ -39,6 +45,7 @@ namespace KCL_rosplan {
 
 		/* service handle to PDDL knowledge base */
 		ros::ServiceClient update_knowledge_client;
+		ros::ServiceClient query_knowledge_client;
 
 		/* action status */
 		bool action_success;
@@ -50,7 +57,7 @@ namespace KCL_rosplan {
 
 		/* listen to and process action_dispatch topic */
 		void dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
-		
+
 		/* perform or call real action implementation */
 		virtual bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) =0;
 	};

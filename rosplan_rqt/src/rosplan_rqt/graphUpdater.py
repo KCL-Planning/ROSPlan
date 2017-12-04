@@ -44,7 +44,7 @@ class PlanViewWidget:
 
     def start(self):
         self._timer_refresh_plan.start(1000)
-        self._timer_refresh_goals.start(10000)
+        self._timer_refresh_goals.start(1000)
 
     """
     updating plan view
