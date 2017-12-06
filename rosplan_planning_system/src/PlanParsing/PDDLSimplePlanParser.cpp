@@ -32,7 +32,7 @@ namespace KCL_rosplan {
 	/*----------------------*/
 
 	/**
-	 * parses the output of popf, generating a list of action messages.
+	 * parses standard PDDL output, generating a list of action messages.
 	 */
 	void PDDLSimplePlanParser::preparePlan() {
 

@@ -51,6 +51,7 @@ namespace KCL_rosplan {
 		plan_recieved = true;
 		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
+		printPlan();
 	}
 
 	/*--------------------*/
@@ -116,21 +117,21 @@ namespace KCL_rosplan {
 					finished_execution = false;
 				
 				if(!action_dispatched[node.action.action_id]) {
-				
+
 					// check action edges
-					bool activate_action = false;
+					bool activate_action = true;
 					std::vector<int>::iterator eit = node.edges_in.begin();
 					for (; eit != node.edges_in.end(); ++eit) {
-						if(edge_active[(*eit)]) activate_action = true;
+						if(!edge_active[(*eit)]) activate_action = false;
 					}
 
 					// query KMS for condition edges
 					bool activate = false;
-					if(node.edges_in.size()==0 || activate_action) {
+					if(activate_action) {			
 						activate = checkPreconditions(node.action);
 					}
-					
-					if(activate && (node.edges_in.size()==0 || activate_action)) {
+
+					if(activate && activate_action) {
 
 						finished_execution = false;
 						state_changed = true;
@@ -149,6 +150,12 @@ namespace KCL_rosplan {
 								node.action.duration);
 
 						action_dispatch_publisher.publish(node.action);
+
+						// deactivate incoming edges
+						std::vector<int>::const_iterator ci = node.edges_in.begin();
+						for(; ci != node.edges_in.end(); ci++) {
+							edge_active[*ci] = false;
+						}
 					}
 
 				} else if(action_completed[node.action.action_id]) {
@@ -163,12 +170,6 @@ namespace KCL_rosplan {
 				}
 
 			} // end loop (nodes)
-
-			// deactivate all edges
-			std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::const_iterator ci = current_plan.edges.begin();
-			for(; ci != current_plan.edges.end(); ci++) {
-				edge_active[ci->edge_id] = false;
-			}
 
 			ros::spinOnce();
 			loop_rate.sleep();
@@ -298,53 +299,27 @@ namespace KCL_rosplan {
 	/*-------------------*/
 
 	bool EsterelPlanDispatcher::printPlan() {
-/*
+
 		// output stream
 		std::stringstream dest;
 
 		dest << "digraph plan" << " {" << std::endl;
 
 		// nodes
-		for(std::vector<StrlNode*>::iterator nit = plan_nodes->begin(); nit!=plan_nodes->end(); nit++) {
-			std::string name = (*nit)->node_name;//.substr(0, (*nit)->node_name.find(" "));
-			dest <<  (*nit)->node_id << "[ label=\"" << name;
-			if((*nit)->completed) dest << "\" style=\"fill: #77f; \"];" << std::endl;
-			else if((*nit)->dispatched) dest << "\" style=\"fill: #7f7; \"];" << std::endl;
-			else dest << "\" style=\"fill: #fff; \"];" << std::endl;
+		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
+			dest <<  nit->action.action_id << "[ label=\"" << nit->action.name;
+			if(action_completed[nit->action.action_id]) dest << "\" style=\"fillcolor: #77f; \"];" << std::endl;
+			else if(action_dispatched[nit->action.action_id]) dest << "\" style=\"fillcolor: #7f7; \"];" << std::endl;
+			else dest << "\" style=\"fillcolor: #fff; \"];" << std::endl;
 		}
 
 		// edges
-		for(std::vector<StrlEdge*>::iterator eit = plan_edges->begin(); eit!=plan_edges->end(); eit++) {
+		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::iterator eit = current_plan.edges.begin(); eit!=current_plan.edges.end(); eit++) {
 
-			std::stringstream label;
-			if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()>0) {
-				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator cit = (*eit)->external_conditions.begin();
-				if(cit->is_negative)
-					label << "(not ";
-				label << "(" << cit->attribute_name;
-				for(int i=0; i<cit->values.size(); i++) {
-					label << " " << cit->values[i].value;
-				}
-				label << ")";
-				if(cit->is_negative)
-					label << ")";
-			}
-
-			for(int i=0; i<(*eit)->sources.size(); i++) {
-				for(int j=0; j<(*eit)->sinks.size(); j++) {
-					if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()>0) {
-						// add edge with label of external condition
-						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\" [ label=\"" << label.str() << "\" ];" << std::endl;
-					} else if((*eit)->signal_type == CONDITION && (*eit)->external_conditions.size()==0) {
-						// add edge with label of condition, references by edge name
-						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\" [ label=\"" << (*eit)->edge_name << "\" ];" << std::endl;
-					} else {
-
-						// add edge without any label
-						dest << "\"" << (*eit)->sources[i]->node_id << "\"" << " -> \"" << (*eit)->sinks[j]->node_id << "\"" << std::endl;
-					}
-				}
-			}
+			for(int j=0; j<eit->sink_ids.size(); j++) {
+			for(int i=0; i<eit->source_ids.size(); i++) {
+				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[i] << "\" [ label=\"" << eit->edge_name << "\"]" << std::endl;
+			}};
 		}
 
 		dest << "}" << std::endl;
@@ -353,7 +328,6 @@ namespace KCL_rosplan {
 		std_msgs::String msg;
 		msg.data = dest.str();
 		plan_graph_publisher.publish(msg);
-*/
 	}
 } // close namespace
 
