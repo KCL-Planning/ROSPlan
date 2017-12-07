@@ -20,7 +20,7 @@ namespace KCL_rosplan {
 		wait.sleep();
 
 		// complete the action
-		return (rand() % 100) < (100 * action_probability);
+		return (rand() % 100) <= (100 * action_probability);
 	}
 } // close namespace
 

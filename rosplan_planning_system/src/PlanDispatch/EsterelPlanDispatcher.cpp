@@ -308,9 +308,9 @@ namespace KCL_rosplan {
 		// nodes
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
 			dest <<  nit->action.action_id << "[ label=\"" << nit->action.name;
-			if(action_completed[nit->action.action_id]) dest << "\" style=\"fillcolor: #77f; \"];" << std::endl;
-			else if(action_dispatched[nit->action.action_id]) dest << "\" style=\"fillcolor: #7f7; \"];" << std::endl;
-			else dest << "\" style=\"fillcolor: #fff; \"];" << std::endl;
+			if(action_completed[nit->action.action_id]) dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+			else if(action_dispatched[nit->action.action_id]) dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+			else dest << "\"];" << std::endl;
 		}
 
 		// edges
@@ -349,7 +349,7 @@ namespace KCL_rosplan {
 
 		std::string feedbackTopic = "action_feedback";
 		nh.getParam("action_feedback_topic", feedbackTopic);
-		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1, &KCL_rosplan::EsterelPlanDispatcher::feedbackCallback, &epd);
+		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1000, &KCL_rosplan::EsterelPlanDispatcher::feedbackCallback, &epd);
 
 		// start the plan parsing services
 		ros::ServiceServer service1 = nh.advertiseService("dispatch_plan", &KCL_rosplan::PlanDispatcher::dispatchPlanService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&epd));
