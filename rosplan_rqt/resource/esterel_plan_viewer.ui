@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+	<class>ROSPlanEsterelPlanViewer</class>
+	<widget class="QWidget" name="ROSPlanEsterelPlanViewer">
+		<property name="geometry"><rect><x>0</x><y>0</y><width>805</width><height>602</height></rect></property>
+		<property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+		</property><property name="windowTitle"><string>ROSPlan plan graph viewer</string></property>
+
+		<layout class="QVBoxLayout" name="verticalLayout">
+		   <property name="margin" ><number>9</number></property>
+		   <property name="spacing" ><number>6</number></property>
+
+			<item>
+		    <widget class="QGraphicsView" name="graphicsView">
+			</widget>
+			</item>
+		</layout>
+
+	</widget>
+</ui>
