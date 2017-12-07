@@ -26,6 +26,7 @@ add_message_files(
 add_service_files(
   FILES
   PlanningService.srv
+  ProblemService.srv
   ParsingService.srv
 )
 

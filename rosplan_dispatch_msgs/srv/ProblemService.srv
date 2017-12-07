@@ -1,0 +1,6 @@
+# request a problem to be generated in the problem_path
+string problem_path
+bool problem_string_response
+---
+bool problem_generated
+string problem_string
