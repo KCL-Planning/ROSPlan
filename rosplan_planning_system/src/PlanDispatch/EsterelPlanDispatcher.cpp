@@ -160,12 +160,12 @@ namespace KCL_rosplan {
 
 				} else if(action_completed[node.action.action_id]) {
 
-					// reset node
+					/*/ reset node
 					if (node.edges_in.size() > 0) {
 						action_dispatched[node.action.action_id] = false;
 						action_received[node.action.action_id] = false;
 						action_completed[node.action.action_id] = false;
-					}
+					}*/
 
 				}
 
@@ -182,14 +182,13 @@ namespace KCL_rosplan {
 				return false;
 			}
 		}
+
+		ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
 		
 		return true;
 	}
 
 	void EsterelPlanDispatcher::initialise() {
-
-		// query KMS for condition edges
-		ROS_INFO("KCL: (%s) Initialise the external conditions.", ros::this_node::getName().c_str());
 
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
 			action_dispatched[ci->action.action_id] = false;
