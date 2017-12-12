@@ -30,8 +30,9 @@ add_service_files(
   KnowledgeUpdateService.srv
   KnowledgeUpdateServiceArray.srv
   KnowledgeQueryService.srv
-  GetDomainAttributeService.srv
+  GetDomainNameService.srv
   GetDomainTypeService.srv
+  GetDomainAttributeService.srv
   GetDomainOperatorService.srv  
   GetDomainOperatorDetailsService.srv  
   GetDomainPredicateDetailsService.srv  

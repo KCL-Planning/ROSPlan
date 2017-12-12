@@ -9,6 +9,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeUpdateServiceArray.h"
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 
+#include "rosplan_knowledge_msgs/GetDomainNameService.h"
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
 #include "rosplan_knowledge_msgs/GetDomainAttributeService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorService.h"
@@ -63,11 +64,8 @@ namespace KCL_rosplan {
 		// conditional planning constraints
 		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
 
-		// plan and mission filter
-		// TODO remove plan filter
-		PlanFilter plan_filter;
-
 		/* fetching the domain */
+		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res);
 		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);
 		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
 		bool getFunctions(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
