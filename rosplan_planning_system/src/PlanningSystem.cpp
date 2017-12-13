@@ -12,18 +12,15 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	PlanningSystem::PlanningSystem(ros::NodeHandle& nh)
+	PlanningSystem::PlanningSystem(ros::NodeHandle& nh, PlanParser& parser)
 		: system_status(READY),
-		  //plan_parser(new POPF3EsterelPlanParser(nh)),
-		  //plan_parser(new POPFEsterelPlanParser(nh)),
-		  plan_parser(new CFFPlanParser(nh)),
+		  plan_parser(&parser),
 		  plan_server(new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>(nh_, "/kcl_rosplan/start_planning", boost::bind(&PlanningSystem::runPlanningServerAction, this, _1), false))
 	{
 		// dispatcher
-		//plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPF3EsterelPlanParser*>(plan_parser));
-		plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<CFFPlanParser*>(plan_parser));
-		//plan_dispatcher = new EsterelPlanDispatcher(*dynamic_cast<POPFEsterelPlanParser*>(plan_parser));
-
+		plan_dispatcher = new EsterelPlanDispatcher(parser);
+		
+		
 		// publishing system_state
 		state_publisher = nh.advertise<std_msgs::String>("/kcl_rosplan/system_state", 5, true);
 
@@ -42,7 +39,7 @@ namespace KCL_rosplan {
 	
 	PlanningSystem::~PlanningSystem()
 	{
-		delete plan_parser;
+		//delete plan_parser;
 		delete plan_dispatcher;
 		delete plan_server;
 	}
@@ -470,7 +467,8 @@ namespace KCL_rosplan {
 		ros::init(argc,argv,"rosplan_planning_system");
 		ros::NodeHandle nh;
 
-		KCL_rosplan::PlanningSystem planningSystem(nh);
+		KCL_rosplan::POPF3EsterelPlanParser parser(nh);
+		KCL_rosplan::PlanningSystem planningSystem(nh, parser);
 
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, planningSystem.plan_dispatcher);
 		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);

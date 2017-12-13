@@ -68,7 +68,7 @@ namespace KCL_rosplan {
 		int max_dispatch_attempts;
 
 	public:
-		PlanningSystem(ros::NodeHandle& nh);
+		PlanningSystem(ros::NodeHandle& nh, PlanParser& parser);
 		virtual ~PlanningSystem();
 		
 		SystemStatus system_status;
