@@ -467,8 +467,22 @@ namespace KCL_rosplan {
 		ros::init(argc,argv,"rosplan_planning_system");
 		ros::NodeHandle nh;
 
-		KCL_rosplan::POPF3EsterelPlanParser parser(nh);
-		KCL_rosplan::PlanningSystem planningSystem(nh, parser);
+		// Check which parser to use.
+		std::string parser_selection = "popf";
+		nh.getParam("/rosplan_planning_system/parser", parser_selection);
+		KCL_rosplan::PlanParser* parser = NULL;
+		if (parser_selection == "popf")
+			parser = new KCL_rosplan::POPFEsterelPlanParser(nh);
+		else if (parser_selection == "popf3")
+			parser = new KCL_rosplan::POPF3EsterelPlanParser(nh);
+		else if (parser_selection == "ff")
+			parser = new KCL_rosplan::CFFPlanParser(nh);
+		else 
+		{
+			ROS_ERROR("Could not find a parser for %s. Possible options: popf, popf3, ff.", parser_selection.c_str());
+			exit(1);
+		}
+		KCL_rosplan::PlanningSystem planningSystem(nh, *parser);
 
 		ros::Subscriber feedback_sub = nh.subscribe("/kcl_rosplan/action_feedback", 10, &KCL_rosplan::PlanDispatcher::feedbackCallback, planningSystem.plan_dispatcher);
 		ros::Subscriber command_sub = nh.subscribe("/kcl_rosplan/planning_commands", 10, &KCL_rosplan::PlanningSystem::commandCallback, &planningSystem);
@@ -500,5 +514,6 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (PS) Ready to receive");
 		while(ros::ok() && ros::master::check()){ros::spinOnce();}
 
+		delete parser;
 		return 0;
 	}
