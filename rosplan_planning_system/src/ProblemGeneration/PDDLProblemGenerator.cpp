@@ -24,11 +24,18 @@ namespace KCL_rosplan {
 
 		// setup service calls
 		ros::NodeHandle nh;
+		ros::ServiceClient getNameClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainNameService>("/kcl_rosplan/get_domain_name");
 		ros::ServiceClient getTypesClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainTypeService>("/kcl_rosplan/get_domain_types");
 		ros::ServiceClient getInstancesClient = nh.serviceClient<rosplan_knowledge_msgs::GetInstanceService>("/kcl_rosplan/get_current_instances");
 
+		// get domain name
+		rosplan_knowledge_msgs::GetDomainNameService nameSrv;
+		if (!getNameClient.call(nameSrv)) {
+			ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_domain_name");
+		}
+
 		pFile << "(define (problem task)" << std::endl;
-		pFile << "(:domain domainname)" << std::endl;
+		pFile << "(:domain " << nameSrv.response.domain_name << ")" << std::endl;
 
 		/* objects */
 		pFile << "(:objects" << std::endl;
