@@ -93,9 +93,11 @@ namespace KCL_rosplan {
 		bool success = runPlanner();
 
 		// publish planner output
-		std_msgs::String planMsg;
-		planMsg.data = planner_output;
-		plan_publisher.publish(planMsg);
+		if(success) {
+			std_msgs::String planMsg;
+			planMsg.data = planner_output;
+			plan_publisher.publish(planMsg);
+		}
 
 		return success;
 	}
