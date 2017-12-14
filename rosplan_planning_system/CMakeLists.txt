@@ -77,15 +77,6 @@ set(VAL_SOURCES
 	src/VALfiles/LaTeXSupport.cpp
 	src/VALfiles/Utils.cpp)
 
-## planning system sources
-#set(PLANNING_SOURCES
-#	src/PlanningSystem.cpp
-#	src/PlanDispatch/SimplePlanDispatcher.cpp
-#	src/PlanParsing/POPFPlanParser.cpp
-#	src/ProblemGeneration/PDDLProblemGenerator.cpp
-#	src/PlanningEnvironment.cpp
-#	src/Plans/EsterelPlan.cpp)
-
 ## Declare cpp executables
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
