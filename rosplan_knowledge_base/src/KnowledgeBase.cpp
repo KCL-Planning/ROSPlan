@@ -198,7 +198,7 @@ namespace KCL_rosplan {
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator git;
 		for(git=model_goals.begin(); git!=model_goals.end(); git++) {
 			if(KnowledgeComparitor::containsKnowledge(msg, *git)) {
-				ROS_INFO("KCL: (KB) Removing goal (%s)", msg.attribute_name.c_str());
+				ROS_INFO("KCL: (KB) Removing goal (%s)", git->attribute_name.c_str());
 				git = model_goals.erase(git);
 				if(git!=model_goals.begin()) git--;
 				if(git==model_goals.end()) break;

@@ -55,6 +55,7 @@ namespace KCL_rosplan {
 			if (!getInstancesClient.call(instanceSrv)) {
 				ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_instances: %s", instanceSrv.request.type_name.c_str());
 			} else {
+				if(instanceSrv.response.instances.size() == 0) continue;
 				pFile << "    ";
 				for(size_t i=0;i<instanceSrv.response.instances.size();i++) {
 					pFile << instanceSrv.response.instances[i] << " ";
@@ -93,6 +94,7 @@ namespace KCL_rosplan {
 				if (!getAttrsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_current_knowledge %s", attrSrv.request.predicate_name.c_str());
 				} else {
+					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
@@ -105,11 +107,12 @@ namespace KCL_rosplan {
 						for(size_t j=0; j<attr.values.size(); j++) {
 							pFile << " " << attr.values[j].value;
 						}
-						pFile << ")" << std::endl;
-
+						pFile << ")";
 						if(attr.is_negative) pFile << ")";
+						pFile << std::endl;
 					}
 				}
+				pFile << std::endl;
 			}
 		}
 
@@ -126,6 +129,7 @@ namespace KCL_rosplan {
 				if (!getAttrsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_current_knowledge %s", attrSrv.request.predicate_name.c_str());
 				} else {
+					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
@@ -135,9 +139,10 @@ namespace KCL_rosplan {
 						for(size_t j=0; j<attr.values.size(); j++) {
 							pFile << " " << attr.values[j].value;
 						}
-						pFile << ") " << attr.function_value << ")";
+						pFile << ") " << attr.function_value << ")" << std::endl;
 					}
 				}
+				pFile << std::endl;
 			}
 		}
 
