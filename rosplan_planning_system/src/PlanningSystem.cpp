@@ -422,7 +422,8 @@ namespace KCL_rosplan {
 			getline(planfile, line);
 			if (line.find("; Plan found", 0) != std::string::npos ||
 			    line.find("ff: found legal plan as follows", 0) != std::string::npos ||
-			    line.find("; Cost:", 0) != std::string::npos)
+			    line.find("; Cost:", 0) != std::string::npos ||
+			    line.find("Solution Found", 0) != std::string::npos)
 			{
 				solved = true;
 				break;
