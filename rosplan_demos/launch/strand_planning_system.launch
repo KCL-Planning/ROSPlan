@@ -38,9 +38,9 @@
 	<!-- interfaces -->
       
 	<!-- rpsimplemapServer : load waypoints from a file -->
-	<param name="waypoint_file" value="$(find rosplan_demos)/scripts/waypoints_floor.txt" />
 	<node name="rosplan_roadmap_server" pkg="rosplan_interface_mapping" type="rpsimplemapServer" respawn="false" output="screen">
 		<param name="data_path" value="$(find rosplan_planning_system)/common/" />
+		<param name="waypoint_file" value="$(find rosplan_demos)/scripts/waypoint_floor.txt" />
 	</node>
 
 	<!-- goto_waypoint -->
@@ -75,8 +75,9 @@
 
 	<!-- localize -->
 	<node name="rosplan_interface_localiser" pkg="rosplan_interface_turtlebot2" type="rplocaliser" respawn="false" output="screen">
-	<param name="filename" value="$(find rosplan_demos)/scripts/waypoints_floor.txt" />
-	<param name="turtlebot_name" value="kinba" />
+		<param name="waypoint_file" value="$(find rosplan_demos)/scripts/waypoints_floor.txt" />
+		<param name="filename" value="$(find rosplan_demos)/scripts/waypoints_floor.txt" />
+		<param name="turtlebot_name" value="kinba" />
 	</node>
 	
 	<!-- dock -->
