@@ -460,7 +460,7 @@ namespace KCL_rosplan {
 	/*-------------*/
 	/* Main method */
 	/*-------------*/
-
+#include <iostream>
 	int main(int argc, char **argv) {
 
 		srand (static_cast <unsigned> (time(0)));
@@ -471,6 +471,17 @@ namespace KCL_rosplan {
 		// Check which parser to use.
 		std::string parser_selection = "popf";
 		nh.getParam("/rosplan_planning_system/parser", parser_selection);
+		
+		// Gets overwritten by commandline.
+		for (unsigned int i = 0; i < argc; ++i)
+		{
+			if (string(argv[i]) == "parser=ff") parser_selection = "ff";
+			if (string(argv[i]) == "parser=popf") parser_selection = "popf";
+			if (string(argv[i]) == "parser=popf3") parser_selection = "popf3";
+		}
+		
+		ROS_INFO("KCL: (PS) Started planner with the parser: %s. Possible options: popf, popf3, ff.", parser_selection.c_str());
+		
 		KCL_rosplan::PlanParser* parser = NULL;
 		if (parser_selection == "popf")
 			parser = new KCL_rosplan::POPFEsterelPlanParser(nh);
@@ -480,7 +491,7 @@ namespace KCL_rosplan {
 			parser = new KCL_rosplan::CFFPlanParser(nh);
 		else 
 		{
-			ROS_ERROR("Could not find a parser for %s. Possible options: popf, popf3, ff.", parser_selection.c_str());
+			ROS_ERROR("KCL: (PS) Could not find a parser for %s. Possible options: popf, popf3, ff.", parser_selection.c_str());
 			exit(1);
 		}
 		KCL_rosplan::PlanningSystem planningSystem(nh, *parser);

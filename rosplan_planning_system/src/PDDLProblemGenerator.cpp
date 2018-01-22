@@ -152,7 +152,7 @@ namespace KCL_rosplan {
 				ss << "    (" + environment.goal_attributes[i].attribute_name;
 
 				// find the PDDL parameters in the KnowledgeItem
-				bool found = false;
+				bool found = ait->second.empty();
 				for(size_t j=0; j<ait->second.size(); j++) {
 				for(size_t k=0; k<environment.goal_attributes[i].values.size(); k++) {
 					if(0 == environment.goal_attributes[i].values[k].key.compare(ait->second[j])) {
@@ -164,8 +164,9 @@ namespace KCL_rosplan {
 
 				ss << ")";
 
-			} else
+			} else {
 				writeAttribute = false;
+			}
 
 			if(writeAttribute) pFile << ss.str() << std::endl;
 		}
