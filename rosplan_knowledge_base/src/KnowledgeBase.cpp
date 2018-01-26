@@ -482,7 +482,7 @@ int main(int argc, char **argv)
 	// parameters
 	std::string domainPath;
 	bool useUnknowns;
-	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
+	//n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
 	n.param("use_unknowns", useUnknowns, false);
 	n.param("domain_path", domainPath, domainPath);
 

@@ -15,4 +15,15 @@
 	<include file="$(find rosplan_planning_system)/launch/interfaced_planning_system.launch" >
 	</include>
 
+	<!-- roadmap -->
+	<include file="$(find rosplan_interface_mapping)/launch/rosplan_roadmap_server.launch" />
+
+	<!-- movebase interface -->
+	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="log">
+		<param name="action_server" value="/move_base" />
+		<param name="pddl_action_name" value="goto_waypoint" />
+		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
+		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
+	</node>
+
 </launch>
