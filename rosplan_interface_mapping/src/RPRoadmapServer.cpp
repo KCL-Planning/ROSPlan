@@ -56,15 +56,8 @@ namespace KCL_rosplan {
 	 * @param threshold A value between -1 and 255 above which a cell is considered to be occupied.
 	 * @return True if the waypoints can be connected, false otherwise.
 	 */
-	bool RPRoadmapServer::canConnect(const geometry_msgs::Point& w1, const geometry_msgs::Point& w2, int threshold) const
-	{
-		/*
-		if (!has_received_occupancy_grid_)
-		{
-			return true;
-		}
-		*/
-		
+	bool RPRoadmapServer::canConnect(const geometry_msgs::Point& w1, const geometry_msgs::Point& w2, int threshold) const {
+
 		// Check if the turtlebot is going to collide with any known obstacle.
 		occupancy_grid_utils::RayTraceIterRange ray_range = occupancy_grid_utils::rayTrace(cost_map.info, w1, w2);
 		

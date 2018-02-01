@@ -113,10 +113,14 @@ namespace KCL_rosplan {
 			// create action msg
 			action_list.push_back(msg);
 
-			// create node
-			rosplan_dispatch_msgs::EsterelPlanNode node;
-			node.action = msg;
-			last_plan.nodes.push_back(node);
+
+			// create action start node
+			rosplan_dispatch_msgs::EsterelPlanNode node_start;
+			node_start.action = msg;
+			std::stringstream ss;
+			ss << msg.name << "_start";
+			node_start.name = ss.str();
+			last_plan.nodes.push_back(node_start);
 		}
 
 		// find and create causal edges
@@ -258,7 +262,7 @@ namespace KCL_rosplan {
 
 		std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ait = last_plan.nodes.begin();
 		for(; ait!=last_plan.nodes.end(); ait++) {
-
+	
 			// iterate through conditions
 			rosplan_knowledge_msgs::DomainOperator op = action_details[ait->action.action_id];
 			std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;

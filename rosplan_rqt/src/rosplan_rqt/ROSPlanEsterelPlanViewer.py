@@ -29,6 +29,7 @@ else:
 
 class EsterelPlanViewerWidget(QWidget):
 
+    # plan view
     _scene = QGraphicsScene()
     _webview = QGraphicsWebView()
     _svg = QGraphicsSvgItem()
@@ -43,12 +44,13 @@ class EsterelPlanViewerWidget(QWidget):
         self.setObjectName('ROSPlanEsterelPlanViewer')
 
         self.graphicsView.setScene(self._scene)
-
-
         self._scene.addItem(self._svg)
 
+        self.refreshButton.clicked[bool].connect(self._handle_refresh_clicked)
+
+        self._sub = rospy.Subscriber("/plan_graph", String, self.plan_received)
+
         self._plugin = plugin
-        rospy.Subscriber("/rosplan_plan_dispatcher/plan_graph", String, self.plan_received)
 
     """
     updating plan view
@@ -59,6 +61,12 @@ class EsterelPlanViewerWidget(QWidget):
         self._renderer.load(QByteArray(svg_string))
         self._svg.setSharedRenderer(self._renderer)
 
+    """
+    called when the refresh button is clicked
+    """
+    def _handle_refresh_clicked(self, checked):
+        self._sub.unregister()
+        self._sub = rospy.Subscriber("/rosplan_plan_dispatcher/plan_graph", String, self.plan_received)
 
     """
     Qt methods
