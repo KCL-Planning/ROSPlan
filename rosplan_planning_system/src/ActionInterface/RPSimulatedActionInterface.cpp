@@ -16,7 +16,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (%s) Action completing with probability %f", params.name.c_str(), action_probability);
 
 		// wait for some time
-		ros::Rate wait = (1.0 / action_duration);
+		ros::Rate wait = (action_duration);
 		wait.sleep();
 
 		// complete the action

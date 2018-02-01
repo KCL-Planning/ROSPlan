@@ -341,9 +341,6 @@ namespace KCL_rosplan {
 
 				return true;
 			}
-
-			// TODO interferes
-
 		}
 		return false;
 	}
