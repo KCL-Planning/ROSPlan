@@ -2,6 +2,30 @@
 
 namespace KCL_rosplan {
 
+	void KnowledgeBase::runKnowledgeBase() {
+
+		while(ros::ok()) {
+
+			// update TILs
+			std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+			for(; tit != model_timed_initial_literals.end(); ) {
+				if(tit->first >= ros::Time::now()) {
+					if(tit->second.is_negative) {
+						removeKnowledge(req.knowledge);
+					} else {
+						addKnowledge(tit->second);
+					}
+					model_timed_initial_literals.erase(tit);
+				} else {
+					tit++;
+				}
+			}
+
+			// services
+			ros::spinOnce();
+		}
+	}
+
 	/*-----------------*/
 	/* knowledge query */
 	/*-----------------*/
@@ -228,8 +252,8 @@ namespace KCL_rosplan {
 			}
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-			// add domain attribute
 
+			// add domain attribute
 			std::string param_str;
 			for (size_t i = 0; i < msg.values.size(); ++i) {
 				param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
@@ -238,13 +262,13 @@ namespace KCL_rosplan {
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-          ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
-                   msg.attribute_name.c_str(), param_str.c_str());
+					ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
+					msg.attribute_name.c_str(), param_str.c_str());
 					return;
 				}
 			}
 			ROS_INFO("KCL: (KB) Adding domain attribute (%s%s)",
-			         msg.attribute_name.c_str(), param_str.c_str());
+			msg.attribute_name.c_str(), param_str.c_str());
 			model_facts.push_back(msg);
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
@@ -467,7 +491,6 @@ namespace KCL_rosplan {
 		}
 		return false;
 	}
-
 } // close namespace
 
 /*-------------*/
@@ -522,7 +545,7 @@ int main(int argc, char **argv)
 	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
 
 	ROS_INFO("KCL: (KB) Ready to receive");
-	ros::spin();
+	kb.runKnowledgeBase();
 
 	return 0;
 }
