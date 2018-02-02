@@ -10,7 +10,6 @@
 #include <vector>
 #include <string>
 
-#include "rosplan_knowledge_msgs/GetDomainNameService.h"
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
 #include "rosplan_knowledge_msgs/GetDomainAttributeService.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"

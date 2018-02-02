@@ -40,8 +40,8 @@ namespace KCL_rosplan {
 		bool domain_parsed;
 		std::string domain_name;
 
-		/* domain parsing */		
-		void parseDomain(const std::string domainPath);
+		/* domain parsing */
+		VAL::domain* parseDomain(const std::string domainPath);
 	};
 }
 #endif

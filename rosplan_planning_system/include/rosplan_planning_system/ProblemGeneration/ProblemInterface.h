@@ -5,7 +5,7 @@
 #include "std_msgs/String.h"
 #include "std_srvs/Empty.h"
 
-#include "rosplan_dispatch_msgs/ProblemService.h"
+#include "rosplan_dispatch_msgs/PlanningService.h"
 
 #ifndef KCL_problem_interface
 #define KCL_problem_interface
@@ -22,6 +22,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle* node_handle;
 
 		/* params */
+		std::string domain_path;
 		std::string problem_path;
 		std::string problem_name;
 
@@ -32,9 +33,9 @@ namespace KCL_rosplan {
 		ProblemInterface(ros::NodeHandle& nh);
 		virtual ~ProblemInterface();
 
-		bool runProblemServer(std::string problemPath);
+		bool runProblemServer(std::string domainPath, std::string problemPath);
 		bool runProblemServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-		bool runProblemServerParams(rosplan_dispatch_msgs::ProblemService::Request &req, rosplan_dispatch_msgs::ProblemService::Response &res);
+		bool runProblemServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
 
 		/* ROS interface */
 		ros::Publisher problem_publisher;
