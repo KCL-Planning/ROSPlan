@@ -38,37 +38,35 @@ namespace KCL_rosplan {
 	bool ProblemInterface::runProblemServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
 
 		// defaults
+		domain_path = "common/domain.pddl";
 		problem_path = "common/problem.pddl";
 
 		// load params
+		node_handle->getParam("domain_path", domain_path);
 		node_handle->getParam("problem_path", problem_path);
 
 		// call problem server
-		return runProblemServer(problem_path);
+		return runProblemServer(domain_path, problem_path);
 	}
 
 	/**
 	 * problem generation service method (2) 
 	 * loads parameters from service request
 	 */
-	bool ProblemInterface::runProblemServerParams(rosplan_dispatch_msgs::ProblemService::Request &req, rosplan_dispatch_msgs::ProblemService::Response &res) {
+	bool ProblemInterface::runProblemServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res) {
 		// call problem server
-		bool success = runProblemServer(req.problem_path);
-		if(req.problem_string_response) {
-			std::ifstream problemIn(req.problem_path.c_str());
-			if(problemIn) res.problem_string = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
-		}
-		return success;
+		return runProblemServer(req.domain_path, req.problem_path);
 	}
 	
 	/**
 	 * planning system; prepares planning; calls planner; parses plan.
 	 */
-	bool ProblemInterface::runProblemServer(std::string problemPath) {
+	bool ProblemInterface::runProblemServer(std::string domainPath, std::string problemPath) {
 
 		ros::NodeHandle nh("~");
 
-		// save parameter
+		// save parameters
+		domain_path = domainPath;
 		problem_path = problemPath;
 		
 		// set problem name for ROS_INFO

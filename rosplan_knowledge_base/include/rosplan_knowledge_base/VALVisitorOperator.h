@@ -27,6 +27,10 @@ namespace KCL_rosplan {
 		rosplan_knowledge_msgs::DomainFormula last_prop;
 		rosplan_knowledge_msgs::DomainOperator msg;
 
+        //rosplan_knowledge_msgs::ProblemFormula last_propP;
+        //rosplan_knowledge_msgs::ProblemOperator msgP;
+
+
 		/* visitor methods */
 		virtual void visit_proposition(VAL::proposition *);
 		virtual void visit_operator_(VAL::operator_ *);

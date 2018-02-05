@@ -5,15 +5,14 @@
 #include <boost/regex.hpp>
 #include <boost/concept_check.hpp>
 
-#include "PlanDispatcher.h"
-
-#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
-#include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
-#include "rosplan_knowledge_msgs/DomainOperator.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "rosplan_dispatch_msgs/EsterelPlan.h"
-
 #include "std_msgs/String.h"
+
+#include "PlanDispatcher.h"
+#include "rosplan_planning_system/Plans/EsterelPlan.h"
+#include "rosplan_planning_system/PlanParsing/CFFPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/CLGPlanParser.h"
+#include "rosplan_planning_system/PlanParsing/POPFEsterelPlanParser.h"
 
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
@@ -24,45 +23,46 @@ namespace KCL_rosplan
 	{
 	private:
 
-		// esterel plan methods
-		void initialise();
-	
-		// current plan and time plan was recevied
-		rosplan_dispatch_msgs::EsterelPlan current_plan;
-		double mission_start_time;
+		bool printPlan(const std::string& path);
 
-		// plan status
-		std::map<int,bool> edge_active;
-		std::map<int,bool> action_dispatched;
+		/* mapping PDDL conditions and esterel inputs */
+		ros::ServiceClient query_knowledge_client;
 
-		bool state_changed;
-		bool finished_execution;
+		/* plan description from parser */
+		std::vector<StrlNode*> * plan_nodes;
+		std::vector<StrlEdge*> * plan_edges;
+
+		/* plan description from Esterel file */
+		std::string strl_file;
+		bool readEsterelFile(std::string strlFile);
+		
+		/* action offset */
+		int action_id_offset;
 
 		/* plan graph publisher */
-		bool printPlan();
 		ros::Publisher plan_graph_publisher;
-
-		/* check preconditions are true */
-		bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
-		ros::ServiceClient query_knowledge_client;
-		ros::ServiceClient query_domain_client;
+		
+		/* mapping between the node ids and the node */
+		std::map<int, StrlNode*> strl_node_mapping;
 
 	public:
 
-		/* constructor */
-		EsterelPlanDispatcher(ros::NodeHandle& nh);
-		~EsterelPlanDispatcher();
+		/* constructor TODO get rid of these */
+		EsterelPlanDispatcher(CLGPlanParser &parser);
+		EsterelPlanDispatcher(CFFPlanParser &parser);
+		EsterelPlanDispatcher(POPFEsterelPlanParser &parser);
 
-		void planCallback(const rosplan_dispatch_msgs::EsterelPlan plan);
-
+		/* access */
+		int getCurrentAction();
+		void setCurrentAction(size_t freeActionID);
 		void reset();
 
 		/* action dispatch methods */
-		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-		bool dispatchPlan(double missionStartTime, double planStartTime);
+		bool dispatchPlan(const std::vector<rosplan_dispatch_msgs::ActionDispatch> &actionList, double missionStart, double planStart);
 
 		/* action feedback methods */
 		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
+		void actionFeedback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
 	};
 }
 

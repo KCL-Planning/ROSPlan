@@ -1,3 +1,3 @@
 #EsterelPlan message
-EsterelPlanNode[] nodes
-EsterelPlanEdge[] edges
+ActionDispatch[] nodes
+diagnostic_msgs/KeyValue[] edges

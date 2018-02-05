@@ -1,6 +1,3 @@
-/*
- * This file describes the class used to dispatch a Simple (sequential) PDDL plan.
- */
 #include "PlanDispatcher.h"
 
 #include "rosplan_dispatch_msgs/CompletePlan.h"
@@ -20,9 +17,7 @@ namespace KCL_rosplan
 	{
 	private:
 
-		// current plan and time plan was recevied
 		rosplan_dispatch_msgs::CompletePlan current_plan;
-		double mission_start_time;
 
 		/* check preconditions are true */
 		bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
@@ -42,10 +37,10 @@ namespace KCL_rosplan
 
 		void reset();
 
-		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 		bool dispatchPlan(double missionStartTime, double planStartTime);
-
 		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
+
+		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 	};
 }
 

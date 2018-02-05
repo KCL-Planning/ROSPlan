@@ -9,6 +9,7 @@
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+                <param name="initialState_path" value="$(find rosplan_demos)/common/problem_turtlebot.pddl" />
 	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
 		<!-- conditional planning flags -->
 		<param name="use_unknowns" value="False" />
@@ -41,26 +42,21 @@
 	</node>
 
 	<!-- plan parsing -->
-	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
 		<param name="planner_topic" value="/rosplan_planner_interface/planner_output" />
 		<param name="plan_topic" value="complete_plan" />
 	</node>
 
 	<!-- plan dispatching -->
-	<node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen">
+	<node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_simple_plan_dispatcher" respawn="false" output="screen">
 		<param name="plan_topic" value="/rosplan_parsing_interface/complete_plan" />
 		<param name="action_dispatch_topic" value="action_dispatch" />
 		<param name="action_feedback_topic" value="action_feedback" />
 	</node>
 
 	<!-- sim actions -->
-	<node name="rosplan_interface_undocking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="undock" />
-		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
-		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
-	</node>
 	<node name="rosplan_interface_docking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="dock" />
+		<param name="pddl_action_name" value="undock" />
 		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
 		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
 	</node>

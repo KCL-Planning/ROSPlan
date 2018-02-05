@@ -11,8 +11,8 @@
 #include <string>
 #include <sstream>
 
-#ifndef KCL_pddl_simple_plan_parser
-#define KCL_pddl_simple_plan_parser
+#ifndef KCL_popf_plan_parser
+#define KCL_popf_plan_parser
 
 namespace KCL_rosplan {
 
