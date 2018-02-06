@@ -62,7 +62,7 @@ namespace KCL_rosplan {
 		// TODO add constants to KB
 
 		// timed constraints
-		std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem> model_timed_initial_literals;
+		std::multimap<ros::Time, rosplan_knowledge_msgs::KnowledgeItem> model_timed_initial_literals;
 
 		// conditional planning constraints
 		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;

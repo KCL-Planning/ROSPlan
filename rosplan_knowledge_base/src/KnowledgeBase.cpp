@@ -11,7 +11,7 @@ namespace KCL_rosplan {
 			for(; tit != model_timed_initial_literals.end(); ) {
 				if(tit->first >= ros::Time::now()) {
 					if(tit->second.is_negative) {
-						removeKnowledge(req.knowledge);
+						removeKnowledge(tit->second);
 					} else {
 						addKnowledge(tit->second);
 					}
@@ -106,14 +106,26 @@ namespace KCL_rosplan {
 
 	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
 
-		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
-			addKnowledge(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
+		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE) {
+			if(req.duration>0) {
+				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+				model_timed_initial_literals.insert(std::make_pair(time,req.knowledge));
+			} else {
+				addKnowledge(req.knowledge);
+			}
+		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL) {
 			addMissionGoal(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
-			removeKnowledge(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
+		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE) {
+			if(req.duration>0) {
+				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+				req.knowledge.is_negative = !req.knowledge.is_negative;
+				model_timed_initial_literals.insert(std::make_pair(time,req.knowledge));
+			} else {
+				removeKnowledge(req.knowledge);
+			}
+		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL) {
 			removeMissionGoal(req.knowledge);
+		}
 
 		res.success = true;
 		return true;
@@ -235,7 +247,7 @@ namespace KCL_rosplan {
 	/*--------------*/
 
 	/*
-	 * add an instance, domain predicate, or function to the knowledge base
+	 * add an instance, fact, or function to the knowledge base
 	 */
 	void KnowledgeBase::addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg) {
 		
