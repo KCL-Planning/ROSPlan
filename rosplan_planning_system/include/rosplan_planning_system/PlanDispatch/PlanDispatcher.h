@@ -28,6 +28,13 @@ namespace KCL_rosplan
 
 	public:
 
+		/* control callback */
+		bool cancelDispatchService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+			ROS_INFO("KCL: (%s) Cancel plan command recieved.", ros::this_node::getName().c_str());
+			plan_cancelled = true;
+			return true;
+		}
+
 		/* dispatch modes */
 		bool dispatch_paused;
 		bool replan_requested;
