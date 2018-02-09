@@ -321,7 +321,7 @@ namespace KCL_rosplan {
 
 		// nodes
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
-			dest <<  nit->action.action_id << "[ label=\"" << nit->action.name;
+			dest <<  nit->node_id << "[ label=\"" << nit->name;
 			if(action_completed[nit->action.action_id]) dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
 			else if(action_dispatched[nit->action.action_id]) dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
 			else dest << "\"];" << std::endl;
@@ -329,10 +329,9 @@ namespace KCL_rosplan {
 
 		// edges
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::iterator eit = current_plan.edges.begin(); eit!=current_plan.edges.end(); eit++) {
-
 			for(int j=0; j<eit->sink_ids.size(); j++) {
 			for(int i=0; i<eit->source_ids.size(); i++) {
-				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[i] << "\" [ label=\"" << eit->edge_name << "\"]" << std::endl;
+				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\" [ label=\"" << eit->edge_name << "\"]" << std::endl;
 			}};
 		}
 
