@@ -240,25 +240,7 @@ namespace KCL_rosplan {
 			}
 
 			// interference edges
-			// if current action has precondition order after preceding node(s) with negating effect
-			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
-
-				for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-				for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-
-			} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
-
-				for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-			}
+			addInterferenceEdges(nodes, nit);
 		}
 	}
 
@@ -280,6 +262,69 @@ namespace KCL_rosplan {
 		return false;
 	}
 
+	/**
+	 * Adds edges from all previous nodes with which there is interference.
+	 */
+	void PDDLEsterelPlanParser::addInterferenceEdges(std::map<double,int> &node_map, std::map<double,int>::iterator &current_node) {
+
+		rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[current_node->second];
+
+		// for this node check previous nodes
+		std::map<double,int>::const_reverse_iterator rit(current_node);
+		for(; rit!=node_map.rend(); rit++) {
+
+			rosplan_dispatch_msgs::EsterelPlanNode *prenode = &last_plan.nodes[rit->second];
+
+			// if already ordered, then skip
+			if(isOrdered(*prenode, *node))
+				continue;
+
+			bool interferes = false;
+
+			rosplan_knowledge_msgs::DomainOperator op = action_details[prenode->action.action_id];
+			std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
+
+			// for this pair of nodes check if current node interferes with previous node
+			if(prenode->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
+
+				// determine if current_node negates at start condition of action start node
+				for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+				for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+
+				// determine if previous node start effect interferes with current node effects
+				for(cit = op.at_start_add_effects.begin(); cit!=op.at_start_add_effects.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+				for(cit = op.at_start_del_effects.begin(); cit!=op.at_start_del_effects.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+
+			} else if(prenode->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+
+				// determine if current_node negates at end condition of action end node
+				for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+				for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+
+				// determine if current_node negates over all condition of action end node
+				for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+				for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+
+				// determine if previous node end effect interferes with current node effects
+				for(cit = op.at_end_add_effects.begin(); cit!=op.at_end_add_effects.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, true);
+				for(cit = op.at_end_del_effects.begin(); cit!=op.at_end_del_effects.end(); cit++)
+					interferes = interferes || satisfiesPrecondition(*cit, *node, false);
+			}
+
+			if(interferes) {
+				makeEdge(prenode->node_id, node->node_id);
+			}
+		}
+	}
 
 } // close namespace
 
