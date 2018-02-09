@@ -119,8 +119,9 @@ namespace KCL_rosplan {
 				rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
 				
 				// If at least one node is still executing we are not done yet.
-				if (action_dispatched[node.action.action_id] && !action_completed[node.action.action_id])
+				if (action_dispatched[node.action.action_id] && !action_completed[node.action.action_id]) {
 					finished_execution = false;
+				}
 				
 				if(!action_dispatched[node.action.action_id]) {
 
@@ -137,7 +138,7 @@ namespace KCL_rosplan {
 						condition_activate_action = checkPreconditions(node.action);
 					}
 
-					if(condition_activate_action && edges_activate_action) {
+					if(condition_activate_action && edges_activate_action && !action_dispatched[node.action.action_id]) {
 
 						finished_execution = false;
 						state_changed = true;
