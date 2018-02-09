@@ -122,15 +122,19 @@ namespace KCL_rosplan {
 				if (action_dispatched[node.action.action_id] && !action_completed[node.action.action_id]) {
 					finished_execution = false;
 				}
-				
-				if(!action_dispatched[node.action.action_id]) {
 
-					// check action edges
-					bool edges_activate_action = true;
-					std::vector<int>::iterator eit = node.edges_in.begin();
-					for (; eit != node.edges_in.end(); ++eit) {
-						if(!edge_active[(*eit)]) edges_activate_action = false;
-					}
+				// check action edges
+				bool edges_activate_action = true;
+				std::vector<int>::iterator eit = node.edges_in.begin();
+				for (; eit != node.edges_in.end(); ++eit) {
+					if(!edge_active[(*eit)]) edges_activate_action = false;
+				}
+				if(!edges_activate_action) continue;
+				
+				// dispatch new action
+				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && !action_dispatched[node.action.action_id]) {
+
+					finished_execution = false;
 
 					// query KMS for condition edges
 					bool condition_activate_action = false;
@@ -138,11 +142,8 @@ namespace KCL_rosplan {
 						condition_activate_action = checkPreconditions(node.action);
 					}
 
-					if(condition_activate_action && edges_activate_action && !action_dispatched[node.action.action_id]) {
+					if(condition_activate_action) {
 
-						finished_execution = false;
-						state_changed = true;
-						
 						// activate action
 						action_dispatched[node.action.action_id] = true;
 						action_received[node.action.action_id] = false;
@@ -157,23 +158,44 @@ namespace KCL_rosplan {
 								node.action.duration);
 
 						action_dispatch_publisher.publish(node.action);
+						state_changed = true;
 
 						// deactivate incoming edges
 						std::vector<int>::const_iterator ci = node.edges_in.begin();
 						for(; ci != node.edges_in.end(); ci++) {
 							edge_active[*ci] = false;
 						}
+
+						// activate new edges
+						ci = node.edges_out.begin();
+						for(; ci != node.edges_out.end(); ci++) {
+							edge_active[*ci] = true;
+						}
+					}
+				}
+
+				// handle completion of an action
+				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END && action_completed[node.action.action_id]) {
+
+					ROS_INFO("KCL: (%s) %i: action %s completed",
+							ros::this_node::getName().c_str(),
+							node.action.action_id,
+							node.action.name.c_str());
+
+					finished_execution = false;
+					state_changed = true;
+
+					// deactivate incoming edges
+					std::vector<int>::const_iterator ci = node.edges_in.begin();
+					for(; ci != node.edges_in.end(); ci++) {
+						edge_active[*ci] = false;
 					}
 
-				} else if(action_completed[node.action.action_id]) {
-
-					/*/ reset node
-					if (node.edges_in.size() > 0) {
-						action_dispatched[node.action.action_id] = false;
-						action_received[node.action.action_id] = false;
-						action_completed[node.action.action_id] = false;
-					}*/
-
+					// activate new edges
+					ci = node.edges_out.begin();
+					for(; ci != node.edges_out.end(); ci++) {
+						edge_active[*ci] = true;
+					}
 				}
 
 			} // end loop (nodes)
@@ -201,6 +223,8 @@ namespace KCL_rosplan {
 
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
 			action_dispatched[ci->action.action_id] = false;
+			action_received[ci->action.action_id] = false;
+			action_completed[ci->action.action_id] = false;
 		}
 
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::const_iterator ci = current_plan.edges.begin(); ci != current_plan.edges.end(); ci++) {
@@ -275,8 +299,10 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (%s) Feedback received [%i, %s]", ros::this_node::getName().c_str(), msg->action_id, msg->status.c_str());
 
 		// action enabled
-		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled")))
+		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled"))) {
 			action_received[msg->action_id] = true;
+			state_changed = true;
+		}
 
 		// action completed (successfuly)
 		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved")) {
@@ -285,20 +311,8 @@ namespace KCL_rosplan {
 			if(!action_received[msg->action_id]) {
 				ROS_INFO("KCL: (%s) Action not yet dispatched, ignoring feedback", ros::this_node::getName().c_str());
 			}
-
 			action_completed[msg->action_id] = true;
-
-			// activate new edges
-			std::vector<int>::iterator eit = current_plan.nodes[msg->action_id].edges_out.begin();
-			for (; eit != current_plan.nodes[msg->action_id].edges_out.end(); ++eit) {
-				edge_active[(*eit)] = true;
-			}
-			
-			finished_execution = false;
 			state_changed = true;
-
-			ROS_INFO("KCL: (%s) %i: action %s completed", ros::this_node::getName().c_str(), msg->action_id, current_plan.nodes[msg->action_id].action.name.c_str());
-
 		}
 
 		// action completed (failed)
@@ -322,16 +336,29 @@ namespace KCL_rosplan {
 		// nodes
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
 			dest <<  nit->node_id << "[ label=\"" << nit->name;
-			if(action_completed[nit->action.action_id]) dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
-			else if(action_dispatched[nit->action.action_id]) dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
-			else dest << "\"];" << std::endl;
+
+			if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && action_received[nit->action.action_id]) {
+				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+			}
+			else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END && action_completed[nit->action.action_id]) {
+				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+			}
+			else if(action_dispatched[nit->action.action_id]) {
+				dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+			} else {
+				dest << "\"];" << std::endl;
+			}
 		}
 
 		// edges
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::iterator eit = current_plan.edges.begin(); eit!=current_plan.edges.end(); eit++) {
 			for(int j=0; j<eit->sink_ids.size(); j++) {
 			for(int i=0; i<eit->source_ids.size(); i++) {
-				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\" [ label=\"" << eit->edge_name << "\"]" << std::endl;
+				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\""
+						<< " [ label=\"" << eit->edge_name << "\""
+						<< " , penwidth=2"
+						<< ((edge_active[eit->edge_id]) ? " , color=\"red\"" : " , color=\"black\"")
+						<< "]" << std::endl;
 			}};
 		}
 
