@@ -11,7 +11,7 @@ namespace KCL_rosplan {
 	 * parse the domain file
 	 */
 	VAL::domain* DomainParser::parseDomain(const std::string domainPath) {
-		
+
 		// only parse domain once
 		if(domain_parsed) return domain;
 		domain_parsed = true;

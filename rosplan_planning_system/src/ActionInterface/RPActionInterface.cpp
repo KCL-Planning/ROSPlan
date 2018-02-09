@@ -76,6 +76,7 @@ namespace KCL_rosplan {
 		std::vector<std::string>::iterator nit = predicateNames.begin();
 		for(; nit!=predicateNames.end(); nit++) {
 			if (predicates.find(*nit) != predicates.end()) continue;
+			if (*nit == "=" || *nit == ">" || *nit == "<" || *nit == ">=" || *nit == "<=") continue;
 			rosplan_knowledge_msgs::GetDomainPredicateDetailsService predSrv;
 			predSrv.request.name = *nit;
 			if(predClient.call(predSrv)) {

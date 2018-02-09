@@ -25,6 +25,8 @@ namespace KCL_rosplan {
 
 		ROS_INFO("KCL: (%s) Parsing plan from file.", ros::this_node::getName().c_str());
 
+		reset();
+
 		// load plan from file
 		std::stringstream ss;
 		std::ifstream source;
@@ -35,7 +37,6 @@ namespace KCL_rosplan {
 
 		planner_output_recieved = true;
 
-		reset();
 		preparePlan();
 		publishPlan();
 
@@ -55,8 +56,9 @@ namespace KCL_rosplan {
 			reset();
 			preparePlan();
 			publishPlan();
+			planner_output_recieved = false;
 		} else {
-			ROS_INFO("KCL: (%s) No planner output recieved; nothing to parse.", ros::this_node::getName().c_str());
+			ROS_INFO("KCL: (%s) No new planner output recieved; nothing to parse.", ros::this_node::getName().c_str());
 		}
 		return true;
 	}

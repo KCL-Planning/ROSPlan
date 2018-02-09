@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    EsterelPlan.msg
+   EsterelPlanEdge.msg
+   EsterelPlanNode.msg
    CompletePlan.msg
    ActionDispatch.msg
    ActionFeedback.msg
@@ -24,6 +26,7 @@ add_message_files(
 add_service_files(
   FILES
   PlanningService.srv
+  ProblemService.srv
   ParsingService.srv
 )
 

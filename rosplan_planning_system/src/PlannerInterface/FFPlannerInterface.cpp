@@ -1,4 +1,4 @@
-#include "rosplan_planning_system/PlannerInterface/POPFPlannerInterface.h"
+#include "rosplan_planning_system/PlannerInterface/FFPlannerInterface.h"
 
 namespace KCL_rosplan {
 
@@ -6,7 +6,7 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	POPFPlannerInterface::POPFPlannerInterface(ros::NodeHandle& nh)
+	FFPlannerInterface::FFPlannerInterface(ros::NodeHandle& nh)
 	{
 		node_handle = &nh;
 
@@ -21,7 +21,7 @@ namespace KCL_rosplan {
 		plan_server->start();
 	}
 	
-	POPFPlannerInterface::~POPFPlannerInterface()
+	FFPlannerInterface::~FFPlannerInterface()
 	{
 		delete plan_server;
 	}
@@ -29,7 +29,7 @@ namespace KCL_rosplan {
 	/**
 	 * Runs external commands
 	 */
-	std::string POPFPlannerInterface::runCommand(std::string cmd) {
+	std::string FFPlannerInterface::runCommand(std::string cmd) {
 		std::string data;
 		FILE *stream;
 		char buffer[1000];
@@ -47,7 +47,7 @@ namespace KCL_rosplan {
 	/**
 	 * passes the problem to the Planner; the plan to post-processing.
 	 */
-	bool POPFPlannerInterface::runPlanner() {
+	bool FFPlannerInterface::runPlanner() {
 
 		// save problem to file for POPF
 		if(use_problem_topic && problem_instance_recieved) {
@@ -77,27 +77,41 @@ namespace KCL_rosplan {
 		std::string line;
 		std::stringstream ss;
 
-		int curr, next;
 		bool solved = false;
-		double planDuration;
 
 		while (std::getline(planfile, line)) {
 
-			if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
-				solved = true;
-			} else if (line.find("; Time", 0) == std::string::npos) {
-				// consume useless lines
-			} else {
-				// read a plan (might not be the last plan)
-				planDuration = 0;
-				ss.str("");
-				while (std::getline(planfile, line)) {
-					if (line.length()<2)
-						break;
-					ss << line << std::endl;
-				}
-				planner_output = ss.str();
+			// skip lines until there is a plan
+			if(line.compare("ff: found legal plan as follows") != 0) {
+				continue;
 			}
+
+			// skip the empty line
+			while (std::getline(planfile, line)) {
+				if (line.length()<2) break;
+			}
+
+            // actions look like this:
+            // step    0: got_place C1
+            //         1: find_object V1 C1 
+			solved = true;
+			while (std::getline(planfile, line)) {
+
+				if (line.length()<2) break;
+
+	            unsigned int pos = line.find(' ');
+				bool action = false;
+				while(pos != std::string::npos && pos < line.length()) {
+					if(line.substr(pos,1) != " ") {
+						action = true;
+						line = line.substr(pos);
+						break;
+					}
+					pos++;
+				}
+				if(action) ss << line << " [0.001]" << std::endl;
+			}
+			planner_output = ss.str();
 		}
 		planfile.close();
 
@@ -120,7 +134,7 @@ namespace KCL_rosplan {
 		ros::init(argc,argv,"rosplan_planner_interface");
 		ros::NodeHandle nh("~");
 
-		KCL_rosplan::POPFPlannerInterface pi(nh);
+		KCL_rosplan::FFPlannerInterface pi(nh);
 		
 		// subscribe to problem instance
 		std::string problemTopic = "problem_instance";

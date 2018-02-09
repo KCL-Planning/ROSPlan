@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+	<class>ROSPlanEsterelPlanViewer</class>
+	<widget class="QWidget" name="ROSPlanEsterelPlanViewer">
+		<property name="geometry"><rect><x>0</x><y>0</y><width>805</width><height>602</height></rect></property>
+		<property name="sizePolicy"><sizepolicy hsizetype="Expanding" vsizetype="Expanding"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+		</property><property name="windowTitle"><string>ROSPlan plan graph viewer</string></property>
+
+		<layout class="QVBoxLayout" name="verticalLayout">
+			<property name="margin" ><number>9</number></property>
+			<property name="spacing" ><number>6</number></property>
+
+			<item>
+				<layout class="QHBoxLayout" name="horizontalLayout_2">
+				<item>
+					<widget class="QLabel" name="label">
+						<property name="text"><string>Plan Topic:</string></property>
+					</widget>
+				</item>
+				<item>
+					<widget class="QLineEdit" name="topicText">
+						<property name="text"><string>/rosplan_plan_dispatcher/plan_graph</string></property>
+						<property name="enabled"><bool>true</bool></property>
+						<property name="autoFillBackground"><bool>false</bool></property>
+						<property name="frame"><bool>true</bool></property>
+						<property name="readOnly"><bool>false</bool></property>
+					</widget>
+				</item>
+				<item>
+					<widget class="QPushButton" name="refreshButton">
+						<property name="layoutDirection"><enum>Qt::LeftToRight</enum></property>
+						<property name="text"><string>Refresh</string></property>
+					</widget>
+				</item>
+				<item>
+					<spacer name="horizontalSpacer_2">
+						<property name="orientation"><enum>Qt::Horizontal</enum></property>
+						<property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
+					</spacer>
+				</item>
+				</layout>
+			</item>
+
+			<item>
+				<widget class="QGraphicsView" name="graphicsView">
+				</widget>
+			</item>
+		</layout>
+	</widget>
+</ui>
