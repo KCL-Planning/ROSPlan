@@ -2,6 +2,7 @@
 <launch>
 
 	<!-- arguments -->
+	<arg name="node_name"            default="rosplan_planner_interface" />
 	<arg name="use_problem_topic"    default="true" />
 	<arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
 	<arg name="planner_topic"        default="planner_output" />
@@ -12,7 +13,7 @@
 
 
 	<!-- planner interface -->
-	<node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
 
 		<!-- general options -->
 		<param name="use_problem_topic" value="$(arg use_problem_topic)" />
