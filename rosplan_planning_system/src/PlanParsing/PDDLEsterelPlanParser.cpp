@@ -116,11 +116,23 @@ namespace KCL_rosplan {
 
 			// create action start node
 			rosplan_dispatch_msgs::EsterelPlanNode node_start;
+			node_start.node_type = rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START;
+			node_start.node_id = last_plan.nodes.size();
 			node_start.action = msg;
 			std::stringstream ss;
 			ss << msg.name << "_start";
 			node_start.name = ss.str();
 			last_plan.nodes.push_back(node_start);
+
+			// create action end node
+			rosplan_dispatch_msgs::EsterelPlanNode node_end;
+			node_end.node_type = rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END;
+			node_end.node_id = last_plan.nodes.size();
+			node_end.action = msg;
+			ss.str("");
+			ss << msg.name << "_end";
+			node_end.name = ss.str();
+			last_plan.nodes.push_back(node_end);
 		}
 
 		// find and create causal edges
@@ -132,125 +144,39 @@ namespace KCL_rosplan {
 	 */
 	void PDDLEsterelPlanParser::processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params) {
 
+		// fetch operator details
 		ros::ServiceClient client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = msg.name;
 		if(!client.call(srv)) {
 			ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s", ros::this_node::getName().c_str(), msg.name.c_str());
 		} else {
-			// ground and save action
+
 			action_details[msg.action_id] = srv.response.op;
 
+			// save parameters in action message
 			std::vector<diagnostic_msgs::KeyValue> opParams = srv.response.op.formula.typed_parameters;
 			for(size_t i=0; i<opParams.size(); i++) {
-
 				diagnostic_msgs::KeyValue pair;
 				pair.key = opParams[i].key;
 				pair.value = params[i];
 				msg.parameters.push_back(pair);
-
-				std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_start_add_effects
-				cit = action_details[msg.action_id].at_start_add_effects.begin();
-				for(; cit!=action_details[msg.action_id].at_start_add_effects.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_start_del_effects
-				cit = action_details[msg.action_id].at_start_del_effects.begin();
-				for(; cit!=action_details[msg.action_id].at_start_del_effects.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_end_add_effects
-				cit = action_details[msg.action_id].at_end_add_effects.begin();
-				for(; cit!=action_details[msg.action_id].at_end_add_effects.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_end_del_effects
-				cit = action_details[msg.action_id].at_end_del_effects.begin();
-				for(; cit!=action_details[msg.action_id].at_end_del_effects.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_start_simple_condition
-				cit = action_details[msg.action_id].at_start_simple_condition.begin();
-				for(; cit!=action_details[msg.action_id].at_start_simple_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] over_all_simple_condition
-				cit = action_details[msg.action_id].over_all_simple_condition.begin();
-				for(; cit!=action_details[msg.action_id].over_all_simple_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_end_simple_condition
-				cit = action_details[msg.action_id].at_end_simple_condition.begin();
-				for(; cit!=action_details[msg.action_id].at_end_simple_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_start_neg_condition
-				cit = action_details[msg.action_id].at_start_neg_condition.begin();
-				for(; cit!=action_details[msg.action_id].at_start_neg_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] over_all_neg_condition
-				cit = action_details[msg.action_id].over_all_neg_condition.begin();
-				for(; cit!=action_details[msg.action_id].over_all_neg_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
-
-				// rosplan_knowledge_msgs/DomainFormula[] at_end_neg_condition
-				cit = action_details[msg.action_id].at_end_neg_condition.begin();
-				for(; cit!=action_details[msg.action_id].at_end_neg_condition.end(); cit++) {
-					for(int j=0;j<cit->typed_parameters.size();j++) {
-						if(opParams[i].key == cit->typed_parameters[j].key) {
-							cit->typed_parameters[j].value = params[i];
-						}
-					}
-				}
 			}
+
+			// ground and save action details
+			groundFormula(action_details[msg.action_id].at_start_add_effects, opParams, params);
+			groundFormula(action_details[msg.action_id].at_start_del_effects, opParams, params);
+
+			groundFormula(action_details[msg.action_id].at_end_add_effects, opParams, params);
+			groundFormula(action_details[msg.action_id].at_end_del_effects, opParams, params);
+
+			groundFormula(action_details[msg.action_id].at_start_simple_condition, opParams, params);
+			groundFormula(action_details[msg.action_id].at_end_simple_condition, opParams, params);
+			groundFormula(action_details[msg.action_id].over_all_simple_condition, opParams, params);
+
+			groundFormula(action_details[msg.action_id].at_start_neg_condition, opParams, params);
+			groundFormula(action_details[msg.action_id].at_end_neg_condition, opParams, params);
+			groundFormula(action_details[msg.action_id].over_all_neg_condition, opParams, params);
 		}
 	}
 
@@ -260,53 +186,78 @@ namespace KCL_rosplan {
 	
 	void PDDLEsterelPlanParser::createGraph() {
 
+		// map of absolute plan time to node ID
+		std::map<double,int> nodes;
+
+		// construct ordered list of nodes
 		std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ait = last_plan.nodes.begin();
 		for(; ait!=last_plan.nodes.end(); ait++) {
-	
-			// iterate through conditions
-			rosplan_knowledge_msgs::DomainOperator op = action_details[ait->action.action_id];
+
+			// get node time
+			double time = ait->action.dispatch_time;
+			if(ait->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+				time = time + ait->action.duration;
+
+			// find a unique time for the node
+			while(nodes.find(time)!=nodes.end())
+				time = time + 0.1;
+
+			nodes.insert(std::pair<double,int>(time,ait->node_id));
+		}		
+
+		// get the next node
+		std::map<double,int>::iterator nit = nodes.begin();
+		for(; nit!=nodes.end(); nit++) {
+			
+			rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[nit->second];
+
+			// if action end, insert edge from action start
+			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+				makeEdge(node->node_id-1, node->node_id);
+			}
+
+			// for each precondition add possible causal support edge with latest preceding node
+			rosplan_knowledge_msgs::DomainOperator op = action_details[node->action.action_id];
 			std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
 
-			// rosplan_knowledge_msgs/DomainFormula[] at_start_simple_condition
-			cit = op.at_start_simple_condition.begin();
-			for(; cit!=op.at_start_simple_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, false);
+			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
+
+				for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
+				for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
+
+			} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+
+				for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
 			}
 
-			// rosplan_knowledge_msgs/DomainFormula[] over_all_simple_condition
-			cit = op.over_all_simple_condition.begin();
-			for(; cit!=op.over_all_simple_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, false);
-			}
+			// interference edges
+			// if current action has precondition order after preceding node(s) with negating effect
+			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
 
-			// rosplan_knowledge_msgs/DomainFormula[] at_end_simple_condition
-			cit = op.at_end_simple_condition.begin();
-			for(; cit!=op.at_end_simple_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, false);
-			}
+				for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
+				for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
 
-			// rosplan_knowledge_msgs/DomainFormula[] at_start_neg_condition
-			cit = op.at_start_neg_condition.begin();
-			for(; cit!=op.at_start_neg_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, true);
-			}
+			} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
 
-			// rosplan_knowledge_msgs/DomainFormula[] over_all_neg_condition
-			cit = op.over_all_neg_condition.begin();
-			for(; cit!=op.over_all_neg_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, true);
-			}
-
-			// rosplan_knowledge_msgs/DomainFormula[] at_end_neg_condition
-			cit = op.at_end_neg_condition.begin();
-			for(; cit!=op.at_end_neg_condition.end(); cit++) {
-				// for this condition create possible causal edges
-				createEdge(ait, *cit, true);
+				for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, false);
+				for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
+					addConditionEdge(nodes, nit, *cit, true);
 			}
 		}
 	}
@@ -315,72 +266,20 @@ namespace KCL_rosplan {
 	 * finds the previous supporting action and creates a new edge.
 	 * @returns True if an edge is created.
 	 */
-	bool PDDLEsterelPlanParser::createEdge(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ait, rosplan_knowledge_msgs::DomainFormula& condition, bool negative_condition) {
+	bool PDDLEsterelPlanParser::addConditionEdge(std::map<double,int> &node_map, std::map<double,int>::iterator &current_node, rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition) {
+
 		// for this condition check previous actions
-		std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_reverse_iterator pait(ait);
-		for(; pait!=last_plan.nodes.rend(); pait++) {
-
-			// supports
-			if(satisfiesPrecondition(condition, *pait, negative_condition)) {
-
-				// if action satisfies condition then create and add edge
-				rosplan_dispatch_msgs::EsterelPlanEdge newEdge;
-				newEdge.edge_id = last_plan.edges.size();
-				std::stringstream ss;
-				ss << "edge" << "_" << newEdge.edge_id << " " << condition.name;
-				newEdge.edge_name = ss.str();
-				newEdge.signal_type = 0;
-				newEdge.source_ids.push_back(pait->action.action_id);
-				newEdge.sink_ids.push_back(ait->action.action_id);
-
-				last_plan.edges.push_back(newEdge);
-
-				last_plan.nodes[pait->action.action_id].edges_out.push_back(newEdge.edge_id);
-				last_plan.nodes[ait->action.action_id].edges_in.push_back(newEdge.edge_id);
-
-
+		std::map<double,int>::const_reverse_iterator rit(current_node);
+		for(; rit!=node_map.rend(); rit++) {
+			// check support
+			if(satisfiesPrecondition(condition, last_plan.nodes[rit->second], negative_condition)) {
+				makeEdge(rit->second, current_node->second);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * @returns True if the node satisfies the (possibly negative) condition
-	 */
-	bool PDDLEsterelPlanParser::satisfiesPrecondition(rosplan_knowledge_msgs::DomainFormula& condition, const rosplan_dispatch_msgs::EsterelPlanNode& node, bool negative_condition) {
-		
-		std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
-
-		if(!negative_condition) {
-
-			// rosplan_knowledge_msgs/DomainFormula[] at_start_add_effects
-			cit = action_details[node.action.action_id].at_start_add_effects.begin();
-			for(; cit!=action_details[node.action.action_id].at_start_add_effects.end(); cit++) {
-				if(domainFormulaMatches(condition, *cit)) return true;
-			}
-
-			// rosplan_knowledge_msgs/DomainFormula[] at_end_add_effects
-			cit = action_details[node.action.action_id].at_end_add_effects.begin();
-			for(; cit!=action_details[node.action.action_id].at_end_add_effects.end(); cit++) {
-				if(domainFormulaMatches(condition, *cit)) return true;
-			}
-
-		} else {
-
-			// rosplan_knowledge_msgs/DomainFormula[] at_start_del_effects
-			cit = action_details[node.action.action_id].at_start_del_effects.begin();
-			for(; cit!=action_details[node.action.action_id].at_start_del_effects.end(); cit++) {
-				if(domainFormulaMatches(condition, *cit)) return true;
-			}
-
-			// rosplan_knowledge_msgs/DomainFormula[] at_end_del_effects
-			cit = action_details[node.action.action_id].at_end_del_effects.begin();
-			for(; cit!=action_details[node.action.action_id].at_end_del_effects.end(); cit++) {
-				if(domainFormulaMatches(condition, *cit)) return true;
-			}
-		}
-	}
 
 } // close namespace
 
