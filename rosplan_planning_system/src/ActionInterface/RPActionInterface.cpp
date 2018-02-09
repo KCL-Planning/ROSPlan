@@ -146,16 +146,12 @@ namespace KCL_rosplan {
 		fb.status = "action enabled";
 		action_feedback_pub.publish(fb);
 
-		// call concrete implementation
-		action_success = concreteCallback(msg);
-
-		if(action_success) {
-
+		{
 			// update knowledge base
 			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
 			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 			
-			// simple start del effects
+			// simple START del effects
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 			for(int i=0; i<op.at_start_del_effects.size(); i++) {
 				updatePredSrv.request.knowledge.attribute_name = op.at_start_del_effects[i].name;
@@ -170,7 +166,7 @@ namespace KCL_rosplan {
 					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_start_del_effects[i].name.c_str());
 			}
 
-			// simple start add effects
+			// simple START add effects
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 			for(int i=0; i<op.at_start_add_effects.size(); i++) {
 				updatePredSrv.request.knowledge.attribute_name = op.at_start_add_effects[i].name;
@@ -184,6 +180,16 @@ namespace KCL_rosplan {
 				if(!update_knowledge_client.call(updatePredSrv))
 					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_start_add_effects[i].name.c_str());
 			}
+		}
+
+		// call concrete implementation
+		action_success = concreteCallback(msg);
+
+		if(action_success) {
+
+			// update knowledge base
+			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
+			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 
 			// simple END del effects
 			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
