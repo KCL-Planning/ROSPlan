@@ -66,7 +66,7 @@ class EsterelPlanViewerWidget(QWidget):
     """
     def _handle_refresh_clicked(self, checked):
         self._sub.unregister()
-        self._sub = rospy.Subscriber("/rosplan_plan_dispatcher/plan_graph", String, self.plan_received)
+        self._sub = rospy.Subscriber(self.topicText.text(), String, self.plan_received)
 
     """
     Qt methods
