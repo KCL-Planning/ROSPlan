@@ -308,9 +308,7 @@ namespace KCL_rosplan {
 			cit = op.at_end_neg_condition.begin();
 			for(; cit!=op.at_end_neg_condition.end(); cit++) {
 				// for this condition create possible causal edges
-				createEdge(ait, *cit, true)
-
-			// this line is getting deleted;
+				createEdge(ait, *cit, true);
 			}
 		}
 	}
