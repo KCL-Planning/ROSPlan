@@ -156,7 +156,7 @@ namespace KCL_rosplan {
 
 			// search for instance
 			std::vector<std::string>::iterator iit;
-			for(iit = model_instances[msg.instance_type].begin(); iit!=model_instances[msg.instance_type].end(); iit++) {
+			for(iit = model_instances[msg.instance_type].begin(); iit!=model_instances[msg.instance_type].end(); ) {
 
 				std::string name = *iit;
 
@@ -169,17 +169,18 @@ namespace KCL_rosplan {
 
 					// remove affected domain attributes
 					std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-					for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+					for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
 						if(KnowledgeComparitor::containsInstance(*pit, name)) {
 							ROS_INFO("KCL: (KB) Removing domain attribute (%s)", pit->attribute_name.c_str());
 							pit = model_facts.erase(pit);
-							if(pit!=model_facts.begin()) pit--;
-							if(pit==model_facts.end()) break;
+						} else {
+							pit++;
 						}
 					}
+				} else {
 
-					// finish
-					if(iit==model_instances[msg.instance_type].end()) break;
+					iit++;
+
 				}
 			}
 
@@ -187,12 +188,12 @@ namespace KCL_rosplan {
 
 			// remove domain attribute (function) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-			for(pit=model_functions.begin(); pit!=model_functions.end(); pit++) {
+			for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					pit = model_functions.erase(pit);
-					if(pit!=model_functions.begin()) pit--;
-					if(pit==model_functions.end()) break;
+				} else {
+					pit++;
 				}
 			}
 
@@ -200,12 +201,12 @@ namespace KCL_rosplan {
 
 			// remove domain attribute (predicate) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+			for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
 					pit = model_facts.erase(pit);
-					if(pit!=model_facts.begin()) pit--;
-					if(pit==model_facts.end()) break;
+				} else {
+					pit++;
 				}
 			}
 		}
@@ -232,12 +233,12 @@ namespace KCL_rosplan {
 
 		bool changed = false;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator git;
-		for(git=model_goals.begin(); git!=model_goals.end(); git++) {
+		for(git=model_goals.begin(); git!=model_goals.end(); ) {
 			if(KnowledgeComparitor::containsKnowledge(msg, *git)) {
 				ROS_INFO("KCL: (KB) Removing goal (%s)", git->attribute_name.c_str());
 				git = model_goals.erase(git);
-				if(git!=model_goals.begin()) git--;
-				if(git==model_goals.end()) break;
+			} else {
+				git++;
 			}
 		}
 	}
