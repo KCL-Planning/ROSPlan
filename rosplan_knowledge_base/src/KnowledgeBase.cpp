@@ -531,7 +531,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n("~");
 
     // parameters
-    std::string domainPath, initialStatePath;;
+    std::string domainPath, initialStatePath;
     bool useUnknowns;
     n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
     n.param("use_unknowns", useUnknowns, false);
@@ -540,18 +540,34 @@ int main(int argc, char **argv)
 
 
     KCL_rosplan::KnowledgeBase kb;
+	std::ifstream file_check;
 
     // parse domain
     ROS_INFO("KCL: (KB) Parsing domain");
     kb.domain_parser.domain_parsed = false;
-    VAL::domain* domain = kb.domain_parser.parseDomain(domainPath);
+	VAL::domain* domain;
+	file_check.open(domainPath.c_str());
+	if(!file_check.good()) {
+	    ROS_ERROR("KCL: (KB) Domain file does not exist.");
+		return 0;
+	} else {
+		file_check.close();
+	    domain = kb.domain_parser.parseDomain(domainPath);
+	}
 
     // parse initial state
-    ROS_INFO("KCL: (KB) Parsing initial state");
-    kb.initialState_parser.initialState_parsed = false;
-    VAL::problem* problem = kb.initialState_parser.parseInitialState(initialStatePath);
-
-    kb.addInitialState(domain, problem);
+	if(initialStatePath != "") {
+		ROS_INFO("KCL: (KB) Parsing initial state");
+		kb.initialState_parser.initialState_parsed = false;
+		file_check.open(initialStatePath.c_str());
+		if(!file_check.good()) {
+			ROS_WARN("KCL: (KB) Initial state file does not exist.");
+		} else {
+			file_check.close();
+			VAL::problem* problem = kb.initialState_parser.parseInitialState(initialStatePath);
+			kb.addInitialState(domain, problem);
+		}
+	}
 
     kb.use_unknowns = useUnknowns;
 
