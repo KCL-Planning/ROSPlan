@@ -24,6 +24,22 @@ namespace KCL_rosplan
 	{
 	private:
 
+		/**
+		 * @returns node ID associated with action ID if it exists, -1 otherwise
+		 */
+		int getNodeFromActionID(int action_id, bool end_node) {
+			std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin();
+			for(; ci != current_plan.nodes.end(); ci++) {
+				if(ci->action.action_id == action_id) {
+					if(!end_node && ci->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START)
+						return ci->node_id;
+					else if(end_node && ci->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+						return ci->node_id;
+				}
+			}
+			return -1;
+		}
+
 		// esterel plan methods
 		void initialise();
 	
