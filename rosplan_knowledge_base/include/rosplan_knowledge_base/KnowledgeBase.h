@@ -27,8 +27,10 @@
 #include "KnowledgeComparitor.h"
 #include "PlanFilter.h"
 #include "DomainParser.h"
+#include "InitialStateParser.h"
 #include "VALVisitorOperator.h"
 #include "VALVisitorPredicate.h"
+#include "VALVisitorProblem.h"
 
 #ifndef KCL_knowledgebase
 #define KCL_knowledgebase
@@ -52,6 +54,9 @@ namespace KCL_rosplan {
 
 		// domain
 		DomainParser domain_parser;
+
+        // initial state from problem file
+        InitialStateParser initialState_parser;
 
 		// model
 		std::map<std::string, std::vector<std::string> > model_constants;
@@ -93,6 +98,9 @@ namespace KCL_rosplan {
 		bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res);
 		bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+
+        // add the initial state to the knowledge base
+        void addInitialState(VAL::domain* domain, VAL::problem* problem);
 
 
 		/* conditional planning services */
