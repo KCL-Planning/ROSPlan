@@ -3,11 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../../src/VALfiles/ptree.h"
 #include "FlexLexer.h"
-
-
-
 #include "ptree.h"
 #include "VisitController.h"
 #include "VALVisitorProblem.h"
@@ -32,8 +28,6 @@ namespace KCL_rosplan {
     /*--------*/
     /* parser */
     /*--------*/
-    class KnowledgeBase;
-
 
     class InitialStateParser
     {

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../../src/VALfiles/ptree.h"
+#include "ptree.h"
 #include "FlexLexer.h"
 
 #ifndef KCL_domainparser
