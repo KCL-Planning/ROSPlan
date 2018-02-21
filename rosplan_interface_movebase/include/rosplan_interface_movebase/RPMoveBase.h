@@ -3,14 +3,13 @@
 #include <iostream>
 #include <fstream>
 #include <boost/foreach.hpp>
-#include <actionlib/client/simple_action_client.h>
-#include "rosplan_dispatch_msgs/ActionDispatch.h"
-#include "rosplan_dispatch_msgs/ActionFeedback.h"
+
+#include "rosplan_action_interface/RPActionInterface.h"
+
+#include "actionlib/client/simple_action_client.h"
 #include "move_base_msgs/MoveBaseAction.h"
 #include "mongodb_store/message_store.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "std_srvs/Empty.h"
 
 #ifndef KCL_movebase
@@ -24,15 +23,13 @@
  */
 namespace KCL_rosplan {
 
-	class RPMoveBase
+	class RPMoveBase: public RPActionInterface
 	{
 
 	private:
 
 		mongodb_store::MessageStoreProxy message_store;
 		actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> action_client;
-		ros::Publisher action_feedback_pub;
-		ros::ServiceClient update_knowledge_client;
 		ros::ServiceClient clear_costmaps_client;
 
 	public:
@@ -41,7 +38,7 @@ namespace KCL_rosplan {
 		RPMoveBase(ros::NodeHandle &nh, std::string &actionserver);
 
 		/* listen to and process action_dispatch topic */
-		void dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
+		bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg);
 	};
 }
 #endif

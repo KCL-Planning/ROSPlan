@@ -98,6 +98,7 @@ int main(int argc,char * argv[])
 
 	    // Output syntax tree
 	    if (top_thing) top_thing->display(0);
+            else std::cout << "Something went wrong..." << std::endl;
 	}
 	delete current_in_stream;
     }
@@ -105,3 +106,4 @@ int main(int argc,char * argv[])
     current_analysis->error_list.report();
     delete yfl;
 }
+

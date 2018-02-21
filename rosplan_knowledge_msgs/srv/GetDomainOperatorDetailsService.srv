@@ -1,0 +1,5 @@
+# Fetching the Domain (2.5/3):
+# Get all details of a specific operator in the domain.
+string name
+---
+rosplan_knowledge_msgs/DomainOperator op

@@ -11,21 +11,27 @@
 
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>actionlib</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>flex</build_depend>
+  <build_depend>glut</build_depend>
   <build_depend>rosplan_dispatch_msgs</build_depend>
   <build_depend>rosplan_knowledge_msgs</build_depend>
-  <build_depend>rosplan_knowledge_base</build_depend>
+	<build_depend>mongodb_store</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>actionlib</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>flex</run_depend>
+  <run_depend>glut</run_depend>
   <run_depend>rosplan_dispatch_msgs</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
-  <run_depend>rosplan_knowledge_base</run_depend>
+	<run_depend>mongodb_store</run_depend>
 
   <export></export>
 </package>

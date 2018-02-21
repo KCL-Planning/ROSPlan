@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  std_srvs
   rosplan_knowledge_msgs
   nav_msgs
   mongodb_store
@@ -14,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf
 )
+
+find_package(FLEX REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS
   filesystem
@@ -25,9 +28,9 @@ find_package(Boost REQUIRED COMPONENTS
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES domainParser
-  CATKIN_DEPENDS roscpp rospy std_msgs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
+  DEPENDS
 )
 
 ###########
@@ -35,10 +38,9 @@ catkin_package(
 ###########
 
 ## include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include
-)
+include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
+include_directories(src/VALfiles)
 
 ## val sources
 set(VAL_SOURCES
@@ -74,23 +76,36 @@ set(VAL_SOURCES
 	src/VALfiles/LaTeXSupport.cpp
 	src/VALfiles/Utils.cpp)
 
-## pddl sources
-set(PDDL_SOURCES
-	src/DomainParser.cpp)
-
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
 	src/KnowledgeBase.cpp
 	src/PlanFilter.cpp
-	src/KnowledgeComparitor.cpp)
-
-## Declare cpp LIBRARIES
-add_library(domainParser ${PDDL_SOURCES} ${VAL_SOURCES})
-target_link_libraries(domainParser ${catkin_LIBRARIES})
+	src/KnowledgeComparitor.cpp
+	src/DomainParser.cpp
+	src/InitialStateParser.cpp
+	src/VALVisitorOperator.cpp
+	src/VALVisitorPredicate.cpp
+	src/VALVisitorProblem.cpp)
 
 ## Declare cpp executables
-add_executable(knowledgeBase ${KNOWLEDGE_SOURCES})
+add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})
 add_dependencies(knowledgeBase ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
-target_link_libraries(knowledgeBase ${catkin_LIBRARIES} domainParser)
+target_link_libraries(knowledgeBase ${catkin_LIBRARIES})
+
+##########
+## Test ##
+##########
+
+# please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
+
+#############
+## Install ##
+#############
+
+install(TARGETS knowledgeBase
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

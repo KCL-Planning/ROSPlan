@@ -15,3 +15,6 @@ diagnostic_msgs/KeyValue[] values
 
 # function value
 float64 function_value
+
+# negative of positive
+bool is_negative

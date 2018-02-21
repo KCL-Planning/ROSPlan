@@ -4,6 +4,7 @@ project(rosplan_dispatch_msgs)
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  actionlib_msgs
   diagnostic_msgs
   roscpp
   rospy
@@ -14,14 +15,30 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
+   EsterelPlan.msg
+   EsterelPlanEdge.msg
+   EsterelPlanNode.msg
    CompletePlan.msg
    ActionDispatch.msg
    ActionFeedback.msg
 )
 
+add_service_files(
+  FILES
+  PlanningService.srv
+  ProblemService.srv
+  ParsingService.srv
+)
+
+add_action_files(
+  FILES
+  Plan.action
+)
+
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
+   actionlib_msgs
    diagnostic_msgs
    std_msgs
 )

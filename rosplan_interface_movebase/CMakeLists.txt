@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   move_base_msgs
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
+  rosplan_planning_system
   actionlib
   mongodb_store
 )
@@ -27,7 +28,7 @@ find_package(Boost REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs actionlib rosplan_dispatch_msgs rosplan_knowledge_msgs mongodb_store diagnostic_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs actionlib rosplan_dispatch_msgs rosplan_knowledge_msgs mongodb_store diagnostic_msgs rosplan_planning_system
   DEPENDS
 )
 
@@ -48,12 +49,12 @@ add_dependencies(rpmovebase ${catkin_EXPORTED_TARGETS})
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(rpmovebase ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-# add_dependencies(rpmovebase ${learning_actionlib_EXPORTED_TARGETS})
+#############
+## Install ##
+#############
 
-##########
-## Test ##
-##########
-# please do not use add_rosttest_gtest (seems to be interfering with qtcreator and cmake)
-# see test documentation: http://wiki.ros.org/gtest
-#add_rostest_gtest(${PROJECT_NAME}_utest test/utest.cpp)
-#target_link_libraries(testPlanningSystem ${catkin_LIBRARIES} ${GTEST_LIBRARIES})
+install(TARGETS rpmovebase
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

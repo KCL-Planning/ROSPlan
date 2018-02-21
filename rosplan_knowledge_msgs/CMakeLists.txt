@@ -19,6 +19,7 @@ add_message_files(
   KnowledgeItem.msg
   Notification.msg
   DomainFormula.msg
+  DomainOperator.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -27,13 +28,18 @@ add_service_files(
   GetAttributeService.srv
   GetInstanceService.srv
   KnowledgeUpdateService.srv
-  QueryKnowledgeService.srv
-  QueryConditionService.srv
-  GetDomainAttributeService.srv
+  KnowledgeUpdateServiceArray.srv
+  KnowledgeQueryService.srv
+  GetDomainNameService.srv
   GetDomainTypeService.srv
+  GetDomainAttributeService.srv
   GetDomainOperatorService.srv  
+  GetDomainOperatorDetailsService.srv  
+  GetDomainPredicateDetailsService.srv  
   CreatePRM.srv
   AddWaypoint.srv
+  RemoveWaypoint.srv
+  GenerateProblemService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

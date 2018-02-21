@@ -19,9 +19,6 @@
   <property name="windowTitle">
    <string>ROSPlan dispatcher</string>
   </property>
-  <property name="toolTip">
-   <string>Dispatch info for ROSPlan.</string>
-  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">

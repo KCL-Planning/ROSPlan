@@ -1,7 +1,8 @@
+<?xml version="1.0"?>
 <launch>
-	<!-- knowledge interfaces -->
+	<!-- roadmap generation node -->
 	<node name="rosplan_roadmap_server" pkg="rosplan_interface_mapping" type="rproadmapServer" respawn="false" output="screen">
-	    <param name="data_path" value="$(find rosplan_planning_system)/common/" />
+	    <param name="/rosplan/data_path" value="$(find rosplan_planning_system)/common/" />
 	    <param name="cost_map_topic" value="/move_base/global_costmap/costmap" />
 	    <param name="odom_topic" value="/odom" />
 	    <param name="use_static_map" value="false" />

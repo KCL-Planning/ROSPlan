@@ -1,14 +1,16 @@
 #include "ros/ros.h"
+
 #include "std_srvs/Empty.h"
 #include "diagnostic_msgs/KeyValue.h"
 #include "visualization_msgs/MarkerArray.h"
 #include "visualization_msgs/Marker.h"
 #include "geometry_msgs/PoseStamped.h"
+
 #include "mongodb_store/message_store.h"
+
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
-#include "rosplan_knowledge_msgs/CreatePRM.h"
-#include "rosplan_knowledge_msgs/AddWaypoint.h"
+
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -57,6 +59,7 @@ namespace KCL_rosplan {
 		void parsePose(geometry_msgs::PoseStamped &pose, std::string line);
 		
 		// visualisation
+		std::string fixed_frame;
 		ros::Publisher waypoints_pub;
 		void publishWaypointMarkerArray(ros::NodeHandle nh);
 		void clearMarkerArrays(ros::NodeHandle nh);
@@ -64,10 +67,9 @@ namespace KCL_rosplan {
 	public:
 
 		/* constructor */
-		RPSimpleMapServer(ros::NodeHandle &nh);
+		RPSimpleMapServer(ros::NodeHandle &nh, std::string frame);
 
 		/* service to (re)generate waypoints */
-		bool generateRoadmap(rosplan_knowledge_msgs::CreatePRM::Request &req, rosplan_knowledge_msgs::CreatePRM::Response &res);
 		bool setupRoadmap(std::string filename);
 	};
 }

@@ -1,5 +1,7 @@
 #include "rosplan_knowledge_base/KnowledgeComparitor.h"
 
+#include <boost/algorithm/string.hpp>
+
 /* implementation of KnowledgeComparitor.h */
 namespace KCL_rosplan {
 
@@ -8,29 +10,44 @@ namespace KCL_rosplan {
 	 */
 	bool KnowledgeComparitor::containsKnowledge(const rosplan_knowledge_msgs::KnowledgeItem &a, const rosplan_knowledge_msgs::KnowledgeItem &b) {
 
+		int matches = 0;
 		if(a.knowledge_type != b.knowledge_type) return false;
-	
+		
 		if(a.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INSTANCE) {
 			
 			// check instance knowledge
 			if(0!=a.instance_type.compare(b.instance_type)) return false;
-			if(a.instance_name!="" && 0!=a.instance_name.compare(b.instance_name)) return false;
+			if(a.instance_name!="" && !boost::iequals(a.instance_name, b.instance_name)) return false;
+			return true;		
 
 		} else {
 
 			// check fact or function
-			if(a.attribute_name!="" && 0!=a.attribute_name.compare(b.attribute_name)) return false;
+			if(a.attribute_name=="") return true;
+
+			if(!boost::iequals(a.attribute_name, b.attribute_name)) return false;
+			if(a.is_negative != b.is_negative) return false;
+			if(a.values.size() != b.values.size()) return false;
+
 			for(size_t i=0;i<a.values.size();i++) {
-				bool match = false;
-				for(size_t j=0;j<b.values.size();j++) {
-					if(a.values[i].key == b.values[j].key && (""==a.values[i].value || a.values[i].value == b.values[j].value))
-						match = true;
+
+				// don't care about this parameter
+				if("" == a.values[i].value) {
+					++matches;
+					continue;
 				}
-				if(!match) return false;
+
+				// find matching object in parameters of b
+				for(size_t j=0;j<b.values.size();j++) {
+					if( boost::iequals(a.values[i].key, b.values[j].key) && 
+						boost::iequals(a.values[i].value, b.values[j].value)) {
+						++matches;
+						break;
+					}
+				}
 			}
 		}
-
-		return true;
+		return (matches == a.values.size());
 	}
 
 	/**
@@ -42,7 +59,7 @@ namespace KCL_rosplan {
 			return true;
 
 		for(size_t i=0;i<a.values.size();i++) {
-			if(0==a.values[i].value.compare(name))
+			if(boost::iequals(a.values[i].value, name))
 				return true;
 		}
 
