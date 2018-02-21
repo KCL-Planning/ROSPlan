@@ -78,6 +78,9 @@ namespace KCL_rosplan {
 		ros::ServiceClient getDomainFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>("/kcl_rosplan/get_domain_functions");
 		ros::ServiceClient getAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_knowledge");
 
+		// note the time now for TILs
+		ros::Time time = ros::Time::now() + ros::Duration(1);
+
 		pFile << "(:init" << std::endl;
 
 		// get propositions
@@ -97,8 +100,14 @@ namespace KCL_rosplan {
 					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
+
+						pFile << "    (";		
+
+						if(time < attrSrv.response.initial_time[i]) {
+							pFile << "at " << (attrSrv.response.initial_time[i] - time).toSec() << " (";
+						}
+
 						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
-						pFile << "    (";
 						
 						//Check if the attribute is negated
 						if(attr.is_negative) pFile << "not (";
@@ -108,7 +117,13 @@ namespace KCL_rosplan {
 							pFile << " " << attr.values[j].value;
 						}
 						pFile << ")";
+						
 						if(attr.is_negative) pFile << ")";
+
+						if(time < attrSrv.response.initial_time[i]) {
+							pFile << ")";
+						}
+
 						pFile << std::endl;
 					}
 				}
@@ -132,14 +147,29 @@ namespace KCL_rosplan {
 					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
+
+						pFile << "    (";
+
+						if(time < attrSrv.response.initial_time[i]) {
+							pFile << "at " << (attrSrv.response.initial_time[i] - time).toSec() << " (";
+						}
+
+						pFile << "= (";
+
 						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
-						pFile << "    (= (";
 
 						pFile << attr.attribute_name;
 						for(size_t j=0; j<attr.values.size(); j++) {
 							pFile << " " << attr.values[j].value;
 						}
-						pFile << ") " << attr.function_value << ")" << std::endl;
+
+						pFile << ") " << attr.function_value << ")";
+
+						if(time < attrSrv.response.initial_time[i]) {
+							pFile << ")";
+						}
+
+						pFile << std::endl;
 					}
 				}
 				pFile << std::endl;

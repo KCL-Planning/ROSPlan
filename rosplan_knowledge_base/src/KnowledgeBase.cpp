@@ -9,13 +9,14 @@ namespace KCL_rosplan {
 			// update TILs
 			std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
 			for(; tit != model_timed_initial_literals.end(); ) {
-				if(tit->first >= ros::Time::now()) {
+				if(tit->first <= ros::Time::now()) {
 					if(tit->second.is_negative) {
+						tit->second.is_negative = false;
 						removeKnowledge(tit->second);
 					} else {
 						addKnowledge(tit->second);
 					}
-					model_timed_initial_literals.erase(tit);
+					model_timed_initial_literals.erase(tit++);
 				} else {
 					tit++;
 				}
@@ -104,18 +105,21 @@ namespace KCL_rosplan {
 	/* knowledge update */
 	/*------------------*/
 
-	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
+	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
 
-		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE) {
+		switch(req.update_type) {
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE:
 			if(req.duration>0) {
 				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
 				model_timed_initial_literals.insert(std::make_pair(time,req.knowledge));
 			} else {
 				addKnowledge(req.knowledge);
 			}
-		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL) {
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL:
 			addMissionGoal(req.knowledge);
-		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE) {
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE:
 			if(req.duration>0) {
 				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
 				req.knowledge.is_negative = !req.knowledge.is_negative;
@@ -123,24 +127,51 @@ namespace KCL_rosplan {
 			} else {
 				removeKnowledge(req.knowledge);
 			}
-		} else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL) {
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL:
 			removeMissionGoal(req.knowledge);
+			break;
 		}
 
 		res.success = true;
 		return true;
 	}
 
-	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
 
-		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
-			for(int i=0;i<req.knowledge.size();i++) addKnowledge(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
-			for(int i=0;i<req.knowledge.size();i++) addMissionGoal(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
-			for(int i=0;i<req.knowledge.size();i++) removeKnowledge(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
-			for(int i=0;i<req.knowledge.size();i++) removeMissionGoal(req.knowledge[i]);
+		switch(req.update_type) {
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE:
+			for(int i=0;i<req.knowledge.size();i++) {
+				if(req.duration>0) {
+					ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+					model_timed_initial_literals.insert(std::make_pair(time,req.knowledge[i]));
+				} else {
+					addKnowledge(req.knowledge[i]);
+				}
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL:
+			for(int i=0;i<req.knowledge.size();i++) {
+				addMissionGoal(req.knowledge[i]);
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE:
+			for(int i=0;i<req.knowledge.size();i++) {
+				if(req.duration>0) {
+					ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+					req.knowledge[i].is_negative = !req.knowledge[i].is_negative;
+					model_timed_initial_literals.insert(std::make_pair(time,req.knowledge[i]));
+				} else {
+					removeKnowledge(req.knowledge[i]);
+				}
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL:
+			for(int i=0;i<req.knowledge.size();i++) {
+				removeMissionGoal(req.knowledge[i]);
+			}
+			break;
+		}
 
 		res.success = true;
 		return true;
@@ -352,16 +383,31 @@ namespace KCL_rosplan {
 
 	bool KnowledgeBase::getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res) {
 
+		ros::Time time = ros::Time::now();
+
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<model_facts.size(); i++) {
-			if(0==req.predicate_name.compare(model_facts[i].attribute_name) || ""==req.predicate_name)
+			if(0==req.predicate_name.compare(model_facts[i].attribute_name) || ""==req.predicate_name) {
 				res.attributes.push_back(model_facts[i]);
+				res.initial_time.push_back(time);
+			}
 		}
 
 		// ...or fetch the knowledgeItems of the correct function
 		for(size_t i=0; i<model_functions.size(); i++) {
-			if(0==req.predicate_name.compare(model_functions[i].attribute_name) || ""==req.predicate_name)
+			if(0==req.predicate_name.compare(model_functions[i].attribute_name) || ""==req.predicate_name) {
 				res.attributes.push_back(model_functions[i]);
+				res.initial_time.push_back(time);
+			}
+		}
+
+		// ...and also all TILs and TIFs
+		std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+		for(; tit != model_timed_initial_literals.end(); tit++) {
+			if(0==req.predicate_name.compare(tit->second.attribute_name) || ""==req.predicate_name) {
+				res.attributes.push_back(tit->second);
+				res.initial_time.push_back(tit->first);
+			}
 		}
 
 		return true;

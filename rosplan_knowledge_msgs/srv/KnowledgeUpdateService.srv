@@ -7,6 +7,6 @@ uint8 REMOVE_GOAL = 3
 
 uint8 update_type
 rosplan_knowledge_msgs/KnowledgeItem knowledge
-float64 duration = 0
+float64 duration
 ---
 bool success

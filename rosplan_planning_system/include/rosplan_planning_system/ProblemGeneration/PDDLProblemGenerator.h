@@ -9,6 +9,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <math.h>
 
 #include "rosplan_knowledge_msgs/GetDomainNameService.h"
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
