@@ -102,7 +102,7 @@ namespace KCL_rosplan {
 			return isOrdered(a, b, checked_flags);
 		}
 
-		bool isOrdered(rosplan_dispatch_msgs::EsterelPlanNode &a, rosplan_dispatch_msgs::EsterelPlanNode &b, std::set<int> checked_flags) {
+		bool isOrdered(rosplan_dispatch_msgs::EsterelPlanNode &a, rosplan_dispatch_msgs::EsterelPlanNode &b, std::set<int> &checked_flags) {
 
 			if(a.node_id==b.node_id) return true;
 
@@ -115,7 +115,7 @@ namespace KCL_rosplan {
 					int node_id = last_plan.edges[edge_id].sink_ids[j];
 
 					if(checked_flags.count(node_id) == 0) {
-						if(isOrdered(last_plan.nodes[node_id], b)) {
+						if(isOrdered(last_plan.nodes[node_id], b, checked_flags)) {
 							return true;
 						}
 					}
