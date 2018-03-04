@@ -49,7 +49,7 @@ namespace KCL_rosplan {
 	 */
 	bool FFPlannerInterface::runPlanner() {
 
-		// save problem to file for POPF
+		// save problem to file for planner
 		if(use_problem_topic && problem_instance_recieved) {
 			ROS_INFO("KCL: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
 			std::ofstream dest;
