@@ -91,15 +91,15 @@ namespace KCL_rosplan {
 				if (line.length()<2) break;
 			}
 
-            // actions look like this:
-            // step    0: got_place C1
-            //         1: find_object V1 C1 
+			// actions look like this:
+			// step    0: got_place C1
+			//         1: find_object V1 C1 
 			solved = true;
 			while (std::getline(planfile, line)) {
 
 				if (line.length()<2) break;
 
-	            unsigned int pos = line.find(' ');
+				unsigned int pos = line.find(' ');
 				bool action = false;
 				while(pos != std::string::npos && pos < line.length()) {
 					if(line.substr(pos,1) != " ") {
