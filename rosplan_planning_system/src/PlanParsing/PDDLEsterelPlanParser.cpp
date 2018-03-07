@@ -213,7 +213,8 @@ namespace KCL_rosplan {
 
 			// if action end, insert edge from action start
 			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
-				makeEdge(node->node_id-1, node->node_id);
+				// make edge with duration equal to action duration
+				makeEdge(node->node_id-1, node->node_id, node->action.duration, node->action.duration);
 			}
 
 			// for each precondition add possible causal support edge with latest preceding node

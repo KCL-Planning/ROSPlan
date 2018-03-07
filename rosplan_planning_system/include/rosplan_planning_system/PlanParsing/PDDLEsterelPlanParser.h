@@ -73,10 +73,16 @@ namespace KCL_rosplan {
 		/*---------------*/
 
 		void makeEdge(int source_node_id, int sink_node_id) {
+			// create an ordering that only specifies after
+			makeEdge(source_node_id, sink_node_id, 0, std::numeric_limits<double>::max());
+		}
+
+		void makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound) {
 
 			// don't make edge if ordering already exists
-			if(isOrdered(last_plan.nodes[source_node_id], last_plan.nodes[sink_node_id]))
+			if(isOrdered(last_plan.nodes[source_node_id], last_plan.nodes[sink_node_id])) {
 				return;
+			}
 
 			// create and add edge
 			rosplan_dispatch_msgs::EsterelPlanEdge newEdge;
@@ -87,6 +93,9 @@ namespace KCL_rosplan {
 			newEdge.signal_type = 0;
 			newEdge.source_ids.push_back(source_node_id);
 			newEdge.sink_ids.push_back(sink_node_id);
+
+			newEdge.duration_lower_bound = lower_bound;
+			newEdge.duration_upper_bound = upper_bound;
 
 			last_plan.edges.push_back(newEdge);
 
