@@ -159,28 +159,22 @@ namespace KCL_rosplan {
 				while(!finished && !infile.eof()) {
 					for(std::string::iterator it = params.begin(); it != params.end(); ++it) {
 						switch (state) {
-						case 0: // reading parameter
-							if (*it == '-' || *it == ' ') {
-								// std::cout << params.substr(count_start,count_length) << std::endl;
-								operator_parameter_map[action_name].push_back(params.substr(count_start,count_length));
+							case 0://looking for parameter started with ?
+							if (*it == '?') {
+								count_start = count_start + count_length;
+								count_length = 0;
 								state++;
 							}
 							break;
-						case 1: // skipping " - "
-							if (*it != '-' && *it != ' ') state++;
-							break;
-						case 2: // skipping type
-							if (*it == ' ') state++;
-							break;
-						case 3: // skipping spaces
-							if (*it != ' ') {
-								count_start = count_start + count_length;
-								count_length = 0;
-								state = 0;
+							
+							case 1://getting parameter
+							if (*it == ' ' || *it == ')') {
+								operator_parameter_map[action_name].push_back(params.substr(count_start,count_length));
+								state =0;
 							}
 							break;
 						}
-
+						
 						count_length++;
 
 						if (*it == ')') {
