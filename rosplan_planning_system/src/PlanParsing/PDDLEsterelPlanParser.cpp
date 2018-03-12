@@ -8,6 +8,10 @@ namespace KCL_rosplan {
 	{
 		node_handle = &nh;
 
+		// fetching problem info for TILs
+		get_predicate_client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>("/kcl_rosplan/get_domain_predicates");
+		get_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_knowledge");
+
 		// publishing parsed plan
 		std::string planTopic = "complete_plan";
 		node_handle->getParam("plan_topic", planTopic);
@@ -21,6 +25,7 @@ namespace KCL_rosplan {
 
 	void PDDLEsterelPlanParser::reset() {
 		action_list.clear();
+		til_list.clear();
 		last_plan.nodes.clear();
 		last_plan.edges.clear();
 	}
@@ -37,6 +42,13 @@ namespace KCL_rosplan {
 	 * parses standard PDDL output, generating an esterel plan in graph form.
 	 */
 	void PDDLEsterelPlanParser::preparePlan() {
+
+		// create the plan start node
+		rosplan_dispatch_msgs::EsterelPlanNode plan_start;
+		plan_start.node_type = rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START;
+		plan_start.node_id = last_plan.nodes.size();
+		plan_start.name = "plan_start";
+		last_plan.nodes.push_back(plan_start);
 
 		int curr, next;
 		std::string line;
@@ -113,7 +125,6 @@ namespace KCL_rosplan {
 			// create action msg
 			action_list.push_back(msg);
 
-
 			// create action start node
 			rosplan_dispatch_msgs::EsterelPlanNode node_start;
 			node_start.node_type = rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START;
@@ -134,6 +145,9 @@ namespace KCL_rosplan {
 			node_end.name = ss.str();
 			last_plan.nodes.push_back(node_end);
 		}
+
+		// fetch TILs
+		fetchTILs();
 
 		// find and create causal edges
 		createGraph();
@@ -180,6 +194,44 @@ namespace KCL_rosplan {
 		}
 	}
 
+	/*------------*/
+	/* fetch TILs */
+	/*------------*/
+
+	void PDDLEsterelPlanParser::fetchTILs() {
+
+		// fetch predicate list
+		rosplan_knowledge_msgs::GetDomainAttributeService srv;
+		if(!get_predicate_client.call(srv)) {
+			ROS_ERROR("KCL: (%s) could not call Knowledge Base for predicate list", ros::this_node::getName().c_str());
+			return;
+		}
+
+		// for each predicate, fetch facts and filter to TILs
+		std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator pit = srv.response.items.begin();
+		for( ; pit!=srv.response.items.end(); pit++) {
+
+			rosplan_knowledge_msgs::GetAttributeService attsrv;
+			attsrv.request.predicate_name = pit->name;
+			if(!get_knowledge_client.call(attsrv)) {
+				ROS_ERROR("KCL: (%s) could not call Knowledge Base for (%s)", ros::this_node::getName().c_str(), pit->name.c_str());
+				continue;
+			}
+
+			ros::Time time = ros::Time::now();
+			for(int i=0; i<attsrv.response.attributes.size(); i++) {
+				
+				// not a TIL
+				if(time > attsrv.response.initial_time[i]) continue;
+
+				// save TIL
+				double key = (attsrv.response.initial_time[i] - time).toSec();
+				til_list.insert(std::make_pair(key,attsrv.response.attributes[i]));
+			}
+		}
+
+	}
+
 	/*--------------*/
 	/* Create graph */
 	/*--------------*/
@@ -187,61 +239,78 @@ namespace KCL_rosplan {
 	void PDDLEsterelPlanParser::createGraph() {
 
 		// map of absolute plan time to node ID
-		std::map<double,int> nodes;
+		std::multimap<double,int> nodes;
 
-		// construct ordered list of nodes
+		// construct an ordered list of the nodes
 		std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ait = last_plan.nodes.begin();
 		for(; ait!=last_plan.nodes.end(); ait++) {
 
 			// get node time
-			double time = ait->action.dispatch_time;
-			if(ait->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
-				time = time + ait->action.duration;
-
-			// find a unique time for the node
-			while(nodes.find(time)!=nodes.end())
-				time = time + 0.1;
+			double time = 0;
+			switch(ait->node_type) {
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
+				time = ait->action.dispatch_time;
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
+				time = ait->action.dispatch_time + ait->action.duration;
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START:
+			default:
+				time = 0;
+				break;
+			}
 
 			nodes.insert(std::pair<double,int>(time,ait->node_id));
 		}		
 
 		// get the next node
-		std::map<double,int>::iterator nit = nodes.begin();
+		std::multimap<double,int>::iterator nit = nodes.begin();
 		for(; nit!=nodes.end(); nit++) {
 			
 			rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[nit->second];
 
-			// if action end, insert edge from action start
-			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
-				// make edge with duration equal to action duration
+			switch(node->node_type) {
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
+
+				// if action end, insert edge from action start with duration equal to action duration
 				makeEdge(node->node_id-1, node->node_id, node->action.duration, node->action.duration);
+
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
+
+				// for each precondition add possible causal support edge with latest preceding node
+				rosplan_knowledge_msgs::DomainOperator op = action_details[node->action.action_id];
+				std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
+
+				bool edge_created = false;
+				if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
+
+					for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+					for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+					for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+					for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+
+				} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+
+					for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+					for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
+						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+				}
+
+				// interference edges
+				if(addInterferenceEdges(nodes, nit)) edge_created = true;
+
+				// create an edge from the plan start
+				if(!edge_created) {
+					makeEdge(0, node->node_id);
+				}
+
+				break;
 			}
-
-			// for each precondition add possible causal support edge with latest preceding node
-			rosplan_knowledge_msgs::DomainOperator op = action_details[node->action.action_id];
-			std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit;
-
-			if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
-
-				for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-				for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-
-			} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
-
-				for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, false);
-				for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
-					addConditionEdge(nodes, nit, *cit, true);
-			}
-
-			// interference edges
-			addInterferenceEdges(nodes, nit);
 		}
 	}
 
@@ -249,35 +318,58 @@ namespace KCL_rosplan {
 	 * finds the previous supporting action and creates a new edge.
 	 * @returns True if an edge is created.
 	 */
-	bool PDDLEsterelPlanParser::addConditionEdge(std::map<double,int> &node_map, std::map<double,int>::iterator &current_node, rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition) {
+	bool PDDLEsterelPlanParser::addConditionEdge(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node, rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition) {
+		bool edge_created = false;
 
-		// for this condition check previous actions
-		std::map<double,int>::const_reverse_iterator rit(current_node);
+		// reverse through TILs
+		std::multimap<double, rosplan_knowledge_msgs::KnowledgeItem>::const_reverse_iterator tit;
+		tit = til_list.rbegin();
+		// find latest TIL before current action
+		while(tit!=til_list.rend() && tit->first > current_node->first) {
+			tit++;
+		}
+
+		// for this condition check previous actions and TILs
+		std::multimap<double,int>::const_reverse_iterator rit(current_node);
 		for(; rit!=node_map.rend(); rit++) {
-			// check support
+			// get TILs that come after the previous actions
+			while(tit!=til_list.rend() && tit->first > rit->first) {
+				// check TIL support
+				if(satisfiesPrecondition(condition, tit->second, negative_condition)) {
+					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max());
+					return true;
+				}
+				tit++;
+			}
+			// check action support
 			if(satisfiesPrecondition(condition, last_plan.nodes[rit->second], negative_condition)) {
 				makeEdge(rit->second, current_node->second);
 				return true;
 			}
 		}
+
 		return false;
 	}
 
 	/**
 	 * Adds edges from all previous nodes with which there is interference.
+	 * @returns True if an edge is created.
 	 */
-	void PDDLEsterelPlanParser::addInterferenceEdges(std::map<double,int> &node_map, std::map<double,int>::iterator &current_node) {
+	bool PDDLEsterelPlanParser::addInterferenceEdges(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node) {
+
+		bool edge_added = false;
 
 		rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[current_node->second];
 
 		// for this node check previous nodes
-		std::map<double,int>::const_reverse_iterator rit(current_node);
+		std::multimap<double,int>::const_reverse_iterator rit(current_node);
 		for(; rit!=node_map.rend(); rit++) {
 
 			rosplan_dispatch_msgs::EsterelPlanNode *prenode = &last_plan.nodes[rit->second];
 
 			// if already ordered, then skip
-			if(isOrdered(*prenode, *node))
+			std::pair<double,double> bounds = getBounds(*prenode, *node);
+			if( (bounds.first>=0) || (bounds.second<=0) )
 				continue;
 
 			bool interferes = false;
@@ -323,8 +415,32 @@ namespace KCL_rosplan {
 
 			if(interferes) {
 				makeEdge(prenode->node_id, node->node_id);
+				edge_added = true;
 			}
 		}
+
+		return edge_added;
+	}
+
+	void PDDLEsterelPlanParser::makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound) {
+
+		// create and add edge
+		rosplan_dispatch_msgs::EsterelPlanEdge newEdge;
+		newEdge.edge_id = last_plan.edges.size();
+		std::stringstream ss;
+		ss << "edge" << "_" << newEdge.edge_id;
+		newEdge.edge_name = ss.str();
+		newEdge.signal_type = 0;
+		newEdge.source_ids.push_back(source_node_id);
+		newEdge.sink_ids.push_back(sink_node_id);
+
+		newEdge.duration_lower_bound = lower_bound;
+		newEdge.duration_upper_bound = upper_bound;
+
+		last_plan.edges.push_back(newEdge);
+
+		last_plan.nodes[source_node_id].edges_out.push_back(newEdge.edge_id);
+		last_plan.nodes[sink_node_id].edges_in.push_back(newEdge.edge_id);
 	}
 
 } // close namespace
