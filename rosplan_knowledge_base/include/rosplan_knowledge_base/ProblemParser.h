@@ -9,8 +9,8 @@
 #include "VALVisitorProblem.h"
 
 
-#ifndef KCL_initialStateparser
-#define KCL_initialStateparser
+#ifndef KCL_problemparser
+#define KCL_problemparser
 
 extern int yyparse();
 extern int yydebug;
@@ -21,7 +21,7 @@ namespace VAL {
 };
 
 /**
- * Initial State storage and parsing. Uses VAL parser and storage.
+ * Problem file storage and parsing. Uses VAL parser and storage.
  */
 namespace KCL_rosplan {
 
@@ -29,7 +29,7 @@ namespace KCL_rosplan {
     /* parser */
     /*--------*/
 
-    class InitialStateParser
+    class ProblemParser
     {
     private:
 
@@ -39,12 +39,12 @@ namespace KCL_rosplan {
         VAL::analysis * val_analysis;
         VAL::problem* problem;
 
-        /* initialState information */
-        bool initialState_parsed;
-        std::string initialState_name;
+        /* Problem information */
+        bool problem_parsed;
+        std::string problem_name;
 
-        /* initialState parsing */
-        VAL::problem* parseInitialState(const std::string initialStatePath);
+        /* Problem parsing */
+        VAL::problem* parseProblem(const std::string ProblemPath);
 
 
     };
