@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
+#include <boost/algorithm/string.hpp>
 #include "ptree.h"
 #include "VisitController.h"
 
@@ -23,6 +23,7 @@ namespace KCL_rosplan {
 
         VAL::domain* domain;
         VAL::problem* problem;
+	std::stringstream expression;
 
 	public:
 
@@ -33,10 +34,12 @@ namespace KCL_rosplan {
 
 		/* message */
         rosplan_knowledge_msgs::DomainFormula last_prop;
+	rosplan_knowledge_msgs::DomainFormula last_func_term;
 
         std::map<std::string, std::vector<std::string> > instances;
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> goals;
+	rosplan_knowledge_msgs::KnowledgeItem metric;
 
 
 
@@ -56,6 +59,7 @@ namespace KCL_rosplan {
         std::map<std::string, std::vector<std::string> > returnInstances();
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnFacts();
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnGoals();
+		rosplan_knowledge_msgs::KnowledgeItem returnMetric();
 
 		virtual void visit_assignment(VAL::assignment * e);
 		virtual void visit_simple_effect(VAL::simple_effect * e);
@@ -68,8 +72,22 @@ namespace KCL_rosplan {
 
 		virtual void visit_derivation_rule(VAL::derivation_rule * o);
 
+		virtual void visit_metric_spec(VAL:: metric_spec * s);
 
-	};
+        virtual void visit_plus_expression(VAL::plus_expression * s);
+        virtual void visit_minus_expression(VAL::minus_expression * s);
+        virtual void visit_mul_expression(VAL::mul_expression * s);
+        virtual void visit_div_expression(VAL::div_expression * s);
+        virtual void visit_uminus_expression(VAL::uminus_expression * s);
+        virtual void visit_int_expression(VAL::int_expression * s);
+        virtual void visit_float_expression(VAL::float_expression * s);
+        virtual void visit_special_val_expr(VAL::special_val_expr * s);
+        virtual void visit_violation_term(VAL::violation_term * v);
+        virtual void visit_func_term(VAL::func_term * s);
+
+
+
+    };
 
 } // close namespace
 

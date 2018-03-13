@@ -131,7 +131,14 @@ namespace KCL_rosplan {
 		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL:
 			removeMissionGoal(req.knowledge);
 			break;
-		}
+		
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_METRIC:
+            		addMissionMetric(req.knowledge);
+			break;
+         	case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_METRIC:
+            		removeMissionMetric(req.knowledge);
+			break;
+        	}
 
 		res.success = true;
 		return true;
@@ -248,6 +255,8 @@ namespace KCL_rosplan {
 	 */
 	bool KnowledgeBase::clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
 
+        rosplan_knowledge_msgs::KnowledgeItem empty;
+
 		ROS_INFO("KCL: (KB) Removing whole model");
 
 		// model
@@ -255,6 +264,7 @@ namespace KCL_rosplan {
 		model_facts.clear();
 		model_functions.clear();
 		model_goals.clear();
+        model_metric = empty;
 	}
 
 	/**
@@ -273,6 +283,16 @@ namespace KCL_rosplan {
 			}
 		}
 	}
+
+    /**
+	 * remove mission metric
+	 */
+    void KnowledgeBase::removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg) {
+
+        rosplan_knowledge_msgs::KnowledgeItem empty;
+        ROS_INFO("KCL: (KB) Removing metric");
+                model_metric = empty;
+    }
 
 	/*--------------*/
 	/* adding items */
@@ -356,6 +376,15 @@ namespace KCL_rosplan {
 		model_goals.push_back(msg);
 	}
 
+    /*
+	 * add mission metric to knowledge base
+	 */
+    void KnowledgeBase::addMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg) {
+
+        ROS_INFO("KCL: (KB) Adding mission metric");
+        model_metric = msg;
+    }
+
 	/*----------------*/
 	/* fetching items */
 	/*----------------*/
@@ -419,6 +448,11 @@ namespace KCL_rosplan {
 			res.attributes.push_back(model_goals[i]);
 		return true;
 	}
+
+    bool KnowledgeBase::getCurrentMetric(rosplan_knowledge_msgs::GetMetricService::Request  &req, rosplan_knowledge_msgs::GetMetricService::Response &res) {
+            res.metric = model_metric;
+        return true;
+    }
 
 	/*-----------------*/
 	/* fetching domain */
@@ -555,13 +589,14 @@ namespace KCL_rosplan {
     /* add initial state to knowledge base*/
     /*------------------------------------*/
 
-    /* get problem initial state */
+    /* get the initial state from the domain and problem files*/
     void KnowledgeBase::addInitialState(VAL::domain* domain, VAL::problem* problem) {
 
         VALVisitorProblem problem_visitor(domain,problem);
         model_instances = problem_visitor.returnInstances();
         model_facts = problem_visitor.returnFacts();
         model_goals = problem_visitor.returnGoals();
+        model_metric = problem_visitor.returnMetric();
 
     }
 
@@ -577,12 +612,12 @@ int main(int argc, char **argv)
 	ros::NodeHandle n("~");
 
     // parameters
-    std::string domainPath, initialStatePath;
+    std::string domainPath, problemPath;
     bool useUnknowns;
     n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
     n.param("use_unknowns", useUnknowns, false);
     n.param("domain_path", domainPath, domainPath);
-    n.param("initialState_path", initialStatePath, initialStatePath);
+    n.param("problem_path", problemPath, problemPath);
 
 
     KCL_rosplan::KnowledgeBase kb;
@@ -601,16 +636,16 @@ int main(int argc, char **argv)
 	    domain = kb.domain_parser.parseDomain(domainPath);
 	}
 
-    // parse initial state
-	if(initialStatePath != "") {
+    // parse problem and add initial state
+	if(problemPath != "") {
 		ROS_INFO("KCL: (KB) Parsing initial state");
-		kb.initialState_parser.initialState_parsed = false;
-		file_check.open(initialStatePath.c_str());
+		kb.problem_parser.problem_parsed = false;
+		file_check.open(problemPath.c_str());
 		if(!file_check.good()) {
 			ROS_WARN("KCL: (KB) Initial state file does not exist.");
 		} else {
 			file_check.close();
-			VAL::problem* problem = kb.initialState_parser.parseInitialState(initialStatePath);
+			VAL::problem* problem = kb.problem_parser.parseProblem(problemPath);
 			kb.addInitialState(domain, problem);
 		}
 	}
@@ -640,6 +675,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
 	ros::ServiceServer currentKnowledgeServer = n.advertiseService("/kcl_rosplan/get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
 	ros::ServiceServer currentGoalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
+    	ros::ServiceServer currentMetricServer = n.advertiseService("/kcl_rosplan/get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
 
 	// wait for and clear mongoDB 
 	ROS_INFO("KCL: (KB) Waiting for MongoDB");

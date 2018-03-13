@@ -1,4 +1,5 @@
 #include "rosplan_knowledge_base/VALVisitorProblem.h"
+#include <iostream>
 
 /* implementation of rosplan_knowledge_base::VALVisitorPredicate */
 namespace KCL_rosplan {
@@ -15,17 +16,13 @@ namespace KCL_rosplan {
     /*--------------*/
 
     /**
-     * Visit an prop to pack into ROS message
+     * Visit a proposition to pack into ROS message
      */
     void VALVisitorProblem::visit_proposition(VAL::proposition *p) {
 
         last_prop.typed_parameters.clear();
 
-        // predicate name
-        rosplan_knowledge_msgs::DomainFormula formula;
-        last_prop.name = p->head->symbol::getName();
-        // predicate variables
-
+        last_prop.name = p->head->getName();
 
         for (VAL::parameter_symbol_list::const_iterator vi = p->args->begin(); vi != p->args->end(); vi++) {
             const VAL::parameter_symbol* var = *vi;
@@ -33,6 +30,12 @@ namespace KCL_rosplan {
             param.key = var->pddl_typed_symbol::getName();
             param.value = var->type->getName();
             last_prop.typed_parameters.push_back(param);
+
+            // check for supertype and add prop with supertype if it exists
+            if (var->type->type){
+                param.value = var->type->type->getName();
+                last_prop.typed_parameters.push_back(param);
+            }
         }
 
     };
@@ -75,6 +78,7 @@ namespace KCL_rosplan {
                 item.knowledge_type = 1;
                 item.attribute_name = last_prop.name;
 
+                cout <<"item list!!!!!!!!!!!!!!!!!!!!\n";
                 // iterate the predicate symbols
                 for (VAL::var_symbol_list::const_iterator varSymbolIterator = tempPredicate->getArgs()->begin();
                      varSymbolIterator != tempPredicate->getArgs()->end(); varSymbolIterator++) {
@@ -89,7 +93,15 @@ namespace KCL_rosplan {
                             diagnostic_msgs::KeyValue param;
                             param.key = tempVarSymbol->pddl_typed_symbol::getName();
                             param.value = last_prop.typed_parameters[a].key;
-                            item.values.push_back(param);
+
+                            // check if value has already been added to item
+                            bool notExist = true;
+                            for (unsigned int a = 0; a < item.values.size(); a++) {
+                                if (boost::iequals(item.values[a].value,param.value)){
+                                        notExist = false;
+                                }
+                            }
+                            if (notExist) item.values.push_back(param);
                         }
                     }
                 }
@@ -140,7 +152,7 @@ namespace KCL_rosplan {
         for (VAL::pred_decl_list::const_iterator predicateIterator = predicates->begin();
              predicateIterator != predicates->end(); predicateIterator++) {
 
-            VAL::pred_decl *tempPredicate = *predicateIterator;
+            VAL::pred_decl* tempPredicate = *predicateIterator;
 
             // compare pedicate name with last proposition name
             if (tempPredicate->getPred()->symbol::getName() == last_prop.name) {
@@ -164,7 +176,15 @@ namespace KCL_rosplan {
                             diagnostic_msgs::KeyValue param;
                             param.key = tempVarSymbol->pddl_typed_symbol::getName();
                             param.value = last_prop.typed_parameters[a].key;
-                            item.values.push_back(param);
+
+                            // check if value has already been added to item
+                            bool notExist = true;
+                            for (unsigned int a = 0; a < item.values.size(); a++) {
+                                if (boost::iequals(item.values[a].value,param.value)){
+                                    notExist = false;
+                                }
+                            }
+                            if (notExist) item.values.push_back(param);
 
                         }
                     }
@@ -205,7 +225,108 @@ namespace KCL_rosplan {
         void VALVisitorProblem::visit_comparison(VAL::comparison *c) {}
         void VALVisitorProblem::visit_derivation_rule(VAL::derivation_rule *o) {}
 
+    /**
+     * Metric
+     */
 
+    void VALVisitorProblem::visit_plus_expression(VAL::plus_expression * s){
+        s->getLHS()->visit(this);
+        s->getRHS()->visit(this);
+        cout << "!!!!!!!!!!!!!!  plus_expression\n";
+    }
+    void VALVisitorProblem::visit_minus_expression(VAL::minus_expression * s){
+        s->getLHS()->visit(this);
+        s->getRHS()->visit(this);
+        cout << "!!!!!!!!!!!!!!  minus_expression\n";
+    }
+    void VALVisitorProblem::visit_mul_expression(VAL::mul_expression * s){
+        s->getLHS()->visit(this);
+        s->getRHS()->visit(this);
+        cout << "!!!!!!!!!!!!!!  mul_expression\n";
+    }
+    void VALVisitorProblem::visit_div_expression(VAL::div_expression * s){
+        s->getLHS()->visit(this);
+        s->getRHS()->visit(this);
+        cout << "!!!!!!!!!!!!!!  div_expression\n";
+    }
+    void VALVisitorProblem::visit_uminus_expression(VAL::uminus_expression * s){
+        s->getExpr()->visit(this);
+
+    }
+    void VALVisitorProblem::visit_int_expression(VAL::int_expression * s){
+        expression << s->double_value();
+        cout << "!!!!!!!!!!!!!!  int_expression\n";
+    }
+    void VALVisitorProblem::visit_float_expression(VAL::float_expression * s){
+        cout << "!!!!!!!!!!!!!!  float_expression\n";
+        expression << s->double_value();
+    }
+    void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
+        cout << "!!!!!!!!!!!!!!  special_val_expr\n";
+        expression << s->getKind();
+    }
+    void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
+        cout << "!!!!!!!!!!!!!!  violation_term\n";
+        expression << v->getName();
+    }
+    void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
+        // s->getFunction()->visit(this);
+        // s->getArgs()->visit(this);
+
+
+        cout << "!!!!!!!!!!!!!!  func_term\n";
+        last_func_term.typed_parameters.clear();
+
+        // func_term name
+        last_func_term.name = s->getFunction()->getName();
+        expression << last_func_term.name;
+
+        // func_term variables
+        const VAL::parameter_symbol_list* param_list = s->getArgs();
+        for (VAL::parameter_symbol_list::const_iterator vi = param_list->begin(); vi != param_list->end(); vi++) {
+            const VAL::parameter_symbol* var = *vi;
+            diagnostic_msgs::KeyValue param;
+            cout << "!!!!!!!!!!!!!!  loop\n";
+            expression << var->pddl_typed_symbol::getName();
+            param.value = var->type->getName();
+            last_func_term.typed_parameters.push_back(param);
+        }
+    }
+
+    void VALVisitorProblem::visit_metric_spec(VAL::metric_spec * s){
+
+        s->expr->visit(this);
+
+        cout << "!!!!!!!!!!!!!!  metric_spec\n";
+        rosplan_knowledge_msgs::KnowledgeItem item;
+
+        item.knowledge_type = 2;
+        diagnostic_msgs::KeyValue param;
+
+        if (s->opt == 0){
+            param.key = "minimize";
+        }
+        else {
+            param.key = "maximize";
+        }
+
+        // option 1
+        // something with lasp_prop
+        // param.value = last_prop.typed_parameters[a].value;
+
+        // option 2
+        param.value = expression.str();
+        cout << "metric key: "+param.key+" metric value: "+param.value+"\n";
+
+        item.values.push_back(param);
+        metric = item;
+
+    }
+
+    rosplan_knowledge_msgs::KnowledgeItem VALVisitorProblem::returnMetric() {
+        problem->metric->visit(this);
+        return metric;
+    }
 
 
 } // close namespace
