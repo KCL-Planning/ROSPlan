@@ -82,8 +82,10 @@ set(KNOWLEDGE_SOURCES
 	src/PlanFilter.cpp
 	src/KnowledgeComparitor.cpp
 	src/DomainParser.cpp
+        src/ProblemParser.cpp
 	src/VALVisitorOperator.cpp
-	src/VALVisitorPredicate.cpp)
+	src/VALVisitorPredicate.cpp
+	src/VALVisitorProblem.cpp)
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})

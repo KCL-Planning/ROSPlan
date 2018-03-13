@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="node_name"                default="rosplan_plan_dispatcher" />
+	<arg name="plan_topic"               default="/rosplan_parsing_interface/complete_plan" />
+	<arg name="action_dispatch_topic"    default="action_dispatch" />
+	<arg name="action_feedback_topic"    default="action_feedback" />
+
+
+	<!-- plan dispatching -->
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen">
+		<param name="plan_topic" value="$(arg plan_topic)" />
+		<param name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+		<param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
+	</node>
+
+</launch>

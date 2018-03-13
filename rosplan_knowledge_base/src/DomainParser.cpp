@@ -10,10 +10,10 @@ namespace KCL_rosplan {
 	/**
 	 * parse the domain file
 	 */
-	void DomainParser::parseDomain(const std::string domainPath) {
-		
+	VAL::domain* DomainParser::parseDomain(const std::string domainPath) {
+
 		// only parse domain once
-		if(domain_parsed) return;
+		if(domain_parsed) return domain;
 		domain_parsed = true;
 
 		std::string domainFileName = (domainPath);
@@ -47,5 +47,10 @@ namespace KCL_rosplan {
 		}
 		delete VAL::yfl;
 		domainFile.close();
+
+		return domain;
+
 	}
+
+
 } // close namespace

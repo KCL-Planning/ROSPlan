@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="node_name"        default="rosplan_parsing_interface" />
+	<arg name="planner_topic"    default="/rosplan_planner_interface/planner_output" />
+	<arg name="plan_topic"       default="complete_plan" />
+
+
+	<!-- plan parsing -->
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+		<param name="planner_topic" value="$(arg planner_topic)" />
+		<param name="plan_topic" value="$(arg plan_topic)" />
+	</node>
+
+</launch>

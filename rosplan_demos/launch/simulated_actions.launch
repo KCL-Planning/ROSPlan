@@ -1,0 +1,78 @@
+<!-- ROSPlan turtlebot demo; requires turtlebot_gazebo -->
+<launch>
+
+	<!-- scene database (MongoDB) -->
+	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
+		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
+	</include>
+
+	<!-- knowledge base -->
+	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+	    <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
+		<!-- conditional planning flags -->
+		<param name="use_unknowns" value="False" />
+	</node>
+
+	<!-- problem generation -->
+	<node name="rosplan_problem_interface" pkg="rosplan_planning_system" type="problemInterface" respawn="false" output="screen">
+		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+		<param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
+		<param name="problem_topic" value="problem_instance" />
+	</node>
+
+	<!-- planning system -->
+	<node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
+
+		<!-- general options -->
+		<param name="use_problem_topic" value="true" />
+
+		<!-- ros topics -->
+		<param name="problem_topic" value="/rosplan_problem_interface/problem_instance" />
+		<param name="planner_topic" value="planner_output" />
+
+		<!-- directory for files -->
+		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+		<param name="problem_path" value="$(find rosplan_planning_system)/common/problem.pddl" />
+		<param name="data_path" value="$(find rosplan_planning_system)/common/" />
+
+		<!-- to run the planner -->
+		<param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
+	</node>
+
+	<!-- plan parsing -->
+	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+		<param name="planner_topic" value="/rosplan_planner_interface/planner_output" />
+		<param name="plan_topic" value="complete_plan" />
+	</node>
+
+	<!-- plan dispatching -->
+	<node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen">
+		<param name="plan_topic" value="/rosplan_parsing_interface/complete_plan" />
+		<param name="action_dispatch_topic" value="action_dispatch" />
+		<param name="action_feedback_topic" value="action_feedback" />
+	</node>
+
+	<!-- sim actions -->
+	<node name="rosplan_interface_undocking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
+		<param name="pddl_action_name" value="undock" />
+		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
+		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
+	</node>
+	<node name="rosplan_interface_docking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
+		<param name="pddl_action_name" value="dock" />
+		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
+		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
+	</node>
+	<node name="rosplan_interface_navigation" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
+		<param name="pddl_action_name" value="goto_waypoint" />
+		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
+		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
+	</node>
+	<node name="rosplan_interface_localise" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
+		<param name="pddl_action_name" value="localise" />
+		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
+		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
+	</node>
+</launch>
+

@@ -2,6 +2,31 @@
 
 namespace KCL_rosplan {
 
+	void KnowledgeBase::runKnowledgeBase() {
+
+		while(ros::ok()) {
+
+			// update TILs
+			std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+			for(; tit != model_timed_initial_literals.end(); ) {
+				if(tit->first <= ros::Time::now()) {
+					if(tit->second.is_negative) {
+						tit->second.is_negative = false;
+						removeKnowledge(tit->second);
+					} else {
+						addKnowledge(tit->second);
+					}
+					model_timed_initial_literals.erase(tit++);
+				} else {
+					tit++;
+				}
+			}
+
+			// services
+			ros::spinOnce();
+		}
+	}
+
 	/*-----------------*/
 	/* knowledge query */
 	/*-----------------*/
@@ -80,31 +105,80 @@ namespace KCL_rosplan {
 	/* knowledge update */
 	/*------------------*/
 
-	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
+	bool KnowledgeBase::updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res) {
 
-		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
-			addKnowledge(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
+		switch(req.update_type) {
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE:
+			if(req.duration>0) {
+				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+				model_timed_initial_literals.insert(std::make_pair(time,req.knowledge));
+			} else {
+				addKnowledge(req.knowledge);
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL:
 			addMissionGoal(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
-			removeKnowledge(req.knowledge);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE:
+			if(req.duration>0) {
+				ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+				req.knowledge.is_negative = !req.knowledge.is_negative;
+				model_timed_initial_literals.insert(std::make_pair(time,req.knowledge));
+			} else {
+				removeKnowledge(req.knowledge);
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL:
 			removeMissionGoal(req.knowledge);
+			break;
+		
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_METRIC:
+            		addMissionMetric(req.knowledge);
+			break;
+         	case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_METRIC:
+            		removeMissionMetric(req.knowledge);
+			break;
+        	}
 
 		res.success = true;
 		return true;
 	}
 
-	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
 
-		if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE)
-			for(int i=0;i<req.knowledge.size();i++) addKnowledge(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL)
-			for(int i=0;i<req.knowledge.size();i++) addMissionGoal(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE)
-			for(int i=0;i<req.knowledge.size();i++) removeKnowledge(req.knowledge[i]);
-		else if(req.update_type == rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL)
-			for(int i=0;i<req.knowledge.size();i++) removeMissionGoal(req.knowledge[i]);
+		switch(req.update_type) {
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE:
+			for(int i=0;i<req.knowledge.size();i++) {
+				if(req.duration>0) {
+					ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+					model_timed_initial_literals.insert(std::make_pair(time,req.knowledge[i]));
+				} else {
+					addKnowledge(req.knowledge[i]);
+				}
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_GOAL:
+			for(int i=0;i<req.knowledge.size();i++) {
+				addMissionGoal(req.knowledge[i]);
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE:
+			for(int i=0;i<req.knowledge.size();i++) {
+				if(req.duration>0) {
+					ros::Time time = ros::Time::now() + ros::Duration(req.duration);
+					req.knowledge[i].is_negative = !req.knowledge[i].is_negative;
+					model_timed_initial_literals.insert(std::make_pair(time,req.knowledge[i]));
+				} else {
+					removeKnowledge(req.knowledge[i]);
+				}
+			}
+			break;
+		case rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_GOAL:
+			for(int i=0;i<req.knowledge.size();i++) {
+				removeMissionGoal(req.knowledge[i]);
+			}
+			break;
+		}
 
 		res.success = true;
 		return true;
@@ -120,7 +194,7 @@ namespace KCL_rosplan {
 
 			// search for instance
 			std::vector<std::string>::iterator iit;
-			for(iit = model_instances[msg.instance_type].begin(); iit!=model_instances[msg.instance_type].end(); iit++) {
+			for(iit = model_instances[msg.instance_type].begin(); iit!=model_instances[msg.instance_type].end(); ) {
 
 				std::string name = *iit;
 
@@ -130,22 +204,21 @@ namespace KCL_rosplan {
 					ROS_INFO("KCL: (KB) Removing instance (%s, %s)", msg.instance_type.c_str(), (msg.instance_name.compare("")==0) ? "ALL" : msg.instance_name.c_str());
 					iit = model_instances[msg.instance_type].erase(iit);
 					if(iit!=model_instances[msg.instance_type].begin()) iit--;
-					plan_filter.checkFilters(msg, false);
 
 					// remove affected domain attributes
 					std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-					for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+					for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
 						if(KnowledgeComparitor::containsInstance(*pit, name)) {
 							ROS_INFO("KCL: (KB) Removing domain attribute (%s)", pit->attribute_name.c_str());
-							plan_filter.checkFilters(*pit, false);
 							pit = model_facts.erase(pit);
-							if(pit!=model_facts.begin()) pit--;
-							if(pit==model_facts.end()) break;
+						} else {
+							pit++;
 						}
 					}
+				} else {
 
-					// finish
-					if(iit==model_instances[msg.instance_type].end()) break;
+					iit++;
+
 				}
 			}
 
@@ -153,13 +226,12 @@ namespace KCL_rosplan {
 
 			// remove domain attribute (function) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-			for(pit=model_functions.begin(); pit!=model_functions.end(); pit++) {
+			for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
-					plan_filter.checkFilters(msg, false);
 					pit = model_functions.erase(pit);
-					if(pit!=model_functions.begin()) pit--;
-					if(pit==model_functions.end()) break;
+				} else {
+					pit++;
 				}
 			}
 
@@ -167,13 +239,12 @@ namespace KCL_rosplan {
 
 			// remove domain attribute (predicate) from knowledge base
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+			for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
 					ROS_INFO("KCL: (KB) Removing domain attribute (%s)", msg.attribute_name.c_str());
-					plan_filter.checkFilters(msg, false);
 					pit = model_facts.erase(pit);
-					if(pit!=model_facts.begin()) pit--;
-					if(pit==model_facts.end()) break;
+				} else {
+					pit++;
 				}
 			}
 		}
@@ -184,6 +255,8 @@ namespace KCL_rosplan {
 	 */
 	bool KnowledgeBase::clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
 
+        rosplan_knowledge_msgs::KnowledgeItem empty;
+
 		ROS_INFO("KCL: (KB) Removing whole model");
 
 		// model
@@ -191,6 +264,7 @@ namespace KCL_rosplan {
 		model_facts.clear();
 		model_functions.clear();
 		model_goals.clear();
+        model_metric = empty;
 	}
 
 	/**
@@ -200,29 +274,32 @@ namespace KCL_rosplan {
 
 		bool changed = false;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator git;
-		for(git=model_goals.begin(); git!=model_goals.end(); git++) {
+		for(git=model_goals.begin(); git!=model_goals.end(); ) {
 			if(KnowledgeComparitor::containsKnowledge(msg, *git)) {
-				ROS_INFO("KCL: (KB) Removing goal (%s)", msg.attribute_name.c_str());
+				ROS_INFO("KCL: (KB) Removing goal (%s)", git->attribute_name.c_str());
 				git = model_goals.erase(git);
-				if(git!=model_goals.begin()) git--;
-				if(git==model_goals.end()) break;
+			} else {
+				git++;
 			}
 		}
-
-		if(changed) {			
-			rosplan_knowledge_msgs::Notification notMsg;
-			notMsg.function = rosplan_knowledge_msgs::Notification::REMOVED;
-			notMsg.knowledge_item = msg;
-			plan_filter.notification_publisher.publish(notMsg);
-		}
 	}
+
+    /**
+	 * remove mission metric
+	 */
+    void KnowledgeBase::removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg) {
+
+        rosplan_knowledge_msgs::KnowledgeItem empty;
+        ROS_INFO("KCL: (KB) Removing metric");
+                model_metric = empty;
+    }
 
 	/*--------------*/
 	/* adding items */
 	/*--------------*/
 
 	/*
-	 * add an instance, domain predicate, or function to the knowledge base
+	 * add an instance, fact, or function to the knowledge base
 	 */
 	void KnowledgeBase::addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg) {
 		
@@ -236,12 +313,11 @@ namespace KCL_rosplan {
 			if(iit==model_instances[msg.instance_type].end()) {
 				ROS_INFO("KCL: (KB) Adding instance (%s, %s)", msg.instance_type.c_str(), msg.instance_name.c_str());
 				model_instances[msg.instance_type].push_back(msg.instance_name);
-				plan_filter.checkFilters(msg, true);
 			}
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-			// add domain attribute
 
+			// add domain attribute
 			std::string param_str;
 			for (size_t i = 0; i < msg.values.size(); ++i) {
 				param_str += " " + msg.values[i].key + "=" + msg.values[i].value;
@@ -250,15 +326,14 @@ namespace KCL_rosplan {
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-          ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
-                   msg.attribute_name.c_str(), param_str.c_str());
+					ROS_WARN("KCL: (KB) Domain attribute (%s%s) already exists",
+					msg.attribute_name.c_str(), param_str.c_str());
 					return;
 				}
 			}
 			ROS_INFO("KCL: (KB) Adding domain attribute (%s%s)",
-			         msg.attribute_name.c_str(), param_str.c_str());
+			msg.attribute_name.c_str(), param_str.c_str());
 			model_facts.push_back(msg);
-			plan_filter.checkFilters(msg, true);
 
 		} else if(msg.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
 
@@ -274,7 +349,6 @@ namespace KCL_rosplan {
 			}
 			ROS_INFO("KCL: (KB) Adding domain function (%s)", msg.attribute_name.c_str());
 			model_functions.push_back(msg);
-			plan_filter.checkFilters(msg, true);
 		}
 	}
 
@@ -301,6 +375,15 @@ namespace KCL_rosplan {
 		         msg.attribute_name.c_str(), param_str.c_str());
 		model_goals.push_back(msg);
 	}
+
+    /*
+	 * add mission metric to knowledge base
+	 */
+    void KnowledgeBase::addMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg) {
+
+        ROS_INFO("KCL: (KB) Adding mission metric");
+        model_metric = msg;
+    }
 
 	/*----------------*/
 	/* fetching items */
@@ -329,16 +412,31 @@ namespace KCL_rosplan {
 
 	bool KnowledgeBase::getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res) {
 
+		ros::Time time = ros::Time::now();
+
 		// fetch the knowledgeItems of the correct attribute
 		for(size_t i=0; i<model_facts.size(); i++) {
-			if(0==req.predicate_name.compare(model_facts[i].attribute_name) || ""==req.predicate_name)
+			if(0==req.predicate_name.compare(model_facts[i].attribute_name) || ""==req.predicate_name) {
 				res.attributes.push_back(model_facts[i]);
+				res.initial_time.push_back(time);
+			}
 		}
 
 		// ...or fetch the knowledgeItems of the correct function
 		for(size_t i=0; i<model_functions.size(); i++) {
-			if(0==req.predicate_name.compare(model_functions[i].attribute_name) || ""==req.predicate_name)
+			if(0==req.predicate_name.compare(model_functions[i].attribute_name) || ""==req.predicate_name) {
 				res.attributes.push_back(model_functions[i]);
+				res.initial_time.push_back(time);
+			}
+		}
+
+		// ...and also all TILs and TIFs
+		std::map<ros::Time, rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+		for(; tit != model_timed_initial_literals.end(); tit++) {
+			if(0==req.predicate_name.compare(tit->second.attribute_name) || ""==req.predicate_name) {
+				res.attributes.push_back(tit->second);
+				res.initial_time.push_back(tit->first);
+			}
 		}
 
 		return true;
@@ -351,9 +449,21 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+    bool KnowledgeBase::getCurrentMetric(rosplan_knowledge_msgs::GetMetricService::Request  &req, rosplan_knowledge_msgs::GetMetricService::Response &res) {
+            res.metric = model_metric;
+        return true;
+    }
+
 	/*-----------------*/
 	/* fetching domain */
 	/*-----------------*/
+
+	/* get domain name */
+	bool KnowledgeBase::getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) {
+		if(!domain_parser.domain_parsed) return false;
+		res.domain_name = domain_parser.domain->name;
+		return true;
+	}
 
 	/* get domain types */
 	bool KnowledgeBase::getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) {
@@ -475,6 +585,21 @@ namespace KCL_rosplan {
 		return false;
 	}
 
+    /*------------------------------------*/
+    /* add initial state to knowledge base*/
+    /*------------------------------------*/
+
+    /* get the initial state from the domain and problem files*/
+    void KnowledgeBase::addInitialState(VAL::domain* domain, VAL::problem* problem) {
+
+        VALVisitorProblem problem_visitor(domain,problem);
+        model_instances = problem_visitor.returnInstances();
+        model_facts = problem_visitor.returnFacts();
+        model_goals = problem_visitor.returnGoals();
+        model_metric = problem_visitor.returnMetric();
+
+    }
+
 } // close namespace
 
 /*-------------*/
@@ -486,19 +611,49 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "rosplan_knowledge_base");
 	ros::NodeHandle n("~");
 
-	// parameters
-	std::string domainPath;
-	bool useUnknowns;
-	n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
-	n.param("use_unknowns", useUnknowns, false);
+    // parameters
+    std::string domainPath, problemPath;
+    bool useUnknowns;
+    n.param("/rosplan/domain_path", domainPath, std::string("common/domain.pddl"));
+    n.param("use_unknowns", useUnknowns, false);
+    n.param("domain_path", domainPath, domainPath);
+    n.param("problem_path", problemPath, problemPath);
 
-	KCL_rosplan::KnowledgeBase kb;
-	ROS_INFO("KCL: (KB) Parsing domain");
-	kb.domain_parser.domain_parsed = false;
-	kb.domain_parser.parseDomain(domainPath);
-	kb.use_unknowns = useUnknowns;
+
+    KCL_rosplan::KnowledgeBase kb;
+	std::ifstream file_check;
+
+    // parse domain
+    ROS_INFO("KCL: (KB) Parsing domain");
+    kb.domain_parser.domain_parsed = false;
+	VAL::domain* domain;
+	file_check.open(domainPath.c_str());
+	if(!file_check.good()) {
+	    ROS_ERROR("KCL: (KB) Domain file does not exist.");
+		return 0;
+	} else {
+		file_check.close();
+	    domain = kb.domain_parser.parseDomain(domainPath);
+	}
+
+    // parse problem and add initial state
+	if(problemPath != "") {
+		ROS_INFO("KCL: (KB) Parsing initial state");
+		kb.problem_parser.problem_parsed = false;
+		file_check.open(problemPath.c_str());
+		if(!file_check.good()) {
+			ROS_WARN("KCL: (KB) Initial state file does not exist.");
+		} else {
+			file_check.close();
+			VAL::problem* problem = kb.problem_parser.parseProblem(problemPath);
+			kb.addInitialState(domain, problem);
+		}
+	}
+
+    kb.use_unknowns = useUnknowns;
 
 	// fetch domain info
+	ros::ServiceServer nameServer = n.advertiseService("/kcl_rosplan/get_domain_name", &KCL_rosplan::KnowledgeBase::getDomainName, &kb);
 	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
 	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
 	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
@@ -520,11 +675,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
 	ros::ServiceServer currentKnowledgeServer = n.advertiseService("/kcl_rosplan/get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
 	ros::ServiceServer currentGoalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
-
-	// planning and mission filter
-	kb.plan_filter.notification_publisher = n.advertise<rosplan_knowledge_msgs::Notification>("/kcl_rosplan/notification", 10, true);
-	ros::Subscriber planningFilterSub = n.subscribe("/kcl_rosplan/plan_filter", 100, &KCL_rosplan::PlanFilter::planningFilterCallback, &kb.plan_filter);
-	ros::Subscriber missionFilterSub = n.subscribe("/kcl_rosplan/plan_filter", 100, &KCL_rosplan::PlanFilter::missionFilterCallback, &kb.plan_filter);
+    	ros::ServiceServer currentMetricServer = n.advertiseService("/kcl_rosplan/get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
 
 	// wait for and clear mongoDB 
 	ROS_INFO("KCL: (KB) Waiting for MongoDB");
@@ -532,7 +683,7 @@ int main(int argc, char **argv)
 	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
 
 	ROS_INFO("KCL: (KB) Ready to receive");
-	ros::spin();
+	kb.runKnowledgeBase();
 
 	return 0;
 }

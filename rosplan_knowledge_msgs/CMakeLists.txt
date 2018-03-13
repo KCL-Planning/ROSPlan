@@ -27,11 +27,13 @@ add_service_files(
   FILES
   GetAttributeService.srv
   GetInstanceService.srv
+  GetMetricService.srv
   KnowledgeUpdateService.srv
   KnowledgeUpdateServiceArray.srv
   KnowledgeQueryService.srv
-  GetDomainAttributeService.srv
+  GetDomainNameService.srv
   GetDomainTypeService.srv
+  GetDomainAttributeService.srv
   GetDomainOperatorService.srv  
   GetDomainOperatorDetailsService.srv  
   GetDomainPredicateDetailsService.srv  
