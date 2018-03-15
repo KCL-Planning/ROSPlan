@@ -9,7 +9,7 @@
 #include "ptree.h"
 #include "VisitController.h"
 
-#include "rosplan_knowledge_msgs/ProblemFormula.h"
+#include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #ifndef KCL_valvisitor_problem
@@ -33,8 +33,8 @@ namespace KCL_rosplan {
         }
 
 		/* message */
-        rosplan_knowledge_msgs::ProblemFormula last_prop;
-	rosplan_knowledge_msgs::ProblemFormula last_func_term;
+        rosplan_knowledge_msgs::DomainFormula last_prop;
+	rosplan_knowledge_msgs::DomainFormula last_func_term;
 
         std::map<std::string, std::vector<std::string> > instances;
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;

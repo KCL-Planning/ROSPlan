@@ -20,7 +20,6 @@ add_message_files(
   Notification.msg
   DomainFormula.msg
   DomainOperator.msg
-        ProblemFormula.msg
 )
 
 ## Generate services in the 'srv' folder
