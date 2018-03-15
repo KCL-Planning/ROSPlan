@@ -21,21 +21,48 @@ namespace KCL_rosplan {
     void VALVisitorProblem::visit_proposition(VAL::proposition *p) {
 
         last_prop.typed_parameters.clear();
+        last_prop.labels.clear();
 
         last_prop.name = p->head->getName();
 
+        std::vector<std::string> predicateLabels;
+
+        // parse domain for predicates
+        VAL::pred_decl_list *predicates = domain->predicates;
+        for (VAL::pred_decl_list::const_iterator predicateIterator = predicates->begin(); predicateIterator != predicates->end(); predicateIterator++) {
+
+            VAL::pred_decl *tempPredicate = *predicateIterator;
+
+            // compare pedicate name with last proposition name
+            if (tempPredicate->getPred()->symbol::getName() == last_prop.name) {
+
+                // iterate the predicate symbols
+                for (VAL::var_symbol_list::const_iterator varSymbolIterator = tempPredicate->getArgs()->begin();
+                     varSymbolIterator != tempPredicate->getArgs()->end(); varSymbolIterator++) {
+
+                    // add labels to predicateLabels
+                    const VAL::var_symbol *tempVarSymbol = *varSymbolIterator;
+                    predicateLabels.push_back(tempVarSymbol->pddl_typed_symbol::getName());
+                }
+            }
+        }
+
+        int index = 0;
         for (VAL::parameter_symbol_list::const_iterator vi = p->args->begin(); vi != p->args->end(); vi++) {
             const VAL::parameter_symbol* var = *vi;
             diagnostic_msgs::KeyValue param;
             param.key = var->pddl_typed_symbol::getName();
             param.value = var->type->getName();
             last_prop.typed_parameters.push_back(param);
+            last_prop.labels.push_back(predicateLabels[index]);
 
             // check for supertype and add prop with supertype if it exists
-            if (var->type->type){
+            if (var->type->type->getName() != "object"){
                 param.value = var->type->type->getName();
                 last_prop.typed_parameters.push_back(param);
+                last_prop.labels.push_back(predicateLabels[index]);
             }
+            ++index;
         }
 
     };
@@ -78,30 +105,21 @@ namespace KCL_rosplan {
                 item.knowledge_type = 1;
                 item.attribute_name = last_prop.name;
 
-                cout <<"item list!!!!!!!!!!!!!!!!!!!!\n";
                 // iterate the predicate symbols
                 for (VAL::var_symbol_list::const_iterator varSymbolIterator = tempPredicate->getArgs()->begin();
                      varSymbolIterator != tempPredicate->getArgs()->end(); varSymbolIterator++) {
 
                     const VAL::var_symbol * tempVarSymbol = *varSymbolIterator;
-
                     for ( unsigned int a = 0; a < last_prop.typed_parameters.size(); a++){
 
                         // compare predicate symbol name to match the value of the typed_parameter
-                        if (tempVarSymbol->type->getName() == last_prop.typed_parameters[a].value) {
+                        if (tempVarSymbol->type->getName() == last_prop.typed_parameters[a].value && tempVarSymbol->pddl_typed_symbol::getName() == last_prop.labels[a]) {
 
                             diagnostic_msgs::KeyValue param;
-                            param.key = tempVarSymbol->pddl_typed_symbol::getName();
+                            param.key = last_prop.labels[a];
                             param.value = last_prop.typed_parameters[a].key;
+                            item.values.push_back(param);
 
-                            // check if value has already been added to item
-                            bool notExist = true;
-                            for (unsigned int a = 0; a < item.values.size(); a++) {
-                                if (boost::iequals(item.values[a].value,param.value)){
-                                        notExist = false;
-                                }
-                            }
-                            if (notExist) item.values.push_back(param);
                         }
                     }
                 }
@@ -110,7 +128,6 @@ namespace KCL_rosplan {
                 facts.push_back(item);
             }
         }
-
     }
 
     void VALVisitorProblem::visit_forall_effect(VAL::forall_effect * e) {std::cout << "not implemented forall" << std::endl;};
@@ -165,26 +182,17 @@ namespace KCL_rosplan {
                 for (VAL::var_symbol_list::const_iterator varSymbolIterator = tempPredicate->getArgs()->begin();
                      varSymbolIterator != tempPredicate->getArgs()->end(); varSymbolIterator++) {
 
-
                     const VAL::var_symbol *tempVarSymbol = *varSymbolIterator;
 
                     for (unsigned int a = 0; a < last_prop.typed_parameters.size(); a++) {
 
                         // compare predicate symbol name to match the value of the typed_parameter
-                        if (tempVarSymbol->type->getName() == last_prop.typed_parameters[a].value) {
+                        if (tempVarSymbol->type->getName() == last_prop.typed_parameters[a].value && tempVarSymbol->pddl_typed_symbol::getName() == last_prop.labels[a]) {
 
                             diagnostic_msgs::KeyValue param;
                             param.key = tempVarSymbol->pddl_typed_symbol::getName();
                             param.value = last_prop.typed_parameters[a].key;
-
-                            // check if value has already been added to item
-                            bool notExist = true;
-                            for (unsigned int a = 0; a < item.values.size(); a++) {
-                                if (boost::iequals(item.values[a].value,param.value)){
-                                    notExist = false;
-                                }
-                            }
-                            if (notExist) item.values.push_back(param);
+                            item.values.push_back(param);
 
                         }
                     }
