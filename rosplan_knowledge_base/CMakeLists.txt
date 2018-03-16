@@ -82,7 +82,7 @@ set(KNOWLEDGE_SOURCES
 	src/PlanFilter.cpp
 	src/KnowledgeComparitor.cpp
 	src/DomainParser.cpp
-	src/InitialStateParser.cpp
+        src/ProblemParser.cpp
 	src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
 	src/VALVisitorProblem.cpp)

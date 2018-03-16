@@ -13,7 +13,7 @@
 
 	<!-- ROSPlan -->
 	<include file="$(find rosplan_planning_system)/launch/interfaced_planning_system.launch" >
-		<arg name="domain"	value="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
+		<arg name="domain_path"		value="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
 	</include>
 
 	<!-- roadmap -->

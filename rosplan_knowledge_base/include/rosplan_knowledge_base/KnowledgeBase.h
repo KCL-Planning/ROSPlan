@@ -19,6 +19,7 @@
 
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
+#include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #include "rosplan_knowledge_msgs/Notification.h"
@@ -27,7 +28,7 @@
 #include "KnowledgeComparitor.h"
 #include "PlanFilter.h"
 #include "DomainParser.h"
-#include "InitialStateParser.h"
+#include "ProblemParser.h"
 #include "VALVisitorOperator.h"
 #include "VALVisitorPredicate.h"
 #include "VALVisitorProblem.h"
@@ -44,8 +45,10 @@ namespace KCL_rosplan {
 		// adding and removing items to and from the knowledge base
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
+        	void addMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
+        	void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 	public:
 
@@ -56,7 +59,7 @@ namespace KCL_rosplan {
 		DomainParser domain_parser;
 
         // initial state from problem file
-        InitialStateParser initialState_parser;
+        ProblemParser problem_parser;
 
 		// model
 		std::map<std::string, std::vector<std::string> > model_constants;
@@ -64,6 +67,7 @@ namespace KCL_rosplan {
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_facts;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_functions;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_goals;
+        rosplan_knowledge_msgs::KnowledgeItem model_metric;
 		// TODO add constants to KB
 
 		// timed constraints
@@ -91,6 +95,7 @@ namespace KCL_rosplan {
 		bool getCurrentInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res);
 		bool getCurrentKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 		bool getCurrentGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
+		bool getCurrentMetric(rosplan_knowledge_msgs::GetMetricService::Request  &req, rosplan_knowledge_msgs::GetMetricService::Response &res);
 		// TODO bool getCurrentConstraintsOneOf(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 
 

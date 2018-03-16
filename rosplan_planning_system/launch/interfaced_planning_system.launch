@@ -2,7 +2,8 @@
 <launch>
 
 	<!-- arguments -->
-	<arg name="domain"	default="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
+	<arg name="domain_path"	default="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
+	<arg name="problem_path"	default="" />
 
 	<!-- scene database (MongoDB) -->
 	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
@@ -11,7 +12,8 @@
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
-		<param name="domain_path" value="$(arg domain)" />
+		<param name="domain_path" value="$(arg domain_path)" />
+		<param name="problem_path" value="$(arg problem_path)" />
 		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
 		<!-- conditional planning flags -->
 		<param name="use_unknowns" value="false" />
@@ -23,7 +25,7 @@
 		<arg name="use_problem_topic"    value="true" />
 		<arg name="problem_topic"        value="/rosplan_problem_interface/problem_instance" />
 		<arg name="planner_topic"        value="planner_output" />
-		<arg name="domain_path"          value="$(arg domain)" />
+		<arg name="domain_path"          value="$(arg domain_path)" />
 		<arg name="problem_path"         value="$(find rosplan_demos)/common/problem.pddl" />
 		<arg name="data_path"            value="$(find rosplan_demos)/common/" />
 		<arg name="planner_command"      value="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
@@ -31,7 +33,7 @@
 
 	<!-- problem generation -->
 	<include file="$(find rosplan_planning_system)/launch/includes/problem_interface.launch">
-		<arg name="domain_path"      value="$(arg domain)" />
+		<arg name="domain_path"      value="$(arg domain_path)" />
 		<arg name="problem_path"     value="$(find rosplan_demos)/common/problem.pddl" />
 		<arg name="problem_topic"    value="problem_instance" />
 	</include>
