@@ -585,11 +585,11 @@ namespace KCL_rosplan {
 		return false;
 	}
 
-    /*------------------------------------*/
-    /* add initial state to knowledge base*/
-    /*------------------------------------*/
+    /*-------------------------------------*/
+    /* add initial state to knowledge base */
+    /*-------------------------------------*/
 
-    /* get the initial state from the domain and problem files*/
+    /* get the initial state from the domain and problem files */
     void KnowledgeBase::addInitialState(VAL::domain* domain, VAL::problem* problem) {
 
         VALVisitorProblem problem_visitor(domain,problem);

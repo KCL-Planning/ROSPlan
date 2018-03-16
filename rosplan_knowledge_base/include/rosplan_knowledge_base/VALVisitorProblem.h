@@ -2,6 +2,7 @@
  * This file describes VALVisitorProblem class.
  * KMS VALVisitor classes are used to package PDDL things into ROS messages.
  */
+#include <ros/ros.h>
 #include <sstream>
 #include <string>
 #include <vector>
