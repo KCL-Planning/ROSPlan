@@ -14,6 +14,7 @@ namespace KCL_rosplan {
 		makeHeader(pFile);
 		makeInitialState(pFile);
 		makeGoals(pFile);
+        makeMetric(pFile);
 	}
 
 	/*--------*/
@@ -207,6 +208,32 @@ namespace KCL_rosplan {
 				}
 			}
 		}
-		pFile << ")))" << std::endl;
+		pFile << "))" << std::endl;
+	}
+
+
+	/*--------*/
+	/* metric */
+	/*--------*/
+
+	void PDDLProblemGenerator::makeMetric(std::ofstream &pFile) {
+
+		ros::NodeHandle nh;
+		ros::ServiceClient getCurrentMetricClient = nh.serviceClient<rosplan_knowledge_msgs::GetMetricService>("/kcl_rosplan/get_current_metric");
+
+		// get current metric
+		rosplan_knowledge_msgs::GetMetricService currentMetricSrv;
+		if (!getCurrentMetricClient.call(currentMetricSrv)) {
+			ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_current_metric");
+		} else {
+
+            // add metric section to file only if present
+            if (currentMetricSrv.response.metric.knowledge_type == 2) {
+                pFile << "(:metric " + currentMetricSrv.response.metric.values[0].key + "(" +
+                         currentMetricSrv.response.metric.values[0].value + "))" << std::endl;
+            }
+            // add end of problem file regardless if the metric is present
+            pFile << ")" << std::endl;
+        }
 	}
 } // close namespace
