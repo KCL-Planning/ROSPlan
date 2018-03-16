@@ -57,14 +57,13 @@ namespace KCL_rosplan {
             last_prop.labels.push_back(predicateLabels[index]);
 
             // check for supertype and add prop with supertype if it exists
-            if (var->type->type->getName() != "object"){
+            if (var->type->type){
                 param.value = var->type->type->getName();
                 last_prop.typed_parameters.push_back(param);
                 last_prop.labels.push_back(predicateLabels[index]);
             }
             ++index;
         }
-
     };
 
 
@@ -119,11 +118,9 @@ namespace KCL_rosplan {
                             param.key = last_prop.labels[a];
                             param.value = last_prop.typed_parameters[a].key;
                             item.values.push_back(param);
-
                         }
                     }
                 }
-
                 item.is_negative = problem_eff_neg;
                 facts.push_back(item);
             }
@@ -240,22 +237,18 @@ namespace KCL_rosplan {
     void VALVisitorProblem::visit_plus_expression(VAL::plus_expression * s){
         s->getLHS()->visit(this);
         s->getRHS()->visit(this);
-        cout << "!!!!!!!!!!!!!!  plus_expression\n";
     }
     void VALVisitorProblem::visit_minus_expression(VAL::minus_expression * s){
         s->getLHS()->visit(this);
         s->getRHS()->visit(this);
-        cout << "!!!!!!!!!!!!!!  minus_expression\n";
     }
     void VALVisitorProblem::visit_mul_expression(VAL::mul_expression * s){
         s->getLHS()->visit(this);
         s->getRHS()->visit(this);
-        cout << "!!!!!!!!!!!!!!  mul_expression\n";
     }
     void VALVisitorProblem::visit_div_expression(VAL::div_expression * s){
         s->getLHS()->visit(this);
         s->getRHS()->visit(this);
-        cout << "!!!!!!!!!!!!!!  div_expression\n";
     }
     void VALVisitorProblem::visit_uminus_expression(VAL::uminus_expression * s){
         s->getExpr()->visit(this);
@@ -263,26 +256,20 @@ namespace KCL_rosplan {
     }
     void VALVisitorProblem::visit_int_expression(VAL::int_expression * s){
         expression << s->double_value();
-        cout << "!!!!!!!!!!!!!!  int_expression\n";
     }
     void VALVisitorProblem::visit_float_expression(VAL::float_expression * s){
-        cout << "!!!!!!!!!!!!!!  float_expression\n";
         expression << s->double_value();
     }
     void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
-        cout << "!!!!!!!!!!!!!!  special_val_expr\n";
         expression << s->getKind();
     }
     void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
-        cout << "!!!!!!!!!!!!!!  violation_term\n";
         expression << v->getName();
     }
     void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
         // s->getFunction()->visit(this);
         // s->getArgs()->visit(this);
 
-
-        cout << "!!!!!!!!!!!!!!  func_term\n";
         last_func_term.typed_parameters.clear();
 
         // func_term name
@@ -294,7 +281,6 @@ namespace KCL_rosplan {
         for (VAL::parameter_symbol_list::const_iterator vi = param_list->begin(); vi != param_list->end(); vi++) {
             const VAL::parameter_symbol* var = *vi;
             diagnostic_msgs::KeyValue param;
-            cout << "!!!!!!!!!!!!!!  loop\n";
             expression << var->pddl_typed_symbol::getName();
             param.value = var->type->getName();
             last_func_term.typed_parameters.push_back(param);
@@ -305,9 +291,7 @@ namespace KCL_rosplan {
 
         s->expr->visit(this);
 
-        cout << "!!!!!!!!!!!!!!  metric_spec\n";
         rosplan_knowledge_msgs::KnowledgeItem item;
-
         item.knowledge_type = 2;
         diagnostic_msgs::KeyValue param;
 
@@ -318,14 +302,7 @@ namespace KCL_rosplan {
             param.key = "maximize";
         }
 
-        // option 1
-        // something with lasp_prop
-        // param.value = last_prop.typed_parameters[a].value;
-
-        // option 2
         param.value = expression.str();
-        cout << "metric key: "+param.key+" metric value: "+param.value+"\n";
-
         item.values.push_back(param);
         metric = item;
 

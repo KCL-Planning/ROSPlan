@@ -67,7 +67,7 @@ namespace KCL_rosplan {
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_facts;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_functions;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_goals;
-        	rosplan_knowledge_msgs::KnowledgeItem model_metric;
+        rosplan_knowledge_msgs::KnowledgeItem model_metric;
 		// TODO add constants to KB
 
 		// timed constraints

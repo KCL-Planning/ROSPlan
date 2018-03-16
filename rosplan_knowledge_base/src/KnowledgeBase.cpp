@@ -596,7 +596,9 @@ namespace KCL_rosplan {
         model_instances = problem_visitor.returnInstances();
         model_facts = problem_visitor.returnFacts();
         model_goals = problem_visitor.returnGoals();
-        model_metric = problem_visitor.returnMetric();
+        if (problem->metric) {
+            model_metric = problem_visitor.returnMetric();
+        }
 
     }
 
@@ -675,7 +677,7 @@ int main(int argc, char **argv)
 	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
 	ros::ServiceServer currentKnowledgeServer = n.advertiseService("/kcl_rosplan/get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
 	ros::ServiceServer currentGoalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
-    	ros::ServiceServer currentMetricServer = n.advertiseService("/kcl_rosplan/get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
+    ros::ServiceServer currentMetricServer = n.advertiseService("/kcl_rosplan/get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
 
 	// wait for and clear mongoDB 
 	ROS_INFO("KCL: (KB) Waiting for MongoDB");
