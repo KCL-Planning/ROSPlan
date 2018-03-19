@@ -110,6 +110,7 @@ namespace KCL_rosplan {
 				break;
 			}
 
+			bool plan_started = false;
 			finished_execution = true;
 			state_changed = false;
 
@@ -117,8 +118,27 @@ namespace KCL_rosplan {
 			for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
 				
 				rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
+
+				// activate plan start edges
+				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START && !plan_started) {
+
+					// activate new edges
+					std::vector<int>::const_iterator ci = node.edges_in.begin();
+					ci = node.edges_out.begin();
+					for(; ci != node.edges_out.end(); ci++) {
+						edge_active[*ci] = true;
+					}
+
+					finished_execution = false;
+					state_changed = true;
+					plan_started = true;
+				}
 				
-				// If at least one node is still executing we are not done yet.
+				// do not check actions for nodes which are not action nodes
+				if(node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+					continue;
+
+				// If at least one node is still executing we are not done yet
 				if (action_dispatched[node.action.action_id] && !action_completed[node.action.action_id]) {
 					finished_execution = false;
 				}
@@ -130,7 +150,7 @@ namespace KCL_rosplan {
 					if(!edge_active[(*eit)]) edges_activate_action = false;
 				}
 				if(!edges_activate_action) continue;
-				
+
 				// dispatch new action
 				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && !action_dispatched[node.action.action_id]) {
 
@@ -198,7 +218,7 @@ namespace KCL_rosplan {
 					}
 				}
 
-			} // end loop (nodes)
+			} // end loop (action nodes)
 
 			ros::spinOnce();
 			loop_rate.sleep();
@@ -337,16 +357,31 @@ namespace KCL_rosplan {
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
 			dest <<  nit->node_id << "[ label=\"" << nit->name;
 
-			if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && action_received[nit->action.action_id]) {
-				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
-			}
-			else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END && action_completed[nit->action.action_id]) {
-				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
-			}
-			else if(action_dispatched[nit->action.action_id]) {
-				dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
-			} else {
+			switch(nit->node_type) {
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
+				if(action_received[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+				} else if(action_dispatched[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+				} else {
+					dest << "\"];" << std::endl;
+				}
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
+				if(action_completed[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+				} else if(action_dispatched[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+				} else {
+					dest << "\"];" << std::endl;
+				}
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START:
+				dest << "\",style=filled,fillcolor=black,fontcolor=white];" << std::endl;
+				break;
+			default:
 				dest << "\"];" << std::endl;
+				break;
 			}
 		}
 
@@ -354,9 +389,14 @@ namespace KCL_rosplan {
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::iterator eit = current_plan.edges.begin(); eit!=current_plan.edges.end(); eit++) {
 			for(int j=0; j<eit->sink_ids.size(); j++) {
 			for(int i=0; i<eit->source_ids.size(); i++) {
-				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\""
-						<< " [ label=\"" << eit->edge_name << "\""
-						<< " , penwidth=2"
+
+				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\"";
+				if(eit->duration_upper_bound == std::numeric_limits<double>::max()) {
+					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << "inf]\"";
+				} else {
+					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << eit->duration_upper_bound << "]\"";
+				}
+				dest << " , penwidth=2"
 						<< ((edge_active[eit->edge_id]) ? " , color=\"red\"" : " , color=\"black\"")
 						<< "]" << std::endl;
 			}};
