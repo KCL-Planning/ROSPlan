@@ -40,8 +40,9 @@ namespace KCL_rosplan {
 		preparePlan();
 		publishPlan();
 
-		res.plan_parsed = true;
+		planner_output_recieved = false;
 
+		res.plan_parsed = true;
 		return true;
 	}
 
