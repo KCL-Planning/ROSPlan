@@ -31,19 +31,11 @@ namespace KCL_rosplan {
 
 			for(size_t i=0;i<a.values.size();i++) {
 
-				// don't care about this parameter
 				if("" == a.values[i].value) {
+					// don't care about this parameter
 					++matches;
-					continue;
-				}
-
-				// find matching object in parameters of b
-				for(size_t j=0;j<b.values.size();j++) {
-					if( boost::iequals(a.values[i].key, b.values[j].key) && 
-						boost::iequals(a.values[i].value, b.values[j].value)) {
-						++matches;
-						break;
-					}
+				} else if(boost::iequals(a.values[i].value, b.values[i].value)) {
+					++matches;
 				}
 			}
 		}
