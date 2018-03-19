@@ -285,20 +285,20 @@ namespace KCL_rosplan {
 				if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
 
 					for(cit = op.at_start_simple_condition.begin(); cit!=op.at_start_simple_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, false, false)) edge_created = true;
 					for(cit = op.over_all_simple_condition.begin(); cit!=op.over_all_simple_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, false, true)) edge_created = true;
 					for(cit = op.at_start_neg_condition.begin(); cit!=op.at_start_neg_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, true, false)) edge_created = true;
 					for(cit = op.over_all_neg_condition.begin(); cit!=op.over_all_neg_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, true, true)) edge_created = true;
 
 				} else if(node->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
 
 					for(cit = op.at_end_simple_condition.begin(); cit!=op.at_end_simple_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, false)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, false, false)) edge_created = true;
 					for(cit = op.at_end_neg_condition.begin(); cit!=op.at_end_neg_condition.end(); cit++)
-						if(addConditionEdge(nodes, nit, *cit, true)) edge_created = true;
+						if(addConditionEdge(nodes, nit, *cit, true, false)) edge_created = true;
 				}
 
 				// interference edges
@@ -315,17 +315,36 @@ namespace KCL_rosplan {
 	}
 
 	/**
-	 * finds the previous supporting action and creates a new edge.
+	 * Given a node and a condition, creates an edge from the node that supports the condition, including from the initial state for TILs.
+	 * Also creates an upper bound on that edge should a TIL violate the condition.
 	 * @returns True if an edge is created.
 	 */
-	bool PDDLEsterelPlanParser::addConditionEdge(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node, rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition) {
+	bool PDDLEsterelPlanParser::addConditionEdge(
+				std::multimap<double,int> &node_map,
+				std::multimap<double,int>::iterator &current_node,
+				rosplan_knowledge_msgs::DomainFormula &condition,
+				bool negative_condition,
+				bool overall_condition) {
+
 		bool edge_created = false;
 
 		// reverse through TILs
 		std::multimap<double, rosplan_knowledge_msgs::KnowledgeItem>::const_reverse_iterator tit;
 		tit = til_list.rbegin();
+
 		// find latest TIL before current action
 		while(tit!=til_list.rend() && tit->first > current_node->first) {
+
+			// check TIL interference
+			if(satisfiesPrecondition(condition, tit->second, !negative_condition)) {
+				if(overall_condition) {
+					// edge goes to end action node instead of start action
+					makeEdge(0, current_node->second + 1, 0, tit->first);
+				} else {
+					makeEdge(0, current_node->second, 0, tit->first);
+				}
+			}
+
 			tit++;
 		}
 
@@ -334,6 +353,7 @@ namespace KCL_rosplan {
 		for(; rit!=node_map.rend(); rit++) {
 			// get TILs that come after the previous actions
 			while(tit!=til_list.rend() && tit->first > rit->first) {
+
 				// check TIL support
 				if(satisfiesPrecondition(condition, tit->second, negative_condition)) {
 					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max());
@@ -423,6 +443,25 @@ namespace KCL_rosplan {
 	}
 
 	void PDDLEsterelPlanParser::makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound) {
+
+		// see if there is already an existing edge
+		std::vector<int>::iterator eit = last_plan.nodes[source_node_id].edges_out.begin();
+		std::vector<int>::iterator nit = last_plan.nodes[source_node_id].edges_out.begin();
+		for(; eit!=last_plan.nodes[source_node_id].edges_out.end(); eit++) {
+			int edgeID = (*eit);
+			if(edgeID < 0 && edgeID >= last_plan.edges.size()) continue;
+			nit = std::find(last_plan.edges[edgeID].sink_ids.begin(), last_plan.edges[edgeID].sink_ids.end(), sink_node_id);
+			if(nit != last_plan.edges[edgeID].sink_ids.end()) {
+
+				// update the bounds and return
+				if(lower_bound > last_plan.edges[edgeID].duration_lower_bound)
+					last_plan.edges[edgeID].duration_lower_bound = lower_bound;
+				if(upper_bound < last_plan.edges[edgeID].duration_upper_bound)
+					last_plan.edges[edgeID].duration_upper_bound = upper_bound;
+				return;
+				
+			}
+		}
 
 		// create and add edge
 		rosplan_dispatch_msgs::EsterelPlanEdge newEdge;

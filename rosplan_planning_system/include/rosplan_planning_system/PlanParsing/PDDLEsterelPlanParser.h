@@ -199,9 +199,11 @@ namespace KCL_rosplan {
 		void processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params);
 		void fetchTILs();
 		void createGraph();
-		bool addConditionEdge(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node, rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition);
 		bool addInterferenceEdges(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node);
 		void makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound);
+		bool addConditionEdge(
+				std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node,
+				rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition, bool overall_condition);
 
 		/* virtual methods */
 		void reset();
