@@ -4,13 +4,6 @@
 /* implementation of rosplan_knowledge_base::VALVisitorPredicate */
 namespace KCL_rosplan {
 
-	/* encoding state */
-	bool problem_cond_neg;
-	bool problem_eff_neg;
-	VAL::time_spec problem_cond_time;
-	VAL::time_spec problem_eff_time;
-
-
 	/*----------------*/
 	/* return methods */
 	/*----------------*/
@@ -26,8 +19,19 @@ namespace KCL_rosplan {
 	}
 
 	std::vector<rosplan_knowledge_msgs::KnowledgeItem> VALVisitorProblem::returnFacts(){
-		visit_effect_lists(problem->initial_state);
+		if(!effects_read) {
+			visit_effect_lists(problem->initial_state);
+			effects_read = true;
+		}
 		return facts;
+	}
+
+	std::vector<rosplan_knowledge_msgs::KnowledgeItem> VALVisitorProblem::returnFunctions(){
+		if(!effects_read) {
+			visit_effect_lists(problem->initial_state);
+			effects_read = true;
+		}
+		return functions;
 	}
 
 	std::vector<rosplan_knowledge_msgs::KnowledgeItem> VALVisitorProblem::returnGoals() {
@@ -99,11 +103,15 @@ namespace KCL_rosplan {
 
 		problem_eff_neg = false;
 		e->add_effects.pc_list<VAL::simple_effect*>::visit(this);
+
 		problem_eff_neg = true;
 		e->del_effects.pc_list<VAL::simple_effect*>::visit(this);
 		problem_eff_neg = false;
 
 		e->forall_effects.pc_list<VAL::forall_effect*>::visit(this);
+		e->cond_effects.pc_list<VAL::cond_effect*>::visit(this);
+		e->cond_assign_effects.pc_list<VAL::cond_effect*>::visit(this);
+		e->assign_effects.pc_list<VAL::assignment*>::visit(this);
 		e->timed_effects.pc_list<VAL::timed_effect*>::visit(this);
 	}
 
@@ -131,6 +139,29 @@ namespace KCL_rosplan {
 		facts.push_back(item);
 	}
 
+	void VALVisitorProblem::visit_assignment(VAL::assignment *e) {
+
+		e->getFTerm()->visit(this);
+
+		rosplan_knowledge_msgs::KnowledgeItem item;
+		item.knowledge_type = 1;
+		item.attribute_name = last_func_term.name;
+		item.is_negative = false;
+
+		for(unsigned int a = 0; a < last_func_term.typed_parameters.size(); a++) {
+			diagnostic_msgs::KeyValue param;
+			param.key = last_func_term.typed_parameters[a].key;
+			param.value = last_func_term.typed_parameters[a].value;
+			item.values.push_back(param);
+		}
+
+		expression.str("");
+		e->getExpr()->visit(this);
+		item.function_value = std::atof(expression.str().c_str());
+
+		functions.push_back(item);
+	}
+
 	void VALVisitorProblem::visit_forall_effect(VAL::forall_effect * e) {
 		ROS_ERROR("Not yet implemented forall effects in intial state parser.");
 	}
@@ -138,11 +169,6 @@ namespace KCL_rosplan {
 	void VALVisitorProblem::visit_cond_effect(VAL::cond_effect * e) {
 		ROS_ERROR("Not yet implemented conditional effects in intial state parser.");	
 	}
-
-	void VALVisitorProblem::visit_assignment(VAL::assignment *e) {
-		ROS_ERROR("Not yet implemented assignment effects in intial state parser.");
-	}
-
 
 	/*-------*/
 	/* Goals */
@@ -194,6 +220,7 @@ namespace KCL_rosplan {
 
 	void VALVisitorProblem::visit_metric_spec(VAL::metric_spec * s){
 
+		expression.str("");
 		s->expr->visit(this);
 
 		rosplan_knowledge_msgs::KnowledgeItem item;
@@ -251,24 +278,37 @@ namespace KCL_rosplan {
 	}
 	void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
 
-		// s->getFunction()->visit(this);
-		// s->getArgs()->visit(this);
-
 		last_func_term.typed_parameters.clear();
 
 		// func_term name
 		last_func_term.name = s->getFunction()->getName();
-		expression << last_func_term.name;
+		expression << "(" << last_func_term.name;
+
+		std::vector<std::string> parameterLabels;
+
+		// parse domain for parameter labels
+		for (VAL::func_decl_list::const_iterator fit = domain->functions->begin(); fit != domain->functions->end(); fit++) {
+			if ((*fit)->getFunction()->symbol::getName() == last_func_term.name) {
+				VAL::var_symbol_list::const_iterator vit = (*fit)->getArgs()->begin();
+				for(; vit != (*fit)->getArgs()->end(); vit++) {
+					parameterLabels.push_back((*vit)->pddl_typed_symbol::getName());
+				}
+			}
+		}
 
 		// func_term variables
-		const VAL::parameter_symbol_list* param_list = s->getArgs();
-		for (VAL::parameter_symbol_list::const_iterator vi = param_list->begin(); vi != param_list->end(); vi++) {
-			const VAL::parameter_symbol* var = *vi;
+		int index = 0;
+		for (VAL::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
+
 			diagnostic_msgs::KeyValue param;
-			expression << var->pddl_typed_symbol::getName();
-			param.value = var->type->getName();
+			param.key = parameterLabels[index];
+			param.value = (*vi)->getName();
 			last_func_term.typed_parameters.push_back(param);
+			index++;
+
+			expression << " " << (*vi)->getName();
 		}
+		expression << ")";
 	}
 
 

@@ -595,6 +595,7 @@ namespace KCL_rosplan {
         VALVisitorProblem problem_visitor(domain,problem);
         model_instances = problem_visitor.returnInstances();
         model_facts = problem_visitor.returnFacts();
+        model_functions = problem_visitor.returnFunctions();
         model_goals = problem_visitor.returnGoals();
         if (problem->metric) {
             model_metric = problem_visitor.returnMetric();

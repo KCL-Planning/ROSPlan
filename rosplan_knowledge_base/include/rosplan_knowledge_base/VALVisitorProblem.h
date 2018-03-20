@@ -22,27 +22,46 @@ namespace KCL_rosplan {
 	{
 	private:
 
-        VAL::domain* domain;
-        VAL::problem* problem;
-	std::stringstream expression;
+		/* encoding state */
+		bool problem_cond_neg;
+		bool problem_eff_neg;
+		VAL::time_spec problem_cond_time;
+		VAL::time_spec problem_eff_time;
+
+		VAL::domain* domain;
+		VAL::problem* problem;
+
+		bool effects_read;
+
+		std::stringstream expression;
 
 	public:
 
-        VALVisitorProblem(VAL::domain* inputDomain, VAL::problem* inputProblem){
-            domain = inputDomain;
-            problem = inputProblem;
-        }
+		/* constructor */
+		VALVisitorProblem(VAL::domain* inputDomain, VAL::problem* inputProblem){
 
-		/* message */
-        rosplan_knowledge_msgs::DomainFormula last_prop;
-	rosplan_knowledge_msgs::DomainFormula last_func_term;
+			domain = inputDomain;
+			problem = inputProblem;
 
-        std::map<std::string, std::vector<std::string> > instances;
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> goals;
-	rosplan_knowledge_msgs::KnowledgeItem metric;
+			effects_read = false;
+		}
 
+		/* messages */
+		rosplan_knowledge_msgs::DomainFormula last_prop;
+		rosplan_knowledge_msgs::DomainFormula last_func_term;
 
+		std::map<std::string, std::vector<std::string> > instances;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> functions;
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> goals;
+		rosplan_knowledge_msgs::KnowledgeItem metric;
+
+		/* return methods */
+        std::map<std::string, std::vector<std::string> > returnInstances();
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnFacts();
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnFunctions();
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnGoals();
+		rosplan_knowledge_msgs::KnowledgeItem returnMetric();
 
 		/* visitor methods */
 
@@ -56,11 +75,6 @@ namespace KCL_rosplan {
 		virtual void visit_timed_goal(VAL::timed_goal *);
 		virtual void visit_imply_goal(VAL::imply_goal *);
 		virtual void visit_neg_goal(VAL::neg_goal *);
-
-        std::map<std::string, std::vector<std::string> > returnInstances();
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnFacts();
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnGoals();
-		rosplan_knowledge_msgs::KnowledgeItem returnMetric();
 
 		virtual void visit_assignment(VAL::assignment * e);
 		virtual void visit_simple_effect(VAL::simple_effect * e);
@@ -85,9 +99,6 @@ namespace KCL_rosplan {
         virtual void visit_special_val_expr(VAL::special_val_expr * s);
         virtual void visit_violation_term(VAL::violation_term * v);
         virtual void visit_func_term(VAL::func_term * s);
-
-
-
     };
 
 } // close namespace
