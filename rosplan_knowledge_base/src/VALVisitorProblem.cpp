@@ -221,6 +221,7 @@ namespace KCL_rosplan {
 	void VALVisitorProblem::visit_metric_spec(VAL::metric_spec * s){
 
 		expression.str("");
+        cout << "metric start\n";
 		s->expr->visit(this);
 
 		rosplan_knowledge_msgs::KnowledgeItem item;
@@ -237,6 +238,7 @@ namespace KCL_rosplan {
 		param.value = expression.str();
 		item.values.push_back(param);
 		metric = item;
+        cout << "metric end\n";
 	}
 
 
@@ -266,15 +268,30 @@ namespace KCL_rosplan {
 	}
 	void VALVisitorProblem::visit_int_expression(VAL::int_expression * s){
 		expression << s->double_value();
+        cout << "expression value int: "+ expression.str()+"\n";
 	}
 	void VALVisitorProblem::visit_float_expression(VAL::float_expression * s){
 		expression << s->double_value();
+        cout << "expression value float: "+ expression.str()+"\n";
 	}
 	void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
-		expression << s->getKind();
+        string tempExpression;
+        switch(s->getKind()) {
+            case 0:
+                tempExpression = "hasht";
+                break;
+            case 1:
+                tempExpression = "duration-var";
+                break;
+            case 2:
+                tempExpression = "total-time";
+        }
+		expression << tempExpression;
+        cout << "expression value special val: "+ expression.str()+"\n";
 	}
 	void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
 		expression << v->getName();
+        cout << "expression value violation: "+ expression.str()+"\n";
 	}
 	void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
 
@@ -282,6 +299,7 @@ namespace KCL_rosplan {
 
 		// func_term name
 		last_func_term.name = s->getFunction()->getName();
+        cout << "expression value: "+s->getFunction()->getName()+"\n";
 		expression << last_func_term.name;
 
 		std::vector<std::string> parameterLabels;
