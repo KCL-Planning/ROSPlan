@@ -690,30 +690,30 @@ int main(int argc, char **argv)
 	kb.use_unknowns = useUnknowns;
 
 	// fetch domain info
-	ros::ServiceServer nameServer = n.advertiseService("get_domain_name", &KCL_rosplan::KnowledgeBase::getDomainName, &kb);
-	ros::ServiceServer typeServer = n.advertiseService("get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
-	ros::ServiceServer predicateServer = n.advertiseService("get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
-	ros::ServiceServer functionServer = n.advertiseService("get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
-	ros::ServiceServer operatorServer = n.advertiseService("get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
+	ros::ServiceServer nameServer = n.advertiseService("/kcl_rosplan/get_domain_name", &KCL_rosplan::KnowledgeBase::getDomainName, &kb);
+	ros::ServiceServer typeServer = n.advertiseService("/kcl_rosplan/get_domain_types", &KCL_rosplan::KnowledgeBase::getTypes, &kb);
+	ros::ServiceServer predicateServer = n.advertiseService("/kcl_rosplan/get_domain_predicates", &KCL_rosplan::KnowledgeBase::getPredicates, &kb);
+	ros::ServiceServer functionServer = n.advertiseService("/kcl_rosplan/get_domain_functions", &KCL_rosplan::KnowledgeBase::getFunctions, &kb);
+	ros::ServiceServer operatorServer = n.advertiseService("/kcl_rosplan/get_domain_operators", &KCL_rosplan::KnowledgeBase::getOperators, &kb);
 
-	ros::ServiceServer opDetailsServer = n.advertiseService("get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
-	ros::ServiceServer predDetailsServer = n.advertiseService("get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
+	ros::ServiceServer opDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_operator_details", &KCL_rosplan::KnowledgeBase::getOperatorDetails, &kb);
+	ros::ServiceServer predDetailsServer = n.advertiseService("/kcl_rosplan/get_domain_predicate_details", &KCL_rosplan::KnowledgeBase::getPredicateDetails, &kb);
 
 	// query knowledge
-	ros::ServiceServer queryServer = n.advertiseService("query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
+	ros::ServiceServer queryServer = n.advertiseService("/kcl_rosplan/query_knowledge_base", &KCL_rosplan::KnowledgeBase::queryKnowledge, &kb);
 
 	// update knowledge
-	ros::ServiceServer updateServer1 = n.advertiseService("update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
-	ros::ServiceServer updateServer2 = n.advertiseService("update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
-	ros::ServiceServer updateServer3 = n.advertiseService("update_knowledge_base_constraints_oneof", &KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, &kb);
-	ros::ServiceServer clearServer = n.advertiseService("clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
+	ros::ServiceServer updateServer1 = n.advertiseService("/kcl_rosplan/update_knowledge_base", &KCL_rosplan::KnowledgeBase::updateKnowledge, &kb);
+	ros::ServiceServer updateServer2 = n.advertiseService("/kcl_rosplan/update_knowledge_base_array", &KCL_rosplan::KnowledgeBase::updateKnowledgeArray, &kb);
+	ros::ServiceServer updateServer3 = n.advertiseService("/kcl_rosplan/update_knowledge_base_constraints_oneof", &KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, &kb);
+	ros::ServiceServer clearServer = n.advertiseService("/kcl_rosplan/clear_knowledge_base", &KCL_rosplan::KnowledgeBase::clearKnowledge, &kb);
 
 	// fetch knowledge
-	ros::ServiceServer currentInstanceServer = n.advertiseService("get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
-	ros::ServiceServer currentKnowledgeServer = n.advertiseService("get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
-	ros::ServiceServer timedKnowedgeServer = n.advertiseService("get_timed_initial_knowledge", &KCL_rosplan::KnowledgeBase::getTimedKnowledge, &kb);
-	ros::ServiceServer currentGoalServer = n.advertiseService("get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
-	ros::ServiceServer currentMetricServer = n.advertiseService("get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
+	ros::ServiceServer currentInstanceServer = n.advertiseService("/kcl_rosplan/get_current_instances", &KCL_rosplan::KnowledgeBase::getCurrentInstances, &kb);
+	ros::ServiceServer currentKnowledgeServer = n.advertiseService("/kcl_rosplan/get_current_knowledge", &KCL_rosplan::KnowledgeBase::getCurrentKnowledge, &kb);
+	ros::ServiceServer timedKnowedgeServer = n.advertiseService("/kcl_rosplan/get_timed_initial_knowledge", &KCL_rosplan::KnowledgeBase::getTimedKnowledge, &kb);
+	ros::ServiceServer currentGoalServer = n.advertiseService("/kcl_rosplan/get_current_goals", &KCL_rosplan::KnowledgeBase::getCurrentGoals, &kb);
+	ros::ServiceServer currentMetricServer = n.advertiseService("/kcl_rosplan/get_current_metric", &KCL_rosplan::KnowledgeBase::getCurrentMetric, &kb);
 
 	// wait for and clear mongoDB 
 	ROS_INFO("KCL: (KB) Waiting for MongoDB");
