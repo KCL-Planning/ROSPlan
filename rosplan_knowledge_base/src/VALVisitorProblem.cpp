@@ -308,18 +308,6 @@ namespace KCL_rosplan {
 			}
 		}
 
-		std::vector<std::string> parameterLabels;
-
-		// parse domain for parameter labels
-		for (VAL::func_decl_list::const_iterator fit = domain->functions->begin(); fit != domain->functions->end(); fit++) {
-			if ((*fit)->getFunction()->symbol::getName() == last_func_term.name) {
-				VAL::var_symbol_list::const_iterator vit = (*fit)->getArgs()->begin();
-				for(; vit != (*fit)->getArgs()->end(); vit++) {
-					parameterLabels.push_back((*vit)->pddl_typed_symbol::getName());
-				}
-			}
-		}
-
 		// func_term variables
 		int index = 0;
 		for (VAL::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
