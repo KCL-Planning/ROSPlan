@@ -271,7 +271,19 @@ namespace KCL_rosplan {
 		expression << s->double_value();
 	}
 	void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
-		expression << s->getKind();
+        string tempExpression;
+        switch(s->getKind()) {
+            case 0:
+                tempExpression = "hasht";
+                break;
+            case 1:
+                tempExpression = "duration-var";
+                break;
+            case 2:
+                tempExpression = "total-time";
+        }
+		expression << tempExpression;
+        cout << "expression value special val: "+ expression.str()+"\n";
 	}
 	void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
 		expression << v->getName();
