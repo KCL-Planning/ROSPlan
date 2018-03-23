@@ -78,6 +78,7 @@ namespace KCL_rosplan {
 		ros::ServiceClient getDomainPropsClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>("/kcl_rosplan/get_domain_predicates");
 		ros::ServiceClient getDomainFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>("/kcl_rosplan/get_domain_functions");
 		ros::ServiceClient getAttrsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_knowledge");
+		ros::ServiceClient getTILsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_timed_initial_knowledge");
 
 		// note the time now for TILs
 		ros::Time time = ros::Time::now() + ros::Duration(1);
@@ -102,13 +103,9 @@ namespace KCL_rosplan {
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
-						pFile << "    (";		
-
-						if(time < attrSrv.response.initial_time[i]) {
-							pFile << "at " << (attrSrv.response.initial_time[i] - time).toSec() << " (";
-						}
-
 						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
+
+						pFile << "    (";		
 						
 						//Check if the attribute is negated
 						if(attr.is_negative) pFile << "not (";
@@ -121,9 +118,34 @@ namespace KCL_rosplan {
 						
 						if(attr.is_negative) pFile << ")";
 
-						if(time < attrSrv.response.initial_time[i]) {
-							pFile << ")";
+						pFile << std::endl;
+					}
+				}
+				pFile << std::endl;
+
+				attrSrv.request.predicate_name = ait->name;
+				attrSrv.response.attributes.clear();
+				if (!getTILsClient.call(attrSrv)) {
+					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_timed_initial_knowledge %s", attrSrv.request.predicate_name.c_str());
+				} else {
+					if(attrSrv.response.attributes.size() == 0) continue;
+
+					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
+
+						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
+
+						pFile << "    (at " << (attr.initial_time - time).toSec() << " (";
+						
+						//Check if the attribute is negated
+						if(attr.is_negative) pFile << "not (";
+
+						pFile << attr.attribute_name;
+						for(size_t j=0; j<attr.values.size(); j++) {
+							pFile << " " << attr.values[j].value;
 						}
+						pFile << "))";
+						
+						if(attr.is_negative) pFile << ")";
 
 						pFile << std::endl;
 					}
@@ -149,15 +171,15 @@ namespace KCL_rosplan {
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
+						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
+
 						pFile << "    (";
 
-						if(time < attrSrv.response.initial_time[i]) {
-							pFile << "at " << (attrSrv.response.initial_time[i] - time).toSec() << " (";
+						if(time < attr.initial_time) {
+							pFile << "at " << (attr.initial_time - time).toSec() << " (";
 						}
 
 						pFile << "= (";
-
-						rosplan_knowledge_msgs::KnowledgeItem attr = attrSrv.response.attributes[i];
 
 						pFile << attr.attribute_name;
 						for(size_t j=0; j<attr.values.size(); j++) {
@@ -166,7 +188,7 @@ namespace KCL_rosplan {
 
 						pFile << ") " << attr.function_value << ")";
 
-						if(time < attrSrv.response.initial_time[i]) {
+						if(time < attr.initial_time) {
 							pFile << ")";
 						}
 
