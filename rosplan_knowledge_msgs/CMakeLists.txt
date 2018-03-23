@@ -18,6 +18,9 @@ add_message_files(
   KnowledgeItem.msg
   DomainFormula.msg
   DomainOperator.msg
+  DomainAssignment.msg
+  ExprBase.msg
+  ExprComposite.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -283,11 +283,12 @@ namespace KCL_rosplan {
                 tempExpression = "total-time";
         }
 		expression << tempExpression;
-        cout << "expression value special val: "+ expression.str()+"\n";
 	}
+
 	void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
 		expression << v->getName();
 	}
+
 	void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
 
 		last_func_term.typed_parameters.clear();
