@@ -44,34 +44,49 @@ namespace KCL_rosplan {
 		for(iit = req.knowledge.begin(); iit!=req.knowledge.end(); iit++) {
 
 			bool present = false;
-			if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INSTANCE) {
+			switch(iit->knowledge_type) {
 
-				// check if instance exists
-				std::vector<std::string>::iterator sit;
-				sit = find(model_instances[iit->instance_type].begin(), model_instances[iit->instance_type].end(), iit->instance_name);
-				present = (sit!=model_instances[iit->instance_type].end());
+			case rosplan_knowledge_msgs::KnowledgeItem::INSTANCE:
+				{
+					// check if instance exists
+					std::vector<std::string>::iterator sit;
+					sit = find(model_instances[iit->instance_type].begin(), model_instances[iit->instance_type].end(), iit->instance_name);
+					present = (sit!=model_instances[iit->instance_type].end());
+				}
+				break;
 				
-			} else if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) {
-
-				// check if function exists; TODO inequalities
-				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-				for(pit=model_functions.begin(); pit!=model_functions.end(); pit++) {
-					if(KnowledgeComparitor::containsKnowledge(*iit, *pit)) {
-						present = true;
-						pit = model_functions.end();
+			case rosplan_knowledge_msgs::KnowledgeItem::FUNCTION:
+				{
+					// check if function exists and has the correct value
+					std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+					for(pit=model_functions.begin(); pit!=model_functions.end(); pit++) {
+						if(KnowledgeComparitor::containsKnowledge(*iit, *pit)) {
+							present = true;
+							break;
+						}
 					}
 				}
+				break;
 
-			} else if(iit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-
-				// check if fact is true
-				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-				for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
-					if(KnowledgeComparitor::containsKnowledge(*iit, *pit)) {
-						present = true;
-						break;
+			case rosplan_knowledge_msgs::KnowledgeItem::FACT:
+				{
+					// check if fact is true
+					std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+					for(pit=model_facts.begin(); pit!=model_facts.end(); pit++) {
+						if(KnowledgeComparitor::containsKnowledge(*iit, *pit)) {
+							present = true;
+							break;
+						}
 					}
 				}
+				break;
+
+			case rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY:
+				{
+					// evaluate inequality
+					present = KnowledgeComparitor::inequalityTrue(*iit, model_functions);
+				}
+				break;
 			}
 
 			if(!present) {

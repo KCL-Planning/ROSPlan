@@ -179,7 +179,7 @@ namespace KCL_rosplan {
 
 		// assignment operator
 		switch(e->getOp()) {
-			case VAL::E_ASSIGN: ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::ASSIGN;     break;
+			case VAL::E_ASSIGN:      ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::ASSIGN;     break;
 			case VAL::E_INCREASE:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::INCREASE;   break;
 			case VAL::E_DECREASE:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::DECREASE;   break;
 			case VAL::E_SCALE_UP:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::SCALE_UP;   break;

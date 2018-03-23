@@ -40,4 +40,4 @@ float64 function_value
 # INEQUALITY
 #-----------
 
-string pddl_inequality
+rosplan_knowledge_msgs/DomainInequality ineq

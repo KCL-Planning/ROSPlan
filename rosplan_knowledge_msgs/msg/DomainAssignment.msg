@@ -10,7 +10,7 @@ uint8 ASSIGN_CTS = 5
 
 uint8 assign_type
 
-DomainFormula LHS
-ExprComposite RHS
+rosplan_knowledge_msgs/DomainFormula LHS
+rosplan_knowledge_msgs/ExprComposite RHS
 
 bool grounded
