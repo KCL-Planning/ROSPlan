@@ -16,6 +16,7 @@
 #include "rosplan_knowledge_msgs/GetDomainAttributeService.h"
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
+#include "rosplan_knowledge_msgs/GetMetricService.h"
 
 #ifndef KCL_PDDLproblemgenerator
 #define KCL_PDDLproblemgenerator
@@ -29,6 +30,7 @@ namespace KCL_rosplan {
 		void makeHeader(std::ofstream &pFile);
 		void makeInitialState(std::ofstream &pFile);
 		void makeGoals(std::ofstream &pFile);
+		void makeMetric(std::ofstream &pFile);
 
 	public:
 
