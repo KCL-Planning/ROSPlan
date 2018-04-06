@@ -222,10 +222,10 @@ namespace KCL_rosplan {
 			for(int i=0; i<attsrv.response.attributes.size(); i++) {
 				
 				// not a TIL
-				if(time > attsrv.response.initial_time[i]) continue;
+				if(time > attsrv.response.attributes[i].initial_time) continue;
 
 				// save TIL
-				double key = (attsrv.response.initial_time[i] - time).toSec();
+				double key = (attsrv.response.attributes[i].initial_time - time).toSec();
 				til_list.insert(std::make_pair(key,attsrv.response.attributes[i]));
 			}
 		}

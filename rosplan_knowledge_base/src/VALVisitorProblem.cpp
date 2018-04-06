@@ -284,16 +284,22 @@ namespace KCL_rosplan {
         }
 		expression << tempExpression;
 	}
+
 	void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
 		expression << v->getName();
 	}
+
 	void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
 
 		last_func_term.typed_parameters.clear();
 
 		// func_term name
 		last_func_term.name = s->getFunction()->getName();
+<<<<<<< HEAD
 		expression << last_func_term.name;
+=======
+		expression << "(" << last_func_term.name;
+>>>>>>> 6ccd29bad4106629b44940cf8532fc06cd903367
 
 		std::vector<std::string> parameterLabels;
 
@@ -319,6 +325,7 @@ namespace KCL_rosplan {
 
 			expression << " " << (*vi)->getName();
 		}
+		expression << ")";
 	}
 
 

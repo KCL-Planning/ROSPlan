@@ -79,10 +79,9 @@ set(VAL_SOURCES
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
 	src/KnowledgeBase.cpp
-	src/PlanFilter.cpp
 	src/KnowledgeComparitor.cpp
 	src/DomainParser.cpp
-        src/ProblemParser.cpp
+	src/ProblemParser.cpp
 	src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
 	src/VALVisitorProblem.cpp)
