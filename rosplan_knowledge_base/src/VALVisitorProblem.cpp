@@ -295,7 +295,9 @@ namespace KCL_rosplan {
 
 		// func_term name
 		last_func_term.name = s->getFunction()->getName();
-		expression << "(" << last_func_term.name;
+
+		expression << last_func_term.name;
+
 
 		std::vector<std::string> parameterLabels;
 
