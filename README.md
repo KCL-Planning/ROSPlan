@@ -82,14 +82,14 @@ The turtlebot will move around the waypoints, exploring the environment. You sho
 ...
 KCL: (/rosplan_problem_interface) (problem.pddl) Generating problem file.
 KCL: (/rosplan_problem_interface) (problem.pddl) The problem was generated.
-KCL: (/rosplan_planner_interface) Problem recieved.
+KCL: (/rosplan_planner_interface) Problem received.
 KCL: (/rosplan_planner_interface) (problem.pddl) Writing problem to file.
 KCL: (/rosplan_planner_interface) (problem.pddl) Running: timeout 10 /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_planning_system/common/bin/popf /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/domain_turtlebot_demo.pddl /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/problem.pddl > /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/plan.pddl
 KCL: (/rosplan_planner_interface) (problem.pddl) Planning complete
 KCL: (/rosplan_planner_interface) (problem.pddl) Plan was solved.
 KCL: (/rosplan_parsing_interface) Planner output recieved.
 KCL: (/rosplan_parsing_interface) Parsing planner output.
-KCL: (/rosplan_plan_dispatcher) Plan recieved.
+KCL: (/rosplan_plan_dispatcher) Plan received.
 KCL: (/rosplan_plan_dispatcher) Dispatching plan.
 KCL: (/rosplan_plan_dispatcher) Dispatching action [0, goto_waypoint, 0.804106, 10.000000]
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action enabled]

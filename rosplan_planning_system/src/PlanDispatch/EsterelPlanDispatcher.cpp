@@ -49,13 +49,13 @@ namespace KCL_rosplan {
 
 	void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlan plan) {
 		if(finished_execution) {
-			ROS_INFO("KCL: (%s) Plan recieved.", ros::this_node::getName().c_str());
+			ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
 			plan_recieved = true;
 			mission_start_time = ros::WallTime::now().toSec();
 			current_plan = plan;
 			printPlan();
 		} else {
-			ROS_INFO("KCL: (%s) Plan recieved, but current execution not yet finished.", ros::this_node::getName().c_str());
+			ROS_INFO("KCL: (%s) Plan received, but current execution not yet finished.", ros::this_node::getName().c_str());
 		}
 	}
 

@@ -323,7 +323,6 @@ namespace KCL_rosplan {
 
 			expression << " " << (*vi)->getName();
 		}
-		expression << ")";
 	}
 
 
