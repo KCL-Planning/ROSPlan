@@ -10,8 +10,12 @@
 #include "ptree.h"
 #include "VisitController.h"
 
+#include "rosplan_knowledge_base/KnowledgeComparitor.h"
+
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/ExprComposite.h"
+#include "rosplan_knowledge_msgs/ExprBase.h"
 
 #ifndef KCL_valvisitor_problem
 #define KCL_valvisitor_problem
@@ -33,8 +37,6 @@ namespace KCL_rosplan {
 
 		bool effects_read;
 
-		std::stringstream expression;
-
 	public:
 
 		/* constructor */
@@ -48,6 +50,7 @@ namespace KCL_rosplan {
 
 		/* messages */
 		rosplan_knowledge_msgs::DomainFormula last_prop;
+		rosplan_knowledge_msgs::ExprComposite last_expr;
 		rosplan_knowledge_msgs::DomainFormula last_func_term;
 
 		std::map<std::string, std::vector<std::string> > instances;
@@ -64,7 +67,6 @@ namespace KCL_rosplan {
 		rosplan_knowledge_msgs::KnowledgeItem returnMetric();
 
 		/* visitor methods */
-
 		virtual void visit_proposition(VAL::proposition *);
 		virtual void visit_operator_(VAL::operator_ *);
 
@@ -97,7 +99,6 @@ namespace KCL_rosplan {
         virtual void visit_int_expression(VAL::int_expression * s);
         virtual void visit_float_expression(VAL::float_expression * s);
         virtual void visit_special_val_expr(VAL::special_val_expr * s);
-        virtual void visit_violation_term(VAL::violation_term * v);
         virtual void visit_func_term(VAL::func_term * s);
     };
 

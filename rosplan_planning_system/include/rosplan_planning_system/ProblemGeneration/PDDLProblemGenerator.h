@@ -31,6 +31,7 @@ namespace KCL_rosplan {
 		void makeInitialState(std::ofstream &pFile);
 		void makeGoals(std::ofstream &pFile);
 		void makeMetric(std::ofstream &pFile);
+		void printExpression(std::ofstream &pFile, rosplan_knowledge_msgs::ExprComposite &e);
 
 	public:
 

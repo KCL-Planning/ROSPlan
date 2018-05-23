@@ -125,7 +125,7 @@ namespace KCL_rosplan {
 		e->prop->visit(this);
 
 		rosplan_knowledge_msgs::KnowledgeItem item;
-		item.knowledge_type = 1;
+		item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 		item.attribute_name = last_prop.name;
 		item.is_negative = problem_eff_neg;
 
@@ -144,7 +144,7 @@ namespace KCL_rosplan {
 		e->getFTerm()->visit(this);
 
 		rosplan_knowledge_msgs::KnowledgeItem item;
-		item.knowledge_type = 1;
+		item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
 		item.attribute_name = last_func_term.name;
 		item.is_negative = false;
 
@@ -155,9 +155,9 @@ namespace KCL_rosplan {
 			item.values.push_back(param);
 		}
 
-		expression.str("");
+		last_expr.tokens.clear();
 		e->getExpr()->visit(this);
-		item.function_value = std::atof(expression.str().c_str());
+		item.function_value = KnowledgeComparitor::evaluateExpression(last_expr, functions);
 
 		functions.push_back(item);
 	}
@@ -220,23 +220,18 @@ namespace KCL_rosplan {
 
 	void VALVisitorProblem::visit_metric_spec(VAL::metric_spec * s){
 
-		expression.str("");
+		metric.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::EXPRESSION;
+
+		// parse expression
+		last_expr.tokens.clear();
 		s->expr->visit(this);
+		metric.expr = last_expr;
 
-		rosplan_knowledge_msgs::KnowledgeItem item;
-		item.knowledge_type = 2;
-		diagnostic_msgs::KeyValue param;
-
-		if (s->opt == 0){
-			param.key = "minimize";
+		// parse optimization
+		switch (s->opt) {
+			case VAL::E_MINIMIZE: metric.optimization = "minimize"; break;
+			case VAL::E_MAXIMIZE: metric.optimization = "maximize"; break;
 		}
-		else {
-			param.key = "maximize";
-		}
-
-		param.value = expression.str();
-		item.values.push_back(param);
-		metric = item;
 	}
 
 
@@ -245,63 +240,102 @@ namespace KCL_rosplan {
 	/*-------------*/
 
 	void VALVisitorProblem::visit_plus_expression(VAL::plus_expression * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		base.op = rosplan_knowledge_msgs::ExprBase::ADD;
+		last_expr.tokens.push_back(base);
+
 		s->getLHS()->visit(this);
 		s->getRHS()->visit(this);
 	}
+
 	void VALVisitorProblem::visit_minus_expression(VAL::minus_expression * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		base.op = rosplan_knowledge_msgs::ExprBase::SUB;
+		last_expr.tokens.push_back(base);
+
 		s->getLHS()->visit(this);
 		s->getRHS()->visit(this);
 	}
+
 	void VALVisitorProblem::visit_mul_expression(VAL::mul_expression * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		base.op = rosplan_knowledge_msgs::ExprBase::MUL;
+		last_expr.tokens.push_back(base);
+
 		s->getLHS()->visit(this);
 		s->getRHS()->visit(this);
 	}
+
 	void VALVisitorProblem::visit_div_expression(VAL::div_expression * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		base.op = rosplan_knowledge_msgs::ExprBase::DIV;
+		last_expr.tokens.push_back(base);
+
 		s->getLHS()->visit(this);
 		s->getRHS()->visit(this);
 	}
+
 	void VALVisitorProblem::visit_uminus_expression(VAL::uminus_expression * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		base.op = rosplan_knowledge_msgs::ExprBase::SUB;
+		last_expr.tokens.push_back(base);
+
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::CONSTANT;
+		base.constant = 0;
+		last_expr.tokens.push_back(base);
+
 		s->getExpr()->visit(this);
-
 	}
+
 	void VALVisitorProblem::visit_int_expression(VAL::int_expression * s){
-		expression << s->double_value();
-	}
-	void VALVisitorProblem::visit_float_expression(VAL::float_expression * s){
-		expression << s->double_value();
-	}
-	void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
-        string tempExpression;
-        switch(s->getKind()) {
-            case 0:
-                tempExpression = "hasht";
-                break;
-            case 1:
-                tempExpression = "duration-var";
-                break;
-            case 2:
-                tempExpression = "total-time";
-        }
-		expression << tempExpression;
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::CONSTANT;
+		base.constant = s->double_value();
+		last_expr.tokens.push_back(base);
 	}
 
-	void VALVisitorProblem::visit_violation_term(VAL::violation_term * v){
-		expression << v->getName();
+	void VALVisitorProblem::visit_float_expression(VAL::float_expression * s){
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::CONSTANT;
+		base.constant = s->double_value();
+		last_expr.tokens.push_back(base);
+	}
+
+	void VALVisitorProblem::visit_special_val_expr(VAL::special_val_expr * s){
+
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::SPECIAL;
+
+        switch(s->getKind()) {
+            case VAL::E_HASHT:		base.special_type = rosplan_knowledge_msgs::ExprBase::HASHT; break;
+            case VAL::E_DURATION_VAR:	base.special_type = rosplan_knowledge_msgs::ExprBase::DURATION; break;
+            case VAL::E_TOTAL_TIME:		base.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME; break;
+        }
+
+		last_expr.tokens.push_back(base);
 	}
 
 	void VALVisitorProblem::visit_func_term(VAL::func_term * s) {
 
+		rosplan_knowledge_msgs::ExprBase base;
+		base.expr_type = rosplan_knowledge_msgs::ExprBase::FUNCTION;
 		last_func_term.typed_parameters.clear();
 
 		// func_term name
 		last_func_term.name = s->getFunction()->getName();
 
-		expression << last_func_term.name;
-
-
-		std::vector<std::string> parameterLabels;
-
 		// parse domain for parameter labels
+		std::vector<std::string> parameterLabels;
 		for (VAL::func_decl_list::const_iterator fit = domain->functions->begin(); fit != domain->functions->end(); fit++) {
 			if ((*fit)->getFunction()->symbol::getName() == last_func_term.name) {
 				VAL::var_symbol_list::const_iterator vit = (*fit)->getArgs()->begin();
@@ -312,17 +346,18 @@ namespace KCL_rosplan {
 		}
 
 		// func_term variables
+		VAL::parameter_symbol_list::const_iterator vi = s->getArgs()->begin();
 		int index = 0;
-		for (VAL::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
-
+		for (; vi != s->getArgs()->end() && index < parameterLabels.size(); vi++) {
 			diagnostic_msgs::KeyValue param;
 			param.key = parameterLabels[index];
 			param.value = (*vi)->getName();
 			last_func_term.typed_parameters.push_back(param);
 			index++;
-
-			expression << " " << (*vi)->getName();
 		}
+
+		base.function = last_func_term;
+		last_expr.tokens.push_back(base);
 	}
 
 

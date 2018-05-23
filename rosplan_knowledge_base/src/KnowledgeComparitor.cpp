@@ -72,6 +72,9 @@ namespace KCL_rosplan {
 		return getValue(result, modelFunctions);
 	}
 
+	/* 
+	 * evaluate numeric expression between two ExprBase messages.
+	 */
 	double KnowledgeComparitor::evaluateOperation(const double &lhs, const double &rhs, const rosplan_knowledge_msgs::ExprBase &op) {
 
 		switch(op.op) {
@@ -85,6 +88,9 @@ namespace KCL_rosplan {
 		return 0;
 	}
 
+	/*
+	 * Find numeric value of an ExprBase message, i.e. evaluate the value of PDDL function
+	 */
 	double KnowledgeComparitor::getValue(const rosplan_knowledge_msgs::ExprBase &expr, const std::vector<rosplan_knowledge_msgs::KnowledgeItem> &modelFunctions) {
 		switch(expr.expr_type) {
 			case rosplan_knowledge_msgs::ExprBase::CONSTANT:

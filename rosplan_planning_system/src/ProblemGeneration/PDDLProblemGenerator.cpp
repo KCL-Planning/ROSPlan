@@ -15,6 +15,9 @@ namespace KCL_rosplan {
 		makeInitialState(pFile);
 		makeGoals(pFile);
         makeMetric(pFile);
+
+        // add end of problem file
+        pFile << ")" << std::endl;
 	}
 
 	/*--------*/
@@ -241,21 +244,89 @@ namespace KCL_rosplan {
 	void PDDLProblemGenerator::makeMetric(std::ofstream &pFile) {
 
 		ros::NodeHandle nh;
-		ros::ServiceClient getCurrentMetricClient = nh.serviceClient<rosplan_knowledge_msgs::GetMetricService>("/kcl_rosplan/get_current_metric");
 
 		// get current metric
+		ros::ServiceClient getCurrentMetricClient = nh.serviceClient<rosplan_knowledge_msgs::GetMetricService>("/kcl_rosplan/get_current_metric");
 		rosplan_knowledge_msgs::GetMetricService currentMetricSrv;
 		if (!getCurrentMetricClient.call(currentMetricSrv)) {
+
 			ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service /kcl_rosplan/get_current_metric");
+
 		} else {
 
-            // add metric section to file only if present
-            if (currentMetricSrv.response.metric.knowledge_type == 2) {
-                pFile << "(:metric " + currentMetricSrv.response.metric.values[0].key + "(" +
-                         currentMetricSrv.response.metric.values[0].value + "))" << std::endl;
+			rosplan_knowledge_msgs::KnowledgeItem metric = currentMetricSrv.response.metric;
+            if (metric.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::EXPRESSION) {
+					
+				pFile << "(:metric " << metric.optimization;
+				std::vector<int> operand_count;
+				printExpression(pFile, metric.expr);
+
+				pFile << ")" << std::endl;
             }
-            // add end of problem file regardless if the metric is present
-            pFile << ")" << std::endl;
         }
 	}
+
+	void PDDLProblemGenerator::printExpression(std::ofstream &pFile, rosplan_knowledge_msgs::ExprComposite & e) {
+
+		std::vector<rosplan_knowledge_msgs::ExprBase> tokens = e.tokens;
+		bool second_operand = false;
+		int depth = 0;
+		for(int i=0; i<tokens.size(); i++) {
+			rosplan_knowledge_msgs::ExprBase token = tokens[i];
+
+			pFile << " ";
+
+			switch(token.expr_type) {
+			case rosplan_knowledge_msgs::ExprBase::OPERATOR:
+
+				switch(token.op) {
+					case rosplan_knowledge_msgs::ExprBase::ADD: pFile << "(+"; break;
+					case rosplan_knowledge_msgs::ExprBase::SUB: pFile << "(-"; break;
+					case rosplan_knowledge_msgs::ExprBase::MUL: pFile << "(*"; break;
+					case rosplan_knowledge_msgs::ExprBase::DIV: pFile << "(/"; break;
+				}
+				second_operand = false;
+				depth++;
+				break;
+
+			case rosplan_knowledge_msgs::ExprBase::CONSTANT:
+
+				pFile << token.constant;
+				break;
+
+			case rosplan_knowledge_msgs::ExprBase::FUNCTION:
+
+				pFile << "(" << token.function.name;
+				for(size_t j=0; j<token.function.typed_parameters.size(); j++) {
+					pFile << " " << token.function.typed_parameters[j].value;
+				}
+				pFile << ")";
+				break;
+
+			case rosplan_knowledge_msgs::ExprBase::SPECIAL:
+
+				switch(token.special_type) {
+					case rosplan_knowledge_msgs::ExprBase::HASHT:		pFile << "#t";			break;
+					case rosplan_knowledge_msgs::ExprBase::TOTAL_TIME:	pFile << "total-time";	break;
+					case rosplan_knowledge_msgs::ExprBase::DURATION:	pFile << "?duration";	break;
+				}
+				break;
+			}
+
+			if(second_operand && token.expr_type!=rosplan_knowledge_msgs::ExprBase::OPERATOR) {
+				second_operand = true;
+				pFile << ")";
+				depth--;
+			}
+
+			if(token.expr_type!=rosplan_knowledge_msgs::ExprBase::OPERATOR) {
+				second_operand = true;
+			}
+		}
+
+		while(depth>0) {
+			pFile << ")";
+			depth--;
+		}
+	};
 } // close namespace
