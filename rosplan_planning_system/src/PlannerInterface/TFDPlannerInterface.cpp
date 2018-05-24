@@ -64,7 +64,7 @@ namespace KCL_rosplan {
         if(dit!=std::string::npos) str.replace(dit,6,domain_path);
         std::size_t pit = str.find("PROBLEM");
         if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-        std::string updatePlan = "cp "+data_path+"bin/tfd-src-0.4/downward/tfdplan.1"+" "+data_path+"plan.pddl";
+        std::string updatePlan = "cp "+data_path+"../../rosplan_planning_system/common/bin/tfd-src-0.4/downward/tfdplan.1"+" "+data_path+"plan.pddl";
 
 
         // call the planer
