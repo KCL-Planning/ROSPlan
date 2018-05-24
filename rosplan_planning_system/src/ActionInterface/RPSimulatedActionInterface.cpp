@@ -18,7 +18,7 @@ namespace KCL_rosplan {
 
 		// wait for some time
 		if(action_duration > 0) {
-			ros::Rate wait = (action_duration);
+			ros::Rate wait = 1.0 / action_duration;
 			wait.sleep();
 		}
 

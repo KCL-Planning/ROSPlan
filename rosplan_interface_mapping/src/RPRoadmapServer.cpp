@@ -17,11 +17,19 @@ namespace KCL_rosplan {
 		nh.param("use_static_map", use_static_map, false);
 
 		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		std::string kb = "knowledge_base";
+		nh.getParam("knowledge_base", kb);
+		std::stringstream ss;
+		ss << "/" << kb << "/update";
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>(ss.str());
 		
 		// visualisation
-		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
-		edges_pub = nh.advertise<visualization_msgs::Marker>("/kcl_rosplan/viz/edges", 10, true);
+		ss.str("");
+		ss << "/" << kb << "/viz/waypoints";
+		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>(ss.str(), 10, true);
+		ss.str("");
+		ss << "/" << kb << "/viz/edges";
+		edges_pub = nh.advertise<visualization_msgs::Marker>(ss.str(), 10, true);
 
 		// map interface
 		map_client = nh.serviceClient<nav_msgs::GetMap>(static_map_service);
@@ -134,7 +142,8 @@ namespace KCL_rosplan {
 			updateSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INSTANCE;
 			updateSrv.request.knowledge.instance_type = "waypoint";
 			updateSrv.request.knowledge.instance_name = wit->first;
-			update_knowledge_client.call(updateSrv);
+			if(!update_knowledge_client.call(updateSrv))
+				ROS_INFO("KCL: (RPRoadmapServer) Failed to call update service.");
 
 			res.waypoints.push_back(wit->first);
 			
@@ -152,7 +161,8 @@ namespace KCL_rosplan {
 				pairTo.key = "to";
 				pairTo.value = *nit;
 				updatePredSrv.request.knowledge.values.push_back(pairTo);
-				update_knowledge_client.call(updatePredSrv);	
+				if(!update_knowledge_client.call(updatePredSrv))
+					ROS_INFO("KCL: (RPRoadmapServer) Failed to call update service.");	
 			}
 
 			// functions
@@ -173,7 +183,8 @@ namespace KCL_rosplan {
 						(wit->second->real_x - waypoints[*nit]->real_x)*(wit->second->real_x - waypoints[*nit]->real_x)
 						+ (wit->second->real_y - waypoints[*nit]->real_y)*(wit->second->real_y - waypoints[*nit]->real_y));
 				updateFuncSrv.request.knowledge.function_value = dist;
-				update_knowledge_client.call(updateFuncSrv);
+				if(!update_knowledge_client.call(updateFuncSrv))
+					ROS_INFO("KCL: (RPRoadmapServer) Failed to call update service.");	
 			}
 
 			//data

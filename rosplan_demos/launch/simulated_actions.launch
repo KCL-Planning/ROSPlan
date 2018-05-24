@@ -8,25 +8,17 @@
 	</include>
 
 	<!-- sim actions -->
-	<node name="rosplan_interface_undocking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="undock" />
-		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
-		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
-	</node>
-	<node name="rosplan_interface_docking" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="dock" />
-		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
-		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
-	</node>
-	<node name="rosplan_interface_navigation" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="goto_waypoint" />
-		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
-		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
-	</node>
-	<node name="rosplan_interface_localise" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
-		<param name="pddl_action_name" value="localise" />
-		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
-		<param name="action_feedback_topic" value="/rosplan_plan_dispatcher/action_feedback" />
-	</node>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="undock" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="dock" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="localise" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="goto_waypoint" />
+	</include>
 </launch>
 

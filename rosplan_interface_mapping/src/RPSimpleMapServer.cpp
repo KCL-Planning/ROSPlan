@@ -14,10 +14,17 @@ namespace KCL_rosplan {
 		nh.param("/rosplan/data_path", data_path, dataPath);
 
 		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		std::string kb = "knowledge_base";
+		nh.getParam("knowledge_base", kb);
+		std::stringstream ss;
+		ss << "/" << kb << "/update";
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>(ss.str());
+		ros::service::waitForService(ss.str(), ros::Duration(20));
 
 		// visualisation
-		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>("/kcl_rosplan/viz/waypoints", 10, true);
+		ss.str("");
+		ss << "/" << kb << "/viz/waypoints";
+		waypoints_pub = nh.advertise<visualization_msgs::MarkerArray>(ss.str(), 10, true);
 	}
 
 	/*-----------*/
@@ -55,7 +62,6 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		// clear previous roadmap from knowledge base
-		ros::service::waitForService("/kcl_rosplan/update_knowledge_base", ros::Duration(20));
 		ROS_INFO("KCL: (RPSimpleMapServer) Loading roadmap from file");
 
 		// load configuration file

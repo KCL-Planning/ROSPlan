@@ -10,6 +10,8 @@ Panels:
         - /Global Map1/Planner1
         - /Local Map1/Costmap1
         - /Local Map1/Planner1
+        - /Marker1
+        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 815
   - Class: rviz/Selection
@@ -332,6 +334,9 @@ Visualization Manager:
           Class: rviz/Path
           Color: 255; 0; 0
           Enabled: true
+          Head Diameter: 0.3
+          Head Length: 0.2
+          Length: 0.3
           Line Style: Lines
           Line Width: 0.03
           Name: Planner
@@ -339,6 +344,11 @@ Visualization Manager:
             X: 0
             Y: 0
             Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.03
+          Shaft Diameter: 0.1
+          Shaft Length: 0.1
           Topic: /move_base/TrajectoryPlannerROS/global_plan
           Unreliable: false
           Value: true
@@ -360,6 +370,9 @@ Visualization Manager:
           Class: rviz/Path
           Color: 0; 12; 255
           Enabled: true
+          Head Diameter: 0.3
+          Head Length: 0.2
+          Length: 0.3
           Line Style: Lines
           Line Width: 0.03
           Name: Planner
@@ -367,6 +380,11 @@ Visualization Manager:
             X: 0
             Y: 0
             Z: 0
+          Pose Color: 255; 85; 255
+          Pose Style: None
+          Radius: 0.03
+          Shaft Diameter: 0.1
+          Shaft Length: 0.1
           Topic: /move_base/TrajectoryPlannerROS/local_plan
           Unreliable: false
           Value: true
@@ -412,18 +430,18 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /kcl_rosplan/viz/edges
+      Marker Topic: /rosplan_knowledge_base/viz/edges
       Name: Marker
       Namespaces:
-        {}
+        mission_edges: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /kcl_rosplan/viz/waypoints
+      Marker Topic: /rosplan_knowledge_base/viz/waypoints
       Name: MarkerArray
       Namespaces:
-        {}
+        mission_waypoint: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -476,5 +494,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1855
-  X: 48
+  X: 28
   Y: 14

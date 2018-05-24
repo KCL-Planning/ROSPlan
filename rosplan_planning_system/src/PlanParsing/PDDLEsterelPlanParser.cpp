@@ -9,8 +9,26 @@ namespace KCL_rosplan {
 		node_handle = &nh;
 
 		// fetching problem info for TILs
-		get_predicate_client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>("/kcl_rosplan/get_domain_predicates");
-		get_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>("/kcl_rosplan/get_current_knowledge");
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+
+		std::stringstream ss;
+
+		ss << "/" << kb << "/domain/predicates";
+		get_predicate_client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>(ss.str().c_str());
+		ss.str("");
+
+		ss << "/" << kb << "/state/propositions";
+		get_propositions_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str().c_str());
+		ss.str("");
+
+		ss << "/" << kb << "/state/functions";
+		get_functions_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str().c_str());
+		ss.str("");
+
+		ss << "/" << kb << "/domain/operator_details";
+		get_operator_details_client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str().c_str());
+		ss.str("");
 
 		// publishing parsed plan
 		std::string planTopic = "complete_plan";
@@ -159,10 +177,9 @@ namespace KCL_rosplan {
 	void PDDLEsterelPlanParser::processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params) {
 
 		// fetch operator details
-		ros::ServiceClient client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = msg.name;
-		if(!client.call(srv)) {
+		if(!get_operator_details_client.call(srv)) {
 			ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s", ros::this_node::getName().c_str(), msg.name.c_str());
 		} else {
 
@@ -213,7 +230,7 @@ namespace KCL_rosplan {
 
 			rosplan_knowledge_msgs::GetAttributeService attsrv;
 			attsrv.request.predicate_name = pit->name;
-			if(!get_knowledge_client.call(attsrv)) {
+			if(!get_propositions_client.call(attsrv)) {
 				ROS_ERROR("KCL: (%s) could not call Knowledge Base for (%s)", ros::this_node::getName().c_str(), pit->name.c_str());
 				continue;
 			}
