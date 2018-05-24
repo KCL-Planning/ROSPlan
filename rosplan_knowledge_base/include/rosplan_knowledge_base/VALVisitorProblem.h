@@ -27,8 +27,8 @@ namespace KCL_rosplan {
 	private:
 
 		/* encoding state */
-		bool problem_cond_neg;
-		bool problem_eff_neg;
+		bool problem_cond_neg = false;
+		bool problem_eff_neg = false;
 		VAL::time_spec problem_cond_time;
 		VAL::time_spec problem_eff_time;
 
