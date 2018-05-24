@@ -352,7 +352,7 @@ namespace KCL_rosplan {
 
 				switch(token.special_type) {
 					case rosplan_knowledge_msgs::ExprBase::HASHT:		pFile << "#t";			break;
-					case rosplan_knowledge_msgs::ExprBase::TOTAL_TIME:	pFile << "total-time";	break;
+					case rosplan_knowledge_msgs::ExprBase::TOTAL_TIME:	pFile << "(total-time)";	break;
 					case rosplan_knowledge_msgs::ExprBase::DURATION:	pFile << "?duration";	break;
 				}
 				break;
