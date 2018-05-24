@@ -190,7 +190,9 @@ namespace KCL_rosplan {
 
 		/* TILs */
 		ros::ServiceClient get_predicate_client;
-		ros::ServiceClient get_knowledge_client;
+		ros::ServiceClient get_propositions_client;
+		ros::ServiceClient get_functions_client;
+		ros::ServiceClient get_operator_details_client;
 		std::multimap<double, rosplan_knowledge_msgs::KnowledgeItem> til_list;
 
 	protected:

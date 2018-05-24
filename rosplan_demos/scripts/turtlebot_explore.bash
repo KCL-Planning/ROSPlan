@@ -12,7 +12,7 @@ param="knowledge:
   instance_name: 'kenny'
   attribute_name: ''
   function_value: 0.0";
-for i in $(seq 0 $(( $(rosservice call /kcl_rosplan/get_current_instances "type_name: 'waypoint'" | sed 's/wp/\n/g' | wc -l) - 2)) )
+for i in $(seq 0 $(( $(rosservice call /rosplan_knowledge_base/state/instances "type_name: 'waypoint'" | sed 's/wp/\n/g' | wc -l) - 2)) )
 do
 param_type="$param_type
 - 1"
@@ -26,7 +26,7 @@ param="$param
   function_value: 0.0"
 done;
 
-rosservice call /kcl_rosplan/update_knowledge_base_array "
+rosservice call /rosplan_knowledge_base/update_array "
 $param_type
 $param"
 

@@ -11,9 +11,15 @@ namespace KCL_rosplan {
 		// set action name
 		nh.getParam("pddl_action_name", params.name);
 
+		// knowledge base services
+		std::string kb = "knowledge_base";
+		nh.getParam("knowledge_base", kb);
+
 		// fetch action params
-		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details",ros::Duration(20));
-		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		std::stringstream ss;
+		ss << "/" << kb << "/domain/operator_details";
+		ros::service::waitForService(ss.str(),ros::Duration(20));
+		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = params.name;
 		if(client.call(srv)) {
@@ -71,8 +77,10 @@ namespace KCL_rosplan {
 			predicateNames.push_back(pit->name);
 
 		// fetch and store predicate details
-		ros::service::waitForService("/kcl_rosplan/get_domain_predicate_details",ros::Duration(20));
-		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>("/kcl_rosplan/get_domain_predicate_details");
+		ss.str("");
+		ss << "/" << kb << "/domain/predicate_details";
+		ros::service::waitForService(ss.str(),ros::Duration(20));
+		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>(ss.str());
 		std::vector<std::string>::iterator nit = predicateNames.begin();
 		for(; nit!=predicateNames.end(); nit++) {
 			if (predicates.find(*nit) != predicates.end()) continue;
@@ -88,7 +96,9 @@ namespace KCL_rosplan {
 		}
 
 		// create PDDL info publisher
-		pddl_action_parameters_pub = nh.advertise<rosplan_knowledge_msgs::DomainFormula>("/kcl_rosplan/pddl_action_parameters", 10, true);
+		ss.str("");
+		ss << "/" << kb << "/pddl_action_parameters";
+		pddl_action_parameters_pub = nh.advertise<rosplan_knowledge_msgs::DomainFormula>(ss.str(), 10, true);
 
 		// create the action feedback publisher
 		std::string aft = "default_feedback_topic";
@@ -96,7 +106,9 @@ namespace KCL_rosplan {
 		action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>(aft, 10, true);
 
 		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateServiceArray>("/kcl_rosplan/update_knowledge_base_array");
+		ss.str("");
+		ss << "/" << kb << "/update_array";
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateServiceArray>(ss.str());
 
 		// listen for action dispatch
 		std::string adt = "default_dispatch_topic";
@@ -172,7 +184,6 @@ namespace KCL_rosplan {
 			}
 
 			// simple START add effects
-			updatePredSrv.request.knowledge.clear();
 			for(int i=0; i<op.at_start_add_effects.size(); i++) {
 				rosplan_knowledge_msgs::KnowledgeItem item;
 				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;

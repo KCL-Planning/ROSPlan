@@ -16,6 +16,11 @@ namespace KCL_rosplan {
 	{
 		node_handle = &nh;
 
+		// connecting to KB
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+		pddl_problem_generator.knowledge_base = kb;
+
 		// publishing "problem"
 		std::string problem_instance = "problem_instance";
 		node_handle->getParam("problem_topic", problem_instance);

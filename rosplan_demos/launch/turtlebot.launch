@@ -21,6 +21,7 @@
 
 	<!-- movebase interface -->
 	<node name="rosplan_interface_movebase" pkg="rosplan_interface_movebase" type="rpmovebase" respawn="false" output="log">
+		<param name="knowledge_base" value="rosplan_knowledge_base" />
 		<param name="action_server" value="/move_base" />
 		<param name="pddl_action_name" value="goto_waypoint" />
 		<param name="action_dispatch_topic" value="/rosplan_plan_dispatcher/action_dispatch" />
