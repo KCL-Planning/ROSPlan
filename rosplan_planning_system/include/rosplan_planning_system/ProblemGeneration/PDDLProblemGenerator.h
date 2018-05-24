@@ -27,6 +27,18 @@ namespace KCL_rosplan {
 	{
 	private:
 
+		std::string domain_name_service;
+		std::string domain_type_service;
+		std::string domain_predicate_service;
+		std::string domain_function_service;
+
+		std::string state_instance_service;
+		std::string state_proposition_service;
+		std::string state_function_service;
+		std::string state_timed_knowledge_service;
+		std::string state_goal_service;
+		std::string state_metric_service;
+
 		void makeHeader(std::ofstream &pFile);
 		void makeInitialState(std::ofstream &pFile);
 		void makeGoals(std::ofstream &pFile);
@@ -34,6 +46,9 @@ namespace KCL_rosplan {
 		void printExpression(std::ofstream &pFile, rosplan_knowledge_msgs::ExprComposite &e);
 
 	public:
+
+		// params
+		std::string knowledge_base;
 
 		void generatePDDLProblemFile(std::string &problemPath);
 

@@ -11,8 +11,16 @@ namespace KCL_rosplan {
 		
 		node_handle = &nh;
 
-		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		query_domain_client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		// knowledge base services
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+		std::stringstream ss;
+		ss << "/" << kb << "/query_state";
+		query_knowledge_client = node_handle->serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>(ss.str());
+		ss.str("");
+		ss << "/" << kb << "/domain/operator_details";
+		query_domain_client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
+		ss.str("");
 
 		std::string plan_graph_topic = "plan_graph";
 		nh.getParam("plan_graph_topic", plan_graph_topic);
@@ -303,7 +311,7 @@ namespace KCL_rosplan {
 			return querySrv.response.all_true;
 
 		} else {
-			ROS_ERROR("KCL: (%s) Failed to call service /kcl_rosplan/query_knowledge_base", ros::this_node::getName().c_str());
+			ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
 		}
 	}
 

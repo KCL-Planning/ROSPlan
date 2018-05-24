@@ -20,6 +20,8 @@ namespace KCL_rosplan {
 	{
 	private:
 
+		ros::ServiceClient get_operator_details_client;
+
 	protected:
 
 		/* post process plan */

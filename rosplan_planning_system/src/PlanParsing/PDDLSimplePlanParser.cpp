@@ -6,6 +6,15 @@ namespace KCL_rosplan {
 	{
 		node_handle = &nh;
 
+		// fetching problem info for TILs
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+
+		std::stringstream ss;
+		ss << "/" << kb << "/domain/operator_details";
+		get_operator_details_client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str().c_str());
+		ss.str("");
+
 		// publishing parsed plan
 		std::string planTopic = "complete_plan";
 		node_handle->getParam("plan_topic", planTopic);
@@ -117,10 +126,9 @@ namespace KCL_rosplan {
 	 */
 	void PDDLSimplePlanParser::processPDDLParameters(rosplan_dispatch_msgs::ActionDispatch &msg, std::vector<std::string> &params) {
 
-		ros::ServiceClient client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = msg.name;
-		if(!client.call(srv)) {
+		if(!get_operator_details_client.call(srv)) {
 			ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s", ros::this_node::getName().c_str(), msg.name.c_str());
 		} else {
 			std::vector<diagnostic_msgs::KeyValue> opParams = srv.response.op.formula.typed_parameters;
