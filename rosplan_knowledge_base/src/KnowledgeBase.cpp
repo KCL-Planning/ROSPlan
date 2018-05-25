@@ -694,6 +694,10 @@ int main(int argc, char **argv)
 	} else {
 		file_check.close();
 		domain = kb.domain_parser.parseDomain(domainPath);
+		if(!domain) {
+			ROS_ERROR("KCL: (KB) There were syntax errors in the domain file.");
+			return 0;
+		}
 	}
 
 	// parse problem and add initial state
@@ -706,7 +710,11 @@ int main(int argc, char **argv)
 		} else {
 			file_check.close();
 			VAL::problem* problem = kb.problem_parser.parseProblem(problemPath);
-			kb.addInitialState(domain, problem);
+			if(problem) {
+				kb.addInitialState(domain, problem);
+			} else {
+				ROS_WARN("KCL: (KB) There were syntax errors in the problem file.");
+			}
 		}
 	}
 

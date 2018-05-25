@@ -27,10 +27,9 @@ namespace KCL_rosplan {
 	private:
 
 		/* encoding state */
-		bool problem_cond_neg = false;
-		bool problem_eff_neg = false;
-		VAL::time_spec problem_cond_time;
-		VAL::time_spec problem_eff_time;
+		bool problem_cond_neg;
+		bool problem_eff_neg;
+		double problem_eff_time;
 
 		VAL::domain* domain;
 		VAL::problem* problem;
@@ -45,7 +44,11 @@ namespace KCL_rosplan {
 			domain = inputDomain;
 			problem = inputProblem;
 
+			problem_eff_time = 0;
+
 			effects_read = false;
+			problem_cond_neg = false;
+			problem_eff_neg = false;
 		}
 
 		/* messages */
@@ -83,6 +86,7 @@ namespace KCL_rosplan {
 		virtual void visit_forall_effect(VAL::forall_effect * e);
 		virtual void visit_cond_effect(VAL::cond_effect * e);
 		virtual void visit_timed_effect(VAL::timed_effect * e);
+		virtual void visit_timed_initial_literal(VAL::timed_initial_literal * s);
 		virtual void visit_effect_lists(VAL::effect_lists * e);
 
 		virtual void visit_comparison(VAL::comparison * c);
