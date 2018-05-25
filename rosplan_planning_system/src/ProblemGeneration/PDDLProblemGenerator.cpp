@@ -147,7 +147,6 @@ namespace KCL_rosplan {
 				if (!getPropsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
 				} else {
-					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
@@ -215,7 +214,6 @@ namespace KCL_rosplan {
 				if (!getFuncsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", state_function_service.c_str(), attrSrv.request.predicate_name.c_str());
 				} else {
-					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
