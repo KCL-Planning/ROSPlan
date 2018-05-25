@@ -271,28 +271,18 @@ namespace KCL_rosplan {
 				rosplan_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[i];
 				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
 
-                    switch(attr.is_negative){
+                    if(attr.is_negative){pFile << "    (not("+ attr.attribute_name;}
+                    else {pFile << "    (" + attr.attribute_name;}
 
-                        case true:
-                        {
-                            pFile << "    (not(" + attr.attribute_name;
-                            for(size_t j=0; j<attr.values.size(); j++) {
-                                pFile << " " << attr.values[j].value;
-                            }
-                            pFile << ")";
-                        }
-                        break;
-
-                        case false:
-                        {
-                            pFile << "    (" + attr.attribute_name;
-                            for(size_t j=0; j<attr.values.size(); j++) {
-                                pFile << " " << attr.values[j].value;
-                            }
-                        }
-                        break;
+                    for(size_t j=0; j<attr.values.size(); j++) {
+                        pFile << " " << attr.values[j].value;
                     }
+
+                    if(attr.is_negative){pFile << ")";}
+
                     pFile << ")" << std::endl;
+
+
 				}
 			}
 		}
