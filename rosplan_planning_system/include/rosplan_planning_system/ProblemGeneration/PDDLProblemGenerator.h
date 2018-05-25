@@ -44,6 +44,7 @@ namespace KCL_rosplan {
 		void makeGoals(std::ofstream &pFile);
 		void makeMetric(std::ofstream &pFile);
 		void printExpression(std::ofstream &pFile, rosplan_knowledge_msgs::ExprComposite &e);
+		void parseInequalityExpression(rosplan_knowledge_msgs::ExprComposite exprComposite, int size, std::ofstream &pFile);
 
 	public:
 
