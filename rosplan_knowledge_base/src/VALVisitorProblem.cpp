@@ -9,16 +9,15 @@ namespace KCL_rosplan {
 	/*----------------*/
 
 	std::map <std::string, std::vector<std::string> > VALVisitorProblem::returnInstances() {
-
-        VAL::const_symbol_list *c = problem->objects;
-        if (c)
-        {
-            for (VAL::const_symbol_list::const_iterator symbolListIterator = c->begin();
-                 symbolListIterator != c->end(); symbolListIterator++) {
-                const VAL::const_symbol *object = *symbolListIterator;
-                instances[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
-            }
-        }
+		VAL::const_symbol_list *c = problem->objects;
+		if (c)
+		{
+			for (VAL::const_symbol_list::const_iterator symbolListIterator = c->begin();
+				symbolListIterator != c->end(); symbolListIterator++) {
+				const VAL::const_symbol *object = *symbolListIterator;
+				instances[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
+			}
+		}
 		return instances;
 	}
 
@@ -48,6 +47,13 @@ namespace KCL_rosplan {
 		return metric;
 	}
 
+	std::vector<rosplan_knowledge_msgs::KnowledgeItem> VALVisitorProblem::returnTimedKnowledge() {
+		if(!effects_read) {
+			visit_effect_lists(problem->initial_state);
+			effects_read = true;
+		}
+		return timed_initial_literals;
+	}
 
 	/*--------------*/
 	/* propositions */
@@ -119,9 +125,10 @@ namespace KCL_rosplan {
 		e->timed_effects.pc_list<VAL::timed_effect*>::visit(this);
 	}
 
-	void VALVisitorProblem::visit_timed_effect(VAL::timed_effect * e) {
-		problem_eff_time = e->ts;
-		e->effs->visit(this);
+	void VALVisitorProblem::visit_timed_initial_literal(VAL::timed_initial_literal * s) {
+		problem_eff_time = s->time_stamp;
+		s->effs->visit(this);
+		problem_eff_time = 0;
 	}
 
 	void VALVisitorProblem::visit_simple_effect(VAL::simple_effect * e) {
@@ -140,7 +147,13 @@ namespace KCL_rosplan {
 			item.values.push_back(param);
 		}
 
-		facts.push_back(item);
+		if(problem_eff_time > 0) {
+			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
+			timed_initial_literals.push_back(item);
+		} else {
+			item.initial_time = ros::Time::now();
+			facts.push_back(item);
+		}
 	}
 
 	void VALVisitorProblem::visit_assignment(VAL::assignment *e) {
@@ -163,7 +176,13 @@ namespace KCL_rosplan {
 		e->getExpr()->visit(this);
 		item.function_value = KnowledgeComparitor::evaluateExpression(last_expr, functions);
 
-		functions.push_back(item);
+		if(problem_eff_time > 0) {
+			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
+			timed_initial_literals.push_back(item);
+		} else {
+			item.initial_time = ros::Time::now();
+			functions.push_back(item);
+		}
 	}
 
 	void VALVisitorProblem::visit_forall_effect(VAL::forall_effect * e) {
@@ -174,17 +193,16 @@ namespace KCL_rosplan {
 		ROS_ERROR("Not yet implemented conditional effects in intial state parser.");	
 	}
 
+	void VALVisitorProblem::visit_timed_effect(VAL::timed_effect * e) {
+		ROS_WARN("Timed effects not a part of PDDL problem parsing.");	
+	}
+
 	/*-------*/
 	/* Goals */
 	/*-------*/
 
 	void VALVisitorProblem::visit_conj_goal(VAL::conj_goal * g){
 		g->getGoals()->visit(this);
-	}
-
-	void VALVisitorProblem::visit_timed_goal(VAL::timed_goal *c){
-		problem_cond_time = c->getTime();
-		c->getGoal()->visit(this);
 	}
 
 	void VALVisitorProblem::visit_neg_goal(VAL::neg_goal *c) {
@@ -217,6 +235,9 @@ namespace KCL_rosplan {
 	void VALVisitorProblem::visit_imply_goal(VAL::imply_goal *) {}
 	void VALVisitorProblem::visit_comparison(VAL::comparison *c) {}
 
+	void VALVisitorProblem::visit_timed_goal(VAL::timed_goal *c){
+		ROS_WARN("Timed goal not a part of PDDL problem parsing.");	
+	}
 
 	/*---------*/
 	/* metrics */
@@ -320,11 +341,11 @@ namespace KCL_rosplan {
 		rosplan_knowledge_msgs::ExprBase base;
 		base.expr_type = rosplan_knowledge_msgs::ExprBase::SPECIAL;
 
-        switch(s->getKind()) {
-            case VAL::E_HASHT:		base.special_type = rosplan_knowledge_msgs::ExprBase::HASHT; break;
-            case VAL::E_DURATION_VAR:	base.special_type = rosplan_knowledge_msgs::ExprBase::DURATION; break;
-            case VAL::E_TOTAL_TIME:		base.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME; break;
-        }
+		switch(s->getKind()) {
+			case VAL::E_HASHT:			base.special_type = rosplan_knowledge_msgs::ExprBase::HASHT; break;
+			case VAL::E_DURATION_VAR:	base.special_type = rosplan_knowledge_msgs::ExprBase::DURATION; break;
+			case VAL::E_TOTAL_TIME:		base.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME; break;
+		}
 
 		last_expr.tokens.push_back(base);
 	}
