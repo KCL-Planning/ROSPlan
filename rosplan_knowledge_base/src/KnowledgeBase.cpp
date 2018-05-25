@@ -527,12 +527,15 @@ namespace KCL_rosplan {
 		if(!domain_parser.domain_parsed) return false;
 
 		VAL::pddl_type_list* types = domain_parser.domain->types;
-		for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
-			const VAL::pddl_type* type = *ci;
-			res.types.push_back(type->getName());
-			if(type->type) res.super_types.push_back(type->type->getName());
-			else res.super_types.push_back("");
-		}	
+		if (types)
+		{
+			for (VAL::pddl_type_list::const_iterator ci = types->begin(); ci != types->end(); ci++) {
+				const VAL::pddl_type* type = *ci;
+				res.types.push_back(type->getName());
+				if(type->type) res.super_types.push_back(type->type->getName());
+				else res.super_types.push_back("");
+			}
+		}
 		return true;
 	}		
 

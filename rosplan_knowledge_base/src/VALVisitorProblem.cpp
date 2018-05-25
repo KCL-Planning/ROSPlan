@@ -9,12 +9,16 @@ namespace KCL_rosplan {
 	/*----------------*/
 
 	std::map <std::string, std::vector<std::string> > VALVisitorProblem::returnInstances() {
-		VAL::const_symbol_list *c = problem->objects;
-		for (VAL::const_symbol_list::const_iterator symbolListIterator = c->begin();
-			symbolListIterator != c->end(); symbolListIterator++) {
-			const VAL::const_symbol *object = *symbolListIterator;
-			instances[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
-		}
+
+        VAL::const_symbol_list *c = problem->objects;
+        if (c)
+        {
+            for (VAL::const_symbol_list::const_iterator symbolListIterator = c->begin();
+                 symbolListIterator != c->end(); symbolListIterator++) {
+                const VAL::const_symbol *object = *symbolListIterator;
+                instances[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
+            }
+        }
 		return instances;
 	}
 
