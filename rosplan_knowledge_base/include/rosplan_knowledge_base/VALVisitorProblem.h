@@ -57,10 +57,14 @@ namespace KCL_rosplan {
 		rosplan_knowledge_msgs::DomainFormula last_func_term;
 
 		std::map<std::string, std::vector<std::string> > instances;
+		std::map<std::string, std::vector<std::string> > constants;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> functions;
 		std::vector<rosplan_knowledge_msgs::KnowledgeItem> goals;
 		rosplan_knowledge_msgs::KnowledgeItem metric;
+
+		/* timed initial literals */
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> timed_initial_literals;
 
 		/* return methods */
         std::map<std::string, std::vector<std::string> > returnInstances();
@@ -68,6 +72,8 @@ namespace KCL_rosplan {
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnFunctions();
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnGoals();
 		rosplan_knowledge_msgs::KnowledgeItem returnMetric();
+
+		std::vector<rosplan_knowledge_msgs::KnowledgeItem> returnTimedKnowledge();
 
 		/* visitor methods */
 		virtual void visit_proposition(VAL::proposition *);

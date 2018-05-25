@@ -47,6 +47,13 @@ namespace KCL_rosplan {
 		return metric;
 	}
 
+	std::vector<rosplan_knowledge_msgs::KnowledgeItem> VALVisitorProblem::returnTimedKnowledge() {
+		if(!effects_read) {
+			visit_effect_lists(problem->initial_state);
+			effects_read = true;
+		}
+		return timed_initial_literals;
+	}
 
 	/*--------------*/
 	/* propositions */
@@ -133,12 +140,6 @@ namespace KCL_rosplan {
 		item.attribute_name = last_prop.name;
 		item.is_negative = problem_eff_neg;
 
-		if(problem_eff_time > 0) {
-			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
-		} else {
-			item.initial_time = ros::Time::now();
-		}
-
 		for(unsigned int a = 0; a < last_prop.typed_parameters.size(); a++) {
 			diagnostic_msgs::KeyValue param;
 			param.key = last_prop.typed_parameters[a].key;
@@ -146,7 +147,13 @@ namespace KCL_rosplan {
 			item.values.push_back(param);
 		}
 
-		facts.push_back(item);
+		if(problem_eff_time > 0) {
+			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
+			timed_initial_literals.push_back(item);
+		} else {
+			item.initial_time = ros::Time::now();
+			facts.push_back(item);
+		}
 	}
 
 	void VALVisitorProblem::visit_assignment(VAL::assignment *e) {
@@ -157,12 +164,6 @@ namespace KCL_rosplan {
 		item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
 		item.attribute_name = last_func_term.name;
 		item.is_negative = false;
-
-		if(problem_eff_time > 0) {
-			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
-		} else {
-			item.initial_time = ros::Time::now();
-		}
 
 		for(unsigned int a = 0; a < last_func_term.typed_parameters.size(); a++) {
 			diagnostic_msgs::KeyValue param;
@@ -175,7 +176,13 @@ namespace KCL_rosplan {
 		e->getExpr()->visit(this);
 		item.function_value = KnowledgeComparitor::evaluateExpression(last_expr, functions);
 
-		functions.push_back(item);
+		if(problem_eff_time > 0) {
+			item.initial_time = ros::Time::now() + ros::Duration(problem_eff_time);
+			timed_initial_literals.push_back(item);
+		} else {
+			item.initial_time = ros::Time::now();
+			functions.push_back(item);
+		}
 	}
 
 	void VALVisitorProblem::visit_forall_effect(VAL::forall_effect * e) {
