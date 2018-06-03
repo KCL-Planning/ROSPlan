@@ -80,11 +80,11 @@ namespace KCL_rosplan {
 	/* goals */
 	/*-------*/
 
-	void VALVisitorOperator::visit_conj_goal(VAL::conj_goal *c){
+	void VALVisitorOperator::visit_conj_goal(VAL::conj_goal *c) {
 		c->getGoals()->visit(this);
 	}
 
-	void VALVisitorOperator::visit_timed_goal(VAL::timed_goal *c){
+	void VALVisitorOperator::visit_timed_goal(VAL::timed_goal *c) {
 		cond_time = c->getTime();
         c->getGoal()->visit(this);
 	}
@@ -95,7 +95,7 @@ namespace KCL_rosplan {
 		cond_neg = !cond_neg;
 	}
 
-	void VALVisitorOperator::visit_simple_goal(VAL::simple_goal *c){
+	void VALVisitorOperator::visit_simple_goal(VAL::simple_goal *c) {
 
 		c->getProp()->visit(this);
 
@@ -114,10 +114,13 @@ namespace KCL_rosplan {
 		}
 	}
 
-	void VALVisitorOperator::visit_comparison(VAL::comparison * c){}
-	void VALVisitorOperator::visit_qfied_goal(VAL::qfied_goal *){}
-	void VALVisitorOperator::visit_disj_goal(VAL::disj_goal *){}
-	void VALVisitorOperator::visit_imply_goal(VAL::imply_goal *){}
+	void VALVisitorOperator::visit_comparison(VAL::comparison * c) {}
+
+	void VALVisitorOperator::visit_qfied_goal(VAL::qfied_goal *) {}
+
+	void VALVisitorOperator::visit_disj_goal(VAL::disj_goal *) {}
+
+	void VALVisitorOperator::visit_imply_goal(VAL::imply_goal *) {}
 
 	/*---------*/
 	/* effects */
@@ -161,16 +164,144 @@ namespace KCL_rosplan {
 	}
 
 	void VALVisitorOperator::visit_assignment(VAL::assignment * e) {
-		// e->getFTerm()
+
+		rosplan_knowledge_msgs::DomainAssignment ass;
+		ass.grounded = false;
+
+		// assignment left hand side
+		e->getFTerm()->visit(this);
+		ass.LHS = last_func;
+
+		// assignment right hand side
+		last_expr.tokens.clear();
+		e->getExpr()->visit(this);
+		ass.RHS = last_expr;
+
+		// assignment operator
+		switch(e->getOp()) {
+			case VAL::E_ASSIGN:      ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::ASSIGN;     break;
+			case VAL::E_INCREASE:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::INCREASE;   break;
+			case VAL::E_DECREASE:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::DECREASE;   break;
+			case VAL::E_SCALE_UP:    ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::SCALE_UP;   break;
+			case VAL::E_SCALE_DOWN:  ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::SCALE_DOWN; break;
+			case VAL::E_ASSIGN_CTS:  ass.assign_type = rosplan_knowledge_msgs::DomainAssignment::ASSIGN_CTS; break;
+		}
+
+		// add assigment effect
+		switch(eff_time) {
+			case VAL::E_AT_START: msg.at_start_assign_effects.push_back(ass); break;
+			case VAL::E_AT_END:   msg.at_end_assign_effects.push_back(ass);   break;
+		}
 	}
 
 	void VALVisitorOperator::visit_forall_effect(VAL::forall_effect * e) {std::cout << "not implemented forall" << std::endl;};
 	void VALVisitorOperator::visit_cond_effect(VAL::cond_effect * e) {std::cout << "not implemented cond" << std::endl;};
 
+	/*-------------*/
+	/* expressions */
+	/*-------------*/
+
+	void VALVisitorOperator::visit_plus_expression(VAL::plus_expression * s) {
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
+
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		op.op = rosplan_knowledge_msgs::ExprBase::ADD;
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_minus_expression(VAL::minus_expression * s) {
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
+
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		op.op = rosplan_knowledge_msgs::ExprBase::SUB;
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_mul_expression(VAL::mul_expression * s) {
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
+
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		op.op = rosplan_knowledge_msgs::ExprBase::MUL;
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_div_expression(VAL::div_expression * s) {
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
+
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		op.op = rosplan_knowledge_msgs::ExprBase::DIV;
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_uminus_expression(VAL::uminus_expression * s) {
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+		op.op = rosplan_knowledge_msgs::ExprBase::UMINUS;
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_int_expression(VAL::int_expression * s) {
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::CONSTANT;
+		op.constant = s->double_value();
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_float_expression(VAL::float_expression * s) {
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::CONSTANT;
+		op.constant = s->double_value();
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_special_val_expr(VAL::special_val_expr * s) {
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::SPECIAL;
+        switch(s->getKind()) {
+            case VAL::E_HASHT:
+				op.special_type = rosplan_knowledge_msgs::ExprBase::HASHT;
+                break;
+            case VAL::E_DURATION_VAR:
+				op.special_type = rosplan_knowledge_msgs::ExprBase::DURATION;
+                break;
+            case VAL::E_TOTAL_TIME:
+				op.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME;
+				break;
+        }
+		last_expr.tokens.push_back(op);
+	}
+
+	void VALVisitorOperator::visit_func_term(VAL::func_term * s) {
+		rosplan_knowledge_msgs::ExprBase op;
+		op.expr_type = rosplan_knowledge_msgs::ExprBase::FUNCTION;
+
+		// func_term name
+		last_func.name = s->getFunction()->getName();
+
+		// func_term variables
+		for (VAL::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
+			diagnostic_msgs::KeyValue param;
+			param.key = (*vi)->pddl_typed_symbol::getName();
+			param.value = (*vi)->type->getName();
+			last_func.typed_parameters.push_back(param);
+		}
+
+		op.function = last_func;
+		last_expr.tokens.push_back(op);
+	}
+
 	/*-------*/
 	/* extra */
 	/*-------*/
 
-	void VALVisitorOperator::visit_derivation_rule(VAL::derivation_rule * o){}
+	void VALVisitorOperator::visit_derivation_rule(VAL::derivation_rule * o) {}
 
 } // close namespace

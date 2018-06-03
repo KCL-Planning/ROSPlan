@@ -96,8 +96,6 @@ namespace KCL_rosplan {
 		// create PDDL action subscriber
 		KCL_rosplan::RPMoveBase rpmb(nh, actionserver);
 
-		// listen for action dispatch
-		ros::Subscriber ds = nh.subscribe("/kcl_rosplan/action_dispatch", 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, dynamic_cast<KCL_rosplan::RPActionInterface*>(&rpmb));
 		rpmb.runActionInterface();
 
 		return 0;

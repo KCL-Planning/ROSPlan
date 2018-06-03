@@ -1,0 +1,5 @@
+# PDDL problem generation; service(3/3):
+# Get the problem metric.
+# The result is passed as a KnowledgeItem, where the value needs to be parsed by the program.
+---
+rosplan_knowledge_msgs/KnowledgeItem metric

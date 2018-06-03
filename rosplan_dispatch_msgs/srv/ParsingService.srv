@@ -1,0 +1,4 @@
+# parses a plan from a file
+string plan_path
+---
+bool plan_parsed
