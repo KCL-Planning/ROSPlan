@@ -252,28 +252,6 @@ namespace KCL_rosplan {
 	/* goal */
 	/*------*/
 
-    void PDDLProblemGenerator::parseInequalityExpression(rosplan_knowledge_msgs::ExprComposite exprComposite, int size, std::ofstream &pFile){
-        for(size_t i = 0; i < size; i++) {
-
-            switch(exprComposite.tokens[i].expr_type){
-                case 0: pFile << " "<< exprComposite.tokens[i].constant << " "; break;
-                case 1:
-                {
-                    pFile << "(";
-                    pFile << exprComposite.tokens[i].function.name;
-                    for(size_t j = 0; i < exprComposite.tokens[j].function.typed_parameters.size(); j++) {
-                        pFile << exprComposite.tokens[j].function.typed_parameters[j].key+" "+exprComposite.tokens[j].function.typed_parameters[j].value;
-                    }
-                    pFile << ")";
-                } break;
-
-                case 2: pFile << " " << exprComposite.tokens[i].op << " "; break;
-                case 3: pFile << pFile << "(";exprComposite.tokens[i].special_type; pFile << ")";break;
-
-            }
-        }
-    }
-
 	void PDDLProblemGenerator::makeGoals(std::ofstream &pFile) {
 			
 		ros::NodeHandle nh;
@@ -318,8 +296,8 @@ namespace KCL_rosplan {
                         case 4: pFile << "=" ; break;
                     }
 
-                    parseInequalityExpression(attr.ineq.LHS, attr.ineq.LHS.tokens.size(), pFile);
-                    parseInequalityExpression(attr.ineq.RHS, attr.ineq.RHS.tokens.size(), pFile);
+					printExpression(pFile, attr.ineq.LHS);
+					printExpression(pFile, attr.ineq.RHS);
 
 					if(attr.is_negative){pFile << ")";}
 					pFile << ")" << std::endl;
