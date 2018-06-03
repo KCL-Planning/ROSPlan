@@ -1,4 +1,5 @@
-#include "rosplan_planning_system/PlannerInterface/TFDPlannerInterface.h"
+#include "rosplan_planning_system/PlannerInterface/FDPlannerInterface.h"
+#include <iostream>
 
 namespace KCL_rosplan {
 
@@ -6,7 +7,7 @@ namespace KCL_rosplan {
     /* constructor */
     /*-------------*/
 
-    TFDPlannerInterface::TFDPlannerInterface(ros::NodeHandle& nh)
+    FDPlannerInterface::FDPlannerInterface(ros::NodeHandle& nh)
     {
         node_handle = &nh;
 
@@ -21,7 +22,7 @@ namespace KCL_rosplan {
         plan_server->start();
     }
 
-    TFDPlannerInterface::~TFDPlannerInterface()
+    FDPlannerInterface::~FDPlannerInterface()
     {
         delete plan_server;
     }
@@ -29,7 +30,7 @@ namespace KCL_rosplan {
     /**
      * Runs external commands
      */
-    std::string TFDPlannerInterface::runCommand(std::string cmd) {
+    std::string FDPlannerInterface::runCommand(std::string cmd) {
         std::string data;
         FILE *stream;
         char buffer[1000];
@@ -47,9 +48,9 @@ namespace KCL_rosplan {
     /**
      * passes the problem to the Planner; the plan to post-processing.
      */
-    bool TFDPlannerInterface::runPlanner() {
+    bool FDPlannerInterface::runPlanner() {
 
-        // save problem to file for TFD
+        // save problem to file for FD
         if(use_problem_topic && problem_instance_recieved) {
             ROS_INFO("KCL: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
             std::ofstream dest;
@@ -65,9 +66,8 @@ namespace KCL_rosplan {
         std::size_t pit = str.find("PROBLEM");
         if(pit!=std::string::npos) str.replace(pit,7,problem_path);
 
-        // path is based on the default installation of the Temporal Fast Downward
-        std::string updatePlan = "cp "+data_path+"../../rosplan_planning_system/common/bin/tfd-src-0.4/downward/tfdplan.1"+" "+data_path+"plan.pddl";
-
+        // path is based on the default installation of the Fast Downward planner
+        std::string updatePlan = "cp "+data_path+"../../rosplan_planning_system/common/bin/downward/fdplan.1"+" "+data_path+"plan.pddl";
 
         // call the planer
         ROS_INFO("KCL: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  str.c_str());
@@ -89,15 +89,17 @@ namespace KCL_rosplan {
 
         while (std::getline(planfile, line)) {
 
-            if (line.find("0.0", 0) != std::string::npos){
+            if (line.find("(", 0) != std::string::npos){
                 solved = true;
             }
             planDuration = 0;
             ss.str("");
             while (std::getline(planfile, line)) {
-                if (line.length()<2)
+                if (line.length()<2)break;
+                if (line.find(";", 0) != std::string::npos){
                     break;
-                ss << line << std::endl;
+                }
+                ss << line << " [0.001]" << std::endl;
             }
             planner_output = ss.str();
 
@@ -123,7 +125,7 @@ int main(int argc, char **argv) {
     ros::init(argc,argv,"rosplan_planner_interface");
     ros::NodeHandle nh("~");
 
-    KCL_rosplan::TFDPlannerInterface pi(nh);
+    KCL_rosplan::FDPlannerInterface pi(nh);
 
     // subscribe to problem instance
     std::string problemTopic = "problem_instance";
