@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosplan_interface_rcllrefbox</name>
+  <version>0.1.0</version>
+  <description>ROSPlan interface for the RCLL Referee Box</description>
+
+  <maintainer email="niemueller@kbsg.rwth-aachen.de">Tim Niemueller</maintainer>
+  <author email="niemueller@kbsg.rwth-aachen.de">Tim Niemueller</author>
+
+  <license>BSD</license>
+
+  <!-- <url type="website">http://wiki.ros.org/rosplan_interface_rcllrefbox</url> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>boost</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>rcll_ros_msgs</build_depend>
+  <build_depend>mongodb_store</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosplan_dispatch_msgs</build_depend>
+  <build_depend>rosplan_knowledge_msgs</build_depend>
+  <build_depend>rosplan_planning_system</build_depend>
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>boost</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>rcll_ros_msgs</run_depend>
+  <run_depend>mongodb_store</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosplan_dispatch_msgs</run_depend>
+  <run_depend>rosplan_knowledge_msgs</run_depend>
+  <run_depend>rosplan_planning_system</run_depend>
+
+  <export>
+  </export>
+</package>
