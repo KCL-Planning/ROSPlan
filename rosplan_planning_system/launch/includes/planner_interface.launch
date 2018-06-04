@@ -10,10 +10,10 @@
 	<arg name="problem_path"         default="$(find rosplan_demos)/common/problem.pddl" />
 	<arg name="data_path"            default="$(find rosplan_demos)/common/" />
 	<arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
-
+	<arg name="planner_interface"    default="popf_planner_interface" />
 
 	<!-- planner interface -->
-	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" respawn="false" output="screen">
 
 		<!-- general options -->
 		<param name="use_problem_topic" value="$(arg use_problem_topic)" />
