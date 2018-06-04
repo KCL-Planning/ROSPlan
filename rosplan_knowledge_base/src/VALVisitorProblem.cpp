@@ -251,7 +251,15 @@ namespace KCL_rosplan {
         item.is_negative = problem_cond_neg;
 
         rosplan_knowledge_msgs::DomainInequality ineq;
-        ineq.comparison_type = c->getOp();
+        
+        switch( c->getOp() )
+        {
+            case VAL::E_GREATER: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATER; break;
+            case VAL::E_GREATEQ: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATEREQ; break;
+            case VAL::E_LESS: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESS; break;
+            case VAL::E_LESSEQ: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESSEQ; break;
+            case VAL::E_EQUALS: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::EQUALS; break;
+        }
 
 		last_expr.tokens.clear();
         c->getLHS()->visit(this);
