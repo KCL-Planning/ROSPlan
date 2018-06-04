@@ -205,9 +205,9 @@ namespace KCL_rosplan {
 		g->getGoals()->visit(this);
 	}
 
-	void VALVisitorProblem::visit_neg_goal(VAL::neg_goal *c) {
+	void VALVisitorProblem::visit_neg_goal(VAL::neg_goal *g) {
 		problem_cond_neg = !problem_cond_neg;
-		c->getGoal()->visit(this);
+		g->getGoal()->visit(this);
 		problem_cond_neg = !problem_cond_neg;
 	}
 
@@ -216,7 +216,7 @@ namespace KCL_rosplan {
 		g->getProp()->visit(this);
 
 		rosplan_knowledge_msgs::KnowledgeItem item;
-		item.knowledge_type = 1;
+		item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 		item.attribute_name = last_prop.name;
 		item.is_negative = problem_cond_neg;
 
@@ -230,10 +230,41 @@ namespace KCL_rosplan {
 		goals.push_back(item);
 	}
 
-	void VALVisitorProblem::visit_qfied_goal(VAL::qfied_goal *) {}
-	void VALVisitorProblem::visit_disj_goal(VAL::disj_goal *) {}
-	void VALVisitorProblem::visit_imply_goal(VAL::imply_goal *) {}
-	void VALVisitorProblem::visit_comparison(VAL::comparison *c) {}
+    void VALVisitorProblem::visit_qfied_goal(VAL::qfied_goal *g) {
+        //g->getQuantifier()->visit(this);
+        g->getVars()->visit(this);
+        //g->getSymTab()->visit(this);
+        g->getGoal()->visit(this);
+
+    }
+    void VALVisitorProblem::visit_disj_goal(VAL::disj_goal *g) {
+        g->getGoals()->visit(this);
+    }
+    void VALVisitorProblem::visit_imply_goal(VAL::imply_goal *g) {
+        g->getAntecedent()->visit(this);
+        g->getConsequent()->visit(this);
+    }
+    void VALVisitorProblem::visit_comparison(VAL::comparison *c) {
+
+        rosplan_knowledge_msgs::KnowledgeItem item;
+        item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
+        item.is_negative = problem_cond_neg;
+
+        rosplan_knowledge_msgs::DomainInequality ineq;
+        ineq.comparison_type = c->getOp();
+
+		last_expr.tokens.clear();
+        c->getLHS()->visit(this);
+		ineq.LHS.tokens = last_expr.tokens;
+
+        last_expr.tokens.clear();
+        c->getRHS()->visit(this);
+        ineq.RHS.tokens = last_expr.tokens;
+
+        item.ineq = ineq;
+        goals.push_back(item);
+
+    }
 
 	void VALVisitorProblem::visit_timed_goal(VAL::timed_goal *c){
 		ROS_WARN("Timed goal not a part of PDDL problem parsing.");	

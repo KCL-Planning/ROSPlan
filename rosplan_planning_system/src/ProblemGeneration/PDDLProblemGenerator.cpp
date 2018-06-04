@@ -147,7 +147,6 @@ namespace KCL_rosplan {
 				if (!getPropsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
 				} else {
-					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
@@ -215,7 +214,6 @@ namespace KCL_rosplan {
 				if (!getFuncsClient.call(attrSrv)) {
 					ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", state_function_service.c_str(), attrSrv.request.predicate_name.c_str());
 				} else {
-					if(attrSrv.response.attributes.size() == 0) continue;
 
 					for(size_t i=0;i<attrSrv.response.attributes.size();i++) {
 
@@ -271,28 +269,38 @@ namespace KCL_rosplan {
 				rosplan_knowledge_msgs::KnowledgeItem attr = currentGoalSrv.response.attributes[i];
 				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
 
-                    switch(attr.is_negative){
+                    if(attr.is_negative){pFile << "    (not("+ attr.attribute_name;}
+                    else {pFile << "    (" + attr.attribute_name;}
 
-                        case true:
-                        {
-                            pFile << "    (not(" + attr.attribute_name;
-                            for(size_t j=0; j<attr.values.size(); j++) {
-                                pFile << " " << attr.values[j].value;
-                            }
-                            pFile << ")";
-                        }
-                        break;
-
-                        case false:
-                        {
-                            pFile << "    (" + attr.attribute_name;
-                            for(size_t j=0; j<attr.values.size(); j++) {
-                                pFile << " " << attr.values[j].value;
-                            }
-                        }
-                        break;
+                    for(size_t j=0; j<attr.values.size(); j++) {
+                        pFile << " " << attr.values[j].value;
                     }
+
+                    if(attr.is_negative){pFile << ")";}
+
                     pFile << ")" << std::endl;
+
+
+				}
+				if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY) {
+
+                    // do we need comparison negation? remove if not
+                    if(attr.is_negative)pFile << "    (not(";
+                        else pFile << "    (";
+
+                    switch(attr.ineq.comparison_type){
+                        case 0: pFile << "> "; break;
+                        case 1: pFile << ">= "; break;
+                        case 2: pFile << "<" ; break;
+                        case 3: pFile << "<= "; break;
+                        case 4: pFile << "=" ; break;
+                    }
+
+					printExpression(pFile, attr.ineq.LHS);
+					printExpression(pFile, attr.ineq.RHS);
+
+					if(attr.is_negative){pFile << ")";}
+					pFile << ")" << std::endl;
 				}
 			}
 		}
