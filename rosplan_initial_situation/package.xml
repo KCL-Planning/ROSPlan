@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosplan_initial_situation</name>
+  <version>0.1.0</version>
+  <description>Create initial situation from ROSPlan from config</description>
+
+  <maintainer email="niemueller@kbsg.rwth-aachen.de">Tim Niemueller</maintainer>
+  <author email="niemueller@kbsg.rwth-aachen.de">Tim Niemueller</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>boost</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>mongodb_store</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rosplan_knowledge_msgs</build_depend>
+
+  <run_depend>boost</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>mongodb_store</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rosplan_knowledge_msgs</run_depend>
+
+  <export>
+  </export>
+</package>
