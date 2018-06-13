@@ -1,8 +1,7 @@
 ---
 layout: page
+title: What is ROSPlan?
 ---
-
-# What is ROSPlan?
 
 The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan has a variety of nodes which encapsulate planning, problem generation, and plan execution. It possesses a simple interface, and includes some basic interfaces to common ROS libraries.
 
@@ -14,5 +13,4 @@ ROSPlan has a modular design, intended to be modified. It serves as a framework 
 
 **Where to start?**
 
-The [documentation](documentation) gives a full description of the system.
-The [tutorials](tutorials) section provides a step-by-step introduction to each node, and instructions on combining them into a complete system.
+The [documentation](documentation) gives a full description of the system, including  **tutorials** that provides a step-by-step introduction to each node, and instructions on combining them into a complete system.

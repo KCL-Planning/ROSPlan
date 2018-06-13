@@ -1,8 +1,7 @@
 ---
 layout: page
+title: People
 ---
-
-# People
 
 **Michael Cashmore** [@m312z](https://github.com/m312z)  
 Website: [http://www.inf.kcl.ac.uk/staff/cashmore](http://www.inf.kcl.ac.uk/staff/cashmore)  
