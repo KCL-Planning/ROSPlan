@@ -6,7 +6,7 @@ description: > # this means to ignore newlines until "baseurl:"
   ROSPlan integrates Artificial Intelligence Planning into Robotics.
 
 # online settings
-baseurl: "/ROSPlan"
+baseurl: "/ROSPlan/"
 url: "http://m312z.github.io/ROSPlan"
 
 ## offline settings
