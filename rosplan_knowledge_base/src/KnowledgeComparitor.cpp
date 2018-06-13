@@ -34,9 +34,8 @@ namespace KCL_rosplan {
 		bool pending_operand = false;
 		std::vector<rosplan_knowledge_msgs::ExprBase> operator_stack;
 		std::vector<rosplan_knowledge_msgs::ExprBase> operand_stack;
-		while(tokens.size()>0) {
-			rosplan_knowledge_msgs::ExprBase token = tokens.back();
-			tokens.pop_back();
+		for(int i=0;i<tokens.size();i++) {
+			rosplan_knowledge_msgs::ExprBase token = tokens[i];
 			switch(token.expr_type) {
 				case rosplan_knowledge_msgs::ExprBase::OPERATOR:
 					operator_stack.push_back(token);
