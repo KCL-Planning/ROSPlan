@@ -42,7 +42,7 @@ namespace KCL_rosplan {
 		plan_cancelled = false;
 		action_received.clear();
 		action_completed.clear();
-		plan_recieved = false;
+		plan_received = false;
 		current_action = 0;
 	}
 
@@ -52,7 +52,7 @@ namespace KCL_rosplan {
 
 	void SimplePlanDispatcher::planCallback(const rosplan_dispatch_msgs::CompletePlan plan) {
 		ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
-		plan_recieved = true;
+		plan_received = true;
 		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
 	}
