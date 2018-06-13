@@ -5,10 +5,10 @@
 	<title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
 
 	<link rel="stylesheet" ">
-	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/normalize.css" | prepend: site.baseurl }}" media="screen">
+	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/normalize.css" | prepend: site.url site.baseurl }}" media="screen">
 	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/stylesheet.css" | prepend: site.baseurl }}" media="screen">
-	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/github-light.css" | prepend: site.baseurl }}" media="screen">
-	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/syntax.css" | prepend: site.baseurl }}" media="screen">
+	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/stylesheet.css" | prepend: site.url site.baseurl }}" media="screen">
+	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/github-light.css" | prepend: site.url site.baseurl }}" media="screen">
+	<link rel="stylesheet" type="text/css" href="{{ "/stylesheets/syntax.css" | prepend: site.url site.baseurl }}" media="screen">
 </head>
 
