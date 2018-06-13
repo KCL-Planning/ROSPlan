@@ -1,0 +1,21 @@
+# Site settings
+title: ROSPlan by KCL Planning
+email: michael.cashmore@kcl.ac.uk
+description: > # this means to ignore newlines until "baseurl:"
+  ROSPlan is a framework for PDDL planning in a ROS system.
+  ROSPlan integrates Artificial Intelligence Planning into Robotics.
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://localhost:4000"
+
+
+include: ['_pages']
+
+collections:
+  documentation:
+    output: true
+  tutorials:
+    output: true
+
+# Build settings
+markdown: kramdown
+highlighter: rouge

@@ -1,0 +1,51 @@
+# rosplan nodes
+
+knowledge base
+
+problem generation
+ - function
+ - parameters
+ - (optional) subscriptions
+ - (optional) publications
+ - PDDL problem generation
+ - example usage
+
+planner interface
+ - function
+ - parameters
+ - (optional) subscriptions
+ - (optional) publications
+ - POPF planner interface
+ - FF planner interface
+ - example usage
+
+plan parsing
+ - function
+ - parameters
+ - (optional) subscriptions
+ - (optional) publications
+ - PDDL to simple sequential plan parsing
+ - PDDL to Esterel plan parsing
+ - example usage
+
+plan dispatch
+ - function
+ - parameters
+ - (optional) subscriptions
+ - (optional) publications
+ - Esterel plan disaptch
+ - example usage
+
+action interface
+ - function
+ - parameters
+ - necessary subscriptions and publications
+ - example use
+ - step-by-step tutorial for writing action interface
+
+# rosplan setup and launch
+
+turtlebot demo
+ - node graph
+ - quick start guide
+ - embedded video
