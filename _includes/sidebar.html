@@ -13,14 +13,14 @@
 			</ul>
 
 			<ul>
-				<li style="text-align: center"><strong>Interfaces</strong></li>
+				<li style="text-align: center"><strong>Planning and Execution</strong></li>
 				{% for page in site.documentation %}{% if page.url contains "interfaces" %}
 				<li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>
 				{% endif %} {% endfor %}
 			</ul>
 
 			<ul>
-				<li style="text-align: center"><strong>Knowledge Base</strong></li>
+				<li style="text-align: center"><strong>Knowledge Management</strong></li>
 				{% for page in site.documentation %}{% if page.url contains "knowledge" %}
 				<li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>
 				{% endif %} {% endfor %}
