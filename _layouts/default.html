@@ -2,10 +2,11 @@
 <html>
 {% include head.html %}
 
-<body>
+<body style="background: url( {{ "images/Night-London.jpg" | prepend: site.url }} ); background-attachment: fixed;" >
+
 	{% include header.html %}
 
-	<section class="main-content">
+	<section class="main-content" style="background: #FFF" >
 
 		{{ content }}
 

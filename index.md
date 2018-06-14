@@ -12,3 +12,5 @@ ROSPlan has a modular design, intended to be modified. It serves as a framework 
 **Where to start?**
 
 The [documentation](documentation) gives a full description of the system, including  **tutorials** that provides a step-by-step introduction to each node, and instructions on combining them into a complete system.
+
+{% include news.md %}
