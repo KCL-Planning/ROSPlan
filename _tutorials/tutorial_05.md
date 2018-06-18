@@ -57,7 +57,7 @@ Then take another look at the *interface_planning_system.launch* in the *rosplan
 	</include>
 ```
 
-The **Parsing Interface** and **Plan Dispatch** nodes are launched from the included files. These do not launch the Simple PDDL variants used in [Tutorial 03: Plan Execution I](../03_plan_parsing/tutorial_03.mk). Instead, they launch nodes of type: *pddl_esterel_plan_parser* and *pddl_esterel_plan_dispatcher*.
+The two files included here launch the **Parsing Interface** and **Plan Dispatch** nodes. The nodes launched by those included files are not the same Simple PDDL variants used in [Tutorial 03: Plan Execution I](../03_plan_parsing/tutorial_03.mk). Instead, they launch nodes of type: *pddl_esterel_plan_parser* and *pddl_esterel_plan_dispatcher*.
 
 ## 3.2 Launching
 
@@ -67,7 +67,7 @@ From the terminal, launch the file:
 roslaunch tutorial_05.launch
 ```
 
-Switch to a second terminal and source the workspace. Using the script written for [Tutorial 04: Simulated Actions](../04_simulated_actions/tutorial_04.mk), start problem generation, planning, and plan dispatch.
+Switch to a second terminal and source the workspace. Using the script written for [Tutorial 04: Simulated Actions](tutorial_04), start problem generation, planning, and plan dispatch.
 
 ```
 ./tutorial.bash
