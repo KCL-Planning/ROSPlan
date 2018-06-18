@@ -21,7 +21,7 @@ Also that you have already followed [Tutorial 01: Problem Generation](tutorial_0
 
 Change directory to the  ROSPlan workspace.
 
-Copy the launch file *tutorial_01.launch* from the previous tutorial to create *tutorial_02.launch*, and then paste the following lines:
+Copy the launch file *tutorial_01.launch* from the previous tutorial to create *tutorial_02.launch*, and then paste the following lines under the scene database:
 
 ```xml
 	<!-- planner interface -->
@@ -83,7 +83,7 @@ You should see that the Planner Interface has started:
 KCL: (/rosplan_planner_interface) Ready to receive
 ```
 
-To view the nodes, open a second terminal and launch **rqt**, and select the *Introspection -> Node Graph* plugin:
+To view the nodes, open a second terminal and launch **rqt**, and select the *Plugins -> Introspection -> Node Graph* plugin:
 
 ![RQT window](./tutorial_02_rqt.png) 
 
@@ -140,9 +140,7 @@ The Planner Interface publishes a plan like this:
 
 ## 3.4 Writing a Script to call both Services
 
-Rather than calling each service by hand, we'll create a simple script to use ROSPlan to generate a problem and then a plan.
-
-Create a new file called *tutorial.bash* and paste the following lines inside:
+Rather than calling each service by hand, we'll create a simple script to use ROSPlan to generate a problem and then a plan. Create a new file called *tutorial.bash* and paste the following lines inside:
 
 ```
 rosservice call /rosplan_problem_interface/problem_generation_server
