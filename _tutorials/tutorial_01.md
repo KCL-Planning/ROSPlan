@@ -11,8 +11,6 @@ This tutorial will teach how to use ROSPlan to generate PDDL problems.
 
 ![Problem Generation node diagram](./tutorial_01.png)
 
-(*Problem Interface node diagram*)
-
 ## 2. Prior Setup
 
 This tutorial assumes that ROSPlan is already installed, following the instructions on the gihtub README:
