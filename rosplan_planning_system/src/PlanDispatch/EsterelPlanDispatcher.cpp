@@ -47,7 +47,7 @@ namespace KCL_rosplan {
 		plan_cancelled = false;
 		action_received.clear();
 		action_completed.clear();
-		plan_recieved = false;
+		plan_received = false;
 		finished_execution = true;
 	}
 
@@ -58,7 +58,7 @@ namespace KCL_rosplan {
 	void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlan plan) {
 		if(finished_execution) {
 			ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
-			plan_recieved = true;
+			plan_received = true;
 			mission_start_time = ros::WallTime::now().toSec();
 			current_plan = plan;
 			printPlan();
@@ -77,7 +77,7 @@ namespace KCL_rosplan {
 	 * @returns True iff every action was dispatched and returned success.
 	 */
 	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		if(!plan_recieved) return false;
+		if(!plan_received) return false;
 		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
 		reset();
 		return success;

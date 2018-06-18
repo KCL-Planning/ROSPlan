@@ -50,7 +50,7 @@ namespace KCL_rosplan {
 	bool LPGPlannerInterface::runPlanner() {
 
 		// save problem to file for LPG
-		if(use_problem_topic && problem_instance_recieved) {
+		if(use_problem_topic && problem_instance_received) {
 			ROS_INFO("KCL: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
 			std::ofstream dest;
 			dest.open((problem_path).c_str());

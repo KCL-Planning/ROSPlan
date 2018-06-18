@@ -22,7 +22,7 @@ namespace KCL_rosplan
 		std::string action_feedback_topic;
 
 		/* dispatch state */
-		bool plan_recieved;
+		bool plan_received;
 		std::map<int,bool> action_received;
 		std::map<int,bool> action_completed;
 
@@ -30,7 +30,7 @@ namespace KCL_rosplan
 
 		/* control callback */
 		bool cancelDispatchService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-			ROS_INFO("KCL: (%s) Cancel plan command recieved.", ros::this_node::getName().c_str());
+			ROS_INFO("KCL: (%s) Cancel plan command received.", ros::this_node::getName().c_str());
 			plan_cancelled = true;
 			return true;
 		}
