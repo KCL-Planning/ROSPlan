@@ -94,7 +94,7 @@ In this tutorial we are using the **pddl_simple_plan_parser**. This plan parser 
 	</node>
 ```
 
-The third node is the **Plan Dispatch**. This node implements a plan execution algorithm.
+The third node is the **Plan Dispatch**. This node implements a plan execution algorithm and takes 4 parameters:
 
 1. `knowledge_base` specifies which Knolwedge Base node stores the domain and state to be used with the plan.
 2. `plan_topic` specifies the input topic on which the plan will be published as a set of action messages.
@@ -125,7 +125,7 @@ To view the nodes, open a second terminal and launch **rqt**, and select the *In
 
 ## 3.4 Parsing a Plan from File
 
-Create a new file in the current directory, *plan_tutorial_03.pddl* and paste in the following lines:
+Create a new file in the workspace, *plan_tutorial_03.pddl* and paste in the following lines:
 
 ```
  0.000: (undock kenny wp1)  [10.000]
@@ -139,7 +139,7 @@ Create a new file in the current directory, *plan_tutorial_03.pddl* and paste in
 
 We'll parse this plan using ROSPlan into ROS messages, ready for execution.
 
-In the second terminal, first call the plan parsing service (using tab complete is helpful), substituting the absolute path to your workspace:
+In the second terminal, first call the plan parsing service (using tab complete is helpful), substituting the absolute path to your workspace (e.g. "/home/usr/rosplan/"):
 
 ```
 rosservice call /rosplan_parsing_interface/parse_plan_from_file "plan_path: '[...]/plan_tutorial_03.pddl'"
@@ -187,9 +187,9 @@ plan:
     dispatch_time: 10.0010004044
 ```
 
-Here you can see the first two action, *undock* and *localise* and their parameters.
+Here you can see the first two actions, *undock* and *localise* and their parameters.
 
-The structure of a `CompletePlan` message can be seen using the following command:
+The plan was published as a `CompletePlan` message. The structure of a `CompletePlan` message can be seen using the following command:
 
 ```
 rosmsg show rosplan_dispatch_msgs/CompletePlan
