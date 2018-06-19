@@ -9,4 +9,4 @@
 - The new **simulated action node** can be used to test a planning and execution system with actions competing with a user defined probability.
 
 #### Virtual Machine
-A Virtual Machine with ROSPlan installed is now available! [LINK]()  
+A Virtual Machine with ROSPlan installed is now available! [LINK](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova)  
