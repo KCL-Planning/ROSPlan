@@ -138,7 +138,7 @@ namespace KCL_rosplan {
 
 		// check action name
 		if(0!=msg->name.compare(params.name)) return;
-		ROS_INFO("KCL: (%s) action recieved", params.name.c_str());
+		ROS_INFO("KCL: (%s) action received", params.name.c_str());
 
 		// check PDDL parameters
 		std::vector<bool> found(params.typed_parameters.size(), false);

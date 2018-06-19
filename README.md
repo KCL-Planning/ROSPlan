@@ -87,7 +87,7 @@ KCL: (/rosplan_planner_interface) (problem.pddl) Writing problem to file.
 KCL: (/rosplan_planner_interface) (problem.pddl) Running: timeout 10 /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_planning_system/common/bin/popf /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/domain_turtlebot_demo.pddl /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/problem.pddl > /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/plan.pddl
 KCL: (/rosplan_planner_interface) (problem.pddl) Planning complete
 KCL: (/rosplan_planner_interface) (problem.pddl) Plan was solved.
-KCL: (/rosplan_parsing_interface) Planner output recieved.
+KCL: (/rosplan_parsing_interface) Planner output received.
 KCL: (/rosplan_parsing_interface) Parsing planner output.
 KCL: (/rosplan_plan_dispatcher) Plan received.
 KCL: (/rosplan_plan_dispatcher) Dispatching plan.
