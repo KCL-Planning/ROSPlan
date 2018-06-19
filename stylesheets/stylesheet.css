@@ -276,6 +276,12 @@ a {
   font-weight: normal;
   color: #e33030;
 }
+.main-content h4, .main-content h5, .main-content h6 {
+  margin-top: 0rem;
+  margin-bottom: 0rem;
+  font-weight: normal;
+  color: #e33030;
+}
 .main-content p {
   margin-bottom: 1em;
 }
