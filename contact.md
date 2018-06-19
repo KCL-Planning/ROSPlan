@@ -1,6 +1,6 @@
 ---
 layout: page
-title: People
+title: Contact
 ---
 
 **Google Group**
