@@ -1,4 +1,4 @@
-<!-- ROSPlan turtlebot demo; requires turtlebot_gazebo -->
+<?xml version="1.0"?>
 <launch>
 
 	<!-- ROSPlan -->
