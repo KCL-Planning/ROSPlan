@@ -57,7 +57,7 @@ Create a new launch file, *tutorial_01.launch*, in the current directory and pas
 
 ## 3.2 The Launch File Explained
 
-The launch file will start 2 ROSPlan nodes, and a few others.
+The launch file will start 2 ROSPlan nodes, and a ROS interface to MongoDB.
 
 ```xml
 	<!-- arguments -->
@@ -74,7 +74,7 @@ The launch file will start 2 ROSPlan nodes, and a few others.
 	</node>
 ```
 
-The first ROSPlan node is the **Knowledge Base**. This node stores the PDDL model: both the domain and the current state.
+The first ROSPlan node started is the **Knowledge Base**. This node stores the PDDL model: both the domain and the current state.
 
 The Knowledge Base node takes 4 parameters:
 1. `domain_path` is required and specifies a PDDL domain file. You can follow the path to view the domain file.
@@ -93,7 +93,7 @@ The Knowledge Base node takes 4 parameters:
 	</include>
 ```
 
-The second ROSPlan node is the **Problem Interface**, which is launched from the included launch file.
+The second ROSPlan node started is the **Problem Interface**, which is launched from the included launch file.
 
 The Problem Interface also has 4 parameters:
 1. `knowledge_base` specifies the node name of the Knowledge Base node that stores the current state.
@@ -134,6 +134,10 @@ KCL: (KB) Ready to receive
 ## 3.4 Generating a Problem
 
 Open another terminal and source the workspace.
+
+```
+source devel/setup.bash
+```
 
 In the second terminal, take a look at the node list and service list to see what is running:
 

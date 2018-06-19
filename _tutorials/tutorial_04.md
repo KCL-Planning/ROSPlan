@@ -86,9 +86,7 @@ The next part is the simulated actions. Each simulated action includes the *simu
 </launch>
 ```
 
-This launch file launches a node of type **simulatedAction**. In our launch file we set the *pddl_action_name* argument, and use the default value for all of the others. This means each action will have a duration of 0 seconds, and always succeed.
-
-The action names match those in the domain file, *domain_turtlebot.pddl*.
+This launch file launches a node of type **simulatedAction**. In our launch file we set the *pddl_action_name* argument, and use the default value for all of the others. This means each action will have a duration of 0 seconds, and always succeed. The action names match those in the domain file, *domain_turtlebot.pddl*.
 
 The simulated actions will be added to the configuration as shown in the diagram below:
 
@@ -146,7 +144,6 @@ Rather than calling each service by hand, we'll create a simple script to use RO
 Create or open the file called *tutorial.bash*, delete everything inside, and paste the following lines instead:
 
 ```
-#!bin/bash
 echo "Generating a Problem"
 rosservice call /rosplan_problem_interface/problem_generation_server
 
@@ -188,13 +185,7 @@ KCL: (/rosplan_plan_dispatcher) Dispatching plan.
 KCL: (/rosplan_plan_dispatcher) Dispatching action [0, undock, 3.099019, 10.000000]
 ```
 
-First the PDDL action message is published on the action dispatch topic. You can view one of these messages in the second terminal:
-
-```
-rostopic echo /rosplan_plan_dispatcher/action_dispatch -n 1
-```
-
-This command will show the last action published on this topic.
+First the PDDL action message is published on the action dispatch topic.
 
 ```
 KCL: (undock) action recieved

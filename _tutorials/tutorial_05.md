@@ -57,7 +57,7 @@ Then take another look at the *interface_planning_system.launch* in the *rosplan
 	</include>
 ```
 
-The **Parsing Interface** and **Plan Dispatch** nodes are launched from the included files. These do not launch the Simple PDDL variants used in [Tutorial 03: Plan Execution I](../03_plan_parsing/tutorial_03.mk). Instead, they launch nodes of type: *pddl_esterel_plan_parser* and *pddl_esterel_plan_dispatcher*.
+The two files included here launch the **Parsing Interface** and **Plan Dispatch** nodes. The nodes launched by those included files are not the same Simple PDDL variants used in [Tutorial 03: Plan Execution I](tutorial_03). Instead, they launch nodes of type: *pddl_esterel_plan_parser* and *pddl_esterel_plan_dispatcher*.
 
 ## 3.2 Launching
 
@@ -67,7 +67,7 @@ From the terminal, launch the file:
 roslaunch tutorial_05.launch
 ```
 
-Switch to a second terminal and source the workspace. Using the script written for [Tutorial 04: Simulated Actions](../04_simulated_actions/tutorial_04.mk), start problem generation, planning, and plan dispatch.
+Switch to a second terminal and source the workspace. Using the script written for [Tutorial 04: Simulated Actions](tutorial_04), start problem generation, planning, and plan dispatch.
 
 ```
 ./tutorial.bash
@@ -83,7 +83,7 @@ Open a third terminal, and source the workspace. From this terminal, take a look
 rosnode info /rosplan_plan_dispatcher
 ```
 
-Have a look at the publishers and subscribers for this node. Note that the message type for the *complete_plan* topic is different from teh simple plan. use `rosmsg show rosplan_dispatch_msgs/EsterelPlan` to see the structure of the new plan message:
+Have a look at the publishers and subscribers for this node. Note that the message type for the *complete_plan* topic is different from the simple plan. Use `rosmsg show rosplan_dispatch_msgs/EsterelPlan` to see the structure of the new plan message:
 
 ```
 rosplan_dispatch_msgs/EsterelPlanNode[] nodes
