@@ -1,6 +1,6 @@
-## New Features in the Latest Version
+## New Features in the Latest Version (June 2018)
 
-- New **tutorials** and **documentation** has been written to walk a user through each component of ROSPlan.  
+- New **tutorials** and **documentation** to walk a user through each component of ROSPlan.  
 - The Knowledge Base now keeps track of **timed-initial literals and functions**; **metrics**; and **numeric expressions**.
 - An **initial state** can be loaded into the Knowledge Base from a PDDL problem file.  
 - Multiple Knowledge Bases can now be run in parallel for systems which use multiple domains, or multiple states.
