@@ -15,11 +15,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  Filter.msg
-  KnowledgeItem.msg
-  Notification.msg
   DomainFormula.msg
   DomainOperator.msg
+  DomainAssignment.msg
+  DomainInequality.msg
+  ExprBase.msg
+  ExprComposite.msg
+  KnowledgeItem.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -27,11 +29,13 @@ add_service_files(
   FILES
   GetAttributeService.srv
   GetInstanceService.srv
+  GetMetricService.srv
   KnowledgeUpdateService.srv
   KnowledgeUpdateServiceArray.srv
   KnowledgeQueryService.srv
-  GetDomainAttributeService.srv
+  GetDomainNameService.srv
   GetDomainTypeService.srv
+  GetDomainAttributeService.srv
   GetDomainOperatorService.srv  
   GetDomainOperatorDetailsService.srv  
   GetDomainPredicateDetailsService.srv  

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- ROSPlan -->
+	<include file="$(find rosplan_planning_system)/launch/interfaced_planning_system.launch" >
+		<arg name="domain_path"		value="$(find rosplan_demos)/common/domain_turtlebot.pddl" />
+		<arg name="problem_path"	value="$(find rosplan_demos)/common/problem_turtlebot.pddl" />
+	</include>
+
+	<!-- sim actions -->
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="undock" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="dock" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="localise" />
+	</include>
+	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+		<arg name="pddl_action_name" value="goto_waypoint" />
+	</include>
+</launch>
+
