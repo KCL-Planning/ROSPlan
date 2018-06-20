@@ -1,0 +1,37 @@
+		<section class="sidebar">
+
+			<ul>
+				<li style="text-align: center"><strong>Main</strong></li>
+				<li><a href="{{ site.url }}/documentation">Documentation Home</a></li>
+			</ul>
+
+			<ul>
+				<li style="text-align: center"><strong>Tutorials</strong></li>
+				{% for page in site.tutorials %} {% if page.title %}
+				<li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>
+				{% endif %} {% endfor %}
+			</ul>
+
+			<ul>
+				<li style="text-align: center"><strong>Planning and Execution</strong></li>
+				{% for page in site.documentation %}{% if page.url contains "interfaces" %}
+				<li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>
+				{% endif %} {% endfor %}
+			</ul>
+
+			<ul>
+				<li style="text-align: center"><strong>Knowledge Management</strong></li>
+				{% for page in site.documentation %}{% if page.url contains "knowledge" %}
+				<li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>
+				{% endif %} {% endfor %}
+			</ul>
+
+			<ul>
+				<li style="text-align: center"><strong>Links</strong></li>
+				<li><a href="https://github.com/KCL-Planning/ROSPlan_interface_Turtlebot2">Interface for Turtlebot2</a></li>
+				<li><a href="https://github.com/KCL-Planning/ROSPlan_interface_COLA2">Interface for COLA2</a></li>
+				<li><a href="https://github.com/fairf4x/ROSPlan_interface_quadrotor">Interface for hector_quadrotor</a></li>
+				<li>Please <a href="{{ site.url }}/contact">contact</a> us if you have a link to add.</li>
+			</ul>
+
+		</section>

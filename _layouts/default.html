@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+{% include head.html %}
+
+<body style="background: url( {{ "/images/Night-London.jpg" | prepend: site.url }} ); background-attachment: fixed;" >
+
+	{% include header.html %}
+
+	<section class="main-content" style="background: #FFF" >
+
+		{{ content }}
+
+		{% include footer.html %}
+	</section>
+</body>
+
+</html>
