@@ -16,3 +16,9 @@ Website: [http://www.inf.kcl.ac.uk/staff/cashmore](http://www.inf.kcl.ac.uk/staf
 
 **Daniele Magazzeni**  
 Website: [http://www.inf.kcl.ac.uk/staff/danmag](http://www.inf.kcl.ac.uk/staff/danmag)
+
+**Dorian Buksz**  
+**Benjamin Krarup**  
+**Ionut Moraru**  
+**Parisa Zehtabi**  
+**Anna Collins**  
