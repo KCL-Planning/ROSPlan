@@ -7,7 +7,7 @@
 - Multiple Knowledge Bases can now be run in parallel for systems which use multiple domains, or multiple states.
 - Interfaces available for many planners (POPF, OPTIC, FF, Metric-FF, Contingent-FF, LPG, Fast Downward, TFD, SMTPlan, and UPMurphi).
 - The new **simulated action node** can be used for testing, completing actions with a user-defined probability.
-- Additional features coming soon! Stay tuned and join the google group.
+- Additional features coming soon! Stay tuned and join the [google group](https://groups.google.com/forum/#!forum/rosplan).
 
 #### **Virtual Machine**
 A Virtual Machine with ROSPlan installed is now available! [LINK](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova)  
