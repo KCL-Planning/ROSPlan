@@ -4,7 +4,7 @@ title: ROSPlan Overview
 permalink: /documentation/
 ---
 
-The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. ROSPlan has a modular design, with a number of different implementations for each node, and it is intended to be modified.
+The ROSPlan framework provides a collection of tools for AI Planning in a ROS system. ROSPlan has a variety of nodes which encapsulate planning, problem generation, and plan execution.
 
 ![Demo system](images/rosplan_demo_system.png){: .big_chart }
 
