@@ -10,13 +10,13 @@ The ROSPlan framework provides a generic method for task planning in a ROS syste
 
 Get the prerequisites:
 
+(for Kinetic)
+```sh
+sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
+```
 (for Indigo)
 ```sh
-sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet freeglut3-dev
-```
-(for Hydro)
-```sh
-sudo apt-get install flex ros-hydro-mongodb-store ros-hydro-tf2-bullet freeglut3-dev
+sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet freeglut3-dev python-catkin-tools
 ```
 Select a catkin workspace or create a new one:
 ```sh
@@ -28,13 +28,10 @@ Get the code:
 cd src/
 git clone https://github.com/clearpathrobotics/occupancy_grid_utils
 git clone https://github.com/KCL-Planning/rosplan
-# optionally get the turtlebot interface
-git clone https://github.com/KCL-Planning/rosplan_interface_turtlebot2
 ```
 Compile everything:
 ```sh
-source /opt/ros/hydro/setup.bash
-catkin_make
+catkin build
 ```
 
 ### Running a demo with the turtlebot
