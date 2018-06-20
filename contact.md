@@ -18,7 +18,7 @@ Website: [http://www.inf.kcl.ac.uk/staff/cashmore](http://www.inf.kcl.ac.uk/staf
 Website: [http://www.inf.kcl.ac.uk/staff/danmag](http://www.inf.kcl.ac.uk/staff/danmag)
 
 **Dorian Buksz**  
+**Anna Collins**  
 **Benjamin Krarup**  
 **Ionut Moraru**  
 **Parisa Zehtabi**  
-**Anna Collins**  
