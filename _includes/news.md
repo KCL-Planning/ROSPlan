@@ -10,4 +10,4 @@
 - Additional features coming soon! Stay tuned and join the [google group](https://groups.google.com/forum/#!forum/rosplan).
 
 #### **Virtual Machine**
-A Virtual Machine with ROSPlan installed is now available! [LINK](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova)  
+A Virtual Machine with ROSPlan installed is now available! [LINK]({{site.url}}/vm)  
