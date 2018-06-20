@@ -9,4 +9,4 @@ Please change the settings to what your laptop can support (default: 4096 memory
 
 The password is: sourcedevel
 
-[DOWNLOAD](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova)
+[DOWNLOAD](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova) (3.9GB)
