@@ -9,5 +9,5 @@
 - The new **simulated action node** can be used for testing, completing actions with a user-defined probability.
 - Additional features coming soon! Stay tuned and join the google group.
 
-#### Virtual Machine
+#### **Virtual Machine**
 A Virtual Machine with ROSPlan installed is now available! [LINK](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova)  
