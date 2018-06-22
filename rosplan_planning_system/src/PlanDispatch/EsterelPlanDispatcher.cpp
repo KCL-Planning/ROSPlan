@@ -11,8 +11,16 @@ namespace KCL_rosplan {
 		
 		node_handle = &nh;
 
-		query_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		query_domain_client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		// knowledge base services
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+		std::stringstream ss;
+		ss << "/" << kb << "/query_state";
+		query_knowledge_client = node_handle->serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>(ss.str());
+		ss.str("");
+		ss << "/" << kb << "/domain/operator_details";
+		query_domain_client = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
+		ss.str("");
 
 		std::string plan_graph_topic = "plan_graph";
 		nh.getParam("plan_graph_topic", plan_graph_topic);
@@ -39,7 +47,7 @@ namespace KCL_rosplan {
 		plan_cancelled = false;
 		action_received.clear();
 		action_completed.clear();
-		plan_recieved = false;
+		plan_received = false;
 		finished_execution = true;
 	}
 
@@ -49,13 +57,13 @@ namespace KCL_rosplan {
 
 	void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlan plan) {
 		if(finished_execution) {
-			ROS_INFO("KCL: (%s) Plan recieved.", ros::this_node::getName().c_str());
-			plan_recieved = true;
+			ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
+			plan_received = true;
 			mission_start_time = ros::WallTime::now().toSec();
 			current_plan = plan;
 			printPlan();
 		} else {
-			ROS_INFO("KCL: (%s) Plan recieved, but current execution not yet finished.", ros::this_node::getName().c_str());
+			ROS_INFO("KCL: (%s) Plan received, but current execution not yet finished.", ros::this_node::getName().c_str());
 		}
 	}
 
@@ -69,7 +77,7 @@ namespace KCL_rosplan {
 	 * @returns True iff every action was dispatched and returned success.
 	 */
 	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		if(!plan_recieved) return false;
+		if(!plan_received) return false;
 		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
 		reset();
 		return success;
@@ -110,6 +118,7 @@ namespace KCL_rosplan {
 				break;
 			}
 
+			bool plan_started = false;
 			finished_execution = true;
 			state_changed = false;
 
@@ -117,8 +126,27 @@ namespace KCL_rosplan {
 			for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
 				
 				rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
+
+				// activate plan start edges
+				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START && !plan_started) {
+
+					// activate new edges
+					std::vector<int>::const_iterator ci = node.edges_in.begin();
+					ci = node.edges_out.begin();
+					for(; ci != node.edges_out.end(); ci++) {
+						edge_active[*ci] = true;
+					}
+
+					finished_execution = false;
+					state_changed = true;
+					plan_started = true;
+				}
 				
-				// If at least one node is still executing we are not done yet.
+				// do not check actions for nodes which are not action nodes
+				if(node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+					continue;
+
+				// If at least one node is still executing we are not done yet
 				if (action_dispatched[node.action.action_id] && !action_completed[node.action.action_id]) {
 					finished_execution = false;
 				}
@@ -130,7 +158,7 @@ namespace KCL_rosplan {
 					if(!edge_active[(*eit)]) edges_activate_action = false;
 				}
 				if(!edges_activate_action) continue;
-				
+
 				// dispatch new action
 				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && !action_dispatched[node.action.action_id]) {
 
@@ -198,7 +226,7 @@ namespace KCL_rosplan {
 					}
 				}
 
-			} // end loop (nodes)
+			} // end loop (action nodes)
 
 			ros::spinOnce();
 			loop_rate.sleep();
@@ -283,7 +311,7 @@ namespace KCL_rosplan {
 			return querySrv.response.all_true;
 
 		} else {
-			ROS_ERROR("KCL: (%s) Failed to call service /kcl_rosplan/query_knowledge_base", ros::this_node::getName().c_str());
+			ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
 		}
 	}
 
@@ -337,16 +365,31 @@ namespace KCL_rosplan {
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
 			dest <<  nit->node_id << "[ label=\"" << nit->name;
 
-			if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && action_received[nit->action.action_id]) {
-				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
-			}
-			else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END && action_completed[nit->action.action_id]) {
-				dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
-			}
-			else if(action_dispatched[nit->action.action_id]) {
-				dest << "\"style=filled,fillcolor=darkgoldenrod2];" << std::endl;
-			} else {
+			switch(nit->node_type) {
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
+				if(action_received[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+				} else if(action_dispatched[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+				} else {
+					dest << "\"];" << std::endl;
+				}
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
+				if(action_completed[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkolivegreen,fontcolor=white];" << std::endl;
+				} else if(action_dispatched[nit->action.action_id]) {
+					dest << "\",style=filled,fillcolor=darkgoldenrod2];" << std::endl;
+				} else {
+					dest << "\"];" << std::endl;
+				}
+				break;
+			case rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START:
+				dest << "\",style=filled,fillcolor=black,fontcolor=white];" << std::endl;
+				break;
+			default:
 				dest << "\"];" << std::endl;
+				break;
 			}
 		}
 
@@ -354,9 +397,14 @@ namespace KCL_rosplan {
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::iterator eit = current_plan.edges.begin(); eit!=current_plan.edges.end(); eit++) {
 			for(int j=0; j<eit->sink_ids.size(); j++) {
 			for(int i=0; i<eit->source_ids.size(); i++) {
-				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\""
-						<< " [ label=\"" << eit->edge_name << "\""
-						<< " , penwidth=2"
+
+				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\"";
+				if(eit->duration_upper_bound == std::numeric_limits<double>::max()) {
+					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << "inf]\"";
+				} else {
+					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << eit->duration_upper_bound << "]\"";
+				}
+				dest << " , penwidth=2"
 						<< ((edge_active[eit->edge_id]) ? " , color=\"red\"" : " , color=\"black\"")
 						<< "]" << std::endl;
 			}};

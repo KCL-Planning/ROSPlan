@@ -26,7 +26,7 @@ namespace KCL_rosplan {
 
 		/* plan subscription */		
 		std::string planner_output;
-		bool planner_output_recieved;
+		bool planner_output_received;
 		double planner_output_time;
 
 		std::vector<rosplan_dispatch_msgs::ActionDispatch> action_list;

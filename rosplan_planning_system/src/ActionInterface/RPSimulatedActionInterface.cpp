@@ -5,7 +5,8 @@ namespace KCL_rosplan {
 
 	/* constructor */
 	RPSimulatedActionInterface::RPSimulatedActionInterface(ros::NodeHandle &nh) {
-		action_duration = action_probability = 1.0;
+		action_duration = 0.0;
+		action_probability = 1.0;
 		nh.getParam("action_duration", action_duration);
 		nh.getParam("action_probability", action_probability);
 	}
@@ -13,11 +14,13 @@ namespace KCL_rosplan {
 	/* action dispatch callback */
 	bool RPSimulatedActionInterface::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
-		ROS_INFO("KCL: (%s) Action completing with probability %f", params.name.c_str(), action_probability);
+		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, action_duration);
 
 		// wait for some time
-		ros::Rate wait = (action_duration);
-		wait.sleep();
+		if(action_duration > 0) {
+			ros::Rate wait = 1.0 / action_duration;
+			wait.sleep();
+		}
 
 		// complete the action
 		return (rand() % 100) <= (100 * action_probability);

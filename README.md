@@ -10,13 +10,13 @@ The ROSPlan framework provides a generic method for task planning in a ROS syste
 
 Get the prerequisites:
 
+(for Kinetic)
+```sh
+sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
+```
 (for Indigo)
 ```sh
-sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet freeglut3-dev
-```
-(for Hydro)
-```sh
-sudo apt-get install flex ros-hydro-mongodb-store ros-hydro-tf2-bullet freeglut3-dev
+sudo apt-get install flex ros-indigo-mongodb-store ros-indigo-tf2-bullet freeglut3-dev python-catkin-tools
 ```
 Select a catkin workspace or create a new one:
 ```sh
@@ -28,13 +28,10 @@ Get the code:
 cd src/
 git clone https://github.com/clearpathrobotics/occupancy_grid_utils
 git clone https://github.com/KCL-Planning/rosplan
-# optionally get the turtlebot interface
-git clone https://github.com/KCL-Planning/rosplan_interface_turtlebot2
 ```
 Compile everything:
 ```sh
-source /opt/ros/hydro/setup.bash
-catkin_make
+catkin build
 ```
 
 ### Running a demo with the turtlebot
@@ -82,14 +79,14 @@ The turtlebot will move around the waypoints, exploring the environment. You sho
 ...
 KCL: (/rosplan_problem_interface) (problem.pddl) Generating problem file.
 KCL: (/rosplan_problem_interface) (problem.pddl) The problem was generated.
-KCL: (/rosplan_planner_interface) Problem recieved.
+KCL: (/rosplan_planner_interface) Problem received.
 KCL: (/rosplan_planner_interface) (problem.pddl) Writing problem to file.
 KCL: (/rosplan_planner_interface) (problem.pddl) Running: timeout 10 /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_planning_system/common/bin/popf /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/domain_turtlebot_demo.pddl /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/problem.pddl > /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/plan.pddl
 KCL: (/rosplan_planner_interface) (problem.pddl) Planning complete
 KCL: (/rosplan_planner_interface) (problem.pddl) Plan was solved.
-KCL: (/rosplan_parsing_interface) Planner output recieved.
+KCL: (/rosplan_parsing_interface) Planner output received.
 KCL: (/rosplan_parsing_interface) Parsing planner output.
-KCL: (/rosplan_plan_dispatcher) Plan recieved.
+KCL: (/rosplan_plan_dispatcher) Plan received.
 KCL: (/rosplan_plan_dispatcher) Dispatching plan.
 KCL: (/rosplan_plan_dispatcher) Dispatching action [0, goto_waypoint, 0.804106, 10.000000]
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action enabled]

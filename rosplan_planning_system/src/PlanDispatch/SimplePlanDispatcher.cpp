@@ -10,8 +10,16 @@ namespace KCL_rosplan {
 		
 		node_handle = &nh;
 
-		queryKnowledgeClient = node_handle->serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>("/kcl_rosplan/query_knowledge_base");
-		queryDomainClient = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		// knowledge base services
+		std::string kb = "knowledge_base";
+		node_handle->getParam("knowledge_base", kb);
+		std::stringstream ss;
+		ss << "/" << kb << "/query_state";
+		queryKnowledgeClient = node_handle->serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>(ss.str());
+		ss.str("");
+		ss << "/" << kb << "/domain/operator_details";
+		queryDomainClient = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
+		ss.str("");
 
 		action_dispatch_topic = "action_dispatch";
 		action_feedback_topic = "action_feedback";
@@ -34,7 +42,7 @@ namespace KCL_rosplan {
 		plan_cancelled = false;
 		action_received.clear();
 		action_completed.clear();
-		plan_recieved = false;
+		plan_received = false;
 		current_action = 0;
 	}
 
@@ -43,8 +51,8 @@ namespace KCL_rosplan {
 	/*-------------------*/
 
 	void SimplePlanDispatcher::planCallback(const rosplan_dispatch_msgs::CompletePlan plan) {
-		ROS_INFO("KCL: (%s) Plan recieved.", ros::this_node::getName().c_str());
-		plan_recieved = true;
+		ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
+		plan_received = true;
 		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
 	}
@@ -197,7 +205,7 @@ namespace KCL_rosplan {
 			return querySrv.response.all_true;
 
 		} else {
-			ROS_ERROR("KCL: (%s) Failed to call service /kcl_rosplan/query_knowledge_base", ros::this_node::getName().c_str());
+			ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
 		}
 	}
 

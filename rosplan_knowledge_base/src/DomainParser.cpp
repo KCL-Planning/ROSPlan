@@ -43,7 +43,6 @@ namespace KCL_rosplan {
 
 			// domain name
 			domain = VAL::current_analysis->the_domain;
-			domain_name = domain->name;
 		}
 		delete VAL::yfl;
 		domainFile.close();

@@ -37,7 +37,7 @@ namespace KCL_rosplan {
 
 		/* problem subscription */
 		std::string problem_instance;
-		bool problem_instance_recieved;
+		bool problem_instance_received;
 		double problem_instance_time;
 
 		/* planning */

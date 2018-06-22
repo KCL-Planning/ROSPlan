@@ -49,8 +49,8 @@ namespace KCL_rosplan {
 	 */
 	bool FFPlannerInterface::runPlanner() {
 
-		// save problem to file for POPF
-		if(use_problem_topic && problem_instance_recieved) {
+		// save problem to file for planner
+		if(use_problem_topic && problem_instance_received) {
 			ROS_INFO("KCL: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
 			std::ofstream dest;
 			dest.open((problem_path).c_str());
@@ -91,15 +91,15 @@ namespace KCL_rosplan {
 				if (line.length()<2) break;
 			}
 
-            // actions look like this:
-            // step    0: got_place C1
-            //         1: find_object V1 C1 
+			// actions look like this:
+			// step    0: got_place C1
+			//         1: find_object V1 C1 
 			solved = true;
 			while (std::getline(planfile, line)) {
 
 				if (line.length()<2) break;
 
-	            unsigned int pos = line.find(' ');
+				unsigned int pos = line.find(' ');
 				bool action = false;
 				while(pos != std::string::npos && pos < line.length()) {
 					if(line.substr(pos,1) != " ") {

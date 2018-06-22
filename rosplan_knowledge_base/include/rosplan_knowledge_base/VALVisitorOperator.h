@@ -11,6 +11,9 @@
 
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "rosplan_knowledge_msgs/DomainOperator.h"
+#include "rosplan_knowledge_msgs/ExprBase.h"
+#include "rosplan_knowledge_msgs/ExprComposite.h"
+#include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #ifndef KCL_valvisitor_operator
 #define KCL_valvisitor_operator
@@ -24,7 +27,9 @@ namespace KCL_rosplan {
 	public:
 
 		/* message */
+		rosplan_knowledge_msgs::ExprComposite last_expr;
 		rosplan_knowledge_msgs::DomainFormula last_prop;
+		rosplan_knowledge_msgs::DomainFormula last_func;
 		rosplan_knowledge_msgs::DomainOperator msg;
 
 		/* visitor methods */
@@ -47,6 +52,16 @@ namespace KCL_rosplan {
 		virtual void visit_effect_lists(VAL::effect_lists * e);
 
 		virtual void visit_comparison(VAL::comparison * c);
+
+        virtual void visit_plus_expression(VAL::plus_expression * s);
+        virtual void visit_minus_expression(VAL::minus_expression * s);
+        virtual void visit_mul_expression(VAL::mul_expression * s);
+        virtual void visit_div_expression(VAL::div_expression * s);
+        virtual void visit_uminus_expression(VAL::uminus_expression * s);
+        virtual void visit_int_expression(VAL::int_expression * s);
+        virtual void visit_float_expression(VAL::float_expression * s);
+        virtual void visit_special_val_expr(VAL::special_val_expr * s);
+        virtual void visit_func_term(VAL::func_term * s);
 
 		virtual void visit_derivation_rule(VAL::derivation_rule * o);
 	};

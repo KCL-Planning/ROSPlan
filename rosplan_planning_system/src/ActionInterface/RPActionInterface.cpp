@@ -11,9 +11,15 @@ namespace KCL_rosplan {
 		// set action name
 		nh.getParam("pddl_action_name", params.name);
 
+		// knowledge base services
+		std::string kb = "knowledge_base";
+		nh.getParam("knowledge_base", kb);
+
 		// fetch action params
-		ros::service::waitForService("/kcl_rosplan/get_domain_operator_details",ros::Duration(20));
-		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>("/kcl_rosplan/get_domain_operator_details");
+		std::stringstream ss;
+		ss << "/" << kb << "/domain/operator_details";
+		ros::service::waitForService(ss.str(),ros::Duration(20));
+		ros::ServiceClient client = nh.serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
 		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
 		srv.request.name = params.name;
 		if(client.call(srv)) {
@@ -71,8 +77,10 @@ namespace KCL_rosplan {
 			predicateNames.push_back(pit->name);
 
 		// fetch and store predicate details
-		ros::service::waitForService("/kcl_rosplan/get_domain_predicate_details",ros::Duration(20));
-		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>("/kcl_rosplan/get_domain_predicate_details");
+		ss.str("");
+		ss << "/" << kb << "/domain/predicate_details";
+		ros::service::waitForService(ss.str(),ros::Duration(20));
+		ros::ServiceClient predClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainPredicateDetailsService>(ss.str());
 		std::vector<std::string>::iterator nit = predicateNames.begin();
 		for(; nit!=predicateNames.end(); nit++) {
 			if (predicates.find(*nit) != predicates.end()) continue;
@@ -88,7 +96,9 @@ namespace KCL_rosplan {
 		}
 
 		// create PDDL info publisher
-		pddl_action_parameters_pub = nh.advertise<rosplan_knowledge_msgs::DomainFormula>("/kcl_rosplan/pddl_action_parameters", 10, true);
+		ss.str("");
+		ss << "/" << kb << "/pddl_action_parameters";
+		pddl_action_parameters_pub = nh.advertise<rosplan_knowledge_msgs::DomainFormula>(ss.str(), 10, true);
 
 		// create the action feedback publisher
 		std::string aft = "default_feedback_topic";
@@ -96,7 +106,9 @@ namespace KCL_rosplan {
 		action_feedback_pub = nh.advertise<rosplan_dispatch_msgs::ActionFeedback>(aft, 10, true);
 
 		// knowledge interface
-		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateService>("/kcl_rosplan/update_knowledge_base");
+		ss.str("");
+		ss << "/" << kb << "/update_array";
+		update_knowledge_client = nh.serviceClient<rosplan_knowledge_msgs::KnowledgeUpdateServiceArray>(ss.str());
 
 		// listen for action dispatch
 		std::string adt = "default_dispatch_topic";
@@ -104,12 +116,17 @@ namespace KCL_rosplan {
 		ros::Subscriber ds = nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
 
 		// loop
-		ros::Rate loopRate(1);
+		ros::Rate loopRate(50);
+		int counter = 0;
 		ROS_INFO("KCL: (%s) Ready to receive", params.name.c_str());
 
 		while(ros::ok()) {
 
-			pddl_action_parameters_pub.publish(params);
+			counter++;
+			if(counter==20) {
+				pddl_action_parameters_pub.publish(params);
+				counter = 0;
+			}
 
 			loopRate.sleep();
 			ros::spinOnce();
@@ -121,7 +138,7 @@ namespace KCL_rosplan {
 
 		// check action name
 		if(0!=msg->name.compare(params.name)) return;
-		ROS_INFO("KCL: (%s) action recieved", params.name.c_str());
+		ROS_INFO("KCL: (%s) action received", params.name.c_str());
 
 		// check PDDL parameters
 		std::vector<bool> found(params.typed_parameters.size(), false);
@@ -148,38 +165,42 @@ namespace KCL_rosplan {
 
 		{
 			// update knowledge base
-			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
-			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+			rosplan_knowledge_msgs::KnowledgeUpdateServiceArray updatePredSrv;
 			
 			// simple START del effects
-			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 			for(int i=0; i<op.at_start_del_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_start_del_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
+				rosplan_knowledge_msgs::KnowledgeItem item;
+				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+				item.attribute_name = op.at_start_del_effects[i].name;
+				item.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_start_del_effects[i].typed_parameters.size(); j++) {
 					pair.key = predicates[op.at_start_del_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_start_del_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
+					item.values.push_back(pair);
 				}
-				if(!update_knowledge_client.call(updatePredSrv))
-					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_start_del_effects[i].name.c_str());
+				updatePredSrv.request.knowledge.push_back(item);
+				updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE);
 			}
 
 			// simple START add effects
-			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 			for(int i=0; i<op.at_start_add_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_start_add_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
+				rosplan_knowledge_msgs::KnowledgeItem item;
+				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+				item.attribute_name = op.at_start_add_effects[i].name;
+				item.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
 					pair.key = predicates[op.at_start_add_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
+					item.values.push_back(pair);
 				}
-				if(!update_knowledge_client.call(updatePredSrv))
-					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_start_add_effects[i].name.c_str());
+				updatePredSrv.request.knowledge.push_back(item);
+				updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE);
 			}
+
+			if(updatePredSrv.request.knowledge.size()>0 && !update_knowledge_client.call(updatePredSrv))
+				ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base", params.name.c_str());
 		}
 
 		// call concrete implementation
@@ -188,42 +209,42 @@ namespace KCL_rosplan {
 		if(action_success) {
 
 			// update knowledge base
-			rosplan_knowledge_msgs::KnowledgeUpdateService updatePredSrv;
-			updatePredSrv.request.knowledge.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+			rosplan_knowledge_msgs::KnowledgeUpdateServiceArray updatePredSrv;
 
 			// simple END del effects
-			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE;
 			for(int i=0; i<op.at_end_del_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_end_del_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
+				rosplan_knowledge_msgs::KnowledgeItem item;
+				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+				item.attribute_name = op.at_end_del_effects[i].name;
+				item.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_end_del_effects[i].typed_parameters.size(); j++) {
 					pair.key = predicates[op.at_end_del_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_end_del_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
+					item.values.push_back(pair);
 				}
-				if(!update_knowledge_client.call(updatePredSrv))
-					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_end_del_effects[i].name.c_str());
+				updatePredSrv.request.knowledge.push_back(item);
+				updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE);
 			}
 
 			// simple END add effects
-			updatePredSrv.request.update_type = rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE;
 			for(int i=0; i<op.at_end_add_effects.size(); i++) {
-				updatePredSrv.request.knowledge.attribute_name = op.at_end_add_effects[i].name;
-				updatePredSrv.request.knowledge.values.clear();
+				rosplan_knowledge_msgs::KnowledgeItem item;
+				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+				item.attribute_name = op.at_end_add_effects[i].name;
+				item.values.clear();
 				diagnostic_msgs::KeyValue pair;
 				for(size_t j=0; j<op.at_end_add_effects[i].typed_parameters.size(); j++) {
 					pair.key = predicates[op.at_end_add_effects[i].name].typed_parameters[j].key;
 					pair.value = boundParameters[op.at_end_add_effects[i].typed_parameters[j].key];
-					updatePredSrv.request.knowledge.values.push_back(pair);
+					item.values.push_back(pair);
 				}
-				if(!update_knowledge_client.call(updatePredSrv))
-					ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base: %s", params.name.c_str(), op.at_end_add_effects[i].name.c_str());
+				updatePredSrv.request.knowledge.push_back(item);
+				updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE);
 			}
 
-			// sleep a little
-			ros::Rate big_rate(0.5);
-			big_rate.sleep();
+			if(updatePredSrv.request.knowledge.size()>0 && !update_knowledge_client.call(updatePredSrv))
+				ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base", params.name.c_str());
 
 			// publish feedback (achieved)
 			fb.status = "action achieved";
