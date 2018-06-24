@@ -17,7 +17,7 @@ namespace KCL_rosplan {
         problem_parsed = true;
 
         std::string ProblemFileName = (ProblemPath);
-        ROS_INFO("KCL: (KB) Parsing Problem File: %s.", ProblemFileName.c_str());
+        ROS_INFO("KCL: (%s) Parsing Problem File: %s.", ros::this_node::getName().c_str(), ProblemFileName.c_str());
 
         // save filename for VAL
         std::vector<char> writable(ProblemFileName.begin(), ProblemFileName.end());
@@ -33,7 +33,7 @@ namespace KCL_rosplan {
         VAL::yfl = new yyFlexLexer;
 
         if (ProblemFile.bad()) {
-            ROS_ERROR("KCL: (KB) Failed to open problem file.");
+            ROS_ERROR("KCL: (%s) Failed to open problem file.", ros::this_node::getName().c_str());
             line_no = 0;
             VAL::log_error(VAL::E_FATAL,"Failed to open file");
         } else {
