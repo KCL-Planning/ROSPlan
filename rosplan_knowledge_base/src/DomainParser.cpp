@@ -17,7 +17,7 @@ namespace KCL_rosplan {
 		domain_parsed = true;
 
 		std::string domainFileName = (domainPath);
-		ROS_INFO("KCL: (KB) Parsing domain: %s.", domainFileName.c_str());
+		ROS_INFO("KCL: (%s) Parsing domain: %s.", ros::this_node::getName().c_str(), domainFileName.c_str());
 
 		// save filename for VAL
 		std::vector<char> writable(domainFileName.begin(), domainFileName.end());
@@ -33,7 +33,7 @@ namespace KCL_rosplan {
 		VAL::yfl = new yyFlexLexer;
 
 		if (domainFile.bad()) {
-			ROS_ERROR("KCL: (KB) Failed to open domain file.");
+			ROS_ERROR("KCL: (%s) Failed to open domain file.", ros::this_node::getName().c_str());
 			line_no = 0;
 			VAL::log_error(VAL::E_FATAL,"Failed to open file");
 		} else {
@@ -50,6 +50,5 @@ namespace KCL_rosplan {
 		return domain;
 
 	}
-
 
 } // close namespace
