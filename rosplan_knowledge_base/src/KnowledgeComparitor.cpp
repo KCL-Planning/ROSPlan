@@ -20,7 +20,7 @@ namespace KCL_rosplan {
 			case rosplan_knowledge_msgs::DomainInequality::LESSEQ:    return lhs<=rhs;
 			case rosplan_knowledge_msgs::DomainInequality::EQUALS:    return lhs==rhs;
 		}
-		ROS_ERROR("KCL: (KB) Knowledge Comapritor does not recognise comparison type.");
+		ROS_ERROR("KCL: (%s) Knowledge Comapritor does not recognise comparison type.", ros::this_node::getName().c_str());
 		return false;
 	}
 
@@ -83,7 +83,7 @@ namespace KCL_rosplan {
 			case rosplan_knowledge_msgs::ExprBase::DIV: return lhs/rhs;
 			case rosplan_knowledge_msgs::ExprBase::UMINUS: return -lhs;
 		}
-		ROS_ERROR("KCL: (KB) Knowledge Comapritor does not recognise operator type.");
+		ROS_ERROR("KCL: (%s) Knowledge Comapritor does not recognise operator type.", ros::this_node::getName().c_str());
 		return 0;
 	}
 
@@ -112,7 +112,7 @@ namespace KCL_rosplan {
 				}
 				return 0;
 		}
-		ROS_ERROR("KCL: (KB) Knowledge Comapritor cannot get value for base expression.");
+		ROS_ERROR("KCL: (%s) Knowledge Comapritor cannot get value for base expression.", ros::this_node::getName().c_str());
 		return 0;
 	}
 

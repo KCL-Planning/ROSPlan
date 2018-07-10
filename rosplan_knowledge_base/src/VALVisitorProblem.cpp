@@ -186,15 +186,15 @@ namespace KCL_rosplan {
 	}
 
 	void VALVisitorProblem::visit_forall_effect(VAL::forall_effect * e) {
-		ROS_ERROR("Not yet implemented forall effects in intial state parser.");
+		ROS_ERROR("KCL: (%s) Not yet implemented forall effects in intial state parser.", ros::this_node::getName().c_str());
 	}
 
 	void VALVisitorProblem::visit_cond_effect(VAL::cond_effect * e) {
-		ROS_ERROR("Not yet implemented conditional effects in intial state parser.");	
+		ROS_ERROR("KCL: (%s) Not yet implemented conditional effects in intial state parser.", ros::this_node::getName().c_str());
 	}
 
 	void VALVisitorProblem::visit_timed_effect(VAL::timed_effect * e) {
-		ROS_WARN("Timed effects not a part of PDDL problem parsing.");	
+		ROS_WARN("KCL: (%s) Timed effects not a part of PDDL problem parsing.", ros::this_node::getName().c_str());
 	}
 
 	/*-------*/
@@ -275,7 +275,7 @@ namespace KCL_rosplan {
     }
 
 	void VALVisitorProblem::visit_timed_goal(VAL::timed_goal *c){
-		ROS_WARN("Timed goal not a part of PDDL problem parsing.");	
+		ROS_WARN("KCL: (%s) Timed goal not a part of PDDL problem parsing.", ros::this_node::getName().c_str());	
 	}
 
 	/*---------*/
