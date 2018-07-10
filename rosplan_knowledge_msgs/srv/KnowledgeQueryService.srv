@@ -1,5 +1,3 @@
-# symbolic model query (1/2)
-
 rosplan_knowledge_msgs/KnowledgeItem[] knowledge
 ---
 bool all_true
