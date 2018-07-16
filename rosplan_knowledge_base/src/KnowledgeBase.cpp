@@ -8,7 +8,7 @@ namespace KCL_rosplan {
 	void KnowledgeBase::runKnowledgeBase() {
 
         // loop
-        //ros::Rate loopRate(5);
+        ros::Rate loopRate(5);
 		while(ros::ok()) {
 
 			// update TILs
@@ -28,7 +28,7 @@ namespace KCL_rosplan {
 			}
 
 			// services
-            //loopRate.sleep();
+            loopRate.sleep();
             ros::spinOnce();
 		}
 	}
