@@ -3,7 +3,7 @@ layout: documentation
 title: Message 01 Domain Messages
 ---
 
-The domain is desribed using the following message types:
+The domain is described using the following message types:
 
 - DomainFormula
 - DomainAssignment

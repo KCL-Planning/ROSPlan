@@ -147,7 +147,7 @@ rosplan_knowledge_msgs/KnowledgeItem[] false_knowledge
 
 An array of *KnowledgeItem* messages are included as request data, and the response data will return a corresponding Boolean array describing which KnowledgeItems are true in the current state. The KnowledgeItem message type is described fully in the documentation, and represents either:
 
-- the existence of an objec instance
+- the existence of an object instance
 - a PDDL proposition, e.g. *(robot_at kenny wp0)*
 - an equality on a PDDL function, e.g. *(= (energy kenny) 120)*
 - an inequality between two expressions, e.g. *(> 10 (+ 5 (energy kenny)))*
