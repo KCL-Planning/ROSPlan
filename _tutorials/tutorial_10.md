@@ -6,7 +6,7 @@ permalink: /tutorials/tutorial_10
 
 ## 1. Description
 
-This tutorial will cover how to link ROSPlan with lower level control with an Action Interface. The action interface will subscribe to the action dispatch topic and listen for PDDL action messages dispatched by a Plan Dispatch node. There are two methods to implement this interface
+This tutorial will cover how to link ROSPlan with lower level control with an Action Interface. The action interface will subscribe to the action dispatch topic and listen for PDDL action messages dispatched by a Plan Dispatch node. There are two methods for implementing this interface:
 
 1. Extending the **Action Interface** node
 2. Implementing an interface from scratch. 
@@ -44,15 +44,19 @@ If you want anything different. For example:
 
 ## 2. Prior Setup
 
-This tutorial assumes that you have have already followed [Tutorial 04: Simulated Actions](tutorial_04), and will use the same launch files and scripts. Copy the launch file you created in Tutorial 04, calling the copy *tutorial_10.launch* and remove the following lines:
+This tutorial assumes that you have have already followed [Tutorial 04: Simulated Actions](tutorial_04), and will use the same launch files and scripts.
 
-```
+Copy the launch file you created in Tutorial 04, calling the copy *tutorial_10.launch* and remove the following lines:
+
+```xml
 	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
 		<arg name="pddl_action_name" value="undock" />
 	</include>
 ```
 
-```
+and
+
+```xml
 	<include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
 		<arg name="pddl_action_name" value="localise" />
 	</include>
@@ -62,13 +66,13 @@ This has removed the simulated execution of the `undock` and `localise` actions.
 
 ## 3. Extending Action Interface
 
-For this tutorial, we will create a new action interface directly in the ROSPlan package. This means creating two new files, a header file and source file, and editing CMakeLists.txt. Normally it is better to create new code in a separate package, but for the purposes of this tutorial it will keep things simpler.
+For this tutorial, we will create a new action interface directly in the ROSPlan package. This means creating two new files, a header file and source file, and editing CMakeLists.txt. Normally it is better to put the new code in a separate package, but for this tutorial we will keep things simple.
 
 ### 3.1 Header File
 
 Create a new file in the directory: *rosplan/rosplan_planning_system/include/rosplan_action_interface/* and call it *RPTutorial10.h*. Copy in the following code:
 
-```
+```c++
 #include <ros/ros.h>
 #include <vector>
 
@@ -101,7 +105,7 @@ namespace KCL_rosplan {
 
 This header file defines a new class, called *RPTutorialInterface*, which extends the *RPActionInterface* class. You can take a look at the header for this class in the same directory. Note that there is one virtual method, which will be implemented by *RPTutorialInterface*.
 
-```
+```c++
 /* perform or call real action implementation */
 virtual bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) =0;
 ```
@@ -110,7 +114,7 @@ virtual bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::Const
 
 Create a new file in the directory: *rosplan/rosplan_planning_system/src/ActionInterface/* and call it *RPTutorial10.cpp*. Copy in the following code:
 
-```
+```c++
 #include "rosplan_action_interface/RPTutorial.h"
 
 /* The implementation of RPTutorial.h */
@@ -150,9 +154,9 @@ namespace KCL_rosplan {
 	}
 ```
 
-This file contains for the header file created above. The important method is the *concreteCallback* method, which implements the action. Right now this method simply returns **true** -- indicating that the action has succeeded.
+This file contains the implementation of the header file created above. The important method is the *concreteCallback* method, which implements the action. Right now this method simply returns **true** -- indicating that the action has succeeded.
 
-### 3.3 CmakeLists.txt
+### 3.3 CMakeLists.txt
 
 Finally, in order to compile the node, it must be added to the CMakeLists. Open the file *CmakeLists.txt* in the directory *rosplan/rosplan_planning_system/*. Find the following line:
 
@@ -165,7 +169,7 @@ Add the following lines just above:
 
 ```
 ## Declare action interface for Tutorial 10
-add_executable(tutorialInterface src/ActionInterface/RPTutorial.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp src/ActionInterface/RPActionInterface.cpp)
+add_executable(tutorialInterface src/ActionInterface/RPTutorial.cpp src/ActionInterface/RPActionInterface.cpp)
 add_dependencies(tutorialInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(tutorialInterface ${catkin_LIBRARIES})
 ```
@@ -180,7 +184,7 @@ catkin build rosplan_planning_system
 
 Open the launch file *tutorial_10.launch* and add the following lines after the simulated action interfaces:
 
-```
+```xml
 	<!-- dock action interface -->
 	<node name="rosplan_interface_undock" pkg="rosplan_planning_system" type="tutorialInterface" respawn="false" output="screen">
 		<param name="knowledge_base"		value="rosplan_knowledge_base" />
