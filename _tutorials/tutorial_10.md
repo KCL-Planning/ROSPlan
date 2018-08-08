@@ -8,7 +8,7 @@ permalink: /tutorials/tutorial_10
 
 This tutorial will cover how to link ROSPlan with lower level control with an Action Interface. The action interface will subscribe to the action dispatch topic and listen for PDDL action messages dispatched by a Plan Dispatch node. There are two methods for implementing this interface:
 
-1. Extending the **Action Interface** node
+1. Extending the **Action Interface** node.
 2. Implementing an interface from scratch. 
 
 The action interface class provides a template for servicing a PDDL action. This class can be extended, and a *concreteCallback* method implemented with the code that services the action. The superclass performs the following process:
