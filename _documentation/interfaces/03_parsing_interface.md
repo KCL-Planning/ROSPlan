@@ -53,7 +53,7 @@ Parses a plan from file. The plan messages are published on the *plan_topic*.
 
 |**Field**  |**Description**                                            |
 |plan_path  |The path to the plan file. The plan must be in PDDL format.|
-|plan_parsed|True if the plan was parsed succesfully.                   |
+|plan_parsed|True if the plan was parsed successfully.                   |
 
 ## Publishers
 
