@@ -214,7 +214,7 @@ You should see the output from the simulated actions, and the tutorial interface
 [ INFO] [1528191989.410538907]: KCL: (dock) Ready to receive
 ```
 
-Open a second terminal, source the workspace, and look at the contents of three of those messages using `rostopic echo`:
+Open a second terminal, source the workspace, and look at the contents of three of those messages using rostopic echo:
 
 ```
 rostopic echo /rosplan_knowledge_base/pddl_action_parameters -n 3
@@ -256,7 +256,7 @@ KCL: (/rosplan_plan_dispatcher) 0: action undock completed
 KCL: (/rosplan_plan_dispatcher) Dispatching action [1, localise, 10.461119, 60.000000]
 ```
 
-You should see that the tutorial interface we just wrote is pickng up the first *undock* action, and that the Knowledge Base is modified accordingly. The execution then hangs on the localisation action, since we removed that simulated interface. You will have to interrupt the script with `ctrl+c`. You can also cancel the plan dispatch by calling a service:
+You should see that the tutorial interface we just wrote is picking up the first `undock` action, and that the Knowledge Base is modified accordingly. The execution then hangs on the localisation action, since we removed that simulated interface. You will have to interrupt the script with *ctrl+c*. You can also cancel the plan dispatch by calling a service:
 
 ```
 rosservice call /rosplan_plan_dispatcher/cancel_dispatch
