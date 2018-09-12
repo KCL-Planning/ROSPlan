@@ -1,5 +1,5 @@
 (define (problem task)
-(:domain domainname)
+(:domain turtlebot)
 (:objects
     wp0 wp1 wp2 wp3 wp4 - waypoint
     kenny - robot
@@ -15,4 +15,5 @@
     (visited wp2)
     (visited wp3)
     (visited wp4)
+    (docked kenny)
 )))
