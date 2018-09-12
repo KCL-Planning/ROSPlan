@@ -104,6 +104,7 @@ namespace KCL_rosplan {
 		// begin execution
 		finished_execution = false;
 		state_changed = false;
+		bool plan_started = false;
 		while (ros::ok() && !finished_execution) {
 
 			// loop while dispatch is paused
@@ -118,7 +119,7 @@ namespace KCL_rosplan {
 				break;
 			}
 
-			bool plan_started = false;
+
 			finished_execution = true;
 			state_changed = false;
 
