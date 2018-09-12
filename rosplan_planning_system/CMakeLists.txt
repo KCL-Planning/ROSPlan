@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   rosplan_knowledge_msgs
 )
 
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -87,6 +90,7 @@ add_executable(fd_planner_interface src/PlannerInterface/FDPlannerInterface.cpp 
 add_executable(tfd_planner_interface src/PlannerInterface/TFDPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(lpg_planner_interface src/PlannerInterface/LPGPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(upm_planner_interface src/PlannerInterface/UPMPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
+add_executable(pprp_planner_interface src/PlannerInterface/PPRPPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(pddl_simple_plan_parser src/PlanParsing/PDDLSimplePlanParser.cpp src/PlanParsing/PlanParser.cpp)
 add_executable(pddl_esterel_plan_parser src/PlanParsing/PDDLEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
 add_executable(pddl_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp)
@@ -103,6 +107,7 @@ add_dependencies(fd_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(tfd_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(lpg_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(upm_planner_interface ${catkin_EXPORTED_TARGETS})
+add_dependencies(pprp_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
@@ -119,6 +124,7 @@ target_link_libraries(fd_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(tfd_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(lpg_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(upm_planner_interface ${catkin_LIBRARIES})
+target_link_libraries(pprp_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
