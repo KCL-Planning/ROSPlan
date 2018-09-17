@@ -51,6 +51,7 @@ Topic: **problem_generation_server_params**
 Type: *rosplan_dispatch_msgs/ProblemService*  
 Generates a PDDL problem by querying the current state from a Knowledge Base, overriding the node parameters with the arguments of the service.
 
+
 |**Field**               |**Description**|
 |problem_path            |The generated problem will be saved to this path.|
 |problem_string_response |If true, then the generated problem will also be returned in the *problem_string* response field.|
