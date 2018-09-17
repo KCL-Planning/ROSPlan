@@ -43,14 +43,13 @@ An example launch file showing all the parameters is shown below:
 
 Topic: **problem_generation_server**  
 Type: *std_srvs/Empty*  
-The planning_server is called, overriding the node parameters with the arguments of the service.  
 Generates a PDDL problem by querying the current state from a Knowledge Base, saving the problem to file with the *problem_path* parameter, and publishing the problem as a string on the topic specified by the *problem_topic* parameter.
 
 
 
 Topic: **problem_generation_server_params**  
 Type: *rosplan_dispatch_msgs/ProblemService*  
-Generates a PDDL problem by querying the current state from a Knowledge Base, overriding the node parameters.
+Generates a PDDL problem by querying the current state from a Knowledge Base, overriding the node parameters with the arguments of the service.
 
 |**Field**               |**Description**|
 |problem_path            |The generated problem will be saved to this path.|
