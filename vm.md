@@ -12,5 +12,5 @@ The password is: sourcedevel
 [DOWNLOAD](https://nms.kcl.ac.uk/daniele.magazzeni/ROSPlan-Ubuntu16.04.ova) (3.9GB)
 
 The VM will be updated less frequently than the ROSPlan repository. **Please remember to update and recompile** the following commands:
-> git pull
+> git pull  
 > catkin build
