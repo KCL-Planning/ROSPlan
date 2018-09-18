@@ -7,7 +7,9 @@ env:
     - ROS_DISTRO=kinetic
     - UPSTREAM-WORKSPACE=file
     - ROSINSTALL_FILENAME=.travis.rosinstall
-    - BEFORE_SCRIPT=./.travis_prescript.sh
+
+before_install:
+    - sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
 
 install:
   - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
