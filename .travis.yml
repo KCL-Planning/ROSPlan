@@ -10,8 +10,10 @@ env:
 
 before_install:
     - bash ./.travis/wait_for_apt.sh
+    - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+    - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
     - sudo apt-get update
-    - sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
+    - sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev
 
 install:
   - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
