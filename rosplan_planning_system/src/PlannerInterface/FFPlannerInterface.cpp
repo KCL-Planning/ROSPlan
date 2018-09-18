@@ -75,43 +75,44 @@ namespace KCL_rosplan {
 		std::ifstream planfile;
 		planfile.open((data_path + "plan.pddl").c_str());
 		std::string line;
-		std::stringstream ss;
 
 		bool solved = false;
-
-		while (std::getline(planfile, line)) {
-
+		while (not solved and std::getline(planfile, line)) {
 			// skip lines until there is a plan
-			if(line.compare("ff: found legal plan as follows") != 0) {
-				continue;
+			if (line.compare("ff: found legal plan as follows") == 0) {
+				solved = true;
 			}
+		}
 
-			// skip the empty line
-			while (std::getline(planfile, line)) {
-				if (line.length()<2) break;
-			}
-
+		// Parse the solved plan
+		if (solved) {
 			// actions look like this:
 			// step    0: got_place C1
-			//         1: find_object V1 C1 
-			solved = true;
-			while (std::getline(planfile, line)) {
-
-				if (line.length()<2) break;
-
-				unsigned int pos = line.find(' ');
-				bool action = false;
-				while(pos != std::string::npos && pos < line.length()) {
-					if(line.substr(pos,1) != " ") {
-						action = true;
-						line = line.substr(pos);
-						break;
-					}
-					pos++;
+			//         1: find_object V1 C1
+			// plan cost: XX
+			while (std::getline(planfile, line)) { // Move to the beginning of the plan
+				if (line.substr(0, 4) == "step") {
+					line = line.substr(4); // Remove the step
+					break;
 				}
-				if(action) ss << line << " [0.001]" << std::endl;
 			}
-			planner_output = ss.str();
+
+			// First iteration line will be like   0: got_place C1
+			while (line.find("plan cost") == line.npos and line.find("time spend") == line.npos and line.size() > 0) {
+				std::stringstream ss(line); // To trim whitespaces
+				std::string aux;
+				// Read the action number X:
+				ss >> aux;
+				planner_output += aux + " ("; // Add parenthesis before the action
+				while (ss >> aux) { // Read the rest
+					planner_output += aux;
+					if (ss.good()) planner_output += " "; // Add a whitespace unless we have processed all the line
+				}
+				planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
+				std::getline(planfile, line);
+			}
+			// Convert to lowercase as FF prints all the actions and parameters in uppercase
+			std::transform(planner_output.begin(), planner_output.end(), planner_output.begin(), ::tolower);
 		}
 		planfile.close();
 
@@ -135,7 +136,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::FFPlannerInterface pi(nh);
-		
+
 		// subscribe to problem instance
 		std::string problemTopic = "problem_instance";
 		nh.getParam("problem_topic", problemTopic);
