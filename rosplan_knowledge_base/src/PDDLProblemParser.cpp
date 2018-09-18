@@ -1,6 +1,6 @@
-#include "rosplan_knowledge_base/ProblemParser.h"
+#include "rosplan_knowledge_base/PDDLProblemParser.h"
 
-/* implementation of ProblemParser.h */
+/* implementation of PDDLProblemParser.h */
 namespace KCL_rosplan {
 
     /*-----------------------*/
@@ -10,7 +10,7 @@ namespace KCL_rosplan {
     /**
      * parse the problem file
      */
-    VAL::problem* ProblemParser::parseProblem(const std::string ProblemPath) {
+    VAL::problem* PDDLProblemParser::parseProblem(const std::string ProblemPath) {
 
         // only parse Problem once
         if(problem_parsed) return problem;

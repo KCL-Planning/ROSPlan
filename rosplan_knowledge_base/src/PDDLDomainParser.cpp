@@ -1,6 +1,6 @@
-#include "rosplan_knowledge_base/DomainParser.h"
+#include "rosplan_knowledge_base/PDDLDomainParser.h"
 
-/* implementation of DomainParser.h */
+/* implementation of PDDLDomainParser.h */
 namespace KCL_rosplan {
 
 	/*----------------*/
@@ -10,7 +10,7 @@ namespace KCL_rosplan {
 	/**
 	 * parse the domain file
 	 */
-	VAL::domain* DomainParser::parseDomain(const std::string domainPath) {
+	VAL::domain* PDDLDomainParser::parseDomain(const std::string domainPath) {
 
 		// only parse domain once
 		if(domain_parsed) return domain;
@@ -43,6 +43,7 @@ namespace KCL_rosplan {
 
 			// domain name
 			domain = VAL::current_analysis->the_domain;
+			domain_name = domain->name;
 		}
 		delete VAL::yfl;
 		domainFile.close();

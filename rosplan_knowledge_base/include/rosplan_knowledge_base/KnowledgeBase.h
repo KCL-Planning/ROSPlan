@@ -1,3 +1,6 @@
+#ifndef KCL_knowledgebase
+#define KCL_knowledgebase
+
 #include <ros/ros.h>
 #include <vector>
 #include <iostream>
@@ -23,14 +26,12 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #include "KnowledgeComparitor.h"
-#include "DomainParser.h"
-#include "ProblemParser.h"
+#include "PDDLDomainParser.h"
+#include "PDDLProblemParser.h"
 #include "VALVisitorOperator.h"
 #include "VALVisitorPredicate.h"
 #include "VALVisitorProblem.h"
 
-#ifndef KCL_knowledgebase
-#define KCL_knowledgebase
 
 namespace KCL_rosplan {
 
@@ -51,10 +52,10 @@ namespace KCL_rosplan {
 	public:
 
 		/* parsing domain using VAL */
-		DomainParser domain_parser;
+		PDDLDomainParser domain_parser;
 
         /* initial state from problem file using VAL */
-        ProblemParser problem_parser;
+        PDDLProblemParser problem_parser;
 
 		/* PDDL model (current state) */
 		std::map<std::string, std::vector<std::string> > model_constants;

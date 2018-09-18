@@ -29,7 +29,7 @@ namespace KCL_rosplan {
     /* parser */
     /*--------*/
 
-    class ProblemParser
+    class PDDLProblemParser
     {
     private:
 
