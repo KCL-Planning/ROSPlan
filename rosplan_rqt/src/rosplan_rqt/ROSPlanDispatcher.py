@@ -45,9 +45,9 @@ class PlanViewWidget(QWidget):
         self.setObjectName('ROSPlanDispatcherUI')
 
         # populate goal combo boxes
-        rospy.wait_for_service('/kcl_rosplan/get_domain_predicates')
+        rospy.wait_for_service('rosplan_knowledge_base/domain/predicates')
         try:
-            predicates_client = rospy.ServiceProxy('/kcl_rosplan/get_domain_predicates', GetDomainAttributeService)
+            predicates_client = rospy.ServiceProxy('rosplan_knowledge_base/domain/predicates', GetDomainAttributeService)
             resp = predicates_client()
             for pred in resp.items:
                 self.goalNameComboBox.addItem(pred.name)
@@ -61,13 +61,14 @@ class PlanViewWidget(QWidget):
                 self._predicate_param_label_list[pred.name] = label_list
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+
         self._handle_goal_name_changed(0)
         self._handle_fact_name_changed(0)
 
         # populate type combo box
-        rospy.wait_for_service('/kcl_rosplan/get_domain_types')
+        rospy.wait_for_service('rosplan_knowledge_base/domain/types')
         try:
-            type_client = rospy.ServiceProxy('/kcl_rosplan/get_domain_types', GetDomainTypeService)
+            type_client = rospy.ServiceProxy('rosplan_knowledge_base/domain/types', GetDomainTypeService)
             resp = type_client()
             for typename in resp.types:
                 self.typeComboBox.addItem(typename)
@@ -122,12 +123,12 @@ class PlanViewWidget(QWidget):
     """
     def refresh_model(self):
         # goals
-        rospy.wait_for_service('/kcl_rosplan/get_current_goals')
+        rospy.wait_for_service('rosplan_knowledge_base/state/goals')
         selected_list = []
         for item in self.goalView.selectedItems():
             selected_list.append(item.text())
         try:
-            goals_client = rospy.ServiceProxy('/kcl_rosplan/get_current_goals', GetAttributeService)
+            goals_client = rospy.ServiceProxy('rosplan_knowledge_base/state/goals', GetAttributeService)
             resp = goals_client('')
             self.goalView.clear()
             self._goal_list.clear()
@@ -144,12 +145,12 @@ class PlanViewWidget(QWidget):
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
         # facts and functions
-        rospy.wait_for_service('/kcl_rosplan/get_current_knowledge')
+        rospy.wait_for_service('rosplan_knowledge_base/state/propositions')
         selected_list = []
         for item in self.modelView.selectedItems():
             selected_list.append(item.text())
         try:
-            model_client = rospy.ServiceProxy('/kcl_rosplan/get_current_knowledge', GetAttributeService)
+            model_client = rospy.ServiceProxy('rosplan_knowledge_base/state/propositions', GetAttributeService)
             resp = model_client('')
             self.modelView.clear()
             self._fact_list.clear()
@@ -180,7 +181,7 @@ class PlanViewWidget(QWidget):
                 expanded_list.append(item.text(0))
         self.instanceView.clear()
         for typename in self._type_list:
-            instance_client = rospy.ServiceProxy('/kcl_rosplan/get_current_instances', GetInstanceService)
+            instance_client = rospy.ServiceProxy('rosplan_knowledge_base/state/instances', GetInstanceService)
             resp = instance_client(typename)
             item = QTreeWidgetItem(self.instanceView)
             item.setText(0, typename)
@@ -266,11 +267,11 @@ class PlanViewWidget(QWidget):
     """
     def _handle_predicate_name_change(self, predName, combo):
         combo.clear()
-        rospy.wait_for_service('/kcl_rosplan/get_current_instances')
+        rospy.wait_for_service('rosplan_knowledge_base/state/instances')
         parameters = []
         for param_type in self._predicate_param_type_list[predName]:
             try:
-                predicates_client = rospy.ServiceProxy('/kcl_rosplan/get_current_instances', GetInstanceService)
+                predicates_client = rospy.ServiceProxy('rosplan_knowledge_base/state/instances', GetInstanceService)
                 resp = predicates_client(param_type)
                 parameters.append(resp.instances)
             except rospy.ServiceException, e:
@@ -286,12 +287,12 @@ class PlanViewWidget(QWidget):
         self._handle_predicate_name_change(self.factNameComboBox.itemText(index), self.factComboBox)
 
     """
-    called when the add goal button is clicked
+    called when the add goal/fact button is clicked
     """
     def _handle_add_button_clicked(self, updateType, predName, combo):
-        rospy.wait_for_service('/kcl_rosplan/update_knowledge_base')
+        rospy.wait_for_service('rosplan_knowledge_base/update')
         try:
-            update_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base', KnowledgeUpdateService)
+            update_client = rospy.ServiceProxy('rosplan_knowledge_base/update', KnowledgeUpdateService)
             knowledge = KnowledgeItem()
             knowledge.knowledge_type = KnowledgeItem.FACT
             knowledge.attribute_name = predName
@@ -318,10 +319,10 @@ class PlanViewWidget(QWidget):
     called when the remove goal button is clicked
     """
     def _handle_remove_button_clicked(self, updateType, removeNameList, removeMsgList):
-        rospy.wait_for_service('/kcl_rosplan/update_knowledge_base')
+        rospy.wait_for_service('rosplan_knowledge_base/update')
         for item in removeNameList:
             try:
-                update_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base', KnowledgeUpdateService)
+                update_client = rospy.ServiceProxy('rosplan_knowledge_base/update', KnowledgeUpdateService)
                 resp = update_client(updateType, removeMsgList[item.text()])
             except rospy.ServiceException, e:
                 print "Service call failed: %s"%e
@@ -341,9 +342,9 @@ class PlanViewWidget(QWidget):
     def _handle_add_instance_clicked(self, checked):
         if self.instanceNameEdit.text() == '':
             return
-        rospy.wait_for_service('/kcl_rosplan/update_knowledge_base')
+        rospy.wait_for_service('rosplan_knowledge_base/update')
         try:
-            update_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base', KnowledgeUpdateService)
+            update_client = rospy.ServiceProxy('rosplan_knowledge_base/update', KnowledgeUpdateService)
             knowledge = KnowledgeItem()
             knowledge.knowledge_type = KnowledgeItem.INSTANCE
             knowledge.instance_type = self.typeComboBox.currentText()
