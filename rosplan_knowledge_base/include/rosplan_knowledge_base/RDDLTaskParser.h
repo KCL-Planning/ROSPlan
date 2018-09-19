@@ -21,7 +21,7 @@ namespace KCL_rosplan {
 	private:
 
 	public:
-		RDDLTaskParser() : rddlTask(nullptr), domain_parsed(false), domain_name("") {};
+		RDDLTaskParser() : rddlTask(nullptr), domain_parsed(false), domain_name(""), problem_name("") {};
 		~RDDLTaskParser() = default;
 
 		/* RDDL task pointers */

@@ -1,6 +1,4 @@
 
-#include <rosplan_knowledge_base/RDDLTaskParser.h>
-
 #include "rosplan_knowledge_base/RDDLTaskParser.h"
 
 /* implementation of RDDLTaskParser.h */
