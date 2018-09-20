@@ -55,6 +55,16 @@ namespace KCL_rosplan {
 		/* Get object instances */
         std::map<std::string, std::vector<std::string> > getInstances(const std::map<std::string, Object*>& instance_objects);
 
+        /* Get facts and functions from the task */
+        void loadFactsAndFunctions();
+
+        /* Just fils the header for a fact */
+        rosplan_knowledge_msgs::KnowledgeItem fillKI(const ParametrizedVariable* var, const std::vector<Parameter *> &params, double initialValue);
+        /* Adds all the functions and facts that have a default value in the initial state with their grounded parameters */
+        void addAllGroundedParameters(const ParametrizedVariable* var,
+                std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem>& factsfuncs,
+                rosplan_knowledge_msgs::KnowledgeItem& item, std::string ground_params="", int param_index=0);
+
 	public:
 
 		/* parsing domain using VAL */
@@ -80,7 +90,7 @@ namespace KCL_rosplan {
         void addInitialState(); // FIXME change in superclass?
 
 		/* service methods for querying the model */
-		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
+		// bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res); // FIXME handled by syperclass?
 
 		/* service methods for fetching the current state */
 		// bool getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res); // FIXME handled by syperclass?

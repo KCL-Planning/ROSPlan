@@ -123,11 +123,15 @@ namespace KCL_rosplan {
     void RDDLKnowledgeBase::addInitialState() {
 
         model_instances = getInstances(domain_parser.rddlTask->objects);
+        loadFactsAndFunctions(); // Sets model_facts and model_functions
+        // model_goals will not be filled as there are no goals in RDDL
+        // model_timed_initial_literals will not be filled either
 
-
+        model_metric;
+        // FIXME no goals defined in RDDL
+        // FIXME no timed_initial_literals defined in RDDL
+        // FIXME oneof constraints?
         /*
-		model_facts = problem_visitor.returnFacts();
-		model_functions = problem_visitor.returnFunctions();
 		model_goals = problem_visitor.returnGoals();
 		model_timed_initial_literals = problem_visitor.returnTimedKnowledge();
 		if (problem->metric) {
@@ -165,6 +169,115 @@ namespace KCL_rosplan {
             instances[it->second->type->name].push_back(it->first);
         }
         return instances;
+    }
+
+
+    /* Get facts from the task */
+    void RDDLKnowledgeBase::loadFactsAndFunctions() {
+        // Map to store the items with the key its grounded variable name. Initialized with the default values,
+        // they will be overwritten with the initial state information
+        std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem> factsfuncs;
+
+        // FIXME is this right?
+        assert(model_instances.size() == domain_parser.rddlTask->objects.size()); // Just in case
+        // Add all the predicates from pvariables whose initial value is true
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ; it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
+            // Check if the parametrized variables (pVariables) are predicates
+            bool isBool = it->second->valueType->name == "bool";
+            if ((it->second->variableType != ParametrizedVariable::STATE_FLUENT and
+                 it->second->variableType != ParametrizedVariable::NON_FLUENT) or
+                (isBool and it->second->initialValue == 0)) { // If it is bool but default to false ignore it
+                continue; // Skip
+            }
+
+            rosplan_knowledge_msgs::KnowledgeItem item; // placeholder for the recursive function
+            addAllGroundedParameters(it->second, factsfuncs, item); // It adds them to facts
+        }
+
+        // Get state fluents from the initial state
+        for (auto it = domain_parser.rddlTask->stateFluents.begin(); it != domain_parser.rddlTask->stateFluents.end(); ++it) {
+           factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params, (*it)->initialValue); // This will override any default variable set
+        }
+
+        // Get non-fluents from the initial state
+        for (auto it = domain_parser.rddlTask->nonFluents.begin(); it != domain_parser.rddlTask->nonFluents.end(); ++it) {
+            factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params, (*it)->initialValue); // This will override any default variable set
+        }
+
+        // Iterate map to fill the right structures
+        for (auto it = factsfuncs.begin(); it != factsfuncs.end(); ++it) {
+            if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) model_facts.push_back(it->second);
+            else if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) model_functions.push_back(it->second);
+        }
+
+    }
+
+    rosplan_knowledge_msgs::KnowledgeItem RDDLKnowledgeBase::fillKI(const ParametrizedVariable* var, const std::vector<Parameter *> &params, double initialValue) {
+        rosplan_knowledge_msgs::KnowledgeItem item;
+        item.initial_time = ros::Time::now();
+
+        if (var->valueType->name == "bool") { // We have a fact
+            item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+            item.is_negative = (initialValue == 0);
+        }
+        else {
+            assert(var->valueType->name == "real" or var->valueType->name == "int");
+            item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
+            item.is_negative = false;
+            item.function_value = initialValue;
+        }
+        item.attribute_name = var->variableName;
+
+        for (size_t  i = 0; i < params.size(); ++i) {
+            diagnostic_msgs::KeyValue param;
+            param.key = domain_parser.rddlTask->variableDefinitions[var->variableName]->params[i]->name; // Get the variable name/id from the variabledefinitions structure
+            size_t pos = param.key.find('?');
+            if (pos != std::string::npos) param.key.erase(pos, 1); // Remove the ? if present
+            param.value = params[i]->name;
+            item.values.push_back(param);
+        }
+
+        return item;
+    }
+
+    void RDDLKnowledgeBase::addAllGroundedParameters(const ParametrizedVariable * var, std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem>& factsfuncs,
+                                                     rosplan_knowledge_msgs::KnowledgeItem& item, std::string ground_params, int param_index) {
+        if (param_index == 0) { // Initialize parameter
+            item = rosplan_knowledge_msgs::KnowledgeItem();
+            item.initial_time = ros::Time::now();
+
+            if (var->valueType->name == "bool") { // We have a fact
+                item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+                item.is_negative = (var->initialValue == 0);
+            }
+            else {
+                assert(var->valueType->name == "real" or var->valueType->name == "int");
+                item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
+                item.is_negative = false;
+                item.function_value = var->initialValue;
+            }
+
+            item.attribute_name = var->variableName;
+            item.values.resize(var->params.size());
+        }
+
+        // Set variable type for param_index
+        item.values[param_index].key = domain_parser.rddlTask->variableDefinitions[var->variableName]->params[param_index]->name; // Get the variable name/id from the variabledefinitions structure
+        size_t pos = item.values[param_index].key.find('?');
+        if (pos != std::string::npos) item.values[param_index].key.erase(pos, 1); // Remove the ? if present
+
+        // Instanciate the param param_index with all the instances
+        const std::vector <std::string>& instance_names = model_instances[var->params[param_index]->type->name];
+        for (auto it = instance_names.begin(); it != instance_names.end(); ++it) {
+            item.values[param_index].value = *it;
+
+            std::string aux = (ground_params.size())? ground_params + ", " + *it : *it; // If it's first, don't add comma
+            if (param_index == var->params.size()-1) {
+                factsfuncs[var->variableName+"("+aux+")"] = item; // If grounded all params, save it (push_back copies the object)
+            }
+            else addAllGroundedParameters(var, factsfuncs, item, aux, param_index+1); // If still params to ground ground them all
+        }
+
     }
 
 
