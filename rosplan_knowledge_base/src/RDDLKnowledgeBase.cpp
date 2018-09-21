@@ -1,5 +1,6 @@
 
 #include <rosplan_knowledge_base/RDDLKnowledgeBase.h>
+#include <RDDLExprUtils.h>
 
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
 
@@ -126,18 +127,11 @@ namespace KCL_rosplan {
         loadFactsAndFunctions(); // Sets model_facts and model_functions
         // model_goals will not be filled as there are no goals in RDDL
         // model_timed_initial_literals will not be filled either
+        loadMetric(); // model_metric;
 
-        model_metric;
         // FIXME no goals defined in RDDL
         // FIXME no timed_initial_literals defined in RDDL
         // FIXME oneof constraints?
-        /*
-		model_goals = problem_visitor.returnGoals();
-		model_timed_initial_literals = problem_visitor.returnTimedKnowledge();
-		if (problem->metric) {
-			model_metric = problem_visitor.returnMetric();
-		}
-         */
     }
 
 
@@ -278,6 +272,12 @@ namespace KCL_rosplan {
             else addAllGroundedParameters(var, factsfuncs, item, aux, param_index+1); // If still params to ground ground them all
         }
 
+    }
+
+    void RDDLKnowledgeBase::loadMetric() {
+        model_metric.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::EXPRESSION;
+        model_metric.expr = RDDLExprUtils::getExpression(domain_parser.rddlTask->rewardCPF);
+        model_metric.optimization = "maximize"; // In RDDL we are always maximizing reward
     }
 
 
