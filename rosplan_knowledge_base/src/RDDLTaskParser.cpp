@@ -15,6 +15,7 @@ namespace KCL_rosplan {
 		// only parse domain once
 		if (domain_parsed) return rddlTask;
         ROS_INFO("KCL: (%s) Parsing domain: %s.", ros::this_node::getName().c_str(), domainPath.c_str());
+        ROS_INFO("KCL: (%s) Parsing initial state", ros::this_node::getName().c_str());
 
         // parse domain
         rddlTask = RDDLParser::parseRDDLTask(domainPath, instancePath);
@@ -32,8 +33,3 @@ namespace KCL_rosplan {
 } // close namespace
 
 
-int main() {
-    KCL_rosplan::RDDLTaskParser dp;
-    dp.parseTask("/home/gerard/code/ROSPlan_ws/src/rosplan/rosplan_demos/common/turtlebot_domain.rddl",
-                 "/home/gerard/code/ROSPlan_ws/src/rosplan/rosplan_demos/common/turtlebot_inst.rddl");
-}

@@ -1,5 +1,5 @@
-#ifndef KCL_knowledgebase
-#define KCL_knowledgebase
+#ifndef KCL_RDDL_Knowledgebase
+#define KCL_RDDL_Knowledgebase
 
 #include <ros/ros.h>
 #include <vector>
@@ -25,6 +25,7 @@
 #include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
+#include "KnowledgeBase.h"
 #include "KnowledgeComparitor.h"
 #include "RDDLTaskParser.h"
 
@@ -35,7 +36,7 @@
 
 namespace KCL_rosplan {
 
-	class RDDLKnowledgeBase
+	class RDDLKnowledgeBase : public KnowledgeBase
 	{
 	private:
 
@@ -73,21 +74,8 @@ namespace KCL_rosplan {
 		/* parsing domain using VAL */
 		RDDLTaskParser domain_parser;
 
-
-		/* PDDL model (current state) */
-		std::map<std::string, std::vector<std::string> > model_constants;
-		std::map<std::string, std::vector<std::string> > model_instances;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_facts;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_functions;
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_goals;
-        rosplan_knowledge_msgs::KnowledgeItem model_metric;
-
-		/* timed initial literals */
-		std::vector<rosplan_knowledge_msgs::KnowledgeItem> model_timed_initial_literals;
-
-		/* conditional planning */
-		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
-		bool use_unknowns;
+		/* parse domain and probelm files */
+		inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path);
 
         /* add the initial state to the knowledge base */
         void addInitialState(); // FIXME change in superclass?

@@ -1,6 +1,6 @@
 
 #include <rosplan_knowledge_base/RDDLKnowledgeBase.h>
-#include <RDDLExprUtils.h>
+#include <rosplan_knowledge_base/RDDLExprUtils.h>
 
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
 
@@ -132,6 +132,7 @@ namespace KCL_rosplan {
         // FIXME no goals defined in RDDL
         // FIXME no timed_initial_literals defined in RDDL
         // FIXME oneof constraints?
+        // FIXME model_constants?
     }
 
 
@@ -278,6 +279,15 @@ namespace KCL_rosplan {
         model_metric.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::EXPRESSION;
         model_metric.expr = RDDLExprUtils::getExpression(domain_parser.rddlTask->rewardCPF);
         model_metric.optimization = "maximize"; // In RDDL we are always maximizing reward
+    }
+
+    void RDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
+        RDDLTask* t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
+        if (t == nullptr) {
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain file.", ros::this_node::getName().c_str());
+            ros::shutdown();
+        }
+        if (problem_file_path != "") addInitialState();
     }
 
 
