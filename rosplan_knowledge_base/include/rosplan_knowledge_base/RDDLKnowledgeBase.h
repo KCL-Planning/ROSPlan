@@ -65,9 +65,10 @@ namespace KCL_rosplan {
         /* Just fils the header for a fact */
         rosplan_knowledge_msgs::KnowledgeItem fillKI(const ParametrizedVariable* var, const std::vector<Parameter *> &params, double initialValue);
         /* Adds all the functions and facts that have a default value in the initial state with their grounded parameters */
-        void addAllGroundedParameters(const ParametrizedVariable* var,
-                std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem>& factsfuncs,
-                rosplan_knowledge_msgs::KnowledgeItem& item, std::string ground_params="", int param_index=0);
+        void fillKIAddAllGroundedParameters(const ParametrizedVariable *var,
+											std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem> &factsfuncs,
+											rosplan_knowledge_msgs::KnowledgeItem &item,
+											std::string ground_params = "", int param_index = 0);
 
 	public:
 

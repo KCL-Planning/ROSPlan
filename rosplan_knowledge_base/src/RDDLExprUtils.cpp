@@ -6,26 +6,32 @@
 #include "rosplan_knowledge_base/RDDLExprUtils.h"
 
 rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Evaluatable *expr) {
-    auto exp_con = dynamic_cast<const Connective*>(expr->formula);
-    if (exp_con != nullptr) return getExpression(exp_con, std::map<std::string, std::string>());
-
-    auto exp_quan = dynamic_cast<const Quantifier*>(expr->formula);
-    if (exp_quan != nullptr) return getExpression(exp_quan, std::map<std::string, std::string>());
-
-    auto exp_param = dynamic_cast<const ParametrizedVariable*>(expr->formula);
-    if (exp_param != nullptr) return getExpression(exp_param, std::map<std::string, std::string>());
-
-    auto exp_numeric = dynamic_cast<const NumericConstant*>(expr->formula);
-    if (exp_numeric != nullptr) return getExpression(exp_numeric, std::map<std::string, std::string>());
-
-    auto exp_neg = dynamic_cast<const Negation*>(expr->formula);
-    if (exp_neg != nullptr) return getExpression(exp_neg, std::map<std::string, std::string>());
-
     return getExpression(expr->formula, std::map<std::string, std::string>());
 }
 
+rosplan_knowledge_msgs::ExprComposite
+RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::string, std::string> &assign) {
+    auto exp_con = dynamic_cast<const Connective*>(expr);
+    if (exp_con != nullptr) return getExpression(exp_con, assign);
+
+    auto exp_quan = dynamic_cast<const Quantifier*>(expr);
+    if (exp_quan != nullptr) return getExpression(exp_quan, assign);
+
+    auto exp_param = dynamic_cast<const ParametrizedVariable*>(expr);
+    if (exp_param != nullptr) return getExpression(exp_param, assign);
+
+    auto exp_numeric = dynamic_cast<const NumericConstant*>(expr);
+    if (exp_numeric != nullptr) return getExpression(exp_numeric, assign);
+
+    auto exp_neg = dynamic_cast<const Negation*>(expr);
+    if (exp_neg != nullptr) return getExpression(exp_neg, assign);
+
+    NOT_IMPLEMENTED;
+    return rosplan_knowledge_msgs::ExprComposite();
+}
+
 rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Connective *expr, const std::map<std::string, std::string>& assign) {
-    assert(expr->exprs.size() == 0); // Assuming two operands in each
+    assert(expr->exprs.size() == 2); // Assuming two operands in each
     rosplan_knowledge_msgs::ExprComposite ret;
 
     rosplan_knowledge_msgs::ExprBase base;
@@ -84,15 +90,14 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Quantif
     std::map<std::string, std::string> q_assign = assign;
     getQuantExprRec(expr, 0, q_assign, operands);
 
+    // Join all the operands in one single ExprComposite
     return joinQuantOperator(operands, op_type);
 }
 
 
 rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::joinQuantOperator(std::vector<rosplan_knowledge_msgs::ExprComposite> &operands,
                                                                        rosplan_knowledge_msgs::ExprBase::_op_type op_type, int op_idx) {
-    std::vector<rosplan_knowledge_msgs::ExprComposite> ret;
-
-    if (operands.size()-1 == op_idx) return operands[op_idx]; // Case one element
+    if (operands.size()-1 == op_idx) return operands[op_idx]; // Found last element
 
     rosplan_knowledge_msgs::ExprComposite expcomp;
     // Operator
@@ -149,10 +154,4 @@ RDDLExprUtils::getExpression(const ParametrizedVariable *expr, const std::map<st
 
     ret.tokens.push_back(base);
     return ret;
-}
-
-rosplan_knowledge_msgs::ExprComposite
-RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::string, std::string> &assign) {
-    NOT_IMPLEMENTED;
-    return rosplan_knowledge_msgs::ExprComposite();
 }

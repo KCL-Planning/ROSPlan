@@ -30,12 +30,13 @@ namespace KCL_rosplan {
         for (auto it = domain_parser.rddlTask->types.begin() ; it != domain_parser.rddlTask->types.end(); ++it) {
             // FIXME should check if a type is a already supertype so we have disjunct sets?
             // FIXME filter out basic types?
+            if (it->first == "int" or it->first == "real" or it->first == "bool" or it->first == "object") continue;
             types.insert(it->first);
             if (it->second->superType) super_types.insert(it->second->superType->name);
         }
 
         res.types.assign(types.begin(), types.end());
-        res.super_types.assign(types.begin(), types.end());
+        res.super_types.assign(super_types.begin(), super_types.end());
         return true;
     }
 
@@ -43,7 +44,7 @@ namespace KCL_rosplan {
     bool RDDLKnowledgeBase::getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request &req,
                                           rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
         // FIXME I consider a predicate any state-fluent or non-fluent with a bool type
-        // FIXME what about interm fluents and observ-fluents? Not sure if supported by the parser
+        // FIXME what about interm fluents and observ-fluents? Not sure if supported by the parser yet
         for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ;
                   it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
 
@@ -174,8 +175,7 @@ namespace KCL_rosplan {
         std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem> factsfuncs;
 
         // FIXME is this right?
-        assert(model_instances.size() == domain_parser.rddlTask->objects.size()); // Just in case
-        // Add all the predicates from pvariables whose initial value is true
+        // Add all the predicates/functions from pvariables whose initial value is true or are numeric and have default value
         for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ; it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
             // Check if the parametrized variables (pVariables) are predicates
             bool isBool = it->second->valueType->name == "bool";
@@ -186,7 +186,7 @@ namespace KCL_rosplan {
             }
 
             rosplan_knowledge_msgs::KnowledgeItem item; // placeholder for the recursive function
-            addAllGroundedParameters(it->second, factsfuncs, item); // It adds them to facts
+            fillKIAddAllGroundedParameters(it->second, factsfuncs, item); // It adds them to facts
         }
 
         // Get state fluents from the initial state
@@ -235,8 +235,10 @@ namespace KCL_rosplan {
         return item;
     }
 
-    void RDDLKnowledgeBase::addAllGroundedParameters(const ParametrizedVariable * var, std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem>& factsfuncs,
-                                                     rosplan_knowledge_msgs::KnowledgeItem& item, std::string ground_params, int param_index) {
+    void RDDLKnowledgeBase::fillKIAddAllGroundedParameters(const ParametrizedVariable *var,
+                                                           std::map<std::string, rosplan_knowledge_msgs::KnowledgeItem> &factsfuncs,
+                                                           rosplan_knowledge_msgs::KnowledgeItem &item,
+                                                           std::string ground_params, int param_index) {
         if (param_index == 0) { // Initialize parameter
             item = rosplan_knowledge_msgs::KnowledgeItem();
             item.initial_time = ros::Time::now();
@@ -256,22 +258,27 @@ namespace KCL_rosplan {
             item.values.resize(var->params.size());
         }
 
-        // Set variable type for param_index
-        item.values[param_index].key = domain_parser.rddlTask->variableDefinitions[var->variableName]->params[param_index]->name; // Get the variable name/id from the variabledefinitions structure
-        size_t pos = item.values[param_index].key.find('?');
-        if (pos != std::string::npos) item.values[param_index].key.erase(pos, 1); // Remove the ? if present
+        if (item.values.size() > 0) { // Do we have to process the parameters?
+            // Set variable type for param_index
+            item.values[param_index].key = domain_parser.rddlTask->variableDefinitions[var->variableName]->params[param_index]->name; // Get the variable name/id from the variabledefinitions structure
+            size_t pos = item.values[param_index].key.find('?');
+            if (pos != std::string::npos) item.values[param_index].key.erase(pos, 1); // Remove the ? if present
 
-        // Instanciate the param param_index with all the instances
-        const std::vector <std::string>& instance_names = model_instances[var->params[param_index]->type->name];
-        for (auto it = instance_names.begin(); it != instance_names.end(); ++it) {
-            item.values[param_index].value = *it;
+            // Instanciate the param param_index with all the instances
+            const std::vector<std::string> &instance_names = model_instances[var->params[param_index]->type->name];
+            for (auto it = instance_names.begin(); it != instance_names.end(); ++it) {
+                item.values[param_index].value = *it;
 
-            std::string aux = (ground_params.size())? ground_params + ", " + *it : *it; // If it's first, don't add comma
-            if (param_index == var->params.size()-1) {
-                factsfuncs[var->variableName+"("+aux+")"] = item; // If grounded all params, save it (push_back copies the object)
+                std::string aux = (ground_params.size()) ? ground_params + ", " + *it : *it; // If it's first, don't add comma
+                if (param_index == var->params.size() - 1) {
+                    factsfuncs[var->variableName + "(" + aux +
+                               ")"] = item; // If grounded all params, save it (push_back copies the object)
+                } else
+                    fillKIAddAllGroundedParameters(var, factsfuncs, item, aux,
+                                                   param_index + 1); // If still params to ground ground them all
             }
-            else addAllGroundedParameters(var, factsfuncs, item, aux, param_index+1); // If still params to ground ground them all
         }
+        else factsfuncs[var->variableName] = item; // Add the item without parameters
 
     }
 
