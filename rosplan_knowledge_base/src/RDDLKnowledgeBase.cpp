@@ -91,8 +91,19 @@ namespace KCL_rosplan {
     /* get domain operators */
     bool RDDLKnowledgeBase::getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request &req,
                                          rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) {
-        // TODO
-        return false;
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();  it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+            if (it->second->variableType != ParametrizedVariable::ACTION_FLUENT) continue;
+
+            // function name
+            rosplan_knowledge_msgs::DomainFormula formula;
+            formula.name = it->second->variableName;
+
+            // function parameters
+            formula.typed_parameters = getTypedParams(it->second->params);
+
+            res.operators.push_back(formula);
+        }
+        return true;
     }
 
     /* get domain operator details */
@@ -146,12 +157,28 @@ namespace KCL_rosplan {
     /* Get ROS-like typed parameters */
     std::vector<diagnostic_msgs::KeyValue> RDDLKnowledgeBase::getTypedParams(const std::vector<Parameter *> &params) {
         std::vector<diagnostic_msgs::KeyValue> ros_params;
+
+        // variabledefinitions doesn't have param names but only the type, so we're naming them here
+        // Naming convention will be type initial, type initial 1, ...
+        std::map<std::string, std::vector<std::string>> param_names; // key = type name, values = list of param names of that type
+
         for (auto pit = params.begin(); pit != params.end(); ++pit) {
             diagnostic_msgs::KeyValue param;
             param.key = (*pit)->name; // Parameter name
             size_t pos = param.key.find('?');
             if (pos != std::string::npos) param.key.erase(pos, 1); // Remove the ? if present
+
             param.value = (*pit)->type->name; // Type name
+
+            // Check name
+            if (param.key == param.value) { // Pram name equals type
+                std::string pname(1, param.key[0]);
+                auto pname_it = param_names.find(param.value);
+                if (pname_it != param_names.end()) pname += std::to_string(pname_it->second.size());
+                param_names[param.value].push_back(pname);
+                param.key = pname;
+            }
+
             ros_params.push_back(param);
         }
         return ros_params;
