@@ -5,7 +5,7 @@
 #ifndef ROSPLAN_KNOWLEDGE_BASE_RDDLEXPRUTILS_H
 #define ROSPLAN_KNOWLEDGE_BASE_RDDLEXPRUTILS_H
 
-#define NOT_IMPLEMENTED ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": Unkown or unsuppoerted opperand type for the reward function.")
+#define NOT_IMPLEMENTED_EXPR ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": Unknown or unsupported operand type for the reward function.")
 
 #include <rosplan_knowledge_msgs/ExprComposite.h>
 #include <rosplan_knowledge_msgs/ExprBase.h>

@@ -26,7 +26,7 @@ RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::
     auto exp_neg = dynamic_cast<const Negation*>(expr);
     if (exp_neg != nullptr) return getExpression(exp_neg, assign);
 
-    NOT_IMPLEMENTED;
+    NOT_IMPLEMENTED_EXPR;
     return rosplan_knowledge_msgs::ExprComposite();
 }
 
@@ -42,7 +42,7 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Connect
     else if (dynamic_cast<const Addition*>(expr) != nullptr || dynamic_cast<const Disjunction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::ADD;
     else if (dynamic_cast<const Subtraction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::SUB;
     else if (dynamic_cast<const Division*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::DIV;
-    else NOT_IMPLEMENTED;
+    else NOT_IMPLEMENTED_EXPR;
     ret.tokens.push_back(base);
 
     rosplan_knowledge_msgs::ExprComposite operand1 = getExpression(expr->exprs[0], assign);
@@ -83,7 +83,7 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Quantif
     rosplan_knowledge_msgs::ExprBase::_op_type op_type = 0;
     if (dynamic_cast<const Sumation*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD;
     else if (dynamic_cast<const Product*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::MUL;
-    else NOT_IMPLEMENTED;
+    else NOT_IMPLEMENTED_EXPR;
 
     // Get all the operands of the quantifier operation
     std::vector<rosplan_knowledge_msgs::ExprComposite> operands;

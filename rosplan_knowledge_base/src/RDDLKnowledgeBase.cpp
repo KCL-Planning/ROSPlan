@@ -1,6 +1,7 @@
 
 #include <rosplan_knowledge_base/RDDLKnowledgeBase.h>
 #include <rosplan_knowledge_base/RDDLExprUtils.h>
+#include <rosplan_knowledge_base/RDDLOperatorUtils.h>
 
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
 
@@ -94,11 +95,11 @@ namespace KCL_rosplan {
         for (auto it = domain_parser.rddlTask->variableDefinitions.begin();  it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
             if (it->second->variableType != ParametrizedVariable::ACTION_FLUENT) continue;
 
-            // function name
+            // Operator name
             rosplan_knowledge_msgs::DomainFormula formula;
             formula.name = it->second->variableName;
 
-            // function parameters
+            // Operator parameters
             formula.typed_parameters = getTypedParams(it->second->params);
 
             res.operators.push_back(formula);
@@ -109,8 +110,27 @@ namespace KCL_rosplan {
     /* get domain operator details */
     bool RDDLKnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request &req,
                                                rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
-        // TODO
-        // FIXME precompute them? As computing them might be hard...
+        // FIXME maybe could precompute them?
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();  it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+            if ((it->second->variableType != ParametrizedVariable::ACTION_FLUENT ) or
+                (it->second->variableName != req.name)) continue;
+            // operator name
+            res.op.formula.name =  it->second->variableName;
+
+            // operator parameters
+            res.op.formula.typed_parameters = getTypedParams(it->second->params);
+
+            // Compute preconditions
+            PosNegDomainFormula prec = RDDLOperatorUtils::getOperatorPreconditions(req.name, domain_parser.rddlTask->SACs);
+            res.op.at_start_simple_condition = prec.pos;
+            res.op.at_start_neg_condition = prec.neg;
+
+            // Compute effects
+            PosNegDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(req.name, domain_parser.rddlTask->CPFDefinitions);
+            res.op.at_end_add_effects = eff.pos;
+            res.op.at_end_del_effects = eff.neg;
+            return true;
+        }
         return false;
     }
 
