@@ -200,7 +200,7 @@ namespace KCL_rosplan {
             // else value == 1 -> return effects
         }
         else {
-            PosNegDomainFormula res_if = getOperatorEffects(op_head, pVariable, iftrue);
+            PosNegDomainFormula res_if = getOperatorEffects(op_head, pVariable, exp->valueIfTrue);
             join(ret, res_if);
         }
 
@@ -216,7 +216,7 @@ namespace KCL_rosplan {
             join(ret, elseif_result);
         }
         else {
-            PosNegDomainFormula res_else = getOperatorEffects(op_head, pVariable, iftrue);
+            PosNegDomainFormula res_else = getOperatorEffects(op_head, pVariable, exp->valueIfFalse);
             join(ret, res_else);
         }
 
