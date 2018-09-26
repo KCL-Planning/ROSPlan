@@ -121,12 +121,12 @@ namespace KCL_rosplan {
             res.op.formula.typed_parameters = getTypedParams(it->second->params);
 
             // Compute preconditions
-            PosNegDomainFormula prec = RDDLOperatorUtils::getOperatorPreconditions(req.name, domain_parser.rddlTask->SACs);
+            PosNegDomainFormula prec = RDDLOperatorUtils::getOperatorPreconditions(res.op.formula, domain_parser.rddlTask->SACs);
             res.op.at_start_simple_condition = prec.pos;
             res.op.at_start_neg_condition = prec.neg;
 
             // Compute effects
-            PosNegDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(req.name, domain_parser.rddlTask->CPFDefinitions);
+            PosNegDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
             res.op.at_end_add_effects = eff.pos;
             res.op.at_end_del_effects = eff.neg;
             return true;
@@ -161,7 +161,7 @@ namespace KCL_rosplan {
         // model_timed_initial_literals will not be filled either
         loadMetric(); // model_metric;
 
-        // FIXME no goals defined in RDDL
+        // FIXME no goals defined in RDDL -> define way of specifying goals?s
         // FIXME no timed_initial_literals defined in RDDL
         // FIXME oneof constraints?
         // FIXME model_constants?

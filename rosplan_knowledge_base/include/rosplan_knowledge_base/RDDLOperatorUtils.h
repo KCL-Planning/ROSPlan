@@ -14,24 +14,29 @@ namespace KCL_rosplan {
 
     typedef std::vector<rosplan_knowledge_msgs::DomainFormula> vectorDF;
     struct PosNegDomainFormula {
-        vectorDF pos;
-        vectorDF neg;
+        vectorDF pos; // Positive or add formulas
+        vectorDF neg; // Negative or delete formulas
     };
 
     class RDDLOperatorUtils {
     private:
         /* joints a and b, leaving the result in a. b is not valid anymore! */
         static inline void join(PosNegDomainFormula &a, PosNegDomainFormula &b);
+        /* negates p by swapping positive formulas by negative ones */
         static inline void negate(PosNegDomainFormula& p);
+        /* Returns an assignment of the parameters of the op_var to the parmeters of the op_head, to match all the params for the operator */
+        static std::map<std::string, std::string> getParamReplacement(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable* op_var);
 
-        static PosNegDomainFormula getOperatorPrecondition(const std::string &op_name, const LogicalExpression *SAC);
-        static PosNegDomainFormula getOperatorPrecondition(const std::string &op_name, const Connective *SAC);
-        static PosNegDomainFormula getOperatorPrecondition(const std::string &op_name, const Negation *SAC);
+        static PosNegDomainFormula toDomainFormula(const LogicalExpression *expr, const std::map<std::string, std::string>& assign);
 
-        static PosNegDomainFormula toDomainFormula(const LogicalExpression *expr);
 
-        static PosNegDomainFormula getOperatorEffects(const std::string& op_name, const ParametrizedVariable *pVariable, const LogicalExpression *exp);
-        static PosNegDomainFormula getOperatorEffects(const std::string& op_name, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
+        static PosNegDomainFormula getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const LogicalExpression *SAC);
+        static PosNegDomainFormula getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Connective *SAC);
+        static PosNegDomainFormula getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Negation *SAC);
+
+
+        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp);
+        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
 
 
     public:
@@ -43,9 +48,9 @@ namespace KCL_rosplan {
          * @param SACs Action-State Constraints
          * @return Preconditions
          */
-        static PosNegDomainFormula  getOperatorPreconditions(const std::string &op_name, const std::vector<LogicalExpression *> &SACs);
+        static PosNegDomainFormula getOperatorPreconditions(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::vector<LogicalExpression *> &SACs);
 
-        static PosNegDomainFormula getOperatorEffects(const std::string& op_name, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
+        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
     };
 }
 
