@@ -19,7 +19,18 @@ namespace KCL_rosplan {
 		// connecting to KB
 		std::string kb = "knowledge_base";
 		node_handle->getParam("knowledge_base", kb);
-		pddl_problem_generator.knowledge_base = kb;
+
+		// Check problem fle extension to select a problem generator
+		node_handle->param<std::string>("problem_path", problem_path, "common/problem.pddl");
+		std::string extension = (problem_path.size() > 5)? problem_path.substr(problem_path.find_last_of('.')) : "";
+		KCL_rosplan::ProblemGeneratorFactory::ProbGen pg_type;
+		if (extension == ".pddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::PDDL;
+		else if (extension == ".rddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::RDDL;
+		else {
+			ROS_ERROR("KCL: (%s) Unexpected problem file extension %s", ros::this_node::getName().c_str(), extension.c_str());
+			ros::shutdown();
+		}
+		problem_generator = KCL_rosplan::ProblemGeneratorFactory::createProblemGenerator(pg_type, kb);
 
 		// publishing "problem"
 		std::string problem_instance = "problem_instance";
@@ -85,7 +96,7 @@ namespace KCL_rosplan {
 		}
 
 		ROS_INFO("KCL: (%s) (%s) Generating problem file.", ros::this_node::getName().c_str(), problem_name.c_str());
-		pddl_problem_generator.generatePDDLProblemFile(problem_path);
+		problem_generator->generateProblemFile(problem_path);
 		ROS_INFO("KCL: (%s) (%s) The problem was generated.", ros::this_node::getName().c_str(), problem_name.c_str());
 
 		// publish problem

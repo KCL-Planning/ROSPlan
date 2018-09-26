@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 
-#include "PDDLProblemGenerator.h"
+#include "ProblemGeneratorFactory.h"
 
 #include "std_msgs/String.h"
 #include "std_srvs/Empty.h"
@@ -25,7 +25,7 @@ namespace KCL_rosplan {
 		std::string problem_path;
 		std::string problem_name;
 
-		PDDLProblemGenerator pddl_problem_generator;
+		ProblemGeneratorPtr problem_generator;
 
 	public:
 
