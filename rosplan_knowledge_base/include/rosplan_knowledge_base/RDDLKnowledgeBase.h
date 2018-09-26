@@ -39,17 +39,6 @@ namespace KCL_rosplan {
 	class RDDLKnowledgeBase : public KnowledgeBase
 	{
 	private:
-
-		/* adding items to the knowledge base */
-		// void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-		//void addMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-		//void addMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-
-		/* removing items from the knowledge base */
-		//void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-		//void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-		//void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg); // FIXME handled by syperclass?
-
 		/* Converts RDDL params to ROS-like params */
 		std::vector<diagnostic_msgs::KeyValue> getTypedParams(const std::vector<Parameter*>& params);
 
@@ -77,42 +66,19 @@ namespace KCL_rosplan {
 		RDDLTaskParser domain_parser;
 
 		/* parse domain and probelm files */
-		inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path);
+		inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;
 
         /* add the initial state to the knowledge base */
-        void addInitialState(); // FIXME change in superclass?
-
-		/* service methods for querying the model */
-		// bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res); // FIXME handled by syperclass?
-
-		/* service methods for fetching the current state */
-		// bool getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res); // FIXME handled by syperclass?
-		// bool getPropositions(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res); // FIXME handled by syperclass?
-		// bool getFunctions(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res); // FIXME handled by syperclass?
-		// bool getGoals(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res); // FIXME handled by syperclass?
-		// bool getMetric(rosplan_knowledge_msgs::GetMetricService::Request  &req, rosplan_knowledge_msgs::GetMetricService::Response &res); // FIXME handled by syperclass?
-		// bool getTimedKnowledge(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res); // FIXME handled by syperclass?
-
-		/* service methods for adding and removing items to and from the current state */
-		// bool updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res); // FIXME handled by syperclass?
-		// bool updateKnowledge(rosplan_knowledge_msgs::KnowledgeUpdateService::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateService::Response &res); // FIXME handled by syperclass?
-		// bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res); // FIXME handled by syperclass?
+        void addInitialState() override;
 
 		/* service methods for fetching the domain details */
-		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res);
-		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);
-		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getFunctionPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res); //TODO
-		bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res);//TODO
-		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
-
-		/* service methods for conditional planning */
-		// bool updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res); // FIXME handled by syperclass?
-		// TODO bool getCurrentConstraintsOneOf(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
-
-		/* main loop */
-		//void runKnowledgeBase(); // FIXME handled by superclass?
+		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) override;
+		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) override;
+		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) override;
+		bool getFunctionPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) override;
+		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) override;
+		bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) override;
+		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) override;
 	};
 }
 #endif

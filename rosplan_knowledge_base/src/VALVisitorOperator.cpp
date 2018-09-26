@@ -128,7 +128,6 @@ namespace KCL_rosplan {
 
 	void VALVisitorOperator::visit_effect_lists(VAL::effect_lists * e) {
 
-		eff_time = VAL::E_AT_END;  // Set non-timed add and del effects to be at end in the ROSPlan msgs
 		eff_neg = false;
 		e->add_effects.pc_list<VAL::simple_effect*>::visit(this);
 		eff_neg = true;
