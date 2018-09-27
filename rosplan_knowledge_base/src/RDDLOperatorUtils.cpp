@@ -3,6 +3,7 @@
 //
 
 #include <rosplan_knowledge_base/RDDLOperatorUtils.h>
+#include <rosplan_knowledge_base/RDDLExprUtils.h>
 
 #include "rosplan_knowledge_base/RDDLOperatorUtils.h"
 #include "ros/ros.h"
@@ -101,6 +102,11 @@ namespace KCL_rosplan {
         a.neg.insert(a.neg.end(), std::make_move_iterator(b.neg.begin()), std::make_move_iterator(b.neg.end()));
     }
 
+    void RDDLOperatorUtils::join(vectorDA &a, vectorDA &b) {
+        a.insert(a.end(), std::make_move_iterator(b.begin()), std::make_move_iterator(b.end()));
+    }
+
+
 
     void RDDLOperatorUtils::negate(PosNegDomainFormula &p) {
         vectorDF aux = p.pos;
@@ -141,11 +147,27 @@ namespace KCL_rosplan {
                                                               const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs) {
         PosNegDomainFormula eff_ret;
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
+            if (it->first->valueType->name != "bool") continue;
             PosNegDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second);
             join(eff_ret, eff_i);
         }
         return eff_ret;
     }
+
+    vectorDA RDDLOperatorUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+                                                         const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs) {
+        vectorDA ret;
+        for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
+            if (it->first->valueType->name  == "bool") continue;
+            auto ifte = dynamic_cast<const IfThenElseExpression*>(it->second);
+            if (ifte != nullptr) {
+                vectorDA ass_i = getOperatorAssignEffects(op_head, it->first, ifte);
+                join(ret, ass_i);
+            }
+        }
+        return ret;
+    }
+
 
     PosNegDomainFormula
     RDDLOperatorUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp) {
@@ -220,6 +242,62 @@ namespace KCL_rosplan {
             join(ret, res_else);
         }
 
+        return ret;
+    }
+
+    vectorDA RDDLOperatorUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+                                                         const ParametrizedVariable *pVariable,
+                                                         const IfThenElseExpression *exp) {
+        // Assumption: an assignment for an operator effect is of the form:
+        //      fluent = if exists operator-fluent then expression else expression2;
+        //  Here we weill only process the case in the iftrue part of the ifthenelse expression.
+        //  Only will process operations of the type fluent = fluent +- (expression) <- parenthesis are important if it is a non constant expression
+        vectorDA ret;
+        auto exist = dynamic_cast<const ExistentialQuantification*>(exp->condition);
+        if (exist != nullptr) {
+            auto var = dynamic_cast<const ParametrizedVariable*>(exist->expr);
+            if ((var != nullptr) and (var->variableType == ParametrizedVariable::ACTION_FLUENT) and (var->variableName == op_head.name)) {
+                auto assign = getParamReplacement(op_head, var);
+                PosNegDomainFormula iftrue = toDomainFormula(pVariable, assign);
+                // iftrue will be the formula of the left hand side
+
+                rosplan_knowledge_msgs::ExprComposite rhs;
+                rosplan_knowledge_msgs::DomainAssignment::_assign_type_type assignment_type;
+
+                auto numconst = dynamic_cast<const NumericConstant*>(exp->valueIfTrue);
+                if (numconst == nullptr) {
+                    auto addition = dynamic_cast<const Addition *>(exp->valueIfTrue);
+                    auto subtr = dynamic_cast<const Subtraction *>(exp->valueIfTrue);
+                    if (addition == nullptr and subtr == nullptr and numconst == nullptr) return ret; // Ignoring it!
+
+                    if (addition != nullptr) assignment_type = rosplan_knowledge_msgs::DomainAssignment::INCREASE;
+                    else assignment_type = rosplan_knowledge_msgs::DomainAssignment::DECREASE;
+
+                    auto connective = dynamic_cast<const Connective *>(exp->valueIfTrue);
+
+                    // check that the left hand side is actually the the fluent of the cpfs
+                    auto connvar = dynamic_cast<const ParametrizedVariable *>(connective->exprs[0]);
+                    if (connvar != nullptr) {
+                        if (connvar->variableName != pVariable->variableName) return ret;  // Ignoring it!
+                        rhs = RDDLExprUtils::getExpression(connective->exprs[1], assign);
+                    }
+                    else return ret;  // Ignoring it!
+                }
+                else {
+                    rhs = RDDLExprUtils::getExpression(numconst, assign);
+                    assignment_type = rosplan_knowledge_msgs::DomainAssignment::ASSIGN_CTS;
+                }
+
+                for (auto it = iftrue.pos.begin(); it != iftrue.pos.end(); ++it) {
+                    rosplan_knowledge_msgs::DomainAssignment da;
+                    da.assign_type = assignment_type;
+                    da.grounded = false;
+                    da.LHS = *it;
+                    da.RHS = rhs;
+                    ret.push_back(da);
+                }
+            }
+        }
         return ret;
     }
 

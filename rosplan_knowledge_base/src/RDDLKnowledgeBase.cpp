@@ -129,6 +129,10 @@ namespace KCL_rosplan {
             PosNegDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
             res.op.at_end_add_effects = eff.pos;
             res.op.at_end_del_effects = eff.neg;
+
+            // Compute assign effects
+            res.op.at_end_assign_effects = RDDLOperatorUtils::getOperatorAssignEffects(res.op.formula,
+                                                                                       domain_parser.rddlTask->CPFDefinitions);
             return true;
         }
         return false;

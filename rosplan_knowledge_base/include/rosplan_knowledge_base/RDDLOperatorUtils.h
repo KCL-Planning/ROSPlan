@@ -9,10 +9,12 @@
 #define NOT_IMPLEMENTED_OPERATOR NOT_IMPLEMENTED("Unknown or unsupported operand type for the action preconditions.")
 
 #include <rosplan_knowledge_msgs/DomainFormula.h>
+#include <rosplan_knowledge_msgs/DomainAssignment.h>
 #include "RDDLParser.h"
 namespace KCL_rosplan {
 
     typedef std::vector<rosplan_knowledge_msgs::DomainFormula> vectorDF;
+    typedef std::vector<rosplan_knowledge_msgs::DomainAssignment> vectorDA;
     struct PosNegDomainFormula {
         vectorDF pos; // Positive or add formulas
         vectorDF neg; // Negative or delete formulas
@@ -22,6 +24,7 @@ namespace KCL_rosplan {
     private:
         /* joints a and b, leaving the result in a. b is not valid anymore! */
         static inline void join(PosNegDomainFormula &a, PosNegDomainFormula &b);
+        static inline void join(vectorDA &a, vectorDA &b);
         /* negates p by swapping positive formulas by negative ones */
         static inline void negate(PosNegDomainFormula& p);
         /* Returns an assignment of the parameters of the op_var to the parmeters of the op_head, to match all the params for the operator */
@@ -38,6 +41,9 @@ namespace KCL_rosplan {
         static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp);
         static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
 
+        static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+                                                 const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
+
 
     public:
         /**
@@ -51,6 +57,8 @@ namespace KCL_rosplan {
         static PosNegDomainFormula getOperatorPreconditions(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::vector<LogicalExpression *> &SACs);
 
         static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
+        static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+                                                 const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs);
     };
 }
 
