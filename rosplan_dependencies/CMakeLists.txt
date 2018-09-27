@@ -9,6 +9,11 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED)
 
+# Get the git submodules...
+message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init )
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update )
+
 
 ###################################
 ## catkin specific configuration ##
@@ -29,6 +34,8 @@ catkin_package(
 # COMMON FLAGS
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer -DNDEBUG")
+
+
 ########################################################################################################################
 ## RDDL PARSER
 ########################################################################################################################
