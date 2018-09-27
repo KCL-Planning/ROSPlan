@@ -23,6 +23,9 @@ find_package(Boost REQUIRED COMPONENTS
   filesystem
 )
 
+add_definitions(-Wno-deprecated-declarations) # Disable deprecated declarations warning (about std::auto_ptr)
+
+
 ###################################
 ## catkin specific configuration ##
 ###################################
