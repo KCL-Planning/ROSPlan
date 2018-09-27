@@ -1,0 +1,3 @@
+[submodule "rosplan_dependencies/VAL"]
+	path = rosplan_dependencies/VAL
+	url = https://github.com/KCL-Planning/VAL.git
