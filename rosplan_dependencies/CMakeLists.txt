@@ -60,9 +60,6 @@ BISON_TARGET(RDDL_PARSER rddl_parser/parser.ypp ${CMAKE_CURRENT_BINARY_DIR}/pars
 FLEX_TARGET(RDDL_SCANNER rddl_parser/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc)
 ADD_FLEX_BISON_DEPENDENCY(RDDL_SCANNER RDDL_PARSER)
 
-# Disable deprecated declarations warning (about std::auto_ptr)
-add_definitions(-Wno-deprecated-declarations)
-
 set(RDDL_PARSER_SOURCES
         rddl_parser/rddl.cc
         rddl_parser/instantiator.cc
