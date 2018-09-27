@@ -48,40 +48,43 @@ include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
 ## val sources
 set(VAL_SOURCES
-	src/VALfiles/DebugWriteController.cpp
-	src/VALfiles/FastEnvironment.cpp
-	src/VALfiles/FuncAnalysis.cpp
-	src/VALfiles/SASActions.cpp
-	src/VALfiles/SimpleEval.cpp
-	src/VALfiles/TIM.cpp
-	src/VALfiles/TimSupport.cpp
-	src/VALfiles/ToFunction.cpp
-	src/VALfiles/TypedAnalyser.cpp
-	src/VALfiles/ValidatorAPI.cpp
-	src/VALfiles/instantiation.cpp
-	src/VALfiles/pddl+.cpp
-	src/VALfiles/ptree.cpp
-	src/VALfiles/typecheck.cpp
-	src/VALfiles/Validator.cpp
-	src/VALfiles/Action.cpp
-	src/VALfiles/Proposition.cpp
-	src/VALfiles/FuncExp.cpp
-	src/VALfiles/RepairAdvice.cpp
-	src/VALfiles/State.cpp
-	src/VALfiles/Plan.cpp
-	src/VALfiles/Ownership.cpp
-	src/VALfiles/Environment.cpp
-	src/VALfiles/Events.cpp
-	src/VALfiles/Polynomial.cpp
-	src/VALfiles/TrajectoryConstraints.cpp
-	src/VALfiles/RobustAnalyse.cpp
-	src/VALfiles/PrettyPrinter.cpp
-	src/VALfiles/random.cpp
-	src/VALfiles/LaTeXSupport.cpp
-	src/VALfiles/Utils.cpp)
+    src/VALfiles/DebugWriteController.cpp
+    src/VALfiles/FastEnvironment.cpp
+    src/VALfiles/FuncAnalysis.cpp
+    src/VALfiles/SASActions.cpp
+    src/VALfiles/SimpleEval.cpp
+    src/VALfiles/TIM.cpp
+    src/VALfiles/TimSupport.cpp
+    src/VALfiles/ToFunction.cpp
+    src/VALfiles/TypedAnalyser.cpp
+    src/VALfiles/ValidatorAPI.cpp
+    src/VALfiles/instantiation.cpp
+    src/VALfiles/pddl+.cpp
+    src/VALfiles/ptree.cpp
+    src/VALfiles/typecheck.cpp
+    src/VALfiles/Validator.cpp
+    src/VALfiles/Action.cpp
+    src/VALfiles/Proposition.cpp
+    src/VALfiles/FuncExp.cpp
+    src/VALfiles/RepairAdvice.cpp
+    src/VALfiles/State.cpp
+    src/VALfiles/Plan.cpp
+    src/VALfiles/Ownership.cpp
+    src/VALfiles/Environment.cpp
+    src/VALfiles/Events.cpp
+    src/VALfiles/Polynomial.cpp
+    src/VALfiles/TrajectoryConstraints.cpp
+    src/VALfiles/RobustAnalyse.cpp
+    src/VALfiles/PrettyPrinter.cpp
+    src/VALfiles/random.cpp
+    src/VALfiles/LaTeXSupport.cpp
+    src/VALfiles/Utils.cpp)
 
 ## Declare cpp executables
-add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp)
+add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/ProblemGenerator.cpp
+                                                                           src/ProblemGeneration/RDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/ProblemGeneratorFactory.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(ff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(metricff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
