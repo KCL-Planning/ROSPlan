@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosplan_knowledge_base)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -14,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   diagnostic_msgs
   visualization_msgs
   tf
+  rosplan_dependencies
 )
 
 find_package(FLEX REQUIRED)
@@ -39,10 +43,11 @@ catkin_package(
 
 ## include_directories(include)
 include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
 include_directories(src/VALfiles)
+include_directories(${catkin_INCLUDE_DIRS})
 
 ## val sources
+add_definitions(-Wno-deprecated-declarations) # Disable deprecated declarations warning (about std::auto_ptr)
 set(VAL_SOURCES
 	src/VALfiles/DebugWriteController.cpp
 	src/VALfiles/FastEnvironment.cpp
@@ -78,11 +83,17 @@ set(VAL_SOURCES
 
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
+	src/KnowledgeBaseFactory.cpp
 	src/KnowledgeBase.cpp
 	src/KnowledgeComparitor.cpp
-	src/DomainParser.cpp
-	src/ProblemParser.cpp
-	src/VALVisitorOperator.cpp
+    src/PDDLDomainParser.cpp
+	src/PDDLProblemParser.cpp
+    src/PDDLKnowledgeBase.cpp
+    src/RDDLTaskParser.cpp
+    src/RDDLKnowledgeBase.cpp
+    src/RDDLExprUtils.cpp
+    src/RDDLOperatorUtils.cpp
+    src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
 	src/VALVisitorProblem.cpp)
 
