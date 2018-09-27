@@ -26,10 +26,80 @@ catkin_package(
   DEPENDS
 )
 
+# COMMON FLAGS
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer -DNDEBUG")
+########################################################################################################################
+## RDDL PARSER
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Preparing RDDL parser dependency...")
+
+###########
+## Build ##
+###########
+execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE LBITS)
+if (LBITS EQUAL 64)
+    SET (RDDL_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+else()
+    SET (RDDL_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+endif(LBITS EQUAL 64)
+SET (RDDL_CMAKE_CXX_FLAGS "${RDDL_CMAKE_CXX_FLAGS} -g -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -std=c++11")
+
+# Lexer and parser
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
+
+BISON_TARGET(RDDL_PARSER rddl_parser/parser.ypp ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cc COMPILE_FLAGS -d)
+FLEX_TARGET(RDDL_SCANNER rddl_parser/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc)
+ADD_FLEX_BISON_DEPENDENCY(RDDL_SCANNER RDDL_PARSER)
+
+# Disable deprecated declarations warning (about std::auto_ptr)
+add_definitions(-Wno-deprecated-declarations)
+
+set(RDDL_PARSER_SOURCES
+        rddl_parser/rddl.cc
+        rddl_parser/instantiator.cc
+        rddl_parser/preprocessor.cc
+        rddl_parser/task_analyzer.cc
+        rddl_parser/evaluatables.cc
+        rddl_parser/logical_expressions.cc
+        rddl_parser/states.cc
+        rddl_parser/probability_distribution.cc
+        rddl_parser/utils/timer.cc
+        rddl_parser/utils/string_utils.cc
+        rddl_parser/utils/system_utils.cc
+        rddl_parser/utils/math_utils.cc
+        rddl_parser/RDDLParser.cpp)
+include_directories("rddl_parser")
+
+add_library(RDDL_PARSER SHARED  ${BISON_RDDL_PARSER_OUTPUTS} ${FLEX_RDDL_SCANNER_OUTPUTS} ${RDDL_PARSER_SOURCES})
+add_dependencies(RDDL_PARSER ${catkin_EXPORTED_TARGETS})
+SET_TARGET_PROPERTIES(RDDL_PARSER PROPERTIES COMPILE_FLAGS "${RDDL_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+add_executable(parser rddl_parser/parser_main.cpp)
+target_link_libraries(parser RDDL_PARSER)
+#############
+## Install ##
+#############
+ install(TARGETS RDDL_PARSER
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+
+## Mark cpp header files for installation
+ install(DIRECTORY rddl_parser
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
+   PATTERN ".svn" EXCLUDE
+ )
+
+########################################################################################################################
+########################################################################################################################
 ########################################################################################################################
 ## VAL
 ########################################################################################################################
-message(STATUS "Preparing VAL dependency...")
+message(STATUS "[${PROJECT_NAME}] Preparing VAL dependency...")
 
 ###########
 ## Build ##
@@ -73,7 +143,7 @@ set(VAL_SOURCES
         VAL/src/Utils.cpp)
 include_directories("VAL/include")
 
-add_library(VAL ${VAL_SOURCES})
+add_library(VAL SHARED ${VAL_SOURCES})
 add_dependencies(VAL ${catkin_EXPORTED_TARGETS})
 
 #############
