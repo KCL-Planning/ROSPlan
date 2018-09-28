@@ -164,7 +164,7 @@ chmod 755 tutorial.bash
 
 For information on how to call ROS services from code, take a look at the tutorials for [c++](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient) and [python](http://wiki.ros.org/ROS/Tutorials/WritingServiceClient%28python%29).
 
-Take a look at the output in the first terminal, where *tutorial_04.launch* was launched. You will see the output from the previous tutorials, showing that the problem has been generated, a plan generated, and dispatch started. In addition you will see the ouput from the execution of the plan:
+Take a look at the output in the first terminal, where *tutorial_04.launch* was launched. You will see the output from the previous tutorials, showing that the problem has been generated, a plan generated, and dispatch started. In addition you will see the ouput from the execution of the plan. Here we show just the first action:
 
 ```
 KCL: (/rosplan_plan_dispatcher) Dispatching plan.
@@ -176,9 +176,10 @@ KCL: (KB) Adding fact (undocked kenny)
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action enabled]
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action achieved]
 KCL: (/rosplan_plan_dispatcher) 0: action undock completed
+...
 ```
 
-Let's break this output down, line by line.
+Let's break the output of the first action down, line by line.
 
 ```
 KCL: (/rosplan_plan_dispatcher) Dispatching plan.
@@ -216,7 +217,7 @@ Since the duration of the action was 0, the output from the dispatcher arrives a
 You can see the contents of an action feedback message using `rostopic echo`:
 
 ```
-rostopic echo /rosplan_plan_dispatcher/action_dispatch -n 1
+rostopic echo /rosplan_plan_dispatcher/action_feedback -n 1
 ```
 
 Which should show something like this:
