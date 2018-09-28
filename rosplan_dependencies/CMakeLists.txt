@@ -11,8 +11,8 @@ find_package(catkin REQUIRED)
 
 # Get the git submodules...
 message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init )
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update )
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET)
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET)
 
 
 ###################################
