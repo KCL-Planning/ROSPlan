@@ -11,8 +11,8 @@ find_package(catkin REQUIRED)
 
 # Get the git submodules...
 message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init )
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update )
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET)
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update OUTPUT_QUIET)
 
 
 ###################################
@@ -98,8 +98,6 @@ SET_TARGET_PROPERTIES(RDDL_PARSER PROPERTIES COMPILE_FLAGS "${RDDL_CMAKE_CXX_FLA
  )
 
 ########################################################################################################################
-########################################################################################################################
-########################################################################################################################
 ## VAL
 ########################################################################################################################
 message(STATUS "[${PROJECT_NAME}] Preparing VAL dependency...")
@@ -164,6 +162,30 @@ add_dependencies(VAL ${catkin_EXPORTED_TARGETS})
    FILES_MATCHING PATTERN "*.h"
    PATTERN ".svn" EXCLUDE
  )
+
+########################################################################################################################
+########################################################################################################################
+## rddlsim
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Preparing rddlsim dependency...")
+
+###########
+## Build ##
+###########
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+    message(STATUS "[${PROJECT_NAME}] Compiling rddlsim...")
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/compile WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/ OUTPUT_QUIET ERROR_QUIET)
+    message(STATUS "[${PROJECT_NAME}] Done!")
+else(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+    message(STATUS "[${PROJECT_NAME}] rddlsim is already compiled!")
+endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+
+#############
+## Install ##
+#############
+
+
 
 ########################################################################################################################
 ########################################################################################################################
