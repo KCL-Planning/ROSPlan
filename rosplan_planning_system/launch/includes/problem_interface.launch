@@ -7,7 +7,7 @@
 	<arg name="domain_path"      default="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
 	<arg name="problem_path"     default="$(find rosplan_demos)/common/problem.pddl" />
 	<arg name="problem_topic"    default="problem_instance" />
-	<arg name="planner_language" default="" /> <!-- Can be RDDL or PDDL -->
+	<arg name="planning_language" default="" /> <!-- Can be RDDL or PDDL -->
 
 
 	<!-- problem generation -->
