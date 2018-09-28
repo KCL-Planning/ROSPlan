@@ -53,6 +53,7 @@ add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/P
                                                                            src/ProblemGeneration/ProblemGeneratorFactory.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(ff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
+add_executable(rddlsim_planner_interface src/PlannerInterface/RDDLSIMPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(metricff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(smt_planner_interface src/PlannerInterface/SMTPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(fd_planner_interface src/PlannerInterface/FDPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
@@ -70,6 +71,7 @@ add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cp
 add_dependencies(problemInterface ${catkin_EXPORTED_TARGETS})
 add_dependencies(popf_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(ff_planner_interface ${catkin_EXPORTED_TARGETS})
+add_dependencies(rddlsim_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(metricff_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(smt_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(fd_planner_interface ${catkin_EXPORTED_TARGETS})
@@ -87,6 +89,7 @@ add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 target_link_libraries(problemInterface ${catkin_LIBRARIES})
 target_link_libraries(popf_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(ff_planner_interface ${catkin_LIBRARIES})
+target_link_libraries(rddlsim_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(metricff_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(smt_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(fd_planner_interface ${catkin_LIBRARIES})
@@ -132,8 +135,10 @@ install(DIRECTORY include/rosplan_action_interface
 # within a launch file similar to "$(find ...)".
 # The chosen path allows to use the same roslaunch parameter,
 # when run from the workspace or when installed.
-file(GLOB COMMON_BINS common/bin/*)
-install(PROGRAMS ${COMMON_BINS}
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin
-)
-
+#file(GLOB COMMON_BINS common/bin/*)
+#install(PROGRAMS ${COMMON_BINS}
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin
+#)
+install(DIRECTORY common/bin
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin/
+        FILE_PERMISSIONS OWNER_EXECUTE)

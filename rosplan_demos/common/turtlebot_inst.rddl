@@ -12,8 +12,8 @@
 non-fluents nf_turtlebot_inst1 {
 	domain = turtlebot_domain;
 	objects {
-		waypoint: {wp0, wp1};//;{wp0, wp1, wp2, wp3, wp4, wp5, wp6, wp7, wp8, wp9, wp10};
-		//waypoint: {wp0, wp1};
+		//waypoint: {wp0, wp1, wp2, wp3, wp4, wp5, wp6, wp7, wp8, wp9, wp10};
+		waypoint: {wp0, wp1};
         robot: {kenny};
 	};
 	

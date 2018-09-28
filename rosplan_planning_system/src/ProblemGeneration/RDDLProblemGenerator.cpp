@@ -17,7 +17,7 @@ namespace KCL_rosplan {
             ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", domain_name_service.c_str());
         }
         _domain_name = nameSrv.response.domain_name;
-        _non_fluents_name = "nf_" + _domain_name + "_inst";
+        _non_fluents_name = "nf_" + _domain_name + "__generate_instance";
     }
 
     void RDDLProblemGenerator::makeProblem(std::ofstream &pFile) {
@@ -61,7 +61,7 @@ namespace KCL_rosplan {
 
 
     void RDDLProblemGenerator::makeInstance(std::ofstream &pFile, const std::set<std::string> &fluents) {
-        pFile << "instance " << _domain_name << "__inst {" << std::endl;
+        pFile << "instance " << _domain_name << "__generated_instance {" << std::endl;
         pFile << "\tdomain = " << _domain_name << ";" << std::endl;
         pFile << "\tnon-fluents = " << _non_fluents_name << ";" << std::endl;
 
