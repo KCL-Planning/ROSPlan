@@ -12,13 +12,16 @@
  */
 namespace KCL_rosplan {
 
+    typedef std::shared_ptr<PPDDLInterface::p_Domain> PPDDLDomainPtr;
+    typedef ppddl_parser::Problem const* PPDDLProblemPtr;
     class PPDDLParser {
     public:
-        PPDDLParser() : ppddl_domain(nullptr), domain_parsed(false), domain_name(""), problem_name("") {};
-        ~PPDDLParser();
+        PPDDLParser() : problem(nullptr), domain(nullptr), domain_parsed(false), domain_name(""), problem_name("") {};
+        ~PPDDLParser() = default;
 
         /* RDDL task pointers */
-        PPDDLInterface::Domain* ppddl_domain; // Also stores the problems
+        PPDDLDomainPtr domain;
+        PPDDLProblemPtr problem;
 
         /* domain information */
         bool domain_parsed;
@@ -27,7 +30,7 @@ namespace KCL_rosplan {
 
 
         /* domain parsing */
-        PPDDLInterface::Domain* parseDomainProblem(const std::string &domainPath, const std::string &problemPath);
+        PPDDLDomainPtr parseDomainProblem(const std::string &domainPath, const std::string &problemPath);
     };
 }
 

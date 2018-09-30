@@ -7,15 +7,17 @@
 #include "rosplan_knowledge_base/PPDDLParser.h"
 
 namespace KCL_rosplan {
-    PPDDLInterface::Domain* PPDDLParser::parseDomainProblem(const std::string &domainPath, const std::string &problemPath) {
+    PPDDLDomainPtr PPDDLParser::parseDomainProblem(const std::string &domainPath, const std::string &problemPath) {
         // only parse domain once
-        if (domain_parsed) return ppddl_domain;
+        if (domain_parsed) return domain;
         ROS_INFO("KCL: (%s) Parsing domain: %s.", ros::this_node::getName().c_str(), domainPath.c_str());
         ROS_INFO("KCL: (%s) Parsing initial state", ros::this_node::getName().c_str());
 
         // parse domain
         try {
-            ppddl_domain = new PPDDLInterface::Domain(domainPath, std::vector<std::string>({problemPath}));
+            std::vector<std::string> problem_vect;
+            if (not problemPath.empty()) problem_vect.push_back(problemPath);
+            domain = PPDDLInterface::Domain(domainPath, problem_vect)._getWrappedDomain();
         }
         catch (std::runtime_error e) {
             std::string filetype = "domain";
@@ -24,19 +26,16 @@ namespace KCL_rosplan {
             ROS_ERROR("KCL: (%s) Failed to open %s file.", ros::this_node::getName().c_str(), filetype.c_str());
             return nullptr;
         }
-        if (not ppddl_domain) {
+        if (not domain) {
             ROS_ERROR("KCL: (%s) Failed to open domain file.", ros::this_node::getName().c_str());
             return nullptr;
         }
-        
-        domain_name =  ppddl_domain->getName();
-        problem_name = ppddl_parser::Problem::begin()->second->name();
+
+        domain_name =  domain->name();
+        problem = ppddl_parser::Problem::begin()->second;
+        problem_name = problem->name();
         domain_parsed = true;
 
-        return ppddl_domain;
-    }
-
-    PPDDLParser::~PPDDLParser() {
-        delete ppddl_domain;
+        return domain;
     }
 }
