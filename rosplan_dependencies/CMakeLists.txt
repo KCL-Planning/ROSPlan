@@ -25,7 +25,7 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser
-  LIBRARIES VAL RDDL_PARSER
+  LIBRARIES VAL rddl_parser
   CATKIN_DEPENDS roscpp
   DEPENDS
 )
@@ -75,15 +75,15 @@ set(RDDL_PARSER_SOURCES
         rddl_parser/RDDLParser.cpp)
 include_directories("rddl_parser")
 
-add_library(RDDL_PARSER SHARED  ${BISON_RDDL_PARSER_OUTPUTS} ${FLEX_RDDL_SCANNER_OUTPUTS} ${RDDL_PARSER_SOURCES})
-add_dependencies(RDDL_PARSER ${catkin_EXPORTED_TARGETS})
-SET_TARGET_PROPERTIES(RDDL_PARSER PROPERTIES COMPILE_FLAGS "${RDDL_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+add_library(rddl_parser SHARED  ${BISON_RDDL_PARSER_OUTPUTS} ${FLEX_RDDL_SCANNER_OUTPUTS} ${RDDL_PARSER_SOURCES})
+add_dependencies(rddl_parser ${catkin_EXPORTED_TARGETS})
+SET_TARGET_PROPERTIES(rddl_parser PROPERTIES COMPILE_FLAGS "${RDDL_CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 #############
 ## Install ##
 #############
 
- install(TARGETS RDDL_PARSER
+ install(TARGETS rddl_parser
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -143,13 +143,13 @@ set(VAL_SOURCES
         VAL/src/Utils.cpp)
 include_directories("VAL/include")
 
-add_library(VAL SHARED ${VAL_SOURCES})
-add_dependencies(VAL ${catkin_EXPORTED_TARGETS})
+add_library(val SHARED ${VAL_SOURCES})
+add_dependencies(val ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
 #############
- install(TARGETS VAL
+ install(TARGETS val
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
