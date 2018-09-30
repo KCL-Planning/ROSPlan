@@ -37,13 +37,14 @@
 namespace KCL_rosplan {
 
 	class PDDLKnowledgeBase : public KnowledgeBase {
-	public:
-
+	private:
 		/* parsing domain using VAL */
 		PDDLDomainParser domain_parser;
 
-        /* initial state from problem file using VAL */
-        PDDLProblemParser problem_parser;
+		/* initial state from problem file using VAL */
+		PDDLProblemParser problem_parser;
+	public:
+
 
 		/* parse domain and probelm files */
 		void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;

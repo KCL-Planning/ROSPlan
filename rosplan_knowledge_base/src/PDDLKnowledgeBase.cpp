@@ -1,6 +1,4 @@
 
-#include <rosplan_knowledge_base/PDDLKnowledgeBase.h>
-
 #include "rosplan_knowledge_base/PDDLKnowledgeBase.h"
 
 namespace KCL_rosplan {
