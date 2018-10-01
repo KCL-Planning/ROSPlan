@@ -17,6 +17,7 @@ add_message_files(
   FILES
   DomainFormula.msg
   DomainOperator.msg
+  ProbabilisticEffect.msg
   DomainAssignment.msg
   DomainInequality.msg
   ExprBase.msg
