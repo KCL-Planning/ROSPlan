@@ -95,7 +95,10 @@ set(KNOWLEDGE_SOURCES
     src/RDDLOperatorUtils.cpp
     src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
-	src/VALVisitorProblem.cpp)
+	src/VALVisitorProblem.cpp
+	src/PPDDLKnowledgeBase.cpp
+	src/PPDDLParser.cpp
+		src/PPDDLUtils.cpp)
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})

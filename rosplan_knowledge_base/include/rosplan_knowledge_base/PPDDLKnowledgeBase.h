@@ -26,6 +26,7 @@
 
 #include "KnowledgeBase.h"
 #include "PPDDLParser.h"
+#include "PPDDLUtils.h"
 
 #ifndef ROSPLAN_KNOWLEDGE_BASE_PPDDLKNOWLEDGEBASE_H
 #define ROSPLAN_KNOWLEDGE_BASE_PPDDLKNOWLEDGEBASE_H
@@ -40,7 +41,7 @@ namespace KCL_rosplan {
         /* parsing domain using VAL */
         PPDDLParser domain_parser;
     public:
-        /* parse domain and probelm files */
+        /* parse domain and problem files */
         inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;
 
         /* add the initial state to the knowledge base */
