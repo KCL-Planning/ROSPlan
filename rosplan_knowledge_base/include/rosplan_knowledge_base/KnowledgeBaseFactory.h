@@ -8,6 +8,7 @@
 #include "rosplan_knowledge_base/KnowledgeBase.h"
 #include "rosplan_knowledge_base/PDDLKnowledgeBase.h"
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
+#include "rosplan_knowledge_base/PPDDLKnowledgeBase.h"
 
 namespace KCL_rosplan {
     typedef std::unique_ptr<KnowledgeBase> KnowledgeBasePtr;
@@ -16,6 +17,7 @@ namespace KCL_rosplan {
     public:
         enum KB {
             PDDL,
+            PPDDL,
             RDDL
         };
 
