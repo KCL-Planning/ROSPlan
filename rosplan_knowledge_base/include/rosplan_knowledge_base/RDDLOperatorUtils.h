@@ -10,14 +10,22 @@
 
 #include <rosplan_knowledge_msgs/DomainFormula.h>
 #include <rosplan_knowledge_msgs/DomainAssignment.h>
+#include <rosplan_knowledge_msgs/ProbabilisticEffect.h>
 #include "RDDLParser.h"
 namespace KCL_rosplan {
 
     typedef std::vector<rosplan_knowledge_msgs::DomainFormula> vectorDF;
     typedef std::vector<rosplan_knowledge_msgs::DomainAssignment> vectorDA;
+    typedef std::vector<rosplan_knowledge_msgs::DomainAssignment> vectorDA;
+    typedef std::vector<rosplan_knowledge_msgs::ProbabilisticEffect> vectorPE;
     struct PosNegDomainFormula {
         vectorDF pos; // Positive or add formulas
         vectorDF neg; // Negative or delete formulas
+    };
+    struct EffectDomainFormula {
+        vectorDF add; // Add formulas
+        vectorDF del; // Delete formulas
+        vectorPE prob; // Probabilistic effects
     };
 
     class RDDLOperatorUtils {
@@ -25,8 +33,10 @@ namespace KCL_rosplan {
         /* joints a and b, leaving the result in a. b is not valid anymore! */
         static inline void join(PosNegDomainFormula &a, PosNegDomainFormula &b);
         static inline void join(vectorDA &a, vectorDA &b);
+        static inline void join(EffectDomainFormula &a, EffectDomainFormula &b);
         /* negates p by swapping positive formulas by negative ones */
         static inline void negate(PosNegDomainFormula& p);
+        static inline void negate(EffectDomainFormula& p);
         /* Returns an assignment of the parameters of the op_var to the parmeters of the op_head, to match all the params for the operator */
         static std::map<std::string, std::string> getParamReplacement(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable* op_var);
 
@@ -38,8 +48,10 @@ namespace KCL_rosplan {
         static PosNegDomainFormula getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Negation *SAC);
 
 
-        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp);
-        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
+        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign);
+        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign);
+        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp, const std::map<std::string, std::string>& assign);
+        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp, const std::map<std::string, std::string>& assign);
 
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
@@ -56,7 +68,7 @@ namespace KCL_rosplan {
          */
         static PosNegDomainFormula getOperatorPreconditions(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::vector<LogicalExpression *> &SACs);
 
-        static PosNegDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
+        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs);
     };
