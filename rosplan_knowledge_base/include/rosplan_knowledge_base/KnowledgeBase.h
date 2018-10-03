@@ -26,8 +26,6 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #include "KnowledgeComparitor.h"
-#include "PDDLDomainParser.h"
-#include "PDDLProblemParser.h"
 
 
 namespace KCL_rosplan {

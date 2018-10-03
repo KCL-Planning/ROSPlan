@@ -5,7 +5,6 @@
 #ifndef ROSPLAN_KNOWLEDGE_BASE_KNOWLEDGEBASEFACTORY_H
 #define ROSPLAN_KNOWLEDGE_BASE_KNOWLEDGEBASEFACTORY_H
 
-#include "rosplan_knowledge_base/KnowledgeBase.h"
 #include "rosplan_knowledge_base/PDDLKnowledgeBase.h"
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
 

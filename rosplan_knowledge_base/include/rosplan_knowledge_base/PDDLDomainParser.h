@@ -12,11 +12,6 @@
 extern int yyparse();
 extern int yydebug;
 
-namespace VAL {
-	extern analysis an_analysis;
-	extern yyFlexLexer* yfl;
-};
-
 /**
  * Domain storage and parsing. Uses VAL parser and storage.
  */

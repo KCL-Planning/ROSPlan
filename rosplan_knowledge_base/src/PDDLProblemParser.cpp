@@ -1,5 +1,14 @@
 #include "rosplan_knowledge_base/PDDLProblemParser.h"
 
+
+
+extern int yyparse();
+extern int yydebug;
+
+namespace VAL {
+    extern yyFlexLexer* yfl;
+};
+
 /* implementation of PDDLProblemParser.h */
 namespace KCL_rosplan {
 
@@ -25,7 +34,7 @@ namespace KCL_rosplan {
         current_filename = &writable[0];
 
         // parse Problem
-        VAL::current_analysis = val_analysis = &VAL::an_analysis;  // use the same analysis got from the domain
+        VAL::current_analysis = val_analysis;  // use the same analysis got from the domain
         std::ifstream ProblemFile;
         ProblemFile.open(ProblemFileName.c_str());
         yydebug = 0;

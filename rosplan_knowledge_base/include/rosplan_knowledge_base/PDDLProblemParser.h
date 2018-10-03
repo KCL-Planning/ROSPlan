@@ -12,13 +12,6 @@
 #ifndef KCL_problemparser
 #define KCL_problemparser
 
-extern int yyparse();
-extern int yydebug;
-
-namespace VAL {
-    extern analysis an_analysis;
-    extern yyFlexLexer* yfl;
-};
 
 /**
  * Problem file storage and parsing. Uses VAL parser and storage.
