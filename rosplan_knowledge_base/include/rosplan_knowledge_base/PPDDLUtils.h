@@ -5,7 +5,7 @@
 #ifndef ROSPLAN_KNOWLEDGE_BASE_RDDLOPERATORUTILS_H
 #define ROSPLAN_KNOWLEDGE_BASE_RDDLOPERATORUTILS_H
 
-#define NOT_IMPLEMENTED(str) ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": " << str)
+#define NOT_IMPLEMENTED(str) ROS_WARN_STREAM(__FILE__ << ":" << __LINE__ << ": " << str)
 #define NOT_IMPLEMENTED_OPERATOR NOT_IMPLEMENTED("Unknown or unsupported operand type for the action preconditions.")
 
 #include <rosplan_knowledge_msgs/DomainFormula.h>

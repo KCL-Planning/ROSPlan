@@ -83,6 +83,12 @@ namespace KCL_rosplan {
             return;
         }
 
+        auto cmplte = dynamic_cast<const ppddl_parser::LessThanOrEqualTo*>(&precondition);
+        if (cmplte != nullptr) {
+            NOT_IMPLEMENTED("Less than is not implemented for preconditions");
+            return;
+        }
+
         auto cmpeq = dynamic_cast<const ppddl_parser::EqualTo*>(&precondition);
         if (cmpeq != nullptr) {
             NOT_IMPLEMENTED("Equal to is not implemented for preconditions");
@@ -101,7 +107,7 @@ namespace KCL_rosplan {
             return;
         }
 
-        NOT_IMPLEMENTED_OPERATOR;
+        //NOT_IMPLEMENTED_OPERATOR;
     }
 
     void PPDDLUtils::fillEffects(const ppddl_parser::Effect &effect, PPDDLDomainPtr domain, vectorDF &out_add_eff,
