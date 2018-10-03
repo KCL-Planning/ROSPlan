@@ -2,6 +2,8 @@
 // Created by gerard on 21/09/18.
 //
 
+#include <rosplan_knowledge_base/RDDLExprUtils.h>
+
 #include "ros/ros.h"
 #include "rosplan_knowledge_base/RDDLExprUtils.h"
 
@@ -25,6 +27,9 @@ RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::
 
     auto exp_neg = dynamic_cast<const Negation*>(expr);
     if (exp_neg != nullptr) return getExpression(exp_neg, assign);
+
+    auto exp_parameter = dynamic_cast<const Parameter*>(expr);
+    if (exp_parameter != nullptr) return getExpression(exp_parameter, assign);
 
     NOT_IMPLEMENTED_EXPR;
     return rosplan_knowledge_msgs::ExprComposite();
@@ -152,6 +157,17 @@ RDDLExprUtils::getExpression(const ParametrizedVariable *expr, const std::map<st
         base.function.typed_parameters.push_back(param);
     }
 
+    ret.tokens.push_back(base);
+    return ret;
+}
+
+rosplan_knowledge_msgs::ExprComposite
+RDDLExprUtils::getExpression(const Parameter *expr, const std::map<std::string, std::string> &assign) {
+     rosplan_knowledge_msgs::ExprComposite ret;
+
+    rosplan_knowledge_msgs::ExprBase base;
+    base.expr_type = base.FUNCTION;
+    base.function.name = expr->name;
     ret.tokens.push_back(base);
     return ret;
 }

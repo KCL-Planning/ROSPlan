@@ -126,9 +126,10 @@ namespace KCL_rosplan {
             res.op.at_start_neg_condition = prec.neg;
 
             // Compute effects
-            PosNegDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
-            res.op.at_end_add_effects = eff.pos;
-            res.op.at_end_del_effects = eff.neg;
+            EffectDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            res.op.at_end_add_effects = eff.add;
+            res.op.at_end_del_effects = eff.del;
+            res.op.probabilistic_effects = eff.prob;
 
             // Compute assign effects
             res.op.at_end_assign_effects = RDDLOperatorUtils::getOperatorAssignEffects(res.op.formula,
@@ -267,7 +268,7 @@ namespace KCL_rosplan {
             item.is_negative = (initialValue == 0);
         }
         else {
-            assert(var->valueType->name == "real" or var->valueType->name == "int");
+            //assert(var->valueType->name == "real" or var->valueType->name == "int");
             item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
             item.is_negative = false;
             item.function_value = initialValue;
@@ -299,7 +300,7 @@ namespace KCL_rosplan {
                 item.is_negative = (var->initialValue == 0);
             }
             else {
-                assert(var->valueType->name == "real" or var->valueType->name == "int");
+                //assert(var->valueType->name == "real" or var->valueType->name == "int");
                 item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
                 item.is_negative = false;
                 item.function_value = var->initialValue;

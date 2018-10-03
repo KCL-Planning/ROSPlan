@@ -49,37 +49,10 @@ include_directories(${catkin_INCLUDE_DIRS})
 ## val sources
 add_definitions(-Wno-deprecated-declarations) # Disable deprecated declarations warning (about std::auto_ptr)
 set(VAL_SOURCES
-	src/VALfiles/DebugWriteController.cpp
-	src/VALfiles/FastEnvironment.cpp
-	src/VALfiles/FuncAnalysis.cpp
-	src/VALfiles/SASActions.cpp
-	src/VALfiles/SimpleEval.cpp
-	src/VALfiles/TIM.cpp
-	src/VALfiles/TimSupport.cpp
-	src/VALfiles/ToFunction.cpp
-	src/VALfiles/TypedAnalyser.cpp
-	src/VALfiles/ValidatorAPI.cpp
-	src/VALfiles/instantiation.cpp
-	src/VALfiles/pddl+.cpp
-	src/VALfiles/ptree.cpp
-	src/VALfiles/typecheck.cpp
-	src/VALfiles/Validator.cpp
-	src/VALfiles/Action.cpp
-	src/VALfiles/Proposition.cpp
-	src/VALfiles/FuncExp.cpp
-	src/VALfiles/RepairAdvice.cpp
-	src/VALfiles/State.cpp
-	src/VALfiles/Plan.cpp
-	src/VALfiles/Ownership.cpp
-	src/VALfiles/Environment.cpp
-	src/VALfiles/Events.cpp
-	src/VALfiles/Polynomial.cpp
-	src/VALfiles/TrajectoryConstraints.cpp
-	src/VALfiles/RobustAnalyse.cpp
-	src/VALfiles/PrettyPrinter.cpp
-	src/VALfiles/random.cpp
-	src/VALfiles/LaTeXSupport.cpp
-	src/VALfiles/Utils.cpp)
+		src/VALfiles/DebugWriteController.cpp
+		src/VALfiles/pddl+.cpp
+		src/VALfiles/ptree.cpp
+		)
 
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
@@ -99,6 +72,7 @@ set(KNOWLEDGE_SOURCES
 	src/PPDDLKnowledgeBase.cpp
 	src/PPDDLParser.cpp
 		src/PPDDLUtils.cpp)
+
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})

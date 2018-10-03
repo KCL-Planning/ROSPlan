@@ -5,7 +5,7 @@
 #ifndef ROSPLAN_KNOWLEDGE_BASE_RDDLEXPRUTILS_H
 #define ROSPLAN_KNOWLEDGE_BASE_RDDLEXPRUTILS_H
 
-#define NOT_IMPLEMENTED_EXPR ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": Unknown or unsupported operand type for the reward function.")
+#define NOT_IMPLEMENTED_EXPR ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": Unknown or unsupported operand type for the expression.")
 
 #include <rosplan_knowledge_msgs/ExprComposite.h>
 #include <rosplan_knowledge_msgs/ExprBase.h>
@@ -32,6 +32,7 @@ public:
     static rosplan_knowledge_msgs::ExprComposite getExpression(const Negation *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const NumericConstant *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const ParametrizedVariable *expr, const std::map<std::string, std::string>& assign);
+    static rosplan_knowledge_msgs::ExprComposite getExpression(const Parameter *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const LogicalExpression *expr, const std::map<std::string, std::string>& assign);
 };
 

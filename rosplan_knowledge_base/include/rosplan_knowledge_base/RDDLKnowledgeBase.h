@@ -59,11 +59,11 @@ namespace KCL_rosplan {
 											rosplan_knowledge_msgs::KnowledgeItem &item,
 											std::string ground_params = "", int param_index = 0);
 
-
+		/* parsing domain */
+		RDDLTaskParser domain_parser;
 	public:
 
-		/* parsing domain using VAL */
-		RDDLTaskParser domain_parser;
+
 
 		/* parse domain and probelm files */
 		inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;

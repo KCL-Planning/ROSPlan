@@ -1,6 +1,4 @@
 
-#include <rosplan_knowledge_base/PDDLKnowledgeBase.h>
-
 #include "rosplan_knowledge_base/PDDLKnowledgeBase.h"
 
 namespace KCL_rosplan {
@@ -158,6 +156,9 @@ namespace KCL_rosplan {
 
 	void PDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
 		std::ifstream file_check;
+		VAL::analysis* an_analysis = new VAL::analysis;
+		domain_parser.val_analysis = an_analysis;
+		problem_parser.val_analysis = an_analysis;
 
 		// parse domain
 		ROS_INFO("KCL: (%s) Parsing domain", ros::this_node::getName().c_str());

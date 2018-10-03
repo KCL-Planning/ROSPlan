@@ -536,12 +536,19 @@ int main(int argc, char **argv) {
 	std::string extension = (domainPath.size() > 5)? domainPath.substr(domainPath.find_last_of('.')) : "";
 	KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
 	if (extension == ".pddl") kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
-	else if (extension == ".ppddl") kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
-	else if (extension == ".rddl") kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
+	else if (extension == ".ppddl") {
+	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
+        VAL::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+	}
+	else if (extension == ".rddl") {
+	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
+        VAL::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+    }
     else {
         ROS_ERROR("KCL: (%s) Unexpected domain file extension %s", ros::this_node::getName().c_str(), extension.c_str());
         ros::shutdown();
     }
+
 
 	KCL_rosplan::KnowledgeBasePtr kb = KCL_rosplan::KnowledgeBaseFactory::createKB(kb_type);
 
