@@ -231,7 +231,6 @@ add_library(ppddl_parser SHARED
         ppddl_parser/src/Strategies/AODeterminizator.cpp ppddl_parser/include/Strategies/AODeterminizator.h
         ppddl_parser/src/Strategies/TLDeterminizator.cpp ppddl_parser/include/Strategies/TLDeterminizator.h
         ppddl_parser/src/PPDDLDeterminizatorFactory.cpp ppddl_parser/include/PPDDLDeterminizatorFactory.h)
-target_sources(ppddl_parser INTERFACE ${VAL_ABSOLUTE_SOURCES})
 target_link_libraries(ppddl_parser val)
 
 
