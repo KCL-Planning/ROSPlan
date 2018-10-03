@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosplan_dependencies)
 
+cmake_policy(SET CMP0054 NEW)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
@@ -14,7 +15,6 @@ message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
 execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET)
 execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET)
 
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -25,10 +25,10 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser
-  LIBRARIES VAL rddl_parser
-  CATKIN_DEPENDS roscpp
-  DEPENDS
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ppddl_parser/include ppddl_parser/src
+        LIBRARIES val rddl_parser ppddl_parser
+        CATKIN_DEPENDS roscpp
+        DEPENDS
 )
 
 # COMMON FLAGS
@@ -36,6 +36,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-covera
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer -DNDEBUG")
 
 
+########################################################################################################################
 ########################################################################################################################
 ## RDDL PARSER
 ########################################################################################################################
@@ -84,20 +85,19 @@ SET_TARGET_PROPERTIES(rddl_parser PROPERTIES COMPILE_FLAGS "${RDDL_CMAKE_CXX_FLA
 ## Install ##
 #############
 
- install(TARGETS rddl_parser
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+install(TARGETS rddl_parser
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 ## Mark cpp header files for installation
- install(DIRECTORY rddl_parser
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
-   PATTERN ".svn" EXCLUDE
- )
+install(DIRECTORY rddl_parser
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE
+        )
 
-########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
 ## VAL
@@ -116,34 +116,10 @@ add_definitions(-Wno-deprecated-declarations)
 ## val sources
 set(VAL_SOURCES
         VAL/src/DebugWriteController.cpp
-        VAL/src/FuncAnalysis.cpp
-        VAL/src/SASActions.cpp
-        VAL/src/SimpleEval.cpp
-        VAL/src/TIM.cpp
-        VAL/src/TimSupport.cpp
-        VAL/src/ToFunction.cpp
-        VAL/src/TypedAnalyser.cpp
-        VAL/src/instantiation.cpp
         VAL/src/pddl+.cpp
         VAL/src/ptree.cpp
-        VAL/src/typecheck.cpp
-        VAL/src/Validator.cpp
-        VAL/src/Action.cpp
-        VAL/src/Proposition.cpp
-        VAL/src/FuncExp.cpp
-        VAL/src/RepairAdvice.cpp
-        VAL/src/State.cpp
-        VAL/src/Plan.cpp
-        VAL/src/Ownership.cpp
-        VAL/src/Environment.cpp
-        VAL/src/Events.cpp
-        VAL/src/Polynomial.cpp
-        VAL/src/TrajectoryConstraints.cpp
-        VAL/src/RobustAnalyse.cpp
-        VAL/src/PrettyPrinter.cpp
-        VAL/src/random.cpp
-        VAL/src/LaTeXSupport.cpp
-        VAL/src/Utils.cpp)
+        )
+
 include_directories("VAL/include")
 
 add_library(val SHARED ${VAL_SOURCES})
@@ -152,18 +128,37 @@ add_dependencies(val ${catkin_EXPORTED_TARGETS})
 #############
 ## Install ##
 #############
- install(TARGETS val
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+install(TARGETS val
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 ## Mark cpp header files for installation
- install(DIRECTORY VAL/include
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-   FILES_MATCHING PATTERN "*.h"
-   PATTERN ".svn" EXCLUDE
- )
+install(DIRECTORY VAL/include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE
+        )
 
 ########################################################################################################################
 ########################################################################################################################
+## rddlsim
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Preparing rddlsim dependency...")
+
+###########
+## Build ##
+###########
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+    message(STATUS "[${PROJECT_NAME}] Compiling rddlsim...")
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/compile WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/ OUTPUT_QUIET ERROR_QUIET)
+    message(STATUS "[${PROJECT_NAME}] Done!")
+else(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+    message(STATUS "[${PROJECT_NAME}] rddlsim is already compiled!")
+endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
+
+#############
+## Install ##
+#############
