@@ -1,5 +1,13 @@
 #include "rosplan_knowledge_base/PDDLDomainParser.h"
 
+
+namespace VAL {
+	yyFlexLexer* yfl;
+    analysis* current_analysis=nullptr;
+    parse_category* top_thing=nullptr;
+};
+char * current_filename;
+
 /* implementation of PDDLDomainParser.h */
 namespace KCL_rosplan {
 
@@ -11,7 +19,6 @@ namespace KCL_rosplan {
 	 * parse the domain file
 	 */
 	VAL::domain* PDDLDomainParser::parseDomain(const std::string domainPath) {
-
 		// only parse domain once
 		if(domain_parsed) return domain;
 		domain_parsed = true;
@@ -25,7 +32,7 @@ namespace KCL_rosplan {
 		current_filename = &writable[0];
 
 		// parse domain
-		VAL::current_analysis = val_analysis = &VAL::an_analysis;
+		VAL::current_analysis = val_analysis ;
 		std::ifstream domainFile;
 		domainFile.open(domainFileName.c_str());
 		yydebug = 0;
