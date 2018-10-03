@@ -18,20 +18,28 @@ namespace KCL_rosplan {
         if (a != nullptr) {
             rosplan_knowledge_msgs::DomainFormula df = getAtom(a, domain, var_decl);
             out_pos_cond.push_back(df);
+            return;
         }
 
         auto n = dynamic_cast<const ppddl_parser::Negation*>(&precondition); // Change order of pos and neg list
-        if (n != nullptr) fillPreconditions(n->negand(), domain, op_head, out_neg_cond, out_pos_cond, var_decl, var_names);
+        if (n != nullptr) {
+            fillPreconditions(n->negand(), domain, op_head, out_neg_cond, out_pos_cond, var_decl, var_names);
+            return;
+        }
 
         auto cjt = dynamic_cast<const ppddl_parser::Conjunction*>(&precondition);
         if (cjt != nullptr) {
             for (auto it = cjt->conjuncts().begin(); it != cjt->conjuncts().end(); ++it) {
                 fillPreconditions(**it, domain, op_head, out_pos_cond, out_neg_cond, var_decl, var_names);
             }
+            return;
         }
 
         auto djt = dynamic_cast<const ppddl_parser::Disjunction*>(&precondition);
-        if (djt != nullptr) NOT_IMPLEMENTED("Disjunctions are not implemented for preconditions");;
+        if (djt != nullptr) {
+            NOT_IMPLEMENTED("Disjunctions are not implemented for preconditions");
+            return;
+        }
 
         auto ex = dynamic_cast<const ppddl_parser::Exists*>(&precondition);
         if (ex != nullptr) {
@@ -42,7 +50,7 @@ namespace KCL_rosplan {
                 diagnostic_msgs::KeyValue param;
                 param.value = domain->types().typestring(domain->terms().type(*it)); // type name
                 std::string vname = param.value.substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+                if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
                 else {
                     ++var_names[vname];
                     vname += std::to_string(var_names[vname]);
@@ -54,25 +62,44 @@ namespace KCL_rosplan {
 
             // Process exists' body
             fillPreconditions(ex->body(), domain, op_head, out_pos_cond, out_neg_cond, var_decl, var_names);
+            return;
         }
 
         auto fa = dynamic_cast<const ppddl_parser::Forall*>(&precondition);
-        if (fa != nullptr) NOT_IMPLEMENTED("ForAll is not implemented for preconditions");;
+        if (fa != nullptr) {
+            NOT_IMPLEMENTED("ForAll is not implemented for preconditions");;
+            return;
+        }
 
         auto eq = dynamic_cast<const ppddl_parser::Equality*>(&precondition);
-        if (eq != nullptr) NOT_IMPLEMENTED("Equality is not implemented for preconditions");
+        if (eq != nullptr) {
+            NOT_IMPLEMENTED("Equality is not implemented for preconditions");
+            return;
+        }
 
         auto cmplt = dynamic_cast<const ppddl_parser::LessThan*>(&precondition);
-        if (cmplt != nullptr) NOT_IMPLEMENTED("Less than is not implemented for preconditions");
+        if (cmplt != nullptr) {
+            NOT_IMPLEMENTED("Less than is not implemented for preconditions");
+            return;
+        }
 
         auto cmpeq = dynamic_cast<const ppddl_parser::EqualTo*>(&precondition);
-        if (cmpeq != nullptr) NOT_IMPLEMENTED("Equal to is not implemented for preconditions");
+        if (cmpeq != nullptr) {
+            NOT_IMPLEMENTED("Equal to is not implemented for preconditions");
+            return;
+        }
 
         auto cmpgte = dynamic_cast<const ppddl_parser::GreaterThanOrEqualTo*>(&precondition);
-        if (cmpgte != nullptr) NOT_IMPLEMENTED("Greater Than or Equal To is not implemented for preconditions");
+        if (cmpgte != nullptr) {
+            NOT_IMPLEMENTED("Greater Than or Equal To is not implemented for preconditions");
+            return;
+        }
 
         auto cmpgt = dynamic_cast<const ppddl_parser::GreaterThan*>(&precondition);
-        if (cmpgt != nullptr) NOT_IMPLEMENTED("Greater than is not implemented for preconditions");
+        if (cmpgt != nullptr) {
+            NOT_IMPLEMENTED("Greater than is not implemented for preconditions");
+            return;
+        }
 
         NOT_IMPLEMENTED_OPERATOR;
     }
@@ -89,11 +116,13 @@ namespace KCL_rosplan {
             auto ae = dynamic_cast<const ppddl_parser::AddEffect*>(se);
             if (ae != nullptr) out_add_eff.push_back(df);
             else out_del_eff.push_back(df);
+            return;
         }
 
         auto ue = dynamic_cast<const ppddl_parser::UpdateEffect*>(&effect);
         if (ue != nullptr) {
             assign_eff.push_back(getUpdate(ue, domain, var_decl));
+            return;
         }
 
         auto ce = dynamic_cast<const ppddl_parser::ConjunctiveEffect*>(&effect);
@@ -101,6 +130,7 @@ namespace KCL_rosplan {
             for (auto it = ce->conjuncts().begin(); it != ce->conjuncts().end(); ++it) {
                 fillEffects(**it, domain, out_add_eff, out_del_eff, out_pr_eff, assign_eff, var_decl);
             }
+            return;
         }
 
         auto pe = dynamic_cast<const ppddl_parser::ProbabilisticEffect*>(&effect);
@@ -114,13 +144,20 @@ namespace KCL_rosplan {
                 fillEffects(pe->effect(i), domain, e.add_effects, e.del_effects, out_pr_eff, assign_eff, var_decl);
                 out_pr_eff.push_back(e);
             }
+            return;
         }
 
         auto qe = dynamic_cast<const ppddl_parser::QuantifiedEffect*>(&effect);
-        if (qe != nullptr) NOT_IMPLEMENTED("Quantified Effects are not implemented.");
+        if (qe != nullptr) {
+            NOT_IMPLEMENTED("Quantified Effects are not implemented.");
+            return;
+        }
 
         auto conde = dynamic_cast<const ppddl_parser::ConditionalEffect*>(&effect);
-        if (conde != nullptr) NOT_IMPLEMENTED("Conditional Effects are not implemented.");
+        if (conde != nullptr) {
+            NOT_IMPLEMENTED("Conditional Effects are not implemented.");
+            return;
+        }
 
         NOT_IMPLEMENTED_OPERATOR;
     }
@@ -166,6 +203,7 @@ namespace KCL_rosplan {
             base.expr_type = rosplan_knowledge_msgs::ExprBase::FUNCTION;
             rosplan_knowledge_msgs::DomainFormula df;
             df.name = domain->functions().name(f->function());
+            if (df.name == "goal-achieved") return ret;
             ppddl_parser::TermList tl = f->terms();
             ppddl_parser::TypeList params = domain->functions().parameters(f->function());
             assert(tl.size() == params.size());
@@ -221,7 +259,7 @@ namespace KCL_rosplan {
     }
 
 
-    rosplan_knowledge_msgs::DomainFormula PPDDLUtils::getAtom(const ppddl_parser::Atom* a, PPDDLDomainPtr domain, std::map<ppddl_parser::Term, string> &var_decl) {
+    rosplan_knowledge_msgs::DomainFormula PPDDLUtils::getAtom(const ppddl_parser::Atom* a, PPDDLDomainPtr domain, std::map<ppddl_parser::Term, string> &var_decl, bool instantiate) {
         rosplan_knowledge_msgs::DomainFormula df;
         df.name = domain->predicates().name(a->predicate());
         ppddl_parser::TermList tl = a->terms();
@@ -230,10 +268,10 @@ namespace KCL_rosplan {
         std::map<std::string, int> var_names;
         for (size_t i = 0; i < tl.size(); ++i) {
             diagnostic_msgs::KeyValue p;
-            if (tl[i].object()) {
+            if (tl[i].object() or instantiate) {
                 p.value = var_decl[tl[i]];
                 std::string vname = domain->types().typestring(params[i]).substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+                if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
                 else {
                     ++var_names[vname];
                     vname += std::to_string(var_names[vname]);
@@ -246,6 +284,7 @@ namespace KCL_rosplan {
             }
             df.typed_parameters.push_back(p);
         }
+        return df;
     }
 
     void
@@ -255,57 +294,53 @@ namespace KCL_rosplan {
         // check which type of condition we have
         auto a = dynamic_cast<const ppddl_parser::Atom*>(&goal);
         if (a != nullptr) {
-            rosplan_knowledge_msgs::DomainFormula df = getAtom(a, domain, var_decl);
+            rosplan_knowledge_msgs::DomainFormula df = getAtom(a, domain, var_decl, true); // we have to instantiate the
             rosplan_knowledge_msgs::KnowledgeItem ki;
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
             ki.attribute_name = df.name;
             ki.values = df.typed_parameters;
             ki.is_negative = is_negative;
             out_goal.push_back(ki);
+            return;
         }
 
         auto n = dynamic_cast<const ppddl_parser::Negation*>(&goal); // Change order of pos and neg list
-        if (n != nullptr) fillGoal(n->negand(), domain, problem, out_goal, var_decl, true);
+        if (n != nullptr) {
+            fillGoal(n->negand(), domain, problem, out_goal, var_decl, true);
+            return;
+        }
 
         auto cjt = dynamic_cast<const ppddl_parser::Conjunction*>(&goal);
         if (cjt != nullptr) {
             for (auto it = cjt->conjuncts().begin(); it != cjt->conjuncts().end(); ++it) {
                 fillGoal(**it, domain, problem, out_goal, var_decl, is_negative);
             }
+            return;
         }
 
         auto djt = dynamic_cast<const ppddl_parser::Disjunction*>(&goal);
-        if (djt != nullptr) NOT_IMPLEMENTED("Disjunctions are not implemented for goals");;
+        if (djt != nullptr) {
+            NOT_IMPLEMENTED("Disjunctions are not implemented for goals");
+            return;
+        }
 
         auto ex = dynamic_cast<const ppddl_parser::Exists*>(&goal);
-        if (ex != nullptr) NOT_IMPLEMENTED("Exists is not implemented for goals");
+        if (ex != nullptr) {
+            NOT_IMPLEMENTED("Exists is not implemented for goals");
+            return;
+        }
 
         auto fa = dynamic_cast<const ppddl_parser::Forall*>(&goal);
         if (fa != nullptr) { // Add all the instantiations
-            std::map<std::string, int> var_names;
-            for (auto it = fa->parameters().begin(); it != fa->parameters().end(); ++it) {
-                // Iterate over the the objects
-                ppddl_parser::ObjectList olist = problem->terms().compatible_objects(domain->terms().type(ppddl_parser::Term(*it)));
-                for (auto o = olist.begin(); o != olist.end(); ++o) {
-                    diagnostic_msgs::KeyValue param;
-                    param.value = domain->terms().get_name(ppddl_parser::Term(*it));//domain->types().typestring(domain->terms().type(*it)); // type name
-                    std::string vname = param.value.substr(0, 1);
-                    if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
-                    else {
-                        ++var_names[vname];
-                        vname += std::to_string(var_names[vname]);
-                    }
-                    var_decl[ppddl_parser::Term(*it)] = vname;
-                    param.key = vname;
-
-                    // Process forall' body
-                    fillGoal(ex->body(), domain, problem, out_goal, var_decl, is_negative);
-                }
-            }
+            fillForallGoal(fa, domain, problem, 0, out_goal, var_decl, is_negative);
+            return;
         }
 
         auto eq = dynamic_cast<const ppddl_parser::Equality*>(&goal);
-        if (eq != nullptr) NOT_IMPLEMENTED("Term equality is not implemented");
+        if (eq != nullptr) {
+            NOT_IMPLEMENTED("Term equality is not implemented");
+            return;
+        }
 
         auto cmplt = dynamic_cast<const ppddl_parser::LessThan*>(&goal);
         if (cmplt != nullptr){
@@ -317,6 +352,7 @@ namespace KCL_rosplan {
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
             ki.ineq = di;
             out_goal.push_back(ki);
+            return;
         }
         auto cmplte = dynamic_cast<const ppddl_parser::LessThanOrEqualTo*>(&goal);
         if (cmplte != nullptr){
@@ -328,6 +364,7 @@ namespace KCL_rosplan {
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
             ki.ineq = di;
             out_goal.push_back(ki);
+            return;
         }
 
         auto cmpeq = dynamic_cast<const ppddl_parser::EqualTo*>(&goal);
@@ -340,6 +377,7 @@ namespace KCL_rosplan {
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
             ki.ineq = di;
             out_goal.push_back(ki);
+            return;
         }
 
         auto cmpgte = dynamic_cast<const ppddl_parser::GreaterThanOrEqualTo*>(&goal);
@@ -352,6 +390,7 @@ namespace KCL_rosplan {
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
             ki.ineq = di;
             out_goal.push_back(ki);
+            return;
         }
 
         auto cmpgt = dynamic_cast<const ppddl_parser::GreaterThan*>(&goal);
@@ -364,8 +403,25 @@ namespace KCL_rosplan {
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::INEQUALITY;
             ki.ineq = di;
             out_goal.push_back(ki);
+            return;
         }
 
         NOT_IMPLEMENTED_OPERATOR;
+    }
+
+    void PPDDLUtils::fillForallGoal(const ppddl_parser::Forall *fa, PPDDLDomainPtr domain, PPDDLProblemPtr problem,
+                                    size_t paramid, std::vector<rosplan_knowledge_msgs::KnowledgeItem> &out_goal,
+                                    std::map<ppddl_parser::Term, std::string>& var_decl, bool is_negative) {
+        // Instantiate all the objects.
+        if (paramid == fa->parameters().size()) fillGoal(fa->body(), domain, problem, out_goal, var_decl, is_negative);
+        else {
+            ppddl_parser::Variable parameter = fa->parameters()[paramid];
+            ppddl_parser::ObjectList olist = problem->terms().compatible_objects(domain->terms().type(ppddl_parser::Term(parameter)));
+            for (auto o = olist.begin(); o != olist.end(); ++o) { // For each object of paramid type
+                var_decl[parameter] = domain->terms().get_name(ppddl_parser::Term(*o));
+                fillForallGoal(fa, domain, problem, paramid + 1, out_goal, var_decl, is_negative);
+                var_decl.erase(parameter);
+            }
+        }
     }
 }

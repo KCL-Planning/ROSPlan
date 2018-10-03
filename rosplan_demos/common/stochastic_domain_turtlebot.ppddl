@@ -1,12 +1,12 @@
 (define (domain turtlebot)
 
-(:requirements :strips :typing :disjunctive-preconditions); :probabilistic-effects)
+(:requirements :strips :typing :disjunctive-preconditions :probabilistic-effects)
 
 (:types
 	waypoint 
 	robot
 )
-
+(:functions (test-fun) (fun ?e - robot))
 (:predicates
 	(robot_at ?v - robot ?wp - waypoint)
 	(visited ?wp - waypoint)
@@ -14,13 +14,14 @@
 	(docked ?v - robot)
 	(localised ?v - robot)
 	(dock_at ?wp - waypoint)
+	(test ?a ?b - waypoint)
 )
 
 ;; Move to any waypoint, avoiding terrain
 (:action goto_waypoint
 	:parameters (?v - robot ?from ?to - waypoint)
 	:precondition (and (robot_at ?v ?from) (localised ?v) (undocked ?v))
-	:effect (and 
+	:effect (and (increase (test-fun) 1)
 		(probabilistic 0.70 (and (visited ?to) (robot_at ?v ?to) (not (robot_at ?v ?from)))
 					   0.30 (not (localised ?v))
 		))
@@ -31,7 +32,7 @@
 	:parameters (?v - robot)
 	:precondition (undocked ?v)
 	:effect (probabilistic 0.90 (localised ?v)
-						   0.7 (and))
+						   0.1  (not (localised ?v)))
 )
 
 ;; Dock to charge

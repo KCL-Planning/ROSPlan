@@ -14,7 +14,7 @@ namespace KCL_rosplan {
                       ros::this_node::getName().c_str());
             ros::shutdown();
         }
-        if (problem_file_path != "") addInitialState();
+        else if (problem_file_path != "") addInitialState();
     }
 
     bool PPDDLKnowledgeBase::getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request &req,
@@ -33,13 +33,14 @@ namespace KCL_rosplan {
             param.value = domain_parser.domain->types().typestring(*it); // type name
 
             std::string vname = param.value.substr(0, 1);
-            if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+            if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
             else {
                 ++var_names[vname];
                 vname += std::to_string(var_names[vname]);
             }
 
             param.key = vname;
+            ret.push_back(param);
         }
         return ret;
     }
@@ -99,6 +100,7 @@ namespace KCL_rosplan {
 
             auto f = domain_parser.domain->functions().find_function(*it);
             formula.typed_parameters = getTypedParams(domain_parser.domain->functions().parameters(*f));
+            res.items.push_back(formula);
         }
         return true;
     }
@@ -115,7 +117,7 @@ namespace KCL_rosplan {
                 param.value = ppddl_parser::TypeTable::typestring(ppddl_parser::TermTable::type(*pit)); // type name
 
                 std::string vname = param.value.substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+                if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
                 else {
                     ++var_names[vname];
                     vname += std::to_string(var_names[vname]);
@@ -145,7 +147,7 @@ namespace KCL_rosplan {
                 param.value = ppddl_parser::TypeTable::typestring(ppddl_parser::TermTable::type(*pit)); // type name
 
                 std::string vname = param.value.substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+                if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
                 else {
                     ++var_names[vname];
                     vname += std::to_string(var_names[vname]);
@@ -184,34 +186,17 @@ namespace KCL_rosplan {
         for (auto it = domain_parser.problem->init_atoms().begin(); it !=  domain_parser.problem->init_atoms().end();++it) {
             rosplan_knowledge_msgs::KnowledgeItem ki;
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-            var_decl.clear();
             rosplan_knowledge_msgs::DomainFormula df = PPDDLUtils::getAtom(*it, domain_parser.domain, var_decl);
             ki.attribute_name = df.name;
             ki.values = df.typed_parameters;
-            /*ki.attribute_name = domain_parser.domain->predicates().name((*it)->predicate());
-            ppddl_parser::TermList tl = (*it)->terms();
-            ppddl_parser::TypeList params = domain_parser.domain->predicates().parameters((*it)->predicate());
-            assert(tl.size() == params.size());
-            std::map<std::string, int> var_names;
-            for (size_t i = 0; i < tl.size(); ++i) {
-                diagnostic_msgs::KeyValue p;
-
-                std::string vname = domain_parser.domain->types().typestring(params[i]).substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
-                else {
-                    ++var_names[vname];
-                    vname += std::to_string(var_names[vname]);
-                }
-
-                p.key = vname;
-                p.value = domain_parser.problem->terms().get_name(tl[i]); // instance name
-                ki.values.push_back(p);
-            }FIXME remove*/
             model_facts.push_back(ki);
         }
 
         // Functions
-        //FIXME ?? for (auto it = domain_parser.problem->init_effects().begin(); it != domain_parser.problem->init_effects().end(); ++it)
+        // init_effects are set by the parser and not usd FIXME?
+        /*for (auto it = domain_parser.problem->init_effects().begin(); it != domain_parser.problem->init_effects().end(); ++it) {
+            std::cout << **it << std::endl;
+        }*/
         for (auto it = domain_parser.problem->init_values().begin(); it != domain_parser.problem->init_values().end(); ++it) {
             rosplan_knowledge_msgs::KnowledgeItem ki;
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
@@ -224,7 +209,7 @@ namespace KCL_rosplan {
                 diagnostic_msgs::KeyValue p;
 
                 std::string vname = domain_parser.domain->types().typestring(params[i]).substr(0, 1);
-                if (var_names.find(vname) != var_names.end()) var_names[vname] = 0;
+                if (var_names.find(vname) == var_names.end()) var_names[vname] = 0;
                 else {
                     ++var_names[vname];
                     vname += std::to_string(var_names[vname]);
@@ -234,16 +219,15 @@ namespace KCL_rosplan {
                 p.value = domain_parser.problem->terms().get_name(tl[i]); // instance name
                 ki.values.push_back(p);
             }
+            ki.function_value = (*it).second.double_value();
             model_functions.push_back(ki);
         }
 
         // Goal
-        var_decl.clear();
         PPDDLUtils::fillGoal(domain_parser.problem->goal(), domain_parser.domain, domain_parser.problem, model_goals, var_decl, false);
 
 
         // Metric
-        var_decl.clear();
         model_metric.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::EXPRESSION;
         model_metric.optimization = "maximize";
         const ppddl_parser::Expression* metric = &domain_parser.problem->metric();

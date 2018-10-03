@@ -26,6 +26,11 @@ namespace KCL_rosplan {
 
         // Moves elements of b to the end of a
         static inline void join(std::vector<rosplan_knowledge_msgs::ExprBase>& a, std::vector<rosplan_knowledge_msgs::ExprBase>& b);
+
+        static void fillForallGoal(const ppddl_parser::Forall *forall, PPDDLDomainPtr domain, PPDDLProblemPtr problem,
+                                size_t paramid, std::vector<rosplan_knowledge_msgs::KnowledgeItem> &out_goal,
+                                   std::map<ppddl_parser::Term, std::string>& var_decl, bool is_negative);
+
     public:
 
         /**
@@ -52,7 +57,8 @@ namespace KCL_rosplan {
                                 vectorDA &assign_eff, std::map<ppddl_parser::Term, std::string> &var_decl);
 
         static rosplan_knowledge_msgs::ExprComposite getExpression(const ppddl_parser::Expression &exp, PPDDLDomainPtr domain, std::map<ppddl_parser::Term, string> &var_decl);
-        static rosplan_knowledge_msgs::DomainFormula getAtom(const ppddl_parser::Atom* a, PPDDLDomainPtr domain, std::map<ppddl_parser::Term, string> &var_decl);
+        static rosplan_knowledge_msgs::DomainFormula getAtom(const ppddl_parser::Atom* a, PPDDLDomainPtr domain, std::map<ppddl_parser::Term, string> &var_decl, bool instantiate_variable=false);
+
     };
 }
 
