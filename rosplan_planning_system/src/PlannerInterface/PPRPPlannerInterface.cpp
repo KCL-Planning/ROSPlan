@@ -1,4 +1,5 @@
 #include "rosplan_planning_system/PlannerInterface/PPRPPlannerInterface.h"
+#include <regex>
 
 namespace KCL_rosplan {
 
@@ -92,10 +93,21 @@ namespace KCL_rosplan {
 		// Parse plan
 		if (solved) {
 		    int idx = 0;
+            //std::regex actionline_rgx("(.*)_DETDUP_.*_\\d+(.*?)$"); // Stochastic actions have the form goto_waypoint_DETDUP_0_WEIGHT_7 p1 p2 p3 (X)
+            std::regex actionline_rgx("_DETDUP_.*_\\d+"); // Stochastic actions have the form goto_waypoint_DETDUP_0_WEIGHT_7 p1 p2 p3 (X)
+            std::regex tr_ws("^ +| +$|( ) +"); // Trailing and extra whitespaces
 		    while (std::getline(planfile, line) and line.find("Plan length") == line.npos) {
                 planner_output += std::to_string(idx) + ": (";
                 ++idx;
-                line = line.substr(0, line.find(" ("));
+                line = line.substr(0, line.find(" (")); // This is the action with the parameters
+
+                /*std::smatch match;
+                if (std::regex_search(line, match, actionline_rgx)) {
+                    line = match[1].str() +  match[2].str();
+                }*/
+                line = std::regex_replace(line, actionline_rgx, ""); // Remove trailing whitespaces
+                line = std::regex_replace(line, tr_ws, "$1"); // Remove trailing whitespaces
+
                 planner_output += line;
                 planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
 		    }
