@@ -18,7 +18,7 @@ namespace KCL_rosplan {
             RDDL
         };
 
-        static KnowledgeBasePtr createKB(KB kb_type);
+        static KnowledgeBasePtr createKB(KB kb_type, ros::NodeHandle& n);
     };
 }
 

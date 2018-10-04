@@ -44,7 +44,8 @@ namespace KCL_rosplan {
 		/* initial state from problem file using VAL */
 		PDDLProblemParser problem_parser;
 	public:
-
+		PDDLKnowledgeBase(ros::NodeHandle& n) : KnowledgeBase(n) {};
+		~PDDLKnowledgeBase() = default;
 
 		/* parse domain and probelm files */
 		void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;
