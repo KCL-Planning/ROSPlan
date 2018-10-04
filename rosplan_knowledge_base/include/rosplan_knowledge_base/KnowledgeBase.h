@@ -32,6 +32,32 @@ namespace KCL_rosplan {
 
 	class KnowledgeBase
 	{
+	private:
+        ros::ServiceServer domainServer1; // getDomainName
+        ros::ServiceServer domainServer2; // getTypes
+        ros::ServiceServer domainServer3; // getPredicates
+        ros::ServiceServer domainServer4; // getFunctionPredicates
+        ros::ServiceServer domainServer5; // getOperators
+        ros::ServiceServer domainServer6; // getOperatorDetails
+        ros::ServiceServer domainServer7; // getPredicateDetails
+
+        // query knowledge
+        ros::ServiceServer queryServer; // queryKnowledge
+
+        // update knowledge
+        ros::ServiceServer updateServer0; // clearKnowledge
+        ros::ServiceServer updateServer1; // updateKnowledge
+        ros::ServiceServer updateServer2; // updateKnowledgeArray
+        ros::ServiceServer updateServer3; // updateKnowledgeConstraintsOneOf
+
+        // fetch knowledge
+        ros::ServiceServer stateServer1; // getInstances
+        ros::ServiceServer stateServer2; // getPropositions
+        ros::ServiceServer stateServer3; // getFunctions
+        ros::ServiceServer stateServer4; // getTimedKnowledge
+        ros::ServiceServer stateServer5; // getGoals
+        ros::ServiceServer stateServer6; // getMetric
+
 	protected:
 
 		/* adding items to the knowledge base */
@@ -59,7 +85,11 @@ namespace KCL_rosplan {
 		/* conditional planning */
 		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
 
+        ros::NodeHandle _nh;
     public:
+
+		KnowledgeBase(ros::NodeHandle& n);
+		~KnowledgeBase() = default;
 
         bool use_unknowns;
 

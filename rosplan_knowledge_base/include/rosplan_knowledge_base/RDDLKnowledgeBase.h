@@ -62,7 +62,8 @@ namespace KCL_rosplan {
 		/* parsing domain */
 		RDDLTaskParser domain_parser;
 	public:
-
+		RDDLKnowledgeBase(ros::NodeHandle& n) : KnowledgeBase(n) {};
+		~RDDLKnowledgeBase() = default;
 
 
 		/* parse domain and probelm files */

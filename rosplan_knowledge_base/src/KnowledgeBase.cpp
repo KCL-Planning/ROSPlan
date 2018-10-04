@@ -1,3 +1,6 @@
+
+#include <rosplan_knowledge_base/KnowledgeBase.h>
+
 #include "rosplan_knowledge_base/KnowledgeBase.h"
 #include "rosplan_knowledge_base/KnowledgeBaseFactory.h"
 
@@ -514,6 +517,37 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+    KnowledgeBase::KnowledgeBase(ros::NodeHandle& n) {
+		_nh = n;
+
+		// Start all the servers
+		// fetch domain info
+		domainServer1 = _nh.advertiseService("domain/name", 		        &KCL_rosplan::KnowledgeBase::getDomainName, this);
+		domainServer2 = _nh.advertiseService("domain/types", 		        &KCL_rosplan::KnowledgeBase::getTypes,this);
+		domainServer3 = _nh.advertiseService("domain/predicates",	        &KCL_rosplan::KnowledgeBase::getPredicates, this);
+		domainServer4 = _nh.advertiseService("domain/functions",	        &KCL_rosplan::KnowledgeBase::getFunctionPredicates, this);
+		domainServer5 = _nh.advertiseService("domain/operators",	        &KCL_rosplan::KnowledgeBase::getOperators, this);
+		domainServer6 = _nh.advertiseService("domain/operator_details",	    &KCL_rosplan::KnowledgeBase::getOperatorDetails, this);
+		domainServer7 = _nh.advertiseService("domain/predicate_details",	&KCL_rosplan::KnowledgeBase::getPredicateDetails, this);
+
+		// query knowledge
+		queryServer = _nh.advertiseService("query_state", &KCL_rosplan::KnowledgeBase::queryKnowledge, this);
+
+		// update knowledge
+		updateServer0 = _nh.advertiseService("clear",						&KCL_rosplan::KnowledgeBase::clearKnowledge, this);
+		updateServer1 = _nh.advertiseService("update",						&KCL_rosplan::KnowledgeBase::updateKnowledge, this);
+		updateServer2 = _nh.advertiseService("update_array",				&KCL_rosplan::KnowledgeBase::updateKnowledgeArray, this);
+		updateServer3 = _nh.advertiseService("update_constraints_oneof",	&KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, this);
+
+		// fetch knowledge
+		stateServer1 = _nh.advertiseService("state/instances",			&KCL_rosplan::KnowledgeBase::getInstances, this);
+		stateServer2 = _nh.advertiseService("state/propositions",		&KCL_rosplan::KnowledgeBase::getPropositions, this);
+		stateServer3 = _nh.advertiseService("state/functions",			&KCL_rosplan::KnowledgeBase::getFunctions, this);
+		stateServer4 = _nh.advertiseService("state/timed_knowledge",	&KCL_rosplan::KnowledgeBase::getTimedKnowledge, this);
+		stateServer5 = _nh.advertiseService("state/goals",				&KCL_rosplan::KnowledgeBase::getGoals, this);
+		stateServer6 = _nh.advertiseService("state/metric",			    &KCL_rosplan::KnowledgeBase::getMetric, this);
+    }
+
 
 } // close namespace
 
@@ -535,14 +569,19 @@ int main(int argc, char **argv) {
 
 	std::string extension = (domainPath.size() > 5)? domainPath.substr(domainPath.find_last_of('.')) : "";
 	KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
-	if (extension == ".pddl") kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
-	else if (extension == ".ppddl") {
-	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
+	if (extension == ".pddl") {
+	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
+        ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
+    }
+    else if (extension == ".ppddl") {
+        kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
         VAL::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
-	}
+        ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
+    }
 	else if (extension == ".rddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
         VAL::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+        ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
     }
     else {
         ROS_ERROR("KCL: (%s) Unexpected domain file extension %s", ros::this_node::getName().c_str(), extension.c_str());
@@ -550,39 +589,13 @@ int main(int argc, char **argv) {
     }
 
 
-	KCL_rosplan::KnowledgeBasePtr kb = KCL_rosplan::KnowledgeBaseFactory::createKB(kb_type);
+	KCL_rosplan::KnowledgeBasePtr kb = KCL_rosplan::KnowledgeBaseFactory::createKB(kb_type, n);
 
 	// parse domain
     kb->parseDomain(domainPath, problemPath);
 
 
 	kb->use_unknowns = useUnknowns;
-
-	// fetch domain info
-	ros::ServiceServer domainServer1 = n.advertiseService("domain/name", 		&KCL_rosplan::KnowledgeBase::getDomainName, kb.get());
-	ros::ServiceServer domainServer2 = n.advertiseService("domain/types", 		&KCL_rosplan::KnowledgeBase::getTypes, kb.get());
-	ros::ServiceServer domainServer3 = n.advertiseService("domain/predicates",	&KCL_rosplan::KnowledgeBase::getPredicates, kb.get());
-	ros::ServiceServer domainServer4 = n.advertiseService("domain/functions",	&KCL_rosplan::KnowledgeBase::getFunctionPredicates, kb.get());
-	ros::ServiceServer domainServer5 = n.advertiseService("domain/operators",	&KCL_rosplan::KnowledgeBase::getOperators, kb.get());
-	ros::ServiceServer domainServer6 = n.advertiseService("domain/operator_details",	&KCL_rosplan::KnowledgeBase::getOperatorDetails, kb.get());
-	ros::ServiceServer domainServer7 = n.advertiseService("domain/predicate_details",	&KCL_rosplan::KnowledgeBase::getPredicateDetails, kb.get());
-
-	// query knowledge
-	ros::ServiceServer queryServer = n.advertiseService("query_state", &KCL_rosplan::KnowledgeBase::queryKnowledge, kb.get());
-
-	// update knowledge
-	ros::ServiceServer updateServer0 = n.advertiseService("clear",						&KCL_rosplan::KnowledgeBase::clearKnowledge, kb.get());
-	ros::ServiceServer updateServer1 = n.advertiseService("update",						&KCL_rosplan::KnowledgeBase::updateKnowledge, kb.get());
-	ros::ServiceServer updateServer2 = n.advertiseService("update_array",				&KCL_rosplan::KnowledgeBase::updateKnowledgeArray, kb.get());
-	ros::ServiceServer updateServer3 = n.advertiseService("update_constraints_oneof",	&KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, kb.get());
-
-	// fetch knowledge
-	ros::ServiceServer stateServer1 = n.advertiseService("state/instances",			&KCL_rosplan::KnowledgeBase::getInstances, kb.get());
-	ros::ServiceServer stateServer2 = n.advertiseService("state/propositions",		&KCL_rosplan::KnowledgeBase::getPropositions, kb.get());
-	ros::ServiceServer stateServer3 = n.advertiseService("state/functions",			&KCL_rosplan::KnowledgeBase::getFunctions, kb.get());
-	ros::ServiceServer stateServer4 = n.advertiseService("state/timed_knowledge",	&KCL_rosplan::KnowledgeBase::getTimedKnowledge, kb.get());
-	ros::ServiceServer stateServer5 = n.advertiseService("state/goals",				&KCL_rosplan::KnowledgeBase::getGoals, kb.get());
-	ros::ServiceServer stateServer6 = n.advertiseService("state/metric",			&KCL_rosplan::KnowledgeBase::getMetric, kb.get());
 
 	// wait for and clear mongoDB
 	ROS_INFO("KCL: (%s) Waiting for MongoDB", ros::this_node::getName().c_str());

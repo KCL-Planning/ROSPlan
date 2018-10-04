@@ -41,6 +41,9 @@ namespace KCL_rosplan {
         /* parsing domain using VAL */
         PPDDLParser domain_parser;
     public:
+        PPDDLKnowledgeBase(ros::NodeHandle& n) : KnowledgeBase(n) {};
+        ~PPDDLKnowledgeBase() = default;
+
         /* parse domain and problem files */
         inline void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) override;
 
