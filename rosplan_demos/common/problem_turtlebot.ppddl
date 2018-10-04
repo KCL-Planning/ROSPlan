@@ -1,0 +1,18 @@
+(define (problem task)
+(:domain turtlebot)
+(:objects
+    wp0 wp1 wp2 wp3 wp4 - waypoint
+    kenny - robot
+)
+(:init
+    (robot_at kenny wp0)
+    (docked kenny)
+    (dock_at wp0)
+    (= (total-cost) 0)
+)
+(:goal (and
+    (forall (?w - waypoint) (and (visited ?w) ))
+    (docked kenny)
+))
+(:metric minimize (total-cost))
+)
