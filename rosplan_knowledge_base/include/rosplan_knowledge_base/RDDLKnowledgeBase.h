@@ -24,6 +24,9 @@
 #include "rosplan_knowledge_msgs/GetInstanceService.h"
 #include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
+#include "rosplan_knowledge_msgs/GetRDDLParams.h"
+#include "rosplan_knowledge_msgs/SetFloat.h"
+#include "rosplan_knowledge_msgs/SetInt.h"
 
 #include "KnowledgeBase.h"
 #include "KnowledgeComparitor.h"
@@ -61,8 +64,22 @@ namespace KCL_rosplan {
 
 		/* parsing domain */
 		RDDLTaskParser domain_parser;
+		int _horizon;
+		int _max_nondef_actions;
+		float _discount_factor;
+
+		/* Services to set and get parameters */
+		ros::ServiceServer _getParamsService;
+		ros::ServiceServer _setRDDLDiscountFactorSrv;
+		ros::ServiceServer _setRDDLHorizonSrv;
+		ros::ServiceServer _setRDDLMaxNonDefSrv;
+
+		bool getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req, rosplan_knowledge_msgs::GetRDDLParams::Response &res);
+		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
+		bool setRDDLHorizon(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
+		bool setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 	public:
-		RDDLKnowledgeBase(ros::NodeHandle& n) : KnowledgeBase(n) {};
+		RDDLKnowledgeBase(ros::NodeHandle& n) ;
 		~RDDLKnowledgeBase() = default;
 
 
