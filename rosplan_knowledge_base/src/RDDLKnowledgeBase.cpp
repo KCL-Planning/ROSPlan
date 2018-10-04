@@ -166,6 +166,10 @@ namespace KCL_rosplan {
         // model_timed_initial_literals will not be filled either
         loadMetric(); // model_metric;
 
+        _horizon = domain_parser.rddlTask->horizon;
+        _discount_factor = domain_parser.rddlTask->discountFactor;
+        _max_nondef_actions = domain_parser.rddlTask->numberOfConcurrentActions;
+
         // FIXME no goals defined in RDDL -> define way of specifying goals?s
         // FIXME no timed_initial_literals defined in RDDL
         // FIXME oneof constraints?
@@ -347,6 +351,48 @@ namespace KCL_rosplan {
             ros::shutdown();
         }
         if (problem_file_path != "") addInitialState();
+    }
+
+    RDDLKnowledgeBase::RDDLKnowledgeBase(ros::NodeHandle &n) : KnowledgeBase(n) {
+        // Get default parameters
+        _nh.param("horizon", _horizon, 20);
+        _nh.param("discount_factor", _discount_factor, 1.0f);
+        _nh.param("max_nondef_actions", _max_nondef_actions, 1);
+
+
+        _getParamsService = _nh.advertiseService("state/rddl_parameters",  &KCL_rosplan::RDDLKnowledgeBase::getRDDLParams, this);
+        _setRDDLDiscountFactorSrv = _nh.advertiseService("state/set_rddl_discount_factor",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLDiscountFactor, this);
+        _setRDDLHorizonSrv = _nh.advertiseService("state/set_rddl_horizon",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLHorizon, this);
+        _setRDDLMaxNonDefSrv = _nh.advertiseService("state/set_rddl_max_nondef_actions",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLMAxNonDefActions, this);
+    }
+
+    bool RDDLKnowledgeBase::getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req,
+                                          rosplan_knowledge_msgs::GetRDDLParams::Response &res) {
+        res.horizon = _horizon;
+        res.discount_factor = _discount_factor;
+        res.max_nondef_actions = _max_nondef_actions;
+        return true;
+    }
+
+    bool RDDLKnowledgeBase::setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req,
+                                                  rosplan_knowledge_msgs::SetFloat::Response &res) {
+        _discount_factor = req.value;
+        res.success = true;
+        return true;
+    }
+
+    bool RDDLKnowledgeBase::setRDDLHorizon(rosplan_knowledge_msgs::SetInt::Request &req,
+                                           rosplan_knowledge_msgs::SetInt::Response &res) {
+        _horizon = req.value;
+        res.success = true;
+        return true;
+    }
+
+    bool RDDLKnowledgeBase::setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req,
+                                                    rosplan_knowledge_msgs::SetInt::Response &res) {
+        _max_nondef_actions = req.value;
+        res.success = true;
+        return true;
     }
 
 

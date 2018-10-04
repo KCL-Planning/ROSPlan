@@ -6,10 +6,6 @@
 
 namespace KCL_rosplan {
     RDDLProblemGenerator::RDDLProblemGenerator(const std::string& kb) : ProblemGenerator(kb) {
-        _nh.param("horizon", _horizon, 20);
-        _nh.param("discount_factor", _discount, 1.0);
-        _nh.param("max_nondef_actions", _max_nondef, 1);
-
         // Get domain name
         ros::ServiceClient getNameClient = _nh.serviceClient<rosplan_knowledge_msgs::GetDomainNameService>(domain_name_service);
         rosplan_knowledge_msgs::GetDomainNameService nameSrv;
@@ -69,9 +65,17 @@ namespace KCL_rosplan {
         pFile << "\tinit-state {" << std::endl;
         printGenericFluentList(pFile, fluents);
         pFile << "\t};" << std::endl;
-        pFile << "\tmax-nondef-actions = " << _max_nondef << ";" << std::endl;
-        pFile << "\thorizon = " << _horizon << ";" << std::endl;
-        pFile << "\tdiscount = " << std::fixed << std::setprecision(2) << _discount << ";" << std::endl;
+
+        std::string srv_name = "/" + knowledge_base + "/state/rddl_parameters";
+        ros::ServiceClient getRDDLParams = _nh.serviceClient<rosplan_knowledge_msgs::GetRDDLParams>(srv_name);
+        rosplan_knowledge_msgs::GetRDDLParams params;
+        if (!getRDDLParams.call(params)) {
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", srv_name.c_str());
+        }
+
+        pFile << "\tmax-nondef-actions = " << params.response.max_nondef_actions << ";" << std::endl;
+        pFile << "\thorizon = " << params.response.horizon << ";" << std::endl;
+        pFile << "\tdiscount = " << std::fixed << std::setprecision(2) << params.response.discount_factor << ";" << std::endl;
         pFile << "}" << std::endl;
 
     }

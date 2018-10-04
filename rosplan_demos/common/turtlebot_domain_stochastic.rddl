@@ -10,7 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-domain turtlebot_domain {
+domain stochastic_turtlebot_domain {
     
     types {
         waypoint: object;
