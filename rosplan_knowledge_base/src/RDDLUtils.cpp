@@ -445,11 +445,13 @@ namespace KCL_rosplan {
                 auto goals = getGoals(*it, is_negative, assign);
                 join(ret, goals);
             }
+            return ret;
         }
 
         auto forall = dynamic_cast<const UniversalQuantification*>(exp);
         if (forall != nullptr) {
             fillForAllGoal(forall, ret, 0, is_negative, assign);
+            return ret;
         }
 
         auto exp_var = dynamic_cast<const ParametrizedVariable*>(exp);
@@ -471,13 +473,14 @@ namespace KCL_rosplan {
                 ki.values.push_back(param);
             }
             ret.push_back(ki);
+            return ret;
         }
 
         auto negation = dynamic_cast<const Negation*>(exp);
         if (negation != nullptr) {
-            ret = getGoals(negation->expr, not is_negative, assign);
+            return getGoals(negation->expr, not is_negative, assign);
         }
-
+        NOT_IMPLEMENTED("Unknown or unsupported operand type for the goal definition.");
         return ret;
     }
 
