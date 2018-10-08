@@ -34,6 +34,14 @@ namespace KCL_rosplan {
 
 		KCL_rosplan::ProblemGeneratorFactory::ProbGen pg_type;
 
+		if (not planning_lang.empty()) {
+			if (planning_lang == "pddl" or planning_lang == "ppddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::PDDL;
+			else if (planning_lang == "rddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::RDDL;
+			else {
+				ROS_WARN("KCL: (%s) Unexpected planning language %s. Please specify the planning language as either \"PDDL\" or \"RDDL\".",
+						  ros::this_node::getName().c_str(), planning_lang.c_str());
+			}
+		} // If roblem path is specified, it'll overwrite the setting from the planning_lang parameter.
         if (not problem_path.empty()) {
             std::string extension = (problem_path.size() > 5) ? problem_path.substr(problem_path.find_last_of('.')) : "";
             if (extension == ".pddl" or extension == ".ppddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::PDDL;
@@ -44,15 +52,6 @@ namespace KCL_rosplan {
                 ros::shutdown();
             }
         }
-        else if (not planning_lang.empty()) {
-			if (planning_lang == "pddl" or planning_lang == "ppddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::PDDL;
-			else if (planning_lang == "rddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::RDDL;
-			else {
-				ROS_ERROR("KCL: (%s) Unexpected planning language %s. Please specify the planning language as either \"PDDL\" or \"RDDL\".",
-						  ros::this_node::getName().c_str(), planning_lang.c_str());
-				ros::shutdown();
-			}
-		}
         else {
             ROS_ERROR("KCL: (%s) Neither problem file nor planning language was specified! Please specify the parameter to know the planning language.",
                       ros::this_node::getName().c_str());
