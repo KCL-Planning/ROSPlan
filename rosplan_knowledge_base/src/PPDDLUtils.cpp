@@ -312,7 +312,7 @@ namespace KCL_rosplan {
 
         auto n = dynamic_cast<const ppddl_parser::Negation*>(&goal); // Change order of pos and neg list
         if (n != nullptr) {
-            fillGoal(n->negand(), domain, problem, out_goal, var_decl, true);
+            fillGoal(n->negand(), domain, problem, out_goal, var_decl, not is_negative);
             return;
         }
 
