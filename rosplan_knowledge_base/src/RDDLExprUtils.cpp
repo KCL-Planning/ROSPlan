@@ -31,6 +31,9 @@ RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::
     auto exp_parameter = dynamic_cast<const Parameter*>(expr);
     if (exp_parameter != nullptr) return getExpression(exp_parameter, assign);
 
+    auto ite = dynamic_cast<const IfThenElseExpression*>(expr);
+    if (ite != nullptr) return getExpression(ite, assign);
+
     NOT_IMPLEMENTED_EXPR;
     return rosplan_knowledge_msgs::ExprComposite();
 }
@@ -88,6 +91,7 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Quantif
     rosplan_knowledge_msgs::ExprBase::_op_type op_type = 0;
     if (dynamic_cast<const Sumation*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD;
     else if (dynamic_cast<const Product*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::MUL;
+    else if (dynamic_cast<const UniversalQuantification*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD; // Treat the forall as a summation FIXME can this be problematic? Done for the goal
     else NOT_IMPLEMENTED_EXPR;
 
     // Get all the operands of the quantifier operation
@@ -162,8 +166,49 @@ RDDLExprUtils::getExpression(const ParametrizedVariable *expr, const std::map<st
 }
 
 rosplan_knowledge_msgs::ExprComposite
+RDDLExprUtils::getExpression(const IfThenElseExpression *expr, const std::map<std::string, std::string> &assign) {
+    // Expression will be condition*bodyif + (~condition*bodyelse)
+    rosplan_knowledge_msgs::ExprComposite ret;
+
+    rosplan_knowledge_msgs::ExprBase mult;
+    mult.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+    mult.op = rosplan_knowledge_msgs::ExprBase::MUL;
+
+
+    auto condition = getExpression(expr->condition, assign);
+    auto condition_cpy = condition; // Copy to negate it, as join moves the values and destorys the object
+
+    // Result = + (* condition bodyif) (* (1-condition) bodyelse)
+    // +
+    rosplan_knowledge_msgs::ExprBase add;
+    add.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+    add.op = rosplan_knowledge_msgs::ExprBase::ADD;
+    ret.tokens.push_back(add);
+
+    // * condition valiftrue
+    ret.tokens.push_back(mult);
+    join(ret.tokens, condition.tokens);
+    auto valiftrue = getExpression(expr->valueIfTrue, assign);
+    join(ret.tokens, valiftrue.tokens);
+
+    // * ~condition valiffalse (else)
+    ret.tokens.push_back(mult); // *
+    rosplan_knowledge_msgs::ExprBase uminus; // 1- (negation)
+    uminus.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+    uminus.op = rosplan_knowledge_msgs::ExprBase::UMINUS;
+    ret.tokens.push_back(uminus);
+    join(ret.tokens, condition_cpy.tokens);
+    
+    auto valiffalse = getExpression(expr->valueIfFalse, assign);
+    join(ret.tokens, valiffalse.tokens);
+
+    return ret;
+}
+
+
+rosplan_knowledge_msgs::ExprComposite
 RDDLExprUtils::getExpression(const Parameter *expr, const std::map<std::string, std::string> &assign) {
-     rosplan_knowledge_msgs::ExprComposite ret;
+    rosplan_knowledge_msgs::ExprComposite ret;
 
     rosplan_knowledge_msgs::ExprBase base;
     base.expr_type = base.FUNCTION;
@@ -171,3 +216,4 @@ RDDLExprUtils::getExpression(const Parameter *expr, const std::map<std::string, 
     ret.tokens.push_back(base);
     return ret;
 }
+

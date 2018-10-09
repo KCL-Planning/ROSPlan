@@ -5,12 +5,13 @@
 #ifndef ROSPLAN_KNOWLEDGE_BASE_RDDLOPERATORUTILS_H
 #define ROSPLAN_KNOWLEDGE_BASE_RDDLOPERATORUTILS_H
 
-#define NOT_IMPLEMENTED(str) ROS_ERROR_STREAM(__FILE__ << ":" << __LINE__ << ": " << str)
+#define NOT_IMPLEMENTED(str) ROS_WARN_STREAM(__FILE__ << ":" << __LINE__ << ": " << str)
 #define NOT_IMPLEMENTED_OPERATOR NOT_IMPLEMENTED("Unknown or unsupported operand type for the action preconditions.")
 
 #include <rosplan_knowledge_msgs/DomainFormula.h>
 #include <rosplan_knowledge_msgs/DomainAssignment.h>
 #include <rosplan_knowledge_msgs/ProbabilisticEffect.h>
+#include <rosplan_knowledge_msgs/KnowledgeItem.h>
 #include "RDDLParser.h"
 namespace KCL_rosplan {
 
@@ -18,6 +19,7 @@ namespace KCL_rosplan {
     typedef std::vector<rosplan_knowledge_msgs::DomainAssignment> vectorDA;
     typedef std::vector<rosplan_knowledge_msgs::DomainAssignment> vectorDA;
     typedef std::vector<rosplan_knowledge_msgs::ProbabilisticEffect> vectorPE;
+    typedef std::vector<rosplan_knowledge_msgs::KnowledgeItem> vectorKI;
     struct PosNegDomainFormula {
         vectorDF pos; // Positive or add formulas
         vectorDF neg; // Negative or delete formulas
@@ -28,12 +30,13 @@ namespace KCL_rosplan {
         vectorPE prob; // Probabilistic effects
     };
 
-    class RDDLOperatorUtils {
+    class RDDLUtils {
     private:
         /* joints a and b, leaving the result in a. b is not valid anymore! */
         static inline void join(PosNegDomainFormula &a, PosNegDomainFormula &b);
         static inline void join(vectorDA &a, vectorDA &b);
         static inline void join(EffectDomainFormula &a, EffectDomainFormula &b);
+        static inline void join(vectorKI &a, vectorKI &b);
         /* negates p by swapping positive formulas by negative ones */
         static inline void negate(PosNegDomainFormula& p);
         static inline void negate(EffectDomainFormula& p);
@@ -52,10 +55,13 @@ namespace KCL_rosplan {
         static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign);
         static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp, const std::map<std::string, std::string>& assign);
         static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp, const std::map<std::string, std::string>& assign);
+        static void fillForAllEffect(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const UniversalQuantification *exp, EffectDomainFormula& out, size_t paramid, std::map<std::string, std::string> &assign);
 
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);
 
+        static vectorKI getGoals(const LogicalExpression *exp, bool is_negative,  std::map<std::string, std::string> &assign);
+        static void fillForAllGoal(const UniversalQuantification *exp, vectorKI& out, size_t paramid, bool is_negative, std::map<std::string, std::string> &assign);
 
     public:
         /**
@@ -71,6 +77,8 @@ namespace KCL_rosplan {
         static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs);
+
+        static vectorKI getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
     };
 }
 

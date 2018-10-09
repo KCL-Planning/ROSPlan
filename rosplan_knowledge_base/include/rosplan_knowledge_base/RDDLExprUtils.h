@@ -33,6 +33,7 @@ public:
     static rosplan_knowledge_msgs::ExprComposite getExpression(const NumericConstant *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const ParametrizedVariable *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const Parameter *expr, const std::map<std::string, std::string>& assign);
+    static rosplan_knowledge_msgs::ExprComposite getExpression(const IfThenElseExpression *expr, const std::map<std::string, std::string>& assign);
     static rosplan_knowledge_msgs::ExprComposite getExpression(const LogicalExpression *expr, const std::map<std::string, std::string>& assign);
 };
 
