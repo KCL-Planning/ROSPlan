@@ -46,7 +46,10 @@ find_package(GLUT REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
 ## Declare cpp executables
-add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp)
+add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/ProblemGenerator.cpp
+                                                                           src/ProblemGeneration/RDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/ProblemGeneratorFactory.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(ff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(metricff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
