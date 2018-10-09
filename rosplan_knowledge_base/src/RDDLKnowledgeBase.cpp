@@ -1,7 +1,7 @@
 
 #include <rosplan_knowledge_base/RDDLKnowledgeBase.h>
 #include <rosplan_knowledge_base/RDDLExprUtils.h>
-#include <rosplan_knowledge_base/RDDLOperatorUtils.h>
+#include <rosplan_knowledge_base/RDDLUtils.h>
 
 #include "rosplan_knowledge_base/RDDLKnowledgeBase.h"
 
@@ -121,18 +121,18 @@ namespace KCL_rosplan {
             res.op.formula.typed_parameters = getTypedParams(it->second->params);
 
             // Compute preconditions
-            PosNegDomainFormula prec = RDDLOperatorUtils::getOperatorPreconditions(res.op.formula, domain_parser.rddlTask->SACs);
+            PosNegDomainFormula prec = RDDLUtils::getOperatorPreconditions(res.op.formula, domain_parser.rddlTask->SACs);
             res.op.at_start_simple_condition = prec.pos;
             res.op.at_start_neg_condition = prec.neg;
 
             // Compute effects
-            EffectDomainFormula eff = RDDLOperatorUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
             res.op.at_end_add_effects = eff.add;
             res.op.at_end_del_effects = eff.del;
             res.op.probabilistic_effects = eff.prob;
 
             // Compute assign effects
-            res.op.at_end_assign_effects = RDDLOperatorUtils::getOperatorAssignEffects(res.op.formula,
+            res.op.at_end_assign_effects = RDDLUtils::getOperatorAssignEffects(res.op.formula,
                                                                                        domain_parser.rddlTask->CPFDefinitions);
             return true;
         }
@@ -165,6 +165,9 @@ namespace KCL_rosplan {
         // model_goals will not be filled as there are no goals in RDDL
         // model_timed_initial_literals will not be filled either
         loadMetric(); // model_metric;
+
+        // See if there is a goal defined
+        model_goals = RDDLUtils::getGoals(domain_parser.rddlTask->CPFDefinitions);
 
         _horizon = domain_parser.rddlTask->horizon;
         _discount_factor = domain_parser.rddlTask->discountFactor;

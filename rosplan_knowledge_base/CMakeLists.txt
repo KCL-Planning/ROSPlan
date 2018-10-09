@@ -65,7 +65,7 @@ set(KNOWLEDGE_SOURCES
     src/RDDLTaskParser.cpp
     src/RDDLKnowledgeBase.cpp
     src/RDDLExprUtils.cpp
-    src/RDDLOperatorUtils.cpp
+        src/RDDLUtils.cpp
     src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
 	src/VALVisitorProblem.cpp

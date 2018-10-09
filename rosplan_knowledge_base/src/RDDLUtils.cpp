@@ -2,15 +2,15 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 25/09/18.
 //
 
-#include <rosplan_knowledge_base/RDDLOperatorUtils.h>
+#include <rosplan_knowledge_base/RDDLUtils.h>
 #include <rosplan_knowledge_base/RDDLExprUtils.h>
 
-#include "rosplan_knowledge_base/RDDLOperatorUtils.h"
+#include "rosplan_knowledge_base/RDDLUtils.h"
 #include "ros/ros.h"
 
 namespace KCL_rosplan {
 
-    PosNegDomainFormula RDDLOperatorUtils::getOperatorPreconditions(const rosplan_knowledge_msgs::DomainFormula &op_head,
+    PosNegDomainFormula RDDLUtils::getOperatorPreconditions(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                                     const std::vector<LogicalExpression *> &SACs) {
         PosNegDomainFormula ret;
 
@@ -22,7 +22,7 @@ namespace KCL_rosplan {
         return ret;
     }
 
-    PosNegDomainFormula RDDLOperatorUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const LogicalExpression *SAC) {
+    PosNegDomainFormula RDDLUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const LogicalExpression *SAC) {
         auto exp_con = dynamic_cast<const Connective *>(SAC);
         if (exp_con != nullptr) return getOperatorPrecondition(op_head, exp_con);
 
@@ -42,7 +42,7 @@ namespace KCL_rosplan {
     }
 
 
-    PosNegDomainFormula RDDLOperatorUtils::toDomainFormula(const LogicalExpression *expr,  const std::map<std::string, std::string>& assign) {
+    PosNegDomainFormula RDDLUtils::toDomainFormula(const LogicalExpression *expr,  const std::map<std::string, std::string>& assign) {
         auto exp_con = dynamic_cast<const Conjunction *>(expr);
         if (exp_con != nullptr) {
             assert(exp_con->exprs.size() == 2);
@@ -97,30 +97,34 @@ namespace KCL_rosplan {
     }
 
 
-    void RDDLOperatorUtils::join(PosNegDomainFormula &a, PosNegDomainFormula &b) {
+    void RDDLUtils::join(PosNegDomainFormula &a, PosNegDomainFormula &b) {
         a.pos.insert(a.pos.end(), std::make_move_iterator(b.pos.begin()), std::make_move_iterator(b.pos.end()));
         a.neg.insert(a.neg.end(), std::make_move_iterator(b.neg.begin()), std::make_move_iterator(b.neg.end()));
     }
 
-    void RDDLOperatorUtils::join(vectorDA &a, vectorDA &b) {
+    void RDDLUtils::join(vectorDA &a, vectorDA &b) {
         a.insert(a.end(), std::make_move_iterator(b.begin()), std::make_move_iterator(b.end()));
     }
 
 
-    void RDDLOperatorUtils::join(EffectDomainFormula &a, EffectDomainFormula &b) {
+    void RDDLUtils::join(EffectDomainFormula &a, EffectDomainFormula &b) {
         a.add.insert(a.add.end(), std::make_move_iterator(b.add.begin()), std::make_move_iterator(b.add.end()));
         a.del.insert(a.del.end(), std::make_move_iterator(b.del.begin()), std::make_move_iterator(b.del.end()));
         a.prob.insert(a.prob.end(), std::make_move_iterator(b.prob.begin()), std::make_move_iterator(b.prob.end()));
     }
 
+    void RDDLUtils::join(vectorKI &a, vectorKI &b) {
+        a.insert(a.end(), std::make_move_iterator(b.begin()), std::make_move_iterator(b.end()));
+    }
 
-    void RDDLOperatorUtils::negate(PosNegDomainFormula &p) {
+
+    void RDDLUtils::negate(PosNegDomainFormula &p) {
         vectorDF aux = p.pos;
         p.pos = p.neg;
         p.neg = aux;
     }
 
-    void RDDLOperatorUtils::negate(EffectDomainFormula &p) {
+    void RDDLUtils::negate(EffectDomainFormula &p) {
         vectorDF aux = p.add;
         p.add = p.del;
         p.del = aux;
@@ -132,7 +136,7 @@ namespace KCL_rosplan {
         }
     }
 
-    PosNegDomainFormula RDDLOperatorUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Connective *SAC) {
+    PosNegDomainFormula RDDLUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Connective *SAC) {
         assert(SAC->exprs.size() == 2);
         auto disj = dynamic_cast<const Disjunction *>(SAC);
         if (disj != nullptr) {
@@ -154,14 +158,14 @@ namespace KCL_rosplan {
     }
 
 
-    PosNegDomainFormula RDDLOperatorUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Negation *SAC) {
+    PosNegDomainFormula RDDLUtils::getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Negation *SAC) {
         // Swap the resulting precondition
         PosNegDomainFormula neg = getOperatorPrecondition(op_head, SAC->expr);
         negate(neg);
         return neg;
     }
 
-    EffectDomainFormula RDDLOperatorUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+    EffectDomainFormula RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                               const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs) {
         EffectDomainFormula eff_ret;
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
@@ -173,7 +177,7 @@ namespace KCL_rosplan {
         return eff_ret;
     }
 
-    vectorDA RDDLOperatorUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+    vectorDA RDDLUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                          const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs) {
         vectorDA ret;
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
@@ -189,7 +193,7 @@ namespace KCL_rosplan {
 
 
     EffectDomainFormula
-    RDDLOperatorUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign) {
+    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign) {
         auto ifte = dynamic_cast<const IfThenElseExpression*>(exp);
         if (ifte != nullptr) return getOperatorEffects(op_head, pVariable, ifte, assign);
 
@@ -205,6 +209,13 @@ namespace KCL_rosplan {
 
         auto exist = dynamic_cast<const ExistentialQuantification*>(exp);
         if (exist != nullptr) return getOperatorEffects(op_head, pVariable, exist->expr, assign);
+
+        auto forall = dynamic_cast<const UniversalQuantification*>(exp);
+        if (forall != nullptr) {
+            EffectDomainFormula forall_formula;
+            fillForAllEffect(op_head, pVariable, forall, forall_formula, 0, assign);
+            return forall_formula;
+        }
 
         auto neg = dynamic_cast<const Negation*>(exp);
         if (neg != nullptr) { // Swap add for del
@@ -228,12 +239,12 @@ namespace KCL_rosplan {
 
         // TODO numerical expressions for probabilities...
 
-        NOT_IMPLEMENTED_OPERATOR;
+        NOT_IMPLEMENTED("Unknown or unsupported operand type for the action effects.");
         return EffectDomainFormula();
     }
 
     EffectDomainFormula
-    RDDLOperatorUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign) {
+    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign) {
         // Idea: - If condition is 1 -> add the predicate if then is 1, add ~predicate if then is 0, or join with the result
         //       - else -> add ~predicate if the condition is 1 (so if condition having the action fluent is false, then predicate is true means a negative effect)
 
@@ -294,7 +305,7 @@ namespace KCL_rosplan {
         return ret;
     }
 
-    vectorDA RDDLOperatorUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
+    vectorDA RDDLUtils::getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                          const ParametrizedVariable *pVariable,
                                                          const IfThenElseExpression *exp) {
         // Assumption: an assignment for an operator effect is of the form:
@@ -351,7 +362,7 @@ namespace KCL_rosplan {
     }
 
     std::map<std::string, std::string>
-    RDDLOperatorUtils::getParamReplacement(const rosplan_knowledge_msgs::DomainFormula &op_head,
+    RDDLUtils::getParamReplacement(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                            const ParametrizedVariable *op_var) {
         assert(op_head.name == op_var->variableName and op_head.typed_parameters.size() == op_var->params.size());
         std::map<std::string, std::string> assign;
@@ -365,7 +376,7 @@ namespace KCL_rosplan {
     }
 
     EffectDomainFormula
-    RDDLOperatorUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp,
+    RDDLUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp,
                                           const std::map<std::string, std::string> &assign) {
         EffectDomainFormula ret;
         rosplan_knowledge_msgs::ProbabilisticEffect eff;
@@ -378,7 +389,7 @@ namespace KCL_rosplan {
     }
 
     EffectDomainFormula
-    RDDLOperatorUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp,
+    RDDLUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp,
                                           const std::map<std::string, std::string> &assign) {
         // A discrete effect will be N probabilistic effects consisting of an assignment to the variable
         EffectDomainFormula ret;
@@ -395,6 +406,100 @@ namespace KCL_rosplan {
             ret.prob.push_back(eff);
         }
         return ret;
+    }
+
+    void
+    RDDLUtils::fillForAllEffect(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const UniversalQuantification *exp, EffectDomainFormula& out, size_t paramid,
+                                        std::map<std::string, std::string> &assign) {
+        // Instantiate all the objects.
+        if (paramid == exp->paramList->params.size()) {
+            EffectDomainFormula inst = getOperatorEffects(op_head, pVariable, exp->expr, assign);
+            join(out, inst);
+        }
+        else {
+            Parameter* param = exp->paramList->params[paramid];
+            for (auto o = exp->paramList->types[paramid]->objects.begin(); o != exp->paramList->types[paramid]->objects.end(); ++o) {
+                assign[param->name] = (*o)->name;
+                fillForAllEffect(op_head, pVariable, exp, out, paramid+1, assign);
+            }
+            assign.erase(param->name);
+        }
+    }
+
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> RDDLUtils::getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs) {
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> ret;
+        for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
+            if (it->first->variableName == "goal") {
+                std::map<std::string, std::string> ass;
+                return getGoals(it->second, false, ass);
+            }
+        }
+        return ret;
+    }
+
+    vectorKI  RDDLUtils::getGoals(const LogicalExpression *exp, bool is_negative, std::map<std::string, std::string> &assign) {
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> ret;
+        auto conj = dynamic_cast<const Conjunction*>(exp);
+        if (conj != nullptr) {
+            for (auto it = conj->exprs.begin(); it != conj->exprs.end(); ++it) {
+                auto goals = getGoals(*it, is_negative, assign);
+                join(ret, goals);
+            }
+            return ret;
+        }
+
+        auto forall = dynamic_cast<const UniversalQuantification*>(exp);
+        if (forall != nullptr) {
+            fillForAllGoal(forall, ret, 0, is_negative, assign);
+            return ret;
+        }
+
+        auto exp_var = dynamic_cast<const ParametrizedVariable*>(exp);
+        if (exp_var != nullptr) {
+            rosplan_knowledge_msgs::KnowledgeItem ki;
+            ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+            ki.attribute_name = exp_var->variableName;
+            for (auto pit = exp_var->params.begin(); pit != exp_var->params.end(); ++pit) {
+                diagnostic_msgs::KeyValue param;
+
+                auto param_name = assign.find((*pit)->name);
+                if (param_name != assign.end()) param.key = param_name->second; // Parameter name (i.e. ?r)
+                else param.key = (*pit)->name;
+
+                size_t pos = param.key.find('?');
+                if (pos != std::string::npos) param.key.erase(pos, 1); // Remove the ? if present
+
+                param.value = (*pit)->type->name; // Type name
+                ki.values.push_back(param);
+            }
+            ret.push_back(ki);
+            return ret;
+        }
+
+        auto negation = dynamic_cast<const Negation*>(exp);
+        if (negation != nullptr) {
+            return getGoals(negation->expr, not is_negative, assign);
+        }
+        NOT_IMPLEMENTED("Unknown or unsupported operand type for the goal definition.");
+        return ret;
+    }
+
+
+    void
+    RDDLUtils::fillForAllGoal(const UniversalQuantification *exp, vectorKI& out, size_t paramid, bool is_negative, std::map<std::string, std::string> &assign) {
+        // Instantiate all the objects.
+        if (paramid == exp->paramList->params.size()) {
+            vectorKI inst = getGoals(exp->expr, is_negative, assign);
+            join(out, inst);
+        }
+        else {
+            Parameter* param = exp->paramList->params[paramid];
+            for (auto o = exp->paramList->types[paramid]->objects.begin(); o != exp->paramList->types[paramid]->objects.end(); ++o) {
+                assign[param->name] = (*o)->name;
+                fillForAllGoal(exp, out, paramid+1, is_negative, assign);
+            }
+            assign.erase(param->name);
+        }
     }
 
 
