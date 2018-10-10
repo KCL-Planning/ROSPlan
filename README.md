@@ -12,7 +12,7 @@ Get the prerequisites:
 
 (for Kinetic)
 ```sh
-sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
+sudo apt-get install flex ros-kinetic-move-base-msgs ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev python-catkin-tools
 ```
 (for Indigo)
 ```sh
