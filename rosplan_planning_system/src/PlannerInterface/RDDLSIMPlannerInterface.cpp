@@ -109,6 +109,7 @@ namespace KCL_rosplan {
                         planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
                     }
                 }
+                ++action_idx;
             }
 		}
 		planfile.close();

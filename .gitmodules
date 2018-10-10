@@ -3,12 +3,13 @@
 	url = https://github.com/KCL-Planning/VAL.git
 [submodule "rosplan_dependencies/rddl_parser"]
 	path = rosplan_dependencies/rddl_parser
-	url = git@github.com:gerardcanal/rddl_parser.git
+	url = https://github.com/gerardcanal/rddl_parser.git
 [submodule "rosplan_dependencies/rddlsim"]
 	path = rosplan_dependencies/rddlsim
-	url = git@github.com:ssanner/rddlsim.git
+	url = https://github.com/ssanner/rddlsim.git
 	ignore = dirty
 [submodule "rosplan_dependencies/ppddl_parser"]
 	path = rosplan_dependencies/ppddl_parser
 	url = https://github.com/gerardcanal/PPDDL_determinization.git
 	branch = stable
+
