@@ -25,8 +25,8 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ppddl_parser/include ppddl_parser/src
-        LIBRARIES val rddl_parser ppddl_parser
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser
+        LIBRARIES val rddl_parser
         CATKIN_DEPENDS roscpp
         DEPENDS
 )
