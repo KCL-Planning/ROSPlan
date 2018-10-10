@@ -6,5 +6,5 @@
 	url = git@github.com:gerardcanal/rddl_parser.git
 [submodule "rosplan_dependencies/rddlsim"]
 	path = rosplan_dependencies/rddlsim
-	url = git@github.com:ssanner/rddlsim.git
+	url = https://github.com/ssanner/rddlsim.git
 	ignore = dirty
