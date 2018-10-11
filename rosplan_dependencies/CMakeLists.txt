@@ -8,7 +8,7 @@ add_compile_options(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS rosplan_knowledge_msgs)
 
 # Get the git submodules...
 message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
@@ -25,9 +25,9 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser
-        LIBRARIES val rddl_parser
-        CATKIN_DEPENDS roscpp
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ippc_server
+        LIBRARIES val rddl_parser ippc_server
+        CATKIN_DEPENDS roscpp rosplan_knowledge_msgs
         DEPENDS
 )
 
@@ -163,3 +163,38 @@ endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
 ## Install ##
 #############
 
+########################################################################################################################
+########################################################################################################################
+## ippc_server
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Adding ippc_server dependency...")
+
+###########
+## Build ##
+###########
+include_directories(ippc_server ${catkin_INCLUDE_DIRS})
+
+add_library(ippc_server SHARED ippc_server/ippc_server.cpp ippc_server/strxml.cpp)
+add_dependencies(ippc_server ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
+
+install(TARGETS ippc_server
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+## Mark cpp header files for installation
+install(DIRECTORY ippc_server
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE
+        )
+
+
+#############
+## Install ##
+#############
