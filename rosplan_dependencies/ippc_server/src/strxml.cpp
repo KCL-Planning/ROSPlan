@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "strxml.h"
+#include "rosplan_dependencies/strxml.h"
 #if HAVE_SSTREAM
 #include <sstream>
 #else
