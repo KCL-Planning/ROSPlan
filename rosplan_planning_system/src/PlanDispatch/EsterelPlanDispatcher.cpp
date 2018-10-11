@@ -90,7 +90,7 @@ namespace KCL_rosplan {
 	 * dispatches plan as a service
 	 * @returns True iff every action was dispatched and returned success.
 	 */
-	void EsterelPlanDispatcher::dispatchPlanAction() {
+	void EsterelPlanDispatcher::dispatchPlanActionlib() {
 		if (as_.isActive() or dispatching) {
 			ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
 		}
@@ -449,7 +449,7 @@ namespace KCL_rosplan {
 
 	int main(int argc, char **argv) {
 
-		ros::init(argc,argv,"rosplan_plan_dispatcher");
+		ros::init(argc,argv,"rosplan_esterel_plan_dispatcher");
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::EsterelPlanDispatcher epd(nh);
@@ -462,10 +462,6 @@ namespace KCL_rosplan {
 		std::string feedbackTopic = "action_feedback";
 		nh.getParam("action_feedback_topic", feedbackTopic);
 		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1000, &KCL_rosplan::EsterelPlanDispatcher::feedbackCallback, &epd);
-
-		// start the plan parsing services
-		ros::ServiceServer service1 = nh.advertiseService("dispatch_plan", &KCL_rosplan::PlanDispatcher::dispatchPlanService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&epd));
-		ros::ServiceServer service2 = nh.advertiseService("cancel_dispatch", &KCL_rosplan::PlanDispatcher::cancelDispatchService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&epd));
 
 		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 		ros::spin();

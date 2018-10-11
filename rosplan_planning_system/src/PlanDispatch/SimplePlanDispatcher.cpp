@@ -83,7 +83,7 @@ namespace KCL_rosplan {
 	 * dispatches plan as a service
 	 * @returns True iff every action was dispatched and returned success.
 	 */
-    void SimplePlanDispatcher::dispatchPlanAction() {
+    void SimplePlanDispatcher::dispatchPlanActionlib() {
 	    if (as_.isActive() or dispatching) {
             ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
 	    }
@@ -98,6 +98,8 @@ namespace KCL_rosplan {
             as_.setSucceeded(res);
         }
     }
+
+
 	/*-----------------*/
 	/* action dispatch */
 	/*-----------------*/

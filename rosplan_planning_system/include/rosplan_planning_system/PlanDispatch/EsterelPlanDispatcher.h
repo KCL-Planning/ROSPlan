@@ -1,4 +1,6 @@
-#include <stdlib.h> 
+#ifndef KCL_esterel_dispatcher
+#define KCL_esterel_dispatcher
+#include <stdlib.h>
 #include <map>
 #include <iostream>
 #include <string>
@@ -15,8 +17,7 @@
 
 #include "std_msgs/String.h"
 
-#ifndef KCL_esterel_dispatcher
-#define KCL_esterel_dispatcher
+
 
 namespace KCL_rosplan
 {
@@ -75,7 +76,7 @@ namespace KCL_rosplan
 
 		/* action dispatch methods */
 		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-		void dispatchPlanAction();
+		void dispatchPlanActionlib();
 		bool dispatchPlan(double missionStartTime, double planStartTime);
 
 		/* action feedback methods */

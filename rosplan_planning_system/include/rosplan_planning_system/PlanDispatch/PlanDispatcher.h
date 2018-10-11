@@ -54,7 +54,7 @@ namespace KCL_rosplan
 		/* plan dispatch methods */
 		virtual bool dispatchPlan(double missionStartTime, double planStartTime) =0;
 		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)=0;
-		virtual void dispatchPlanAction()=0;
+		virtual void dispatchPlanActionlib()=0;
 
 		void publishFeedback(const rosplan_dispatch_msgs::ActionFeedback& fb);
 
