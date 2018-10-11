@@ -1,4 +1,4 @@
-#include "rosplan_dependencies/ippc_server.h"
+#include "ippcserver.h"
 #include <cstring>
 
 # define DEBUG_VALUE 0
@@ -493,11 +493,12 @@ XMLServer_t::getAction( const XMLNode* actionNode, float& planning_result)
         std::string action;
         std::string action_name;
         std::string action_value;
-        std::vector<std::string> action_args;
 
         // construct the state based on the description of its atoms
         for (int i = 0; i < actionNode->size(); i++)
         {
+            std::vector<std::string> action_args;
+            if (i > 0) action += ";";
             const XMLNode* cn = actionNode->getChild(i);
             if (cn->getName() == "action")
             {
@@ -532,10 +533,11 @@ XMLServer_t::getAction( const XMLNode* actionNode, float& planning_result)
                     action_name+=",";
             }
             action_name += ")";
+            action += action_name;
             planning_result = atof(action_value.c_str());
             if (DEBUG > 0)
                 std::cout << "IppcServer::" << "Action is " << action_name << " with value " << planning_result << std::endl;
         }
-        return( action_name );
+        return( action );
     }
 }
