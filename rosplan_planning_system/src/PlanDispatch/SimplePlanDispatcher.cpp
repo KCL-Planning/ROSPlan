@@ -1,3 +1,6 @@
+
+#include <rosplan_planning_system/PlanDispatch/SimplePlanDispatcher.h>
+
 #include "rosplan_planning_system/PlanDispatch/SimplePlanDispatcher.h"
 
 namespace KCL_rosplan {
@@ -6,8 +9,8 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	SimplePlanDispatcher::SimplePlanDispatcher(ros::NodeHandle& nh) {
-		
+	SimplePlanDispatcher::SimplePlanDispatcher(ros::NodeHandle& nh) : PlanDispatcher(nh)  {
+
 		node_handle = &nh;
 
 		// knowledge base services
@@ -62,16 +65,39 @@ namespace KCL_rosplan {
 	/*--------------------*/
 
 	/**
-	 * plan dispatch service method (1) 
+	 * plan dispatch service method (1)
 	 * dispatches plan as a service
 	 * @returns True iff every action was dispatched and returned success.
 	 */
 	bool SimplePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
+        if(!plan_received) return false;
+        dispatching = true;
+        bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
+        dispatching = false;
 		reset();
 		return success;
 	}
 
+	/**
+	 * plan dispatch action method (2)
+	 * dispatches plan as a service
+	 * @returns True iff every action was dispatched and returned success.
+	 */
+    void SimplePlanDispatcher::dispatchPlanAction() {
+	    if (as_.isActive() or dispatching) {
+            ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
+	    }
+	    else {
+	        as_.acceptNewGoal();
+            dispatching = true;
+            bool success = dispatchPlan(mission_start_time, ros::WallTime::now().toSec());
+            dispatching = false;
+            reset();
+            rosplan_dispatch_msgs::NonBlockingDispatchResult res;
+            res.success = success;
+            as_.setSucceeded(res);
+        }
+    }
 	/*-----------------*/
 	/* action dispatch */
 	/*-----------------*/
@@ -86,7 +112,7 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 		replan_requested = false;
 
-		while (ros::ok() && current_plan.plan.size() > current_action) {
+        while (ros::ok() && current_plan.plan.size() > current_action) {
 
 			// loop while dispatch is paused
 			while (ros::ok() && dispatch_paused) {
@@ -111,7 +137,7 @@ namespace KCL_rosplan {
 				rosplan_dispatch_msgs::ActionFeedback fb;
 				fb.action_id = currentMessage.action_id;
 				fb.status = "precondition false";
-				action_feedback_publisher.publish(fb);
+				publishFeedback(fb);
 
 				replan_requested = true;
 
@@ -126,6 +152,11 @@ namespace KCL_rosplan {
 						currentMessage.duration);
 
 				action_dispatch_publisher.publish(currentMessage);
+                // publish feedback (action dispatched)
+                rosplan_dispatch_msgs::ActionFeedback fb;
+                fb.action_id = currentMessage.action_id;
+                fb.status = "action dispatched";
+                publishFeedback(fb);
 
 				double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time+planStartTime));
 				if(late_print>0.1) {
@@ -237,6 +268,8 @@ namespace KCL_rosplan {
 			action_completed[msg->action_id] = true;
 		}
 	}
+
+
 } // close namespace
 
 	/*-------------*/
@@ -249,7 +282,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::SimplePlanDispatcher spd(nh);
-	
+
 		// subscribe to planner output
 		std::string planTopic = "complete_plan";
 		nh.getParam("plan_topic", planTopic);
@@ -258,10 +291,6 @@ namespace KCL_rosplan {
 		std::string feedbackTopic = "action_feedback";
 		nh.getParam("action_feedback_topic", feedbackTopic);
 		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1, &KCL_rosplan::SimplePlanDispatcher::feedbackCallback, &spd);
-
-		// start the plan parsing services
-		ros::ServiceServer service1 = nh.advertiseService("dispatch_plan", &KCL_rosplan::PlanDispatcher::dispatchPlanService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&spd));
-		ros::ServiceServer service2 = nh.advertiseService("cancel_dispatch", &KCL_rosplan::PlanDispatcher::cancelDispatchService, dynamic_cast<KCL_rosplan::PlanDispatcher*>(&spd));
 
 		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 		ros::spin();

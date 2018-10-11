@@ -43,9 +43,12 @@ namespace KCL_rosplan
 		void reset();
 
 		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		void dispatchPlanAction();
 		bool dispatchPlan(double missionStartTime, double planStartTime);
 
 		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
+
+
 	};
 }
 

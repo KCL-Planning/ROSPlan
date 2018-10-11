@@ -7,8 +7,8 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(ros::NodeHandle& nh) {
-		
+	EsterelPlanDispatcher::EsterelPlanDispatcher(ros::NodeHandle& nh): PlanDispatcher(nh)  {
+
 		node_handle = &nh;
 
 		// knowledge base services
@@ -71,16 +71,39 @@ namespace KCL_rosplan {
 	/* Dispatch interface */
 	/*--------------------*/
 
+    /**
+     * plan dispatch service method (1)
+     * dispatches plan as a service
+     * @returns True iff every action was dispatched and returned success.
+     */
+	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+		if(!plan_received) return false;
+		dispatching = true;
+		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
+		dispatching = false;
+		reset();
+		return success;
+	}
+
 	/**
-	 * plan dispatch service method (1) 
+	 * plan dispatch action method (2)
 	 * dispatches plan as a service
 	 * @returns True iff every action was dispatched and returned success.
 	 */
-	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		if(!plan_received) return false;
-		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
-		reset();
-		return success;
+	void EsterelPlanDispatcher::dispatchPlanAction() {
+		if (as_.isActive() or dispatching) {
+			ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
+		}
+		else {
+			as_.acceptNewGoal();
+			dispatching = true;
+			bool success = dispatchPlan(mission_start_time, ros::WallTime::now().toSec());
+			dispatching = false;
+			reset();
+			rosplan_dispatch_msgs::NonBlockingDispatchResult res;
+			res.success = success;
+			as_.setSucceeded(res);
+		}
 	}
 
 	/*-----------------*/
@@ -426,11 +449,11 @@ namespace KCL_rosplan {
 
 	int main(int argc, char **argv) {
 
-		ros::init(argc,argv,"rosplan_esterel_plan_dispatcher");
+		ros::init(argc,argv,"rosplan_plan_dispatcher");
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::EsterelPlanDispatcher epd(nh);
-	
+
 		// subscribe to planner output
 		std::string planTopic = "complete_plan";
 		nh.getParam("plan_topic", planTopic);
