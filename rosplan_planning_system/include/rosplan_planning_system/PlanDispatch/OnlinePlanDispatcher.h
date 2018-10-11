@@ -18,7 +18,6 @@ namespace KCL_rosplan
 
     class OnlinePlanDispatcher : public PlanDispatcher {
     private:
-
         // time plan was recevied
         double mission_start_time;
         rosplan_dispatch_msgs::CompletePlan current_plan;
@@ -28,21 +27,20 @@ namespace KCL_rosplan
         ros::ServiceClient queryKnowledgeClient;
         ros::ServiceClient queryDomainClient;
         ros::ServiceClient queryPropositionsClient;
+        ros::ServiceClient get_rddl_params;
 
         /* current action to dispatch */
         int current_action;
         int server_port_;
 
-        boost::shared_ptr<XMLServer_t> ippcserver_ptr_;
-        ros::ServiceClient get_rddl_params;
         ros::Publisher plan_publisher;
 
-        rosplan_dispatch_msgs::ActionDispatch toActionMsg(std::string action_str, int action_id);
+        std::vector<rosplan_dispatch_msgs::ActionDispatch> toActionMsg(std::string action_str, int action_id);
     public:
 
         /* constructor */
         explicit OnlinePlanDispatcher(ros::NodeHandle& nh);
-        ~OnlinePlanDispatcher() = default;
+        ~OnlinePlanDispatcher();
 
 
         void reset() override;

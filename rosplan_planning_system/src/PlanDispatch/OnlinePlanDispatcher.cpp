@@ -2,18 +2,16 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 11/10/18.
 //
 
-#include <rosplan_planning_system/PlanDispatch/OnlinePlanDispatcher.h>
-
 #include "rosplan_planning_system/PlanDispatch/OnlinePlanDispatcher.h"
 namespace KCL_rosplan {
 
 
-    KCL_rosplan::OnlinePlanDispatcher::OnlinePlanDispatcher(ros::NodeHandle &nh) : PlanDispatcher(nh) {
+    OnlinePlanDispatcher::OnlinePlanDispatcher(ros::NodeHandle &nh) : PlanDispatcher(nh) {
         node_handle = &nh;
-        ippcserver_ptr_ = boost::shared_ptr<XMLServer_t>(new XMLServer_t());
 
+        // get port
         server_port_ = 3234;
-        node_handle->getParam("server_port_", server_port_);
+        node_handle->getParam("ippc_server_port", server_port_);
 
         // knowledge base services
         std::string kb = "knowledge_base";
@@ -44,8 +42,11 @@ namespace KCL_rosplan {
         std::string planTopic = "complete_plan";
         nh.getParam("plan_topic", planTopic);
         plan_publisher = node_handle->advertise<rosplan_dispatch_msgs::CompletePlan>(planTopic, 1, true);
+
         reset();
     }
+
+    OnlinePlanDispatcher::~OnlinePlanDispatcher() {}
 
     void OnlinePlanDispatcher::reset() {
         replan_requested = false;
@@ -68,6 +69,7 @@ namespace KCL_rosplan {
      * @returns True iff every action was dispatched and returned success.
      */
     bool OnlinePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        if (dispatching) return false;
         dispatching = true;
         mission_start_time = ros::WallTime::now().toSec();
         bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
@@ -83,7 +85,7 @@ namespace KCL_rosplan {
      */
     void OnlinePlanDispatcher::dispatchPlanActionlib() {
         if (as_.isActive() or dispatching) {
-            ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
+            ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched! It will be ignored", ros::this_node::getName().c_str());
         }
         else {
             as_.acceptNewGoal();
@@ -118,9 +120,11 @@ namespace KCL_rosplan {
         }
 
         // Start round
-        ROS_INFO("KCL: (%s) Starting IPPC server on port %d!", ros::this_node::getName().c_str(), server_port_);
-        ippcserver_ptr_->start_session(server_port_); // Waits for connection
-        ippcserver_ptr_->start_round();
+        ROS_INFO("KCL: (%s) Starting IPPC server on port %d and waiting for connections!", ros::this_node::getName().c_str(), server_port_);
+        XMLServer_t ippcserver;
+        ippcserver.start_session(server_port_);
+        ROS_INFO("KCL: (%s) Starting planning round", ros::this_node::getName().c_str());
+        ippcserver.start_round();
         float planning_result;
         ros::Rate loop_rate(10);
 
@@ -143,30 +147,36 @@ namespace KCL_rosplan {
             // Get next action
             std::string action;
             try {
-                action = ippcserver_ptr_->get_action(srv.response.attributes, planning_result);
+                action = ippcserver.get_action(srv.response.attributes, planning_result);
             }
             catch (std::runtime_error e) {
                 ROS_ERROR("KCL: (%s) %s", ros::this_node::getName().c_str(), e.what());
                 break;
             }
+
+            if (action.empty()) continue; // It is a noop
             ROS_INFO("KCL: (%s) Received new action from planner: %s", ros::this_node::getName().c_str(), action.c_str());
 
-            rosplan_dispatch_msgs::ActionDispatch current_action_msg = toActionMsg(action, current_action);
-            dispatchOneAction(current_action_msg, missionStartTime, planStartTime);
-            current_plan.plan.push_back(current_action_msg);
-            plan_publisher.publish(current_plan);
+            std::vector<rosplan_dispatch_msgs::ActionDispatch> current_action_msg = toActionMsg(action, current_action);
+            for (auto it = current_action_msg.begin(); it != current_action_msg.end(); ++it) {
+                dispatchOneAction(*it, missionStartTime, planStartTime);
+                current_plan.plan.push_back(*it);
+                plan_publisher.publish(current_plan);
 
-            // get ready for next action
-            ++current_action;
-            action_received[current_action] = false;
-            action_completed[current_action] = false;
+                // get ready for next action
+                ++current_action;
+                action_received[current_action] = false;
+                action_completed[current_action] = false;
+            }
 
         }
-        ippcserver_ptr_->end_round();
-        ippcserver_ptr_->end_session();
+        ippcserver.end_round();
+        ros::Duration(0.5).sleep();
+        ippcserver.end_session();
 
-        // TODO add infinite dispatch
-        return false;
+        // TODO add infinite dispatch?
+        ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
+        return true;
     }
 
     /**
@@ -306,38 +316,45 @@ namespace KCL_rosplan {
         }
     }
 
-    rosplan_dispatch_msgs::ActionDispatch OnlinePlanDispatcher::toActionMsg(std::string action_str, int action_id) {
-        rosplan_dispatch_msgs::ActionDispatch ret;
-        ret.action_id = action_id;
-        std::regex action_name_params_rgx(",?\\s?(.+)\\((.*)\\)|,?\\s?(.+)");
+    std::vector<rosplan_dispatch_msgs::ActionDispatch> OnlinePlanDispatcher::toActionMsg(std::string resp_actions, int action_id) {
+        std::vector<rosplan_dispatch_msgs::ActionDispatch>  ret;
+        std::regex action_name_params_rgx("(.+)\\((.*)\\)|,?\\s?(.+)");
         std::smatch match;
 
-        // TODO iterate over all the actions for concurrency!
-        if (std::regex_search(action_str, match, action_name_params_rgx)) { // Separate action name and parameters
-            std::string action_name = (match[1].str().empty()) ? match[3].str() : match[1].str();
-            ret.name = action_name; // Action name
+        std::istringstream action_list(resp_actions);
+        std::string action_str;
+        while (std::getline(action_list, action_str, ';')) { // Get each action separately
+            rosplan_dispatch_msgs::ActionDispatch action_msg;
+            action_msg.action_id = action_id;
+            if (std::regex_search(action_str, match, action_name_params_rgx)) { // Separate action name and parameters
+                std::string action_name = (match[1].str().empty()) ? match[3].str() : match[1].str();
+                action_msg.name = action_name; // Action name
 
-            // Get action details to instantiate the parameters
-            rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
-            srv.request.name = action_name;
-            if (!queryDomainClient.call(srv)) {
-                ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s",
-                          ros::this_node::getName().c_str(), srv.response.op.formula.name.c_str());
-                return ret;
-            }
+                // Get action details to instantiate the parameters
+                rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
+                srv.request.name = action_name;
+                if (!queryDomainClient.call(srv)) {
+                    ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s",
+                              ros::this_node::getName().c_str(), srv.response.op.formula.name.c_str());
+                    return ret;
+                }
 
-            // Process parameters
-            ret.parameters = srv.response.op.formula.typed_parameters;
-            std::istringstream p(match[2].str()); // parameters
-            std::string param;
-            size_t param_idx = 0;
-            while (getline(p, param, ',')) {
-                ret.parameters[param_idx].value = param;
-                ++param_idx;
+                // Process parameters
+                action_msg.parameters = srv.response.op.formula.typed_parameters;
+                std::istringstream p(match[2].str()); // parameters
+                std::string param;
+                size_t param_idx = 0;
+                while (getline(p, param, ',')) {
+                    action_msg.parameters[param_idx].value = param;
+                    ++param_idx;
+                }
             }
+            action_msg.duration = 0.001;
+            action_msg.dispatch_time = ros::WallTime::now().toSec();
+            ret.push_back(action_msg);
+            ++action_id;
         }
-        ret.duration = 0.001;
-        ret.dispatch_time = ros::WallTime::now().toSec();
+
         return ret;
     }
 
@@ -358,8 +375,6 @@ int main(int argc, char **argv) {
     std::string feedbackTopic = "action_feedback";
     nh.getParam("action_feedback_topic", feedbackTopic);
     ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1, &KCL_rosplan::OnlinePlanDispatcher::feedbackCallback, &opd);
-
-    // Todo plan service...
 
     ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
     ros::spin();

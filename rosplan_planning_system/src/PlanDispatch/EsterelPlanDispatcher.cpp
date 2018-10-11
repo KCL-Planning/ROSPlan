@@ -77,7 +77,7 @@ namespace KCL_rosplan {
      * @returns True iff every action was dispatched and returned success.
      */
 	bool EsterelPlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-		if(!plan_received) return false;
+		if(!plan_received or dispatching) return false;
 		dispatching = true;
 		bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
 		dispatching = false;

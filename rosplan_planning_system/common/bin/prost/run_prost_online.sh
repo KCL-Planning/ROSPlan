@@ -54,7 +54,11 @@ INSTANCE_NAME=$(sed -n 's/instance \(.*\) {/\1/p' $RDDL_PROBLEM_FILE)
 ########################################################################################################################
 ########################################################################################################################
 ## Run the parser and planner
-SERVER_PORT=3234
+SERVER_PORT=$(rosparam get /rosplan_plan_dispatcher/ippc_server_port 2>/dev/null) # Get it from the parameter
+if [[ -z "$SERVER_PORT" ]]; then  # Set default
+	SERVER_PORT=3234
+fi
+
 
 # Wait for the server to be online
 # The above command gets the PID of a process using the port $SERVER_PORT
