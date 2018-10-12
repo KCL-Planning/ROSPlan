@@ -59,7 +59,6 @@ if [[ -z "$SERVER_PORT" ]]; then  # Set default
 	SERVER_PORT=3234
 fi
 
-
 # Wait for the server to be online
 # The above command gets the PID of a process using the port $SERVER_PORT
 while [[ -z $SERVER_PID ]]; do
@@ -68,20 +67,21 @@ while [[ -z $SERVER_PID ]]; do
 done
 
 cd $PROST_HOME
-rm $INSTANCE_NAME parser_in.rddl >/dev/null 2>&1 # Clean-up previous files
+#FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files
 
-# Run rddl parser to generate prost's files
-$PROST_HOME/rddl-parser $RDDL_DOMAIN_FILE $RDDL_PROBLEM_FILE . >/dev/null 2>&1
-
-# Run prost planner
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+# Run prost planner (To change to any other IPPC planner only this section needs to be changed)
 export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 $PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >/dev/null 2>&1
 EXIT_CODE=$?
-
-rm $INSTANCE_NAME parser_in.rddl >/dev/null 2>&1 # Clean-up generated files
-
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 
 ### Cleanup
+#rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up generated files
 if [[ $MOVED_PROBLEM_FILE -eq 1 ]]; then
 	rm $RDDL_PROBLEM_FILE;
 fi
