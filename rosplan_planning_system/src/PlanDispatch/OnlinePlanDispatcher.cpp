@@ -50,7 +50,7 @@ namespace KCL_rosplan {
      * dispatches plan as a service
      * @returns True iff every action was dispatched and returned success.
      */
-    bool OnlinePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+    bool OnlinePlanDispatcher::dispatchPlanService(rosplan_dispatch_msgs::DispatchService::Request &req, rosplan_dispatch_msgs::DispatchService::Response &res) {
         mission_start_time = ros::WallTime::now().toSec();
         PlanDispatcher::dispatchPlanService(req, res);
     }

@@ -29,6 +29,7 @@ add_service_files(
   ProblemService.srv
   ParsingService.srv
   GetPlanningParams.srv
+  DispatchService.srv
 )
 
 add_action_files(

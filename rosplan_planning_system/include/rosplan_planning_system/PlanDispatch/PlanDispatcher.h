@@ -15,6 +15,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h>
 #include <rosplan_knowledge_msgs/KnowledgeQueryService.h>
+#include "rosplan_dispatch_msgs/DispatchService.h"
 
 namespace KCL_rosplan
 {
@@ -25,7 +26,8 @@ namespace KCL_rosplan
 		actionlib::SimpleActionServer<rosplan_dispatch_msgs::NonBlockingDispatchAction> as_;
 		ros::ServiceServer service1;
 		ros::ServiceServer service2;
-		double mission_start_time;
+
+        double mission_start_time;
 
 		ros::NodeHandle* node_handle;
 
@@ -51,6 +53,10 @@ namespace KCL_rosplan
         bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
         ros::ServiceClient queryKnowledgeClient;
         ros::ServiceClient queryDomainClient;
+        ros::ServiceClient get_goals;
+
+        bool goalAchieved(); // Returns true if the goal was achieved
+
         std::string kb_; // knowledge base name
     public:
 	    PlanDispatcher(ros::NodeHandle& nh);
@@ -64,7 +70,7 @@ namespace KCL_rosplan
 
 		/* plan dispatch methods */
 		virtual bool dispatchPlan(double missionStartTime, double planStartTime) =0;
-		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		virtual bool dispatchPlanService(rosplan_dispatch_msgs::DispatchService::Request &req, rosplan_dispatch_msgs::DispatchService::Response &res);
 		virtual void dispatchPlanActionlib();
 
 		/* Publishes the actionfeedback */

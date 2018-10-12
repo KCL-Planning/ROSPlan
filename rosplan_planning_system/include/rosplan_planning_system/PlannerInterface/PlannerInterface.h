@@ -1,3 +1,6 @@
+#ifndef KCL_planner_interface
+#define KCL_planner_interface
+
 #include "ros/ros.h"
 #include "actionlib/server/simple_action_server.h"
 
@@ -6,9 +9,6 @@
 
 #include "rosplan_dispatch_msgs/PlanningService.h"
 #include "rosplan_dispatch_msgs/PlanAction.h"
-
-#ifndef KCL_planner_interface
-#define KCL_planner_interface
 
 /**
  * This file contains an interface to the planner.

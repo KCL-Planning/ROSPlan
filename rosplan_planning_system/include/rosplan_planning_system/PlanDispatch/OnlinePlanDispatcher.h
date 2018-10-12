@@ -39,16 +39,13 @@ namespace KCL_rosplan
 
         void reset() override;
 
-        bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) override;
+        bool dispatchPlanService(rosplan_dispatch_msgs::DispatchService::Request &req, rosplan_dispatch_msgs::DispatchService::Response &res) override;
         void dispatchPlanActionlib() override;
         bool dispatchPlan(double missionStartTime, double planStartTime) override;
 
         void dispatchOneAction(rosplan_dispatch_msgs::ActionDispatch current_action_msg, double missionStartTime, double planStartTime);
 
         void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) override;
-
-
-
     };
 }
 

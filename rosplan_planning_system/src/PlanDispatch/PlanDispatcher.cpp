@@ -2,6 +2,7 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 11/10/18.
 //
 
+#include <rosplan_knowledge_msgs/GetAttributeService.h>
 #include "rosplan_planning_system/PlanDispatch/PlanDispatcher.h"
 
 namespace KCL_rosplan {
@@ -17,6 +18,9 @@ namespace KCL_rosplan {
         ss.str("");
         ss << "/" << kb_ << "/domain/operator_details";
         queryDomainClient = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
+        ss.str("");
+        ss << "/" << kb_ << "/state/goals";
+        get_goals = node_handle->serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str());
         ss.str("");
 
         // Register actionlib callbacks
@@ -75,12 +79,14 @@ namespace KCL_rosplan {
      * dispatches plan as a service
      * @returns True iff every action was dispatched and returned success.
      */
-    bool PlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+    bool PlanDispatcher::dispatchPlanService(rosplan_dispatch_msgs::DispatchService::Request &req, rosplan_dispatch_msgs::DispatchService::Response &res) {
         if (dispatching) return false;
         dispatching = true;
         bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
         dispatching = false;
         reset();
+        res.success = success;
+        res.goal_achieved = goalAchieved();
         return success;
     }
 
@@ -101,6 +107,7 @@ namespace KCL_rosplan {
             reset();
             rosplan_dispatch_msgs::NonBlockingDispatchResult res;
             res.success = success;
+            res.goal_achieved = goalAchieved();
             as_.setSucceeded(res);
         }
     }
@@ -172,6 +179,21 @@ namespace KCL_rosplan {
         } else {
             ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
         }
+    }
+
+    bool PlanDispatcher::goalAchieved() {
+        rosplan_knowledge_msgs::GetAttributeService goal;
+        if (not get_goals.call(goal)) {
+            ROS_ERROR("KCL: (%s) Failed to call service get_goals", ros::this_node::getName().c_str());
+            return false;
+        }
+        if (goal.response.attributes.empty()) return false;
+        rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+        if (not queryKnowledgeClient.call(querySrv)) {
+            ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
+            return false;
+        }
+        return querySrv.response.all_true;
     }
 
 }
