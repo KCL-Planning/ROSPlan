@@ -59,7 +59,7 @@ namespace KCL_rosplan
 
         std::string kb_; // knowledge base name
     public:
-	    PlanDispatcher(ros::NodeHandle& nh);
+	    explicit PlanDispatcher(ros::NodeHandle& nh);
 	    ~PlanDispatcher() = default;
 
 		/* control callback */

@@ -26,7 +26,7 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ippc_server/include
-        LIBRARIES val rddl_parser ippc_server
+        LIBRARIES val_kcl rddl_parser ippc_server
         CATKIN_DEPENDS roscpp rosplan_knowledge_msgs
         DEPENDS
 )
@@ -122,13 +122,13 @@ set(VAL_SOURCES
 
 include_directories("VAL/include")
 
-add_library(val SHARED ${VAL_SOURCES})
-add_dependencies(val ${catkin_EXPORTED_TARGETS})
+add_library(val_kcl SHARED ${VAL_SOURCES})
+add_dependencies(val_kcl ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
 #############
-install(TARGETS val
+install(TARGETS val_kcl
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
