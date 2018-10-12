@@ -2,6 +2,7 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 11/10/18.
 //
 
+#include <rosplan_dispatch_msgs/GetPlanningParams.h>
 #include "rosplan_planning_system/PlanDispatch/OnlinePlanDispatcher.h"
 namespace KCL_rosplan {
 
@@ -22,6 +23,8 @@ namespace KCL_rosplan {
         ss << "/" << kb_ << "/state/rddl_parameters";
         get_rddl_params = node_handle->serviceClient<rosplan_knowledge_msgs::GetRDDLParams>(ss.str());
         ss.str("");
+
+        get_planner_params =  node_handle->serviceClient<rosplan_dispatch_msgs::GetPlanningParams>("/rosplan_planner_interface/get_planning_params");
 
         // subscribe to planner output
         std::string planTopic = "complete_plan";
@@ -84,8 +87,16 @@ namespace KCL_rosplan {
         // Start round
         ROS_INFO("KCL: (%s) Starting IPPC server on port %d and waiting for connections!", ros::this_node::getName().c_str(), server_port_);
         XMLServer_t ippcserver;
-        ippcserver.start_session(server_port_, "", ""); // TODO get problem paths
-        ROS_INFO("KCL: (%s) Starting planning round", ros::this_node::getName().c_str());
+
+        rosplan_dispatch_msgs::GetPlanningParams p;
+        if (not get_planner_params.call(p)) {
+            ROS_ERROR("KCL: (%s) Failed to call service to get planner parameters! Is the OnlinePlanningInterface running?", ros::this_node::getName().c_str());
+            ros::shutdown();
+            return false;
+        }
+
+        ippcserver.start_session(server_port_, p.response.domain_path, p.response.problem_path);
+        ROS_INFO("KCL: (%s) Planner connected! Starting planning round", ros::this_node::getName().c_str());
         ippcserver.start_round();
         float planning_result;
         ros::Rate loop_rate(10);

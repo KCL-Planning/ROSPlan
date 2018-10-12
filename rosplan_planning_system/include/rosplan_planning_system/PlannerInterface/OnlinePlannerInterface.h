@@ -6,6 +6,7 @@
 #define ROSPLAN_PLANNING_SYSTEM_ONLINEPLANNERINTERFACE_H
 
 #include "PlannerInterface.h"
+#include <rosplan_dispatch_msgs/GetPlanningParams.h>
 #include <fstream>
 #include <thread>
 
@@ -19,13 +20,17 @@ namespace KCL_rosplan {
         std::thread planner;
         bool planner_running;
 
+        ros::ServiceServer get_planner_params; // To communicate with the OnlinePlanDispatcher
+
     protected:
 
-        bool runPlanner();
+        bool runPlanner() override;
+        bool getPlannerParams(rosplan_dispatch_msgs::GetPlanningParamsRequest& req,
+                              rosplan_dispatch_msgs::GetPlanningParamsResponse& res);
 
     public:
 
-        OnlinePlannerInterface(ros::NodeHandle& nh);
+        explicit OnlinePlannerInterface(ros::NodeHandle& nh);
         ~OnlinePlannerInterface();
     };
 }

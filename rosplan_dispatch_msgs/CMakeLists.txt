@@ -28,6 +28,7 @@ add_service_files(
   PlanningService.srv
   ProblemService.srv
   ParsingService.srv
+  GetPlanningParams.srv
 )
 
 add_action_files(

@@ -21,6 +21,7 @@ namespace KCL_rosplan
 
         ros::ServiceClient queryPropositionsClient;
         ros::ServiceClient get_rddl_params;
+        ros::ServiceClient get_planner_params;
 
         /* current action to dispatch */
         int current_action;

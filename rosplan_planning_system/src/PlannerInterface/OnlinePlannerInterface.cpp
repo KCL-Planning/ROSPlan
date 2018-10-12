@@ -2,6 +2,8 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 11/10/18.
 //
 
+#include <rosplan_planning_system/PlannerInterface/OnlinePlannerInterface.h>
+
 #include "rosplan_planning_system/PlannerInterface/OnlinePlannerInterface.h"
 
 namespace KCL_rosplan {
@@ -19,6 +21,7 @@ namespace KCL_rosplan {
         // start planning action server
         plan_server->start();
         planner_running = false;
+        get_planner_params = nh.advertiseService("get_planning_params", &KCL_rosplan::OnlinePlannerInterface::getPlannerParams, this);
     }
 
     OnlinePlannerInterface::~OnlinePlannerInterface() {
@@ -72,6 +75,13 @@ namespace KCL_rosplan {
 
         // Launch thread and return, as the dispatcher will take care of the planning
         planner = std::thread(&OnlinePlannerInterface::runCommand, this, commandString);
+        return true;
+    }
+
+    bool OnlinePlannerInterface::getPlannerParams(rosplan_dispatch_msgs::GetPlanningParamsRequest &req,
+                                                  rosplan_dispatch_msgs::GetPlanningParamsResponse &res) {
+        res.domain_path = domain_path;
+        res.problem_path = problem_path;
         return true;
     }
 }

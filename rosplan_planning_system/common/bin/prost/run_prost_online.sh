@@ -67,7 +67,7 @@ while [[ -z $SERVER_PID ]]; do
 done
 
 cd $PROST_HOME
-#FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files
+FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
 
 ########################################################################################################################
 ########################################################################################################################
@@ -81,7 +81,7 @@ EXIT_CODE=$?
 ########################################################################################################################
 
 ### Cleanup
-#rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up generated files
+rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up generated files
 if [[ $MOVED_PROBLEM_FILE -eq 1 ]]; then
 	rm $RDDL_PROBLEM_FILE;
 fi
