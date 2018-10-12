@@ -1,6 +1,9 @@
 /**
  * This code is based on the IPPC client code from glutton/gourmand
  * http://www.cs.washington.edu/ai/planning/gourmand.html
+ *
+ * It was obtained from REX-D https://bitbucket.org/dmartinezm/rex-d
+ * And modified to adapt it to ROSPlan by Gerard Canal <gcanal@iri.upc.edu>
  */
 
 #ifndef CLIENT_H
@@ -16,6 +19,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <boost/tr1/regex.hpp>
+#include "base64.h"
+#include <fstream>
 
 #define HAVE_SSTREAM 1
 #if HAVE_SSTREAM
@@ -79,10 +84,12 @@ public:
     /*
       Carries out a problem-solving session with the server.
     */
-    void start_session(uint port);
+    void start_session(uint port, const std::string &domain_path, const std::string &instance_path);
     void end_session();
 
     std::string get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result);
+
+    std::string get_encoded_task(const std::string &domain_path, const std::string &instance_path);
 
     void start_round();
     void end_round();

@@ -172,9 +172,9 @@ message(STATUS "[${PROJECT_NAME}] Adding ippc_server dependency...")
 ###########
 ## Build ##
 ###########
-include_directories(ippc_server/include ${catkin_INCLUDE_DIRS})
+include_directories(ippc_server/include ippc_server/cpp-base64 ${catkin_INCLUDE_DIRS})
 
-add_library(ippc_server SHARED ippc_server/src/ippc_server.cpp ippc_server/src/strxml.cpp)
+add_library(ippc_server SHARED ippc_server/src/ippc_server.cpp ippc_server/src/strxml.cpp ippc_server/cpp-base64/base64.cpp)
 add_dependencies(ippc_server ${catkin_EXPORTED_TARGETS})
 
 #############

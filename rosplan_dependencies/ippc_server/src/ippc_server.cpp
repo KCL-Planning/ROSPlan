@@ -106,7 +106,7 @@ XMLServer_t::disconnect()
 
 
 void
-XMLServer_t::start_session(uint port)
+XMLServer_t::start_session(uint port, const std::string &domain_path, const std::string &instance_path)
 {
     std::ostringstream oss;
 
@@ -152,6 +152,7 @@ XMLServer_t::start_session(uint port)
      * sessionID => "<session-id>"  <WORD>  "</session-id>"
      * numrounds => "<num-rounds>"  <WORD>  "</num-rounds>"
      * timeallowed => "<time-allowed>"  <WORD>  "</time-allowed"
+     * task => "<task>" <TASK_DESCRIPTION> "</task>"s
      */
 
     time_allowed = 50000;
@@ -163,6 +164,7 @@ XMLServer_t::start_session(uint port)
         <<  "<session-id>" << session_id << "</session-id>"
         <<  "<num-rounds>" << num_rounds << "</num-rounds>"
         <<  "<time-allowed>" << time_allowed << "</time-allowed>"
+        << "<task>" << get_encoded_task(domain_path, instance_path) << "</task>"
         <<  "<no-header/>"
         << "</session-init>"
         << '\0';
@@ -540,4 +542,32 @@ XMLServer_t::getAction( const XMLNode* actionNode, float& planning_result)
         }
         return( action );
     }
+}
+
+std::string XMLServer_t::get_encoded_task(const std::string &domain_path, const std::string &instance_path) {
+    // Based on https://stackoverflow.com/questions/2912520/read-file-contents-into-a-string-in-c
+    std::ifstream ifs(domain_path);
+    std::string task_str;
+    if (ifs.good()) {
+        task_str.assign((std::istreambuf_iterator<char>(ifs)),
+                            (std::istreambuf_iterator<char>()));
+    }
+    else {
+        std::cerr << "IppcServer:: " << "Could not open domain file " << domain_path << std::endl;
+        return "";
+    }
+
+    task_str += "\n\n";
+
+    ifs = std::ifstream(instance_path);
+    if (ifs.good()) {
+        task_str.append((std::istreambuf_iterator<char>(ifs)),
+                       (std::istreambuf_iterator<char>()));
+    }
+    else {
+        std::cerr << "IppcServer:: " << "Could not open instance file " << instance_path << std::endl;
+        return "";
+    }
+
+    return base64_encode(reinterpret_cast<const unsigned char*>(task_str.c_str()), task_str.length());
 }
