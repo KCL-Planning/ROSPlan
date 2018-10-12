@@ -7,8 +7,6 @@
 
 #include "PlanDispatcher.h"
 #include "rosplan_dependencies/ippc_server.h"
-#include <rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h>
-#include <rosplan_knowledge_msgs/KnowledgeQueryService.h>
 #include <rosplan_knowledge_msgs/GetAttributeService.h>
 #include <rosplan_knowledge_msgs/GetRDDLParams.h>
 #include <regex>
@@ -19,13 +17,8 @@ namespace KCL_rosplan
     class OnlinePlanDispatcher : public PlanDispatcher {
     private:
         // time plan was recevied
-        double mission_start_time;
         rosplan_dispatch_msgs::CompletePlan current_plan;
 
-        /* check preconditions are true */
-        bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
-        ros::ServiceClient queryKnowledgeClient;
-        ros::ServiceClient queryDomainClient;
         ros::ServiceClient queryPropositionsClient;
         ros::ServiceClient get_rddl_params;
 

@@ -1,6 +1,11 @@
 /**
  * This file describes a class that dispatches a plan.
  */
+
+
+#ifndef KCL_dispatcher
+#define KCL_dispatcher
+
 #include <rosplan_dispatch_msgs/CompletePlan.h>
 #include "ros/ros.h"
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
@@ -8,9 +13,8 @@
 #include "rosplan_dispatch_msgs/NonBlockingDispatchAction.h"
 #include "std_srvs/Empty.h"
 #include <actionlib/server/simple_action_server.h>
-
-#ifndef KCL_dispatcher
-#define KCL_dispatcher
+#include <rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h>
+#include <rosplan_knowledge_msgs/KnowledgeQueryService.h>
 
 namespace KCL_rosplan
 {
@@ -21,6 +25,7 @@ namespace KCL_rosplan
 		actionlib::SimpleActionServer<rosplan_dispatch_msgs::NonBlockingDispatchAction> as_;
 		ros::ServiceServer service1;
 		ros::ServiceServer service2;
+		double mission_start_time;
 
 		ros::NodeHandle* node_handle;
 
@@ -41,7 +46,13 @@ namespace KCL_rosplan
         /* action publishers */
         ros::Publisher action_dispatch_publisher;
         ros::Publisher action_feedback_publisher;
-	public:
+
+        /* check preconditions are true */
+        bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
+        ros::ServiceClient queryKnowledgeClient;
+        ros::ServiceClient queryDomainClient;
+        std::string kb_; // knowledge base name
+    public:
 	    PlanDispatcher(ros::NodeHandle& nh);
 	    ~PlanDispatcher() = default;
 
@@ -53,11 +64,11 @@ namespace KCL_rosplan
 
 		/* plan dispatch methods */
 		virtual bool dispatchPlan(double missionStartTime, double planStartTime) =0;
-		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)=0;
-		virtual void dispatchPlanActionlib()=0;
+		virtual bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+		virtual void dispatchPlanActionlib();
 
+		/* Publishes the actionfeedback */
 		void publishFeedback(const rosplan_dispatch_msgs::ActionFeedback& fb);
-
 
 		/* action feedback methods */
 		virtual void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) =0;

@@ -14,22 +14,10 @@ namespace KCL_rosplan {
 		node_handle = &nh;
 
 		// knowledge base services
-		std::string kb = "knowledge_base";
-		node_handle->getParam("knowledge_base", kb);
 		std::stringstream ss;
-		ss << "/" << kb << "/query_state";
+		ss << "/" << kb_ << "/query_state";
 		queryKnowledgeClient = node_handle->serviceClient<rosplan_knowledge_msgs::KnowledgeQueryService>(ss.str());
 		ss.str("");
-		ss << "/" << kb << "/domain/operator_details";
-		queryDomainClient = node_handle->serviceClient<rosplan_knowledge_msgs::GetDomainOperatorDetailsService>(ss.str());
-		ss.str("");
-
-		action_dispatch_topic = "action_dispatch";
-		action_feedback_topic = "action_feedback";
-		nh.getParam("action_dispatch_topic", action_dispatch_topic);
-		nh.getParam("action_feedback_topic", action_feedback_topic);
-		action_dispatch_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionDispatch>(action_dispatch_topic, 1, true);
-		action_feedback_publisher = node_handle->advertise<rosplan_dispatch_msgs::ActionFeedback>(action_feedback_topic, 1, true);
 
 		reset();
 	}
@@ -40,12 +28,7 @@ namespace KCL_rosplan {
 	}
 
 	void SimplePlanDispatcher::reset() {
-		replan_requested = false;
-		dispatch_paused = false;
-		plan_cancelled = false;
-		action_received.clear();
-		action_completed.clear();
-		plan_received = false;
+		PlanDispatcher::reset();
 		current_action = 0;
 	}
 
@@ -59,46 +42,6 @@ namespace KCL_rosplan {
 		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
 	}
-
-	/*--------------------*/
-	/* Dispatch interface */
-	/*--------------------*/
-
-	/**
-	 * plan dispatch service method (1)
-	 * dispatches plan as a service
-	 * @returns True iff every action was dispatched and returned success.
-	 */
-	bool SimplePlanDispatcher::dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-        if(!plan_received or dispatching) return false;
-        dispatching = true;
-        bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
-        dispatching = false;
-		reset();
-		return success;
-	}
-
-	/**
-	 * plan dispatch action method (2)
-	 * dispatches plan as a service
-	 * @returns True iff every action was dispatched and returned success.
-	 */
-    void SimplePlanDispatcher::dispatchPlanActionlib() {
-	    if (as_.isActive() or dispatching) {
-            ROS_WARN("KCL: (%s) Got a new dispatch request but a plan is already being dispatched!", ros::this_node::getName().c_str());
-	    }
-	    else {
-	        as_.acceptNewGoal();
-            dispatching = true;
-            bool success = dispatchPlan(mission_start_time, ros::WallTime::now().toSec());
-            dispatching = false;
-            reset();
-            rosplan_dispatch_msgs::NonBlockingDispatchResult res;
-            res.success = success;
-            as_.setSucceeded(res);
-        }
-    }
-
 
 	/*-----------------*/
 	/* action dispatch */
@@ -180,67 +123,12 @@ namespace KCL_rosplan {
 			// finish dispatch and replan
 			if(replan_requested) return false;
 		}
+
+		ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
 		return true;
 	}
 
-	/**
-	 *	Returns true of the actions preconditions are true in the current state. Calls the Knowledge Base.
-	 */
-	bool SimplePlanDispatcher::checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg) {
 
-		// get domain opertor details
-		rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
-		srv.request.name = msg.name;
-		if(!queryDomainClient.call(srv)) {
-			ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s", ros::this_node::getName().c_str(), msg.name.c_str());
-			return false;
-		}
-
-		// setup service call
-		rosplan_knowledge_msgs::DomainOperator op = srv.response.op;
-		rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
-
-		// iterate through conditions
-		std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit = op.at_start_simple_condition.begin();
-		for(; cit!=op.at_start_simple_condition.end(); cit++) {
-
-			// create condition
-			rosplan_knowledge_msgs::KnowledgeItem condition;
-			condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-			condition.attribute_name = cit->name;
-
-			// populate parameters
-			for(int i=0; i<cit->typed_parameters.size(); i++) {
-
-				// set parameter label to predicate label
-				diagnostic_msgs::KeyValue param;
-				param.key = cit->typed_parameters[i].key;
-
-				// search for correct operator parameter value
-				for(int j=0; j<msg.parameters.size() && j<op.formula.typed_parameters.size(); j++) {
-					if(op.formula.typed_parameters[j].key == cit->typed_parameters[i].value) {
-						param.value = msg.parameters[j].value;
-					}
-				}
-				condition.values.push_back(param);
-			}
-			querySrv.request.knowledge.push_back(condition);
-		}
-
-		// check conditions in knowledge base
-		if (queryKnowledgeClient.call(querySrv)) {
-			
-			if(!querySrv.response.all_true) {
-				std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kit;
-				for(kit=querySrv.response.false_knowledge.begin(); kit != querySrv.response.false_knowledge.end(); kit++)
-					ROS_INFO("KCL: (%s) Precondition not achieved: %s", ros::this_node::getName().c_str(), kit->attribute_name.c_str());
-			}
-			return querySrv.response.all_true;
-
-		} else {
-			ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
-		}
-	}
 
 	/*------------------*/
 	/* general feedback */

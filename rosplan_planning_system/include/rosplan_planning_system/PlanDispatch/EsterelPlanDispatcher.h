@@ -1,5 +1,6 @@
 #ifndef KCL_esterel_dispatcher
 #define KCL_esterel_dispatcher
+
 #include <stdlib.h>
 #include <map>
 #include <iostream>
@@ -9,9 +10,6 @@
 
 #include "PlanDispatcher.h"
 
-#include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
-#include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
-#include "rosplan_knowledge_msgs/DomainOperator.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_dispatch_msgs/EsterelPlan.h"
 
@@ -46,7 +44,6 @@ namespace KCL_rosplan
 	
 		// current plan and time plan was recevied
 		rosplan_dispatch_msgs::EsterelPlan current_plan;
-		double mission_start_time;
 
 		// plan status
 		std::map<int,bool> edge_active;
@@ -59,28 +56,24 @@ namespace KCL_rosplan
 		bool printPlan();
 		ros::Publisher plan_graph_publisher;
 
-		/* check preconditions are true */
-		bool checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg);
 		ros::ServiceClient query_knowledge_client;
 		ros::ServiceClient query_domain_client;
 
 	public:
 
 		/* constructor */
-		EsterelPlanDispatcher(ros::NodeHandle& nh);
+		explicit EsterelPlanDispatcher(ros::NodeHandle& nh);
 		~EsterelPlanDispatcher();
 
 		void planCallback(const rosplan_dispatch_msgs::EsterelPlan plan);
 
-		void reset();
+		void reset() override;
 
 		/* action dispatch methods */
-		bool dispatchPlanService(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-		void dispatchPlanActionlib();
-		bool dispatchPlan(double missionStartTime, double planStartTime);
+		bool dispatchPlan(double missionStartTime, double planStartTime) override;
 
 		/* action feedback methods */
-		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg);
+		void feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) override;
 	};
 }
 
