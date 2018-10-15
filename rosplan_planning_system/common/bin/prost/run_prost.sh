@@ -79,7 +79,7 @@ fi
 
 # Run rddlsim server
 cd $RDDLSIM_HOME # As the script is relative to its home folder
-$RDDLSIM_HOME/run rddl.competition.Server $FILES_FOLDER_PATH $SERVER_PORT $NUM_ROUNDS &
+$RDDLSIM_HOME/run rddl.competition.Server $FILES_FOLDER_PATH $SERVER_PORT $NUM_ROUNDS 2>&1 &
 RDDLSIM_PID=$!
 
 # Wait until server has started by checking if the port is occupied
