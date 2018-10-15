@@ -91,7 +91,8 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Quantif
     rosplan_knowledge_msgs::ExprBase::_op_type op_type = 0;
     if (dynamic_cast<const Sumation*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD;
     else if (dynamic_cast<const Product*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::MUL;
-    else if (dynamic_cast<const UniversalQuantification*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD; // Treat the forall as a summation FIXME can this be problematic? Done for the goal
+    else if (dynamic_cast<const UniversalQuantification*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD; // Treat the forall as a summation FIXME can this be problematic? Done for the goal ideally should be truncated to boolean...
+    else if (dynamic_cast<const ExistentialQuantification*>(expr) != nullptr)  op_type = rosplan_knowledge_msgs::ExprBase::ADD; // Treat the exists as a summation FIXME can this be problematic? ideally should be truncated to boolean...
     else NOT_IMPLEMENTED_EXPR;
 
     // Get all the operands of the quantifier operation

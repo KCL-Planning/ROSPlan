@@ -59,7 +59,7 @@ domain turtlebot_domain {
 
     // Goal is to visit all the waypoints, so we get reward for them, but moving has a cost!
     reward = [sum_{?r: robot, ?wf: waypoint, ?wt: waypoint} [COST_MOVE(?r)*goto_waypoint(?r, ?wf, ?wt)]] +
-             [sum_{?w: waypoint} [VISIT_WP_REWARD*visited(?w)]];
+             [sum_{?r:robot, ?w: waypoint} [VISIT_WP_REWARD*(exists_{?wf: waypoint} (goto_waypoint(?r, ?wf, ?w)))]];
 
 
     //state-action-constraints {
