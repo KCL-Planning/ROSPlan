@@ -33,12 +33,6 @@ if [ ! -f "$RDDL_PROBLEM_FILE" ]; then
   exit 2
 fi
 
-RDDLSIM_HOME="$(rospack find rosplan_dependencies)/rddlsim"
-if [ ! -d "$RDDLSIM_HOME" ]; then
-  echo "Error: rddlsim was not found in $RDDLSIM_HOME"
-  exit 2
-fi
-
 PROST_HOME="$(rospack find rosplan_planning_system)/common/bin/prost"
 if [ ! -d "$PROST_HOME" ]; then
   echo "Error: prost was not found in $PROST_HOME"
@@ -64,48 +58,39 @@ INSTANCE_NAME=$(sed -n 's/instance \(.*\) {/\1/p' $RDDL_PROBLEM_FILE)
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
-## Run the server and planner
-SERVER_PORT=3232
-NUM_ROUNDS=1
-
-# Check if a server is already running in port $SERVER_PORT and kill it
-RDDLSIM_PID=$(netstat -tulpn 2>&1 | grep $SERVER_PORT | sed -n 's_.*\s\([0-9]\+\)/.*_\1_p') 
-# The above command gets the PID of a process using the port $SERVER_PORT
-if [[ -n $RDDLSIM_PID ]]; then
-	kill $RDDLSIM_PID
-	sleep $WAIT_SERVER_TIME # Give time for the server to die
+## Run the parser and planner
+SERVER_PORT=$(rosparam get /rosplan_plan_dispatcher/ippc_server_port 2>/dev/null) # Get it from the parameter
+if [[ -z "$SERVER_PORT" ]]; then  # Set default
+	SERVER_PORT=3234
 fi
 
-
-# Run rddlsim server
-cd $RDDLSIM_HOME # As the script is relative to its home folder
-$RDDLSIM_HOME/run rddl.competition.Server $FILES_FOLDER_PATH $SERVER_PORT $NUM_ROUNDS &
-RDDLSIM_PID=$!
-
-# Wait until server has started by checking if the port is occupied
-while [[ -z $(netstat -tulpn 2>&1 | grep $SERVER_PORT) ]]; do
-	sleep 0.1
+# Wait for the server to be online
+# The above command gets the PID of a process using the port $SERVER_PORT
+while [[ -z $SERVER_PID ]]; do
+	SERVER_PID=$(netstat -tulpn 2>&1 | grep $SERVER_PORT | sed -n 's_.*\s\([0-9]\+\)/.*_\1_p') 
+	sleep $WAIT_SERVER_TIME # Give time for the server to die
 done
 
-# Run prost planner
-export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 cd $PROST_HOME
-<<<<<<< Updated upstream
-rm $INSTANCE_NAME >/dev/null 2>&1 # Sometimes prost may leave this file on wrong executions
-$PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >/dev/null 2>&1
-=======
-rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up previous files, in case some were left
+FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+# Run prost planner (To change to any other IPPC planner only this section needs to be changed)
+export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 $PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >$PLANNER_OUTPUT_FILE 2>&1
->>>>>>> Stashed changes
 EXIT_CODE=$?
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 
 ### Cleanup
+rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up generated files
 if [[ $MOVED_PROBLEM_FILE -eq 1 ]]; then
 	rm $RDDL_PROBLEM_FILE;
 fi
 
-# Finish the server
-pkill -P $RDDLSIM_PID
 exit $EXIT_CODE
 ########################################################################################################################
 ########################################################################################################################
