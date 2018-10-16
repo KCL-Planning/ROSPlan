@@ -105,7 +105,7 @@ XMLServer_t::disconnect()
 }
 
 
-void
+std::string
 XMLServer_t::start_session(uint port, const std::string &domain_path, const std::string &instance_path)
 {
     std::ostringstream oss;
@@ -139,7 +139,7 @@ XMLServer_t::start_session(uint port, const std::string &domain_path, const std:
             std::cout << "<client>: ERROR: could not parse the server's response to the session request."<< std::endl;
         }
 
-        return;
+        return "";
     }
 
     /*
@@ -175,6 +175,7 @@ XMLServer_t::start_session(uint port, const std::string &domain_path, const std:
     if (res != (int)oss.str().length()) {
         std::cerr << "Error writing to IPPC client! (" << res << ").";
     }
+    return client_name;
 }
 
 

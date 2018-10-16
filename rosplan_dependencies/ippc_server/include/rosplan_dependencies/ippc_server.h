@@ -84,7 +84,7 @@ public:
     /*
       Carries out a problem-solving session with the server.
     */
-    void start_session(uint port, const std::string &domain_path, const std::string &instance_path);
+    std::string start_session(uint port, const std::string &domain_path, const std::string &instance_path);
     void end_session();
 
     std::string get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result);

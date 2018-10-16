@@ -99,8 +99,8 @@ namespace KCL_rosplan {
         // Start round
         ROS_INFO("KCL: (%s) Starting IPPC server on port %d and waiting for connections!", ros::this_node::getName().c_str(), server_port_);
         XMLServer_t ippcserver;
-        ippcserver.start_session(server_port_, p.response.domain_path, p.response.problem_path);
-        ROS_INFO("KCL: (%s) Planner connected! Starting planning round", ros::this_node::getName().c_str());
+        std::string client = ippcserver.start_session(server_port_, p.response.domain_path, p.response.problem_path);
+        ROS_INFO("KCL: (%s) Planner %s connected! Starting planning round", ros::this_node::getName().c_str(), client.c_str());
         ippcserver.start_round();
         float planning_result;
         ros::Rate loop_rate(10);
@@ -175,11 +175,17 @@ namespace KCL_rosplan {
             action_received[msg->action_id] = true;
 
         // action completed (successfuly)
-        if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
+        else if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
             action_completed[msg->action_id] = true;
 
         // action completed (failed)
-        if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+        else if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+            replan_requested = true;
+            action_completed[msg->action_id] = true;
+        }
+
+        // action completed (failed)
+        else if(!action_completed[msg->action_id] && 0 == msg->status.compare("precondition false")) {
             replan_requested = true;
             action_completed[msg->action_id] = true;
         }
@@ -189,7 +195,7 @@ namespace KCL_rosplan {
                                                  double missionStartTime, double planStartTime) {
         // check action preconditions
         if(!checkPreconditions(current_action_msg)) {
-            ROS_INFO("KCL: (%s) Preconditions not achieved [%i, %s]", ros::this_node::getName().c_str(), current_action_msg.action_id, current_action_msg.name.c_str());
+            ROS_WARN("KCL: (%s) Preconditions not achieved [%i, %s]", ros::this_node::getName().c_str(), current_action_msg.action_id, current_action_msg.name.c_str());
 
             // publish feedback (precondition false)
             rosplan_dispatch_msgs::ActionFeedback fb;
@@ -206,7 +212,7 @@ namespace KCL_rosplan {
                      ros::this_node::getName().c_str(),
                      current_action_msg.action_id,
                      current_action_msg.name.c_str(),
-                     (current_action_msg.dispatch_time+planStartTime-missionStartTime),
+                     (current_action_msg.dispatch_time + planStartTime - missionStartTime),
                      current_action_msg.duration);
 
             action_dispatch_publisher.publish(current_action_msg);
@@ -216,18 +222,19 @@ namespace KCL_rosplan {
             fb.status = "action dispatched";
             publishFeedback(fb);
 
-            double late_print = (ros::WallTime::now().toSec() - (current_action_msg.dispatch_time+planStartTime));
-            if(late_print>0.1) {
-                ROS_INFO("KCL: (%s) Action [%i] is %f second(s) late", ros::this_node::getName().c_str(), current_action_msg.action_id, late_print);
+            double late_print = (ros::WallTime::now().toSec() - (current_action_msg.dispatch_time + planStartTime));
+            if (late_print > 0.1) {
+                ROS_INFO("KCL: (%s) Action [%i] is %f second(s) late", ros::this_node::getName().c_str(),
+                         current_action_msg.action_id, late_print);
             }
-
+        }
             // wait for action to complete
             ros::Rate loop_rate(10);
             while (ros::ok() && !action_completed[current_action]) {
                 ros::spinOnce();
                 loop_rate.sleep();
             }
-        }
+
     }
 
     std::vector<rosplan_dispatch_msgs::ActionDispatch> OnlinePlanDispatcher::toActionMsg(std::string resp_actions, int action_id) {
