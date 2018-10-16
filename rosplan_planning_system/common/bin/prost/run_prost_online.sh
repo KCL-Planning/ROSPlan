@@ -1,20 +1,25 @@
 #!/bin/bash
 # Author: Gerard Canal <gcanal@iri.upc.edu>
 # This script runs the rddlsim and prost together, to work as a single planner executable
-# Usage: ./run_prost.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS (Both rddl files must be in the same folder!)
+# Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS <PLANNER_OUTPUT_FILE> (Both rddl files must be in the same folder!)
 
 ########################################################################################################################
 ## Get arguments
 RDDL_DOMAIN_FILE=$(realpath $1)
 RDDL_PROBLEM_FILE=$(realpath $2)
 SEARCH_OPTIONS=$3
+PLANNER_OUTPUT_FILE=$4
 ARGC=$#
 WAIT_SERVER_TIME=0.5  # Seconds
 
-if [[ $ARGC -ne 3 ]]; then
-	echo -e "Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS\n(Both rddl files must be in the same folder!)"
+if [[ $ARGC -lt 3 ]]; then
+	echo -e "Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS <PLANNER_OUTPUT_FILE>\n(Both rddl files must be in the same folder!)"
 	exit 1
 fi
+
+if [[ -z "$PLANNER_OUTPUT_FILE" ]]; then
+	PLANNER_OUTPUT_FILE=/dev/null
+fi;
 
 ########################################################################################################################
 ## Check file existances
@@ -66,15 +71,15 @@ while [[ -z $SERVER_PID ]]; do
 	sleep $WAIT_SERVER_TIME # Give time for the server to die
 done
 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 cd $PROST_HOME
-FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
+rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
 
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
 # Run prost planner (To change to any other IPPC planner only this section needs to be changed)
 export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
-$PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >/dev/null 2>&1
+$PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >$PLANNER_OUTPUT_FILE 2>&1
 EXIT_CODE=$?
 ########################################################################################################################
 ########################################################################################################################
