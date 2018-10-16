@@ -8,9 +8,11 @@ namespace KCL_rosplan {
     RDDLProblemGenerator::RDDLProblemGenerator(const std::string& kb) : ProblemGenerator(kb) {
         // Get domain name
         ros::ServiceClient getNameClient = _nh.serviceClient<rosplan_knowledge_msgs::GetDomainNameService>(domain_name_service);
+        getNameClient.waitForExistence(ros::Duration(15));
         rosplan_knowledge_msgs::GetDomainNameService nameSrv;
         if (!getNameClient.call(nameSrv)) {
-            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", domain_name_service.c_str());
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s. Is the Knowledge Base running?", domain_name_service.c_str());
+            ros::shutdown();
         }
         _domain_name = nameSrv.response.domain_name;
         _non_fluents_name = "nf_" + _domain_name + "_inst";
