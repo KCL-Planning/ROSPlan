@@ -82,6 +82,7 @@ namespace KCL_rosplan {
                                                   rosplan_dispatch_msgs::GetPlanningParamsResponse &res) {
         res.domain_path = domain_path;
         res.problem_path = problem_path;
+        res.planner_ready = planner_running;
         return true;
     }
 }

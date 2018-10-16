@@ -84,10 +84,6 @@ namespace KCL_rosplan {
             return false;
         }
 
-        // Start round
-        ROS_INFO("KCL: (%s) Starting IPPC server on port %d and waiting for connections!", ros::this_node::getName().c_str(), server_port_);
-        XMLServer_t ippcserver;
-
         rosplan_dispatch_msgs::GetPlanningParams p;
         if (not get_planner_params.call(p)) {
             ROS_ERROR("KCL: (%s) Failed to call service to get planner parameters! Is the OnlinePlanningInterface running?", ros::this_node::getName().c_str());
@@ -95,6 +91,14 @@ namespace KCL_rosplan {
             return false;
         }
 
+        if (not p.response.planner_ready) {
+            ROS_WARN("KCL: (%s) Planner is not ready! Did you call the plan_server to start the online planner thread?", ros::this_node::getName().c_str());
+            return false;
+        }
+
+        // Start round
+        ROS_INFO("KCL: (%s) Starting IPPC server on port %d and waiting for connections!", ros::this_node::getName().c_str(), server_port_);
+        XMLServer_t ippcserver;
         ippcserver.start_session(server_port_, p.response.domain_path, p.response.problem_path);
         ROS_INFO("KCL: (%s) Planner connected! Starting planning round", ros::this_node::getName().c_str());
         ippcserver.start_round();
