@@ -157,7 +157,7 @@ namespace KCL_rosplan {
 
                 // search for correct operator parameter value
                 for(int j=0; j<msg.parameters.size() && j<op.formula.typed_parameters.size(); j++) {
-                    if(op.formula.typed_parameters[j].key == cit->typed_parameters[i].value) {
+                    if(op.formula.typed_parameters[j].key == cit->typed_parameters[i].key) {
                         param.value = msg.parameters[j].value;
                     }
                 }
