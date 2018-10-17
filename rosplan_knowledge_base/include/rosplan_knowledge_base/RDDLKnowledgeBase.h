@@ -78,6 +78,7 @@ namespace KCL_rosplan {
 		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
 		bool setRDDLHorizon(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 		bool setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
+        void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) override;
 	public:
 		RDDLKnowledgeBase(ros::NodeHandle& n) ;
 		~RDDLKnowledgeBase() = default;

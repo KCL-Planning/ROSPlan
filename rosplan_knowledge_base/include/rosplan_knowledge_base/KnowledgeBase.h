@@ -67,7 +67,9 @@ namespace KCL_rosplan {
 
 		/* removing items from the knowledge base */
 		void removeKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
-		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
+        virtual void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg);
+
+        void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 

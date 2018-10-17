@@ -398,5 +398,17 @@ namespace KCL_rosplan {
         return true;
     }
 
+    void RDDLKnowledgeBase::removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) {
+        // remove domain attribute (predicate) from knowledge base
+        for (auto pit = model_facts.begin(); pit!=model_facts.end(); ++pit) {
+            if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+                ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(),
+                         msg.attribute_name.c_str());
+                pit->is_negative = 1 - pit->is_negative; // Negate attribute
+                break;
+            }
+        }
+    }
+
 
 }

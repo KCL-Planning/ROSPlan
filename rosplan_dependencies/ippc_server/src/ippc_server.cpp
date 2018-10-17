@@ -283,8 +283,6 @@ XMLServer_t::get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>
     * fluent-value => "<fluent-value>" <WORD> "</fluent-value>"
     * no-observed-fluents => "<no-observed-fluents/>"
     */
-    //FIXME remove State non_closed_world_state = scenario.get_state();
-    //FIXME remove scenario.domain.make_predicate_group_no_closed_world(non_closed_world_state, true);
 
     oss.str("");
     oss << "<turn><turn-num>1</turn-num><time-left>" << time_allowed << "</time-left><immediate-reward>0</immediate-reward>";

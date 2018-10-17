@@ -294,21 +294,25 @@ namespace KCL_rosplan {
 
 		case rosplan_knowledge_msgs::KnowledgeItem::FACT:
 		{
-			// remove domain attribute (predicate) from knowledge base
-			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
-			for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
-				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-					ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), msg.attribute_name.c_str());
-					pit = model_facts.erase(pit);
-				} else {
-					pit++;
-				}
-			}
+			removeFact(msg);
 		}
 		break;
 
 		}
 	}
+
+    void KnowledgeBase::removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) {
+        // remove domain attribute (predicate) from knowledge base
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
+        for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
+            if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+                ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), msg.attribute_name.c_str());
+                pit = model_facts.erase(pit);
+            } else {
+                pit++;
+            }
+        }
+    }
 
 	/**
 	 * remove mission goal
