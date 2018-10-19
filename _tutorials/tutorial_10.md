@@ -115,7 +115,7 @@ virtual bool concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::Const
 Create a new file in the directory: *rosplan/rosplan_planning_system/src/ActionInterface/* and call it *RPTutorial10.cpp*. Copy in the following code:
 
 ```c++
-#include "rosplan_action_interface/RPTutorial.h"
+#include "rosplan_action_interface/RPTutorial10.h"
 
 /* The implementation of RPTutorial.h */
 namespace KCL_rosplan {
@@ -169,7 +169,7 @@ Add the following lines just above:
 
 ```
 ## Declare action interface for Tutorial 10
-add_executable(tutorialInterface src/ActionInterface/RPTutorial.cpp src/ActionInterface/RPActionInterface.cpp)
+add_executable(tutorialInterface src/ActionInterface/RPTutorial10.cpp src/ActionInterface/RPActionInterface.cpp)
 add_dependencies(tutorialInterface ${catkin_EXPORTED_TARGETS})
 target_link_libraries(tutorialInterface ${catkin_LIBRARIES})
 ```
