@@ -18,6 +18,7 @@ before_install:
     - sudo apt-get install libcurl3
     - sudo apt-get install -y mongodb-server mongodb
     - sudo apt-get install flex ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev
+    - git clone https://github.com/clearpathrobotics/occupancy_grid_utils
 
 install:
   - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
