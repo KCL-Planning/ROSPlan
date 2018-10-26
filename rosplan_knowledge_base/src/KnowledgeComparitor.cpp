@@ -138,7 +138,10 @@ namespace KCL_rosplan {
 		case rosplan_knowledge_msgs::KnowledgeItem::FUNCTION:
 
 			// check function value
-			if(a.function_value != b.function_value) return false;
+			// Note: ContainsKnowledge checks if the two KnowledgeItems are the same. For functions, value is NOT
+			//       checked as this may be used to compare. In order to compare the vlaue of the function the
+            //       KnowledgeComparitor::inequalityTrue
+			//if(a.function_value != b.function_value) return false;
 
 		// check function or fact label and parameters all match
 		case rosplan_knowledge_msgs::KnowledgeItem::FACT:
