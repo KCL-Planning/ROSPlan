@@ -53,7 +53,7 @@ namespace KCL_rosplan {
             return op1;
         }
 
-        auto exp_neg = dynamic_cast<const Negation *>(expr); // FIXME may have a flaw if we have a negated conjunction!
+        auto exp_neg = dynamic_cast<const Negation *>(expr);
         if (exp_neg != nullptr) {
             PosNegDomainFormula neg = toDomainFormula(exp_neg->expr, assign);
             negate(neg);
@@ -89,9 +89,19 @@ namespace KCL_rosplan {
             return PosNegDomainFormula();
         }
 
+        auto exp_quan = dynamic_cast<const Quantifier *>(expr);
+        if (exp_quan != nullptr) {
+            //NOT_IMPLEMENTED("Quantifiers are not implemented as a precondition");
+            return PosNegDomainFormula();
+            /*return getOperatorPrecondition( exp_quan->expr);*/
+        }
+
+        auto exp_equals = dynamic_cast<const EqualsExpression *>(expr);
+        if (exp_equals != nullptr) {
+            //NOT_IMPLEMENTED("Equality expressions are not implemented as a precondition");
+            return PosNegDomainFormula();
+        }
         NOT_IMPLEMENTED_OPERATOR;
-        /*auto exp_quan = dynamic_cast<const Quantifier *>(expr);
-        if (exp_quan != nullptr) return getOperatorPrecondition( exp_quan->expr);*/
 
         return PosNegDomainFormula();
     }
@@ -237,7 +247,33 @@ namespace KCL_rosplan {
             else return EffectDomainFormula();
         }
 
-        // TODO numerical expressions for probabilities...
+        auto nexp = dynamic_cast<const NumericConstant*>(exp);
+        if (nexp != nullptr) {
+            EffectDomainFormula eff;
+            if (pVariable->valueType->name == "bool") { // Assign true or false, values are handled by the getOperatorAssignEffects
+                PosNegDomainFormula df = toDomainFormula(pVariable, assign);
+                if (nexp->value == 0) { // false
+                    eff.del = df.pos;
+                    eff.add = df.neg;
+                }
+                else { // true
+                    eff.add = df.pos;
+                    eff.del = df.pos;
+                }
+            }
+            return eff;
+        }
+
+        // Check if probabilistic effect
+        auto bern = dynamic_cast<const BernoulliDistribution*>(exp);
+        if (bern != nullptr) {
+            return getOperatorEffects(pVariable, bern, assign);
+        }
+
+        auto disc = dynamic_cast<const DiscreteDistribution*>(exp);
+        if (disc != nullptr) {
+            return getOperatorEffects(pVariable, disc, assign);
+        }
 
         NOT_IMPLEMENTED("Unknown or unsupported operand type for the action effects.");
         return EffectDomainFormula();
@@ -437,13 +473,26 @@ namespace KCL_rosplan {
         return ret;
     }
 
-    vectorKI  RDDLUtils::getGoals(const LogicalExpression *exp, bool is_negative, std::map<std::string, std::string> &assign) {
+    vectorKI RDDLUtils::getGoals(const LogicalExpression *exp, bool is_negative, std::map<std::string, std::string> &assign) {
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> ret;
         auto conj = dynamic_cast<const Conjunction*>(exp);
         if (conj != nullptr) {
             for (auto it = conj->exprs.begin(); it != conj->exprs.end(); ++it) {
                 auto goals = getGoals(*it, is_negative, assign);
                 join(ret, goals);
+            }
+            return ret;
+        }
+
+        auto disj = dynamic_cast<const Disjunction*>(exp);
+        if (disj != nullptr) {
+            // Assuming goal of type goal = goal | expression. Only disjunction can be between goal and something else
+            for (auto it = disj->exprs.begin(); it != disj->exprs.end(); ++it) {
+                auto varname = dynamic_cast<const ParametrizedVariable*>(*it);
+                if (varname != nullptr and varname->variableName == "goal") continue;
+                auto goals = getGoals(*it, is_negative, assign);
+                join(ret, goals);
+                break;
             }
             return ret;
         }
