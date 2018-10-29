@@ -19,7 +19,8 @@
   <build_depend>glut</build_depend>
   <build_depend>rosplan_dispatch_msgs</build_depend>
   <build_depend>rosplan_knowledge_msgs</build_depend>
-	<build_depend>mongodb_store</build_depend>
+  <build_depend>mongodb_store</build_depend>
+  <build_depend>rosplan_dependencies</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
