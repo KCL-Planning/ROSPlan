@@ -51,6 +51,8 @@
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>roscpp</exec_depend>
 
+  <build_depend>flex</build_depend>
+  <build_depend>bison</build_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
