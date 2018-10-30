@@ -180,6 +180,7 @@ namespace KCL_rosplan {
         EffectDomainFormula eff_ret;
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
             if (it->first->valueType->name == "real" or it->first->valueType->name == "int") continue;
+            if (dynamic_cast<const NumericConstant*>(it->second) != nullptr) continue; // it doesn't have any action
             std::map<std::string, std::string> assign; // Replacement for each parameter of the cpd to the parameter of the action as defined in the operator header op_head
             EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign);
             join(eff_ret, eff_i);
