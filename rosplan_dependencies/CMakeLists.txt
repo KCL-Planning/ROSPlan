@@ -244,8 +244,8 @@ install(TARGETS ppddl_parser
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark cpp header files for installation
-install(DIRECTORY ppddl_parser/include ppddl_parser/src
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY ppddl_parser/include/ ppddl_parser/src/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
         PATTERN ".svn" EXCLUDE)
 
