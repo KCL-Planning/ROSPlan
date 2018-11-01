@@ -12,8 +12,8 @@ find_package(catkin REQUIRED)
 
 # Get the git submodules...
 message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET)
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET)
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 ###################################
 ## catkin specific configuration ##
@@ -92,8 +92,8 @@ install(TARGETS rddl_parser
         )
 
 ## Mark cpp header files for installation
-install(DIRECTORY rddl_parser
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY rddl_parser/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
         PATTERN ".svn" EXCLUDE
         )
@@ -135,8 +135,8 @@ install(TARGETS val
         )
 
 ## Mark cpp header files for installation
-install(DIRECTORY VAL/include
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY VAL/include/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION} # To have the same layout as the include/
         FILES_MATCHING PATTERN "*.h"
         PATTERN ".svn" EXCLUDE
         )
