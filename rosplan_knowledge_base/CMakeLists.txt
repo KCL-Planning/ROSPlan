@@ -42,8 +42,8 @@ catkin_package(
 ###########
 
 ## include_directories(include)
+include_directories(src)
 include_directories(include)
-include_directories(src/VALfiles)
 include_directories(${catkin_INCLUDE_DIRS})
 
 ## val sources
@@ -52,7 +52,7 @@ set(VAL_SOURCES
 		src/VALfiles/DebugWriteController.cpp
 		src/VALfiles/pddl+.cpp
 		src/VALfiles/ptree.cpp
-		)
+)
 
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
@@ -65,13 +65,13 @@ set(KNOWLEDGE_SOURCES
     src/RDDLTaskParser.cpp
     src/RDDLKnowledgeBase.cpp
     src/RDDLExprUtils.cpp
-        src/RDDLUtils.cpp
+    src/RDDLUtils.cpp
     src/VALVisitorOperator.cpp
 	src/VALVisitorPredicate.cpp
 	src/VALVisitorProblem.cpp
 	src/PPDDLKnowledgeBase.cpp
 	src/PPDDLParser.cpp
-		src/PPDDLUtils.cpp)
+	src/PPDDLUtils.cpp)
 
 
 ## Declare cpp executables

@@ -2,8 +2,6 @@
 // Created by Gerard Canal <gcanal@iri.upc.edu> on 30/09/18.
 //
 
-#include <rosplan_knowledge_base/PPDDLParser.h>
-
 #include "rosplan_knowledge_base/PPDDLParser.h"
 
 namespace KCL_rosplan {

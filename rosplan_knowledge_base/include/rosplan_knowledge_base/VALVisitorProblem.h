@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-#include "ptree.h"
-#include "VisitController.h"
+#include "VALfiles/ptree.h"
+#include "VALfiles/VisitController.h"
 
 #include "rosplan_knowledge_base/KnowledgeComparitor.h"
 
