@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __GRAPHCONSTRUCT
-#define __GRAPHCONSTRUCT
+#ifndef __GRAPHCONSTRUCT_1_2
+#define __GRAPHCONSTRUCT_1_2
 
 #include "instantiation.h"
 
@@ -35,7 +35,7 @@
 using std::vector;
 using std::ostream;
 
-namespace VAL {
+namespace VAL1_2 {
 class State;
 class Validator;
 };

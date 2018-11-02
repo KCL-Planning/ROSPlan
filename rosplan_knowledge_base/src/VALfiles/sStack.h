@@ -39,14 +39,14 @@
 
 */
 
-#ifndef SSTACK_H
-#define SSTACK_H
+#ifndef SSTACK_H_1_2
+#define SSTACK_H_1_2
 
 #include <deque>
 
 using std::deque;
 
-namespace VAL {
+namespace VAL1_2 {
 
 template <class T>
 class sStack : public deque<T>
@@ -78,4 +78,4 @@ public:
 
 };
 
-#endif /* SSTACK_H */
+#endif /* SSTACK_H_1_2 */

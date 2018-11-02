@@ -43,7 +43,7 @@ using std::ofstream;
 using std::ostream;
 using std::cerr;
 
-namespace VAL {
+namespace VAL1_2 {
 
 bool Verbose = false;
 ostream * report = &cout;
@@ -60,7 +60,7 @@ int PropInfo::x = 0;
 };
 
 char * current_filename;
-using namespace VAL;
+using namespace VAL1_2;
 
 namespace TIM {
 

@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __DWRITECONTROLLER
-#define __DWRITECONTROLLER
+#ifndef __DWRITECONTROLLER_1_2
+#define __DWRITECONTROLLER_1_2
 
 #include "WriteController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class DebugWriteController : public WriteController {
 protected: 

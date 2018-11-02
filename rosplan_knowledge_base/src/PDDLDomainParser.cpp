@@ -1,7 +1,7 @@
 #include "rosplan_knowledge_base/PDDLDomainParser.h"
 
 
-namespace VAL {
+namespace VAL1_2 {
 	yyFlexLexer* yfl;
     analysis* current_analysis=nullptr;
     parse_category* top_thing=nullptr;
@@ -18,7 +18,7 @@ namespace KCL_rosplan {
 	/**
 	 * parse the domain file
 	 */
-	VAL::domain* PDDLDomainParser::parseDomain(const std::string domainPath) {
+	VAL1_2::domain* PDDLDomainParser::parseDomain(const std::string domainPath) {
 		// only parse domain once
 		if(domain_parsed) return domain;
 		domain_parsed = true;
@@ -32,27 +32,27 @@ namespace KCL_rosplan {
 		current_filename = &writable[0];
 
 		// parse domain
-		VAL::current_analysis = val_analysis ;
+		VAL1_2::current_analysis = val_analysis ;
 		std::ifstream domainFile;
 		domainFile.open(domainFileName.c_str());
 		yydebug = 0;
 
-		VAL::yfl = new yyFlexLexer;
+		VAL1_2::yfl = new yyFlexLexer;
 
 		if (domainFile.bad()) {
 			ROS_ERROR("KCL: (%s) Failed to open domain file.", ros::this_node::getName().c_str());
 			line_no = 0;
-			VAL::log_error(VAL::E_FATAL,"Failed to open file");
+			VAL1_2::log_error(VAL1_2::E_FATAL,"Failed to open file");
 		} else {
 			line_no = 1;
-			VAL::yfl->switch_streams(&domainFile, &std::cout);
+			VAL1_2::yfl->switch_streams(&domainFile, &std::cout);
 			yyparse();
 
 			// domain name
-			domain = VAL::current_analysis->the_domain;
+			domain = VAL1_2::current_analysis->the_domain;
 			domain_name = domain->name;
 		}
-		delete VAL::yfl;
+		delete VAL1_2::yfl;
 		domainFile.close();
 
 		return domain;

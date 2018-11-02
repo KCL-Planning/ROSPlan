@@ -44,13 +44,13 @@
   Strathclyde Planning Group
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
-#ifndef __MAIN
-#define __MAIN
+#ifndef __MAIN_1_2
+#define __MAIN_1_2
 
 #include <iostream>
 using std::ostream;
 
-namespace VAL {
+namespace VAL1_2 {
   
 extern bool Verbose;
 extern bool ContinueAnyway;

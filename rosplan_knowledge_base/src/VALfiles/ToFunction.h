@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __TOFUNCTION
-#define __TOFUNCTION
+#ifndef __TOFUNCTION_1_2
+#define __TOFUNCTION_1_2
 
 #include <iostream>
 #include "ptree.h"

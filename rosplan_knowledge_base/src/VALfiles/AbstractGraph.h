@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __ABSTRACTGRAPH
-#define __ABSTRACTGRAPH
+#ifndef __ABSTRACTGRAPH_1_2
+#define __ABSTRACTGRAPH_1_2
 
 #include "HowAnalyser.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 
 class AbstractProposition {

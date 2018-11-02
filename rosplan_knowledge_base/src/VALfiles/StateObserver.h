@@ -24,10 +24,10 @@
  *
  ************************************************************************/
 
-#ifndef __STATEOBS
-#define __STATEOBS
+#ifndef __STATEOBS_1_2
+#define __STATEOBS_1_2
 
-namespace VAL {
+namespace VAL1_2 {
 
 class Happening;
 class EffectsRecord;

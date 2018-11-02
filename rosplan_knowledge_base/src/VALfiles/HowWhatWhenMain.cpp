@@ -32,7 +32,7 @@
 #include "AbstractGraph.h"
 
 using namespace TIM;
-using namespace VAL;
+using namespace VAL1_2;
 //using namespace Inst;
 
 

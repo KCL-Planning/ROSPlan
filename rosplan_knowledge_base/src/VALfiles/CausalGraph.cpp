@@ -33,7 +33,7 @@
 #include <set>
 
 using namespace std;
-using namespace VAL;
+using namespace VAL1_2;
 
 namespace SAS {
 

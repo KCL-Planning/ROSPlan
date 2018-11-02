@@ -26,7 +26,7 @@
 
 #include "TypedAnalyser.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 ostream & operator<<(ostream & o,const SimplePropStore * sp)
 {

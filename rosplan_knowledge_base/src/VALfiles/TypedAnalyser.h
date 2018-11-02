@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __TYPEDANALYSER
-#define __TYPEDANALYSER
+#ifndef __TYPEDANALYSER_1_2
+#define __TYPEDANALYSER_1_2
 
 #include "FuncAnalysis.h"
 
@@ -56,7 +56,7 @@ using std::pair;
  * at the outset and then creating them before going on to the Analyser phase.
  */
  
-namespace VAL {
+namespace VAL1_2 {
 
 extern TypeChecker * theTC;
 

@@ -30,7 +30,7 @@
 #include "Validator.h"
 
 
-namespace VAL {
+namespace VAL1_2 {
 
 int PreferenceMonitor::id = 0;
 std::set<int> PreferenceMonitor::done;

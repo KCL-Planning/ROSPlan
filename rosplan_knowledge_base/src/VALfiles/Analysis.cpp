@@ -52,7 +52,7 @@ extern int yydebug;
 using std::ifstream;
 using std::ofstream;
 
-namespace VAL {
+namespace VAL1_2 {
 
 parse_category* top_thing=NULL;
 
@@ -64,7 +64,7 @@ yyFlexLexer* yfl;
 };
 
 char * current_filename;
-using namespace VAL;
+using namespace VAL1_2;
 
 int main(int argc,char * argv[])
 {

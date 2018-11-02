@@ -46,8 +46,8 @@
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
  
-#ifndef __RELAXTRANSLATOR
-#define __RELAXTRANSLATOR
+#ifndef __RELAXTRANSLATOR_1_2
+#define __RELAXTRANSLATOR_1_2
 
 #include "WriteController.h"
 #include "ptree.h"
@@ -58,7 +58,7 @@
 using std::stringstream;
 using std::vector;
 
-namespace VAL {
+namespace VAL1_2 {
 
 class State;
 class Environment;

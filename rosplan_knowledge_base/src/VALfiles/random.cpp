@@ -46,7 +46,7 @@
  ----------------------------------------------------------------------------*/
 #include "random.h"
 
-namespace VAL {
+namespace VAL1_2 {
   
 NormalGen Generators::randomNumberNormGenerator = NormalGen();
 UniformGen Generators::randomNumberUniGenerator = UniformGen(0,0,1);

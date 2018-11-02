@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __PARTIALPLAN
-#define __PARTIALPLAN
+#ifndef __PARTIALPLAN_1_2
+#define __PARTIALPLAN_1_2
 
 #include "State.h"
 #include "Plan.h"

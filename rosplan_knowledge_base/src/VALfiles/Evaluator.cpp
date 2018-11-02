@@ -32,7 +32,7 @@
 #include "InstPropLinker.h"
 #include "Validator.h"
 
-using namespace VAL;
+using namespace VAL1_2;
 
 namespace Inst {
 

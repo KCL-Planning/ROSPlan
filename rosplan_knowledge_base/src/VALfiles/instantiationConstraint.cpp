@@ -39,7 +39,7 @@
 using std::ifstream;
 using std::cerr;
 
-using namespace VAL;
+using namespace VAL1_2;
 
 namespace Inst {
 

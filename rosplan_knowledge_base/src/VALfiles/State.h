@@ -50,15 +50,15 @@
 #include<set>
 using std::set;
 
-namespace VAL {
+namespace VAL1_2 {
 class Validator;
 class Happening;
 };
 
-#ifndef __STATE
-#define __STATE
+#ifndef __STATE_1_2
+#define __STATE_1_2
 
-namespace VAL {
+namespace VAL1_2 {
   
 typedef long double FEScalar;
 

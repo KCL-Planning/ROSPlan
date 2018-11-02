@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __INSTANTIATION
-#define __INSTANTIATION
+#ifndef __INSTANTIATION_1_2
+#define __INSTANTIATION_1_2
 #include <vector>
 #include <map>
 #include "FastEnvironment.h"

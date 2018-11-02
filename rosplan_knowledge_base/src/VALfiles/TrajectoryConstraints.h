@@ -24,14 +24,14 @@
  *
  ************************************************************************/
 
-#ifndef __TRAJECTORYMONITOR
-#define __TRAJECTORYMONITOR
+#ifndef __TRAJECTORYMONITOR_1_2
+#define __TRAJECTORYMONITOR_1_2
 
 #include "ptree.h"
 #include "Proposition.h"
 #include <set>
 
-namespace VAL {
+namespace VAL1_2 {
 
 class State;
 class Validator;

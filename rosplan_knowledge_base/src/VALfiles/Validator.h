@@ -54,14 +54,14 @@
 #include "Polynomial.h"
 #include "Events.h"
 
-#ifndef __VALIDATOR
-#define __VALIDATOR
+#ifndef __VALIDATOR_1_2
+#define __VALIDATOR_1_2
 #include "typecheck.h"
 #include "RepairAdvice.h"
 #include "TrajectoryConstraints.h"
 
 
-namespace VAL {
+namespace VAL1_2 {
   
 class plan;
 class TypeChecker;

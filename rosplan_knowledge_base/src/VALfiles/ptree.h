@@ -47,8 +47,8 @@
   symbol is always owned by a symbol table.
  ----------------------------------------------------------------------------*/
 
-#ifndef PTREE_H
-#define PTREE_H
+#ifndef PTREE_H_1_2
+#define PTREE_H_1_2
 
 #include <list>
 #include <memory>
@@ -72,7 +72,7 @@ using std::string;
 using std::auto_ptr;
 using std::ostream;
 
-namespace VAL {
+namespace VAL1_2 {
 
 class parse_category;
 
@@ -1838,5 +1838,5 @@ public:
 
 };
 
-#endif /* PTREE_H */
+#endif /* PTREE_H_1_2 */
 

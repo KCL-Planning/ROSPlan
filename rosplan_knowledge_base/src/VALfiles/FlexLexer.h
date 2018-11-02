@@ -1,4 +1,4 @@
-// -*-C++-*-
+grep// -*-C++-*-
 // FlexLexer.h -- define interfaces for lexical analyzer classes generated
 // by flex
 
@@ -44,9 +44,9 @@
 //	#include <FlexLexer.h>
 //	...
 
-#ifndef __FLEX_LEXER_H
+#ifndef __FLEX_LEXER_H_1_2
 // Never included before - need to define base class.
-#define __FLEX_LEXER_H
+#define __FLEX_LEXER_H_1_2
 
 #include <iostream>
 #  ifndef FLEX_STD

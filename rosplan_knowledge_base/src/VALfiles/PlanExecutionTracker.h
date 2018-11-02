@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __PET
-#define __PET
+#ifndef __PET_1_2
+#define __PET_1_2
 
 #include <map>
 
@@ -35,7 +35,7 @@
 #include "Proposition.h"
 #include "GoalHypSpace.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class ActionLinker : public VisitController {
 private:

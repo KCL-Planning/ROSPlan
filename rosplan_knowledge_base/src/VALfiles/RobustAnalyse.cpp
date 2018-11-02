@@ -52,7 +52,7 @@
  #include "random.h"
  #include "Validator.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 bool Robust;
 double RobustPNEJudder;

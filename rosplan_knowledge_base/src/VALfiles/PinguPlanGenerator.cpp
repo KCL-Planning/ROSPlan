@@ -30,7 +30,7 @@
 
 using namespace std;
 
-namespace VAL {
+namespace VAL1_2 {
 
 
   PinguPlanGen::PinguPlanGen(char * name) : VisitController(), lastAt("theStart"), count(0), pingu(0), lastMoved(0), mustDelay(true)

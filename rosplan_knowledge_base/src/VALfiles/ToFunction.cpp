@@ -34,7 +34,7 @@
 
 using std::cerr;
 
-using namespace VAL;
+using namespace VAL1_2;
 using namespace Inst;
 
 namespace SAS {

@@ -38,8 +38,8 @@
 */
 
 
-#ifndef PARSE_ERROR_H
-#define PARSE_ERROR_H
+#ifndef PARSE_ERROR_H_1_2
+#define PARSE_ERROR_H_1_2
 
 #include<string>
 #include<cstdio>
@@ -54,7 +54,7 @@ using std::cout;
 extern int line_no;              // Line number global
 extern char* current_filename;   // file global
 
-namespace VAL {
+namespace VAL1_2 {
 
 enum error_severity {E_WARNING,E_FATAL};
 
@@ -140,4 +140,4 @@ public:
 
 };
 
-#endif /* PARSE_ERROR_H */
+#endif /* PARSE_ERROR_H_1_2 */

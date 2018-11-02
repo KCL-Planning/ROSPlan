@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __VISITORCONTROLLER
-#define __VISITORCONTROLLER
+#ifndef __VISITORCONTROLLER_1_2
+#define __VISITORCONTROLLER_1_2
 
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 struct VisitController {
 	virtual ~VisitController() {};

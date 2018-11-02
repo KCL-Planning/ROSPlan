@@ -51,7 +51,7 @@
 #include "FuncExp.h"
 #include "Utils.h"
 
-namespace VAL {
+namespace VAL1_2 {
   
 void replaceSubStrings(string & s,string s1,string s2)
 {

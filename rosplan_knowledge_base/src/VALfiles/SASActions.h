@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __SASACTION
-#define __SASACTION
+#ifndef __SASACTION_1_2
+#define __SASACTION_1_2
 
 #include "ToFunction.h"
 #include <vector>

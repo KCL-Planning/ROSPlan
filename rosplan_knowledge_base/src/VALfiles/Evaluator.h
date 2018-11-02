@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __EVALUATOR
-#define __EVALUATOR
+#ifndef __EVALUATOR_1_2
+#define __EVALUATOR_1_2
 #include "VisitController.h"
 #include <map>
 #include <vector>
@@ -33,7 +33,7 @@
 #include "ptree.h"
 #include "Environment.h"
 
-namespace VAL {
+namespace VAL1_2 {
 class State;
 class FastEnvironment;
 class Validator;

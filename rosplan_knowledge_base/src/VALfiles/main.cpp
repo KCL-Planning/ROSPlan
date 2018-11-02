@@ -73,7 +73,7 @@ using std::copy;
 extern int yyparse();
 extern int yydebug;
 
-namespace VAL {
+namespace VAL1_2 {
   
 parse_category* top_thing = NULL;
 
@@ -98,7 +98,7 @@ char * current_filename;
 
 typedef map<double,vector<string> > Ranking;
 
-using namespace VAL;
+using namespace VAL1_2;
 
 void usage()
 {

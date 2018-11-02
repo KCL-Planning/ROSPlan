@@ -27,7 +27,7 @@
 #include <iostream>
 #include "DebugWriteController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 void DebugWriteController::write_symbol(ostream & o,const symbol * p)
 {

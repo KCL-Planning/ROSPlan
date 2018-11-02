@@ -42,7 +42,7 @@ using std::inserter;
 
 namespace TIM {
 
-using namespace VAL;
+using namespace VAL1_2;
 
 
 ostream & operator<<(ostream & o, const Property & p)

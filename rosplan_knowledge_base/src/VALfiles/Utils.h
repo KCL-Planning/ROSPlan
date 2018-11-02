@@ -47,13 +47,13 @@
 #include <sstream>
 #include <string>
 
-#ifndef __VALUTILS
-#define __VALUTILS
+#ifndef __VALUTILS_1_2
+#define __VALUTILS_1_2
 
 using std::ostringstream;
 using std::string;
 
-namespace VAL {
+namespace VAL1_2 {
   
 template <typename T>
 struct ToStringer {
