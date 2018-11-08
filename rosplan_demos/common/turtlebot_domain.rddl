@@ -1,0 +1,101 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// A domain for turtlebot exploration, demo for ROSPlan.
+//
+// Author: Gerard Canal (gcanal@iri.upc.edu)
+// 
+// Based on the demo domain for the turtlebot.
+// Thanks to Florian Geißer, Thomas Keller and Scott Sanner for the help.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
+domain turtlebot_domain {
+    
+    types {
+        waypoint: object;
+        robot: object;
+    };
+
+    pvariables {
+        // Action costs and penalties
+        COST_MOVE(robot):  {non-fluent, real, default = -5};
+        VISIT_WP_REWARD:   {non-fluent, real, default = 7};
+
+        // Non-fluents
+        DOCK_AT(waypoint): { non-fluent, bool, default = false };
+
+
+        // State fluents
+        robot_at(robot, waypoint): { state-fluent, bool, default = false };
+        visited(waypoint): { state-fluent, bool, default = false };
+        undocked(robot): { state-fluent, bool, default = false };
+        docked(robot): { state-fluent, bool, default = false };
+        localised(robot): { state-fluent, bool, default = false };
+
+        // Action fluents
+        goto_waypoint(robot, waypoint, waypoint): { action-fluent, bool, default = false }; // robot from to
+        localise(robot): { action-fluent, bool, default = false };
+        dock(robot, waypoint): { action-fluent, bool, default = false };
+        undock(robot, waypoint): { action-fluent, bool, default = false };
+    };
+
+    cpfs {
+
+        robot_at'(?r, ?w) = if (exists_{?w1: waypoint} (goto_waypoint(?r, ?w1, ?w))) then true 
+                            else if (exists_{?w1: waypoint} (goto_waypoint(?r, ?w, ?w1))) then false
+                            else robot_at(?r, ?w);
+
+        visited'(?w) = visited(?w) | (exists_{?r:robot, ?w1: waypoint} (goto_waypoint(?r, ?w1, ?w)));
+        //visited'(?w) = visited(?w) | exists_{?r:robot} (robot_at(?r, ?w));
+
+        undocked'(?r) = undocked(?r) ^ ~(exists_{?w: waypoint} (dock(?r, ?w))) | docked(?r) ^ (exists_{?w: waypoint} (undock(?r, ?w)));
+
+        docked'(?r) = docked(?r) ^ ~(exists_{?w: waypoint} (undock(?r, ?w))) | undocked(?r) ^ (exists_{?w: waypoint} (dock(?r, ?w)));
+
+        localised'(?r) = localised(?r) | localise(?r);
+
+    };
+
+    // Goal is to visit all the waypoints, so we get reward for them, but moving has a cost!
+    reward = [sum_{?r: robot, ?wf: waypoint, ?wt: waypoint} [COST_MOVE(?r)*goto_waypoint(?r, ?wf, ?wt)]] +
+             [sum_{?r:robot, ?w: waypoint} [VISIT_WP_REWARD*(exists_{?wf: waypoint} (goto_waypoint(?r, ?wf, ?w)))]];
+
+
+    //state-action-constraints {
+    action-preconditions {
+
+
+        // A robot must be undocked, localised and in a position to move to another
+        forall_{?r: robot, ?wf: waypoint, ?wt: waypoint} [goto_waypoint(?r, ?wf, ?wt) => (robot_at(?r, ?wf) ^ localised(?r) ^ undocked(?r))];
+        
+        // A robot can not move to its current position
+        //forall_{?r: robot, ?wf: waypoint, ?wt: waypoint} [goto_waypoint(?r, ?wf, ?wt) => (?wf ~= ?wt)];
+
+        // A robot can not be in two places at the same time
+        forall_{?r: robot, ?w1: waypoint, ?w2: waypoint} [?w1 == ?w2 | (robot_at(?r, ?w1) => ~robot_at(?r, ?w2))];
+
+        // Robot must be undocked to localise
+        forall_{?r: robot} [localise(?r) => undocked(?r)];
+
+        // Robot must be docked to undock and vice-versa -> note: as we're using ?w here, we must enforce the DOCK_AT to avoid instantiations of dock woth wrong waypoints
+        forall_{?r: robot, ?w: waypoint} [dock(?r, ?w) => (undocked(?r) ^ DOCK_AT(?w) ^ robot_at(?r, ?w))];
+        forall_{?r: robot, ?w: waypoint} [undock(?r, ?w) => (docked(?r) ^ DOCK_AT(?w) ^ robot_at(?r, ?w))];
+
+        // Max 1 action
+        forall_{?r: robot} [
+            (localise(?r) + 
+            (sum_{?wf: waypoint, ?wt: waypoint} [goto_waypoint(?r, ?wf, ?wt)]) +    
+            (sum_{?wa: waypoint} [dock(?r, ?wa)]) + 
+            (sum_{?wb: waypoint} [undock(?r, ?wb)]) ) <= 1];
+
+
+    };
+
+    state-invariants {
+
+        // Robot can't be docked and undocked at the same time
+        forall_{?r: robot} [docked(?r) <=> ~undocked(?r)];
+
+    };
+}

@@ -147,6 +147,7 @@ namespace KCL_rosplan {
 			// finish dispatch and replan
 			if(replan_requested) return false;
 		}
+		ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
 		return true;
 	}
 

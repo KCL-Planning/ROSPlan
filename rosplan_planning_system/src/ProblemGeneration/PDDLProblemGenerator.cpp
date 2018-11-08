@@ -1,66 +1,10 @@
+
+#include <rosplan_planning_system/ProblemGeneration/PDDLProblemGenerator.h>
+
 #include "rosplan_planning_system/ProblemGeneration/PDDLProblemGenerator.h"
 
 namespace KCL_rosplan {
 
-	/**
-	 * generates a PDDL problem file.
-	 * This file is later read by the planner.
-	 */
-	void PDDLProblemGenerator::generatePDDLProblemFile(std::string &problemPath) {
-
-		std::stringstream ss;
-
-		ss << "/" << knowledge_base << "/domain/name";
-		domain_name_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/domain/types";
-		domain_type_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/domain/predicates";
-		domain_predicate_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/domain/functions";
-		domain_function_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/instances";
-		state_instance_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/propositions";
-		state_proposition_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/functions";
-		state_function_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/timed_knowledge";
-		state_timed_knowledge_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/goals";
-		state_goal_service = ss.str();
-		ss.str("");
-
-		ss << "/" << knowledge_base << "/state/metric";
-		state_metric_service = ss.str();
-		ss.str("");
-
-		std::ofstream pFile;
-		pFile.open((problemPath).c_str());
-
-		makeHeader(pFile);
-		makeInitialState(pFile);
-		makeGoals(pFile);
-        makeMetric(pFile);
-
-        // add end of problem file
-        pFile << ")" << std::endl;
-	}
 
 	/*--------*/
 	/* header */
@@ -399,5 +343,16 @@ namespace KCL_rosplan {
 			pFile << ")";
 			depth--;
 		}
+	}
+
+	void PDDLProblemGenerator::makeProblem(std::ofstream &pFile) {
+		makeHeader(pFile);
+		makeInitialState(pFile);
+		makeGoals(pFile);
+		makeMetric(pFile);
+
+		// add end of problem file
+		pFile << ")" << std::endl;
 	};
+
 } // close namespace
