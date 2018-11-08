@@ -17,6 +17,7 @@ add_message_files(
   FILES
   DomainFormula.msg
   DomainOperator.msg
+  ProbabilisticEffect.msg
   DomainAssignment.msg
   DomainInequality.msg
   ExprBase.msg
@@ -43,6 +44,9 @@ add_service_files(
   AddWaypoint.srv
   RemoveWaypoint.srv
   GenerateProblemService.srv
+  SetFloat.srv
+  SetInt.srv
+  GetRDDLParams.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

@@ -1,3 +1,6 @@
+#ifndef KCL_knowledgebase
+#define KCL_knowledgebase
+
 #include <ros/ros.h>
 #include <vector>
 #include <iostream>
@@ -23,20 +26,39 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
 #include "KnowledgeComparitor.h"
-#include "DomainParser.h"
-#include "ProblemParser.h"
-#include "VALVisitorOperator.h"
-#include "VALVisitorPredicate.h"
-#include "VALVisitorProblem.h"
 
-#ifndef KCL_knowledgebase
-#define KCL_knowledgebase
 
 namespace KCL_rosplan {
 
 	class KnowledgeBase
 	{
 	private:
+        ros::ServiceServer domainServer1; // getDomainName
+        ros::ServiceServer domainServer2; // getTypes
+        ros::ServiceServer domainServer3; // getPredicates
+        ros::ServiceServer domainServer4; // getFunctionPredicates
+        ros::ServiceServer domainServer5; // getOperators
+        ros::ServiceServer domainServer6; // getOperatorDetails
+        ros::ServiceServer domainServer7; // getPredicateDetails
+
+        // query knowledge
+        ros::ServiceServer queryServer; // queryKnowledge
+
+        // update knowledge
+        ros::ServiceServer updateServer0; // clearKnowledge
+        ros::ServiceServer updateServer1; // updateKnowledge
+        ros::ServiceServer updateServer2; // updateKnowledgeArray
+        ros::ServiceServer updateServer3; // updateKnowledgeConstraintsOneOf
+
+        // fetch knowledge
+        ros::ServiceServer stateServer1; // getInstances
+        ros::ServiceServer stateServer2; // getPropositions
+        ros::ServiceServer stateServer3; // getFunctions
+        ros::ServiceServer stateServer4; // getTimedKnowledge
+        ros::ServiceServer stateServer5; // getGoals
+        ros::ServiceServer stateServer6; // getMetric
+
+	protected:
 
 		/* adding items to the knowledge base */
 		void addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg);
@@ -48,13 +70,6 @@ namespace KCL_rosplan {
 		void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
-	public:
-
-		/* parsing domain using VAL */
-		DomainParser domain_parser;
-
-        /* initial state from problem file using VAL */
-        ProblemParser problem_parser;
 
 		/* PDDL model (current state) */
 		std::map<std::string, std::vector<std::string> > model_constants;
@@ -69,10 +84,20 @@ namespace KCL_rosplan {
 
 		/* conditional planning */
 		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
-		bool use_unknowns;
+
+        ros::NodeHandle _nh;
+    public:
+
+		KnowledgeBase(ros::NodeHandle& n);
+		~KnowledgeBase() = default;
+
+        bool use_unknowns;
+
+		/* parse domain and probelm files */
+		virtual void parseDomain(const std::string& domain_file_path, const std::string& problem_file_path) =0;
 
         /* add the initial state to the knowledge base */
-        void addInitialState(VAL::domain* domain, VAL::problem* problem);
+        virtual void addInitialState() =0;
 
 		/* service methods for querying the model */
 		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
@@ -91,13 +116,13 @@ namespace KCL_rosplan {
 		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
 
 		/* service methods for fetching the domain details */
-		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res);
-		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res);
-		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getFunctionPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res);
-		bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res);
-		bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res);
-		bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res);
+		virtual bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) =0;
+		virtual bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) =0;
+		virtual bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) =0;
+		virtual bool getFunctionPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) =0;
+		virtual bool getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) =0;
+		virtual bool getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) =0;
+		virtual bool getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) =0;
 
 		/* service methods for conditional planning */
 		bool updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);

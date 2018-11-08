@@ -13,6 +13,7 @@ rosplan_knowledge_msgs/DomainFormula[] at_end_add_effects
 rosplan_knowledge_msgs/DomainFormula[] at_end_del_effects
 rosplan_knowledge_msgs/DomainAssignment[] at_start_assign_effects
 rosplan_knowledge_msgs/DomainAssignment[] at_end_assign_effects
+rosplan_knowledge_msgs/ProbabilisticEffect[] probabilistic_effects
 
 # (4) conditions
 rosplan_knowledge_msgs/DomainFormula[] at_start_simple_condition

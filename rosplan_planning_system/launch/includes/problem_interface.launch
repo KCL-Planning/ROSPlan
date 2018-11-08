@@ -9,7 +9,6 @@
 	<arg name="problem_topic"    default="problem_instance" />
 	<arg name="planning_language" default="PDDL" /> <!-- Can be RDDL or PDDL -->
 
-
 	<!-- problem generation -->
 	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="problemInterface" respawn="false" output="screen">
 		<param name="knowledge_base" value="$(arg knowledge_base)" />

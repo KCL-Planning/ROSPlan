@@ -1,6 +1,8 @@
 [submodule "rosplan_dependencies/VAL"]
 	path = rosplan_dependencies/VAL
 	url = https://github.com/KCL-Planning/VAL.git
+	ignore = dirty
 [submodule "rosplan_dependencies/rddl_parser"]
 	path = rosplan_dependencies/rddl_parser
 	url = https://github.com/gerardcanal/rddl_parser.git
+	ignore = dirty
