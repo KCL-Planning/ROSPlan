@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 				ROS_WARN("KCL: (%s) Unexpected planning language %s. Please specify the planning language as either \"PDDL\" or \"RDDL\".",
 						  ros::this_node::getName().c_str(), planning_lang.c_str());
 			}
-		} // If roblem path is specified, it'll overwrite the setting from the planning_lang parameter.
+		} // If problem path is specified, it'll overwrite the setting from the planning_lang parameter.
         if (not problem_path.empty()) {
             std::string extension = (problem_path.size() > 5) ? problem_path.substr(problem_path.find_last_of('.')) : "";
             if (extension == ".pddl" or extension == ".ppddl") pg_type = KCL_rosplan::ProblemGeneratorFactory::PDDL;
