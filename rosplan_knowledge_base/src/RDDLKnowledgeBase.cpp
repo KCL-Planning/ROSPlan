@@ -402,13 +402,11 @@ namespace KCL_rosplan {
         // remove domain attribute (predicate) from knowledge base
         for (auto pit = model_facts.begin(); pit!=model_facts.end(); ++pit) {
             if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-                ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(),
-                         msg.attribute_name.c_str());
+                ROS_INFO("KCL: (%s) Setting fact (%s) is_negative=%i", ros::this_node::getName().c_str(),
+                         msg.attribute_name.c_str(), (1 - pit->is_negative));
                 pit->is_negative = 1 - pit->is_negative; // Negate attribute
                 break;
             }
         }
     }
-
-
 }
