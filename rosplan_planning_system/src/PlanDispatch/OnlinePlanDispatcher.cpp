@@ -104,6 +104,7 @@ namespace KCL_rosplan {
         ippcserver.start_round();
         float planning_result;
         ros::Rate loop_rate(10);
+        ros::Duration total_planning_time(0);
 
         // Loop over the horizon
         for (int horizon = 0; horizon < srvparams.response.horizon; ++horizon) {
@@ -124,7 +125,9 @@ namespace KCL_rosplan {
             // Get next action
             std::string action;
             try {
+                ros::Time start = ros::Time::now();
                 action = ippcserver.get_action(srv.response.attributes, planning_result);
+                total_planning_time += ros::Time::now()-start;
             }
             catch (std::runtime_error e) {
                 ROS_ERROR("KCL: (%s) %s", ros::this_node::getName().c_str(), e.what());
@@ -152,6 +155,7 @@ namespace KCL_rosplan {
         ippcserver.end_session();
 
         ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
+        ROS_INFO("KCL: (%s) Total planning time: %f seconds", ros::this_node::getName().c_str(), total_planning_time.toSec());
         return true;
     }
 
