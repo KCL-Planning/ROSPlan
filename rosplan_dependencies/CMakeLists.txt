@@ -54,7 +54,7 @@ endif(LBITS EQUAL 64)
 SET (RDDL_CMAKE_CXX_FLAGS "${RDDL_CMAKE_CXX_FLAGS} -g -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -std=c++11")
 
 # Lexer and parser
-find_package(BISON REQUIRED)
+find_package(BISON 3.0.4 REQUIRED)
 find_package(FLEX REQUIRED)
 
 BISON_TARGET(RDDL_PARSER rddl_parser/parser.ypp ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cc COMPILE_FLAGS -d)
