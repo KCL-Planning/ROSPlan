@@ -173,7 +173,7 @@ namespace KCL_rosplan {
         rosplan_knowledge_msgs::GetDomainAttributeService domainAttrSrv;
         rosplan_knowledge_msgs::GetDomainAttributeService domainFunSrv;
         if (!getDomainPropsClient.call(domainAttrSrv) or !getDomainFuncsClient.call(domainFunSrv)) {
-            ROS_ERROR("KCL: (rDDLProblemGenerator) Failed to call service %s", domain_predicate_service.c_str());
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", domain_predicate_service.c_str());
         } else {
             for (auto it = domainAttrSrv.response.items.begin(); it != domainAttrSrv.response.items.end(); ++it) {
                 pred_funcs.push_back(it->name);
