@@ -183,7 +183,9 @@ namespace KCL_rosplan {
             std::map<std::string, std::string> assign; // Replacement for each parameter of the cpd to the parameter of the action as defined in the operator header op_head
             bool action_found = false;
             EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign, action_found);
-            if (not action_found) continue;
+            if (not action_found and op_head.name != "exogenous") { // If an action fluent was found, it will return empty lists so it means it was an exogenous event.
+                continue;
+            }
             join(eff_ret, eff_i);
         }
         return eff_ret;
