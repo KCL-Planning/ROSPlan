@@ -152,7 +152,20 @@ namespace KCL_rosplan {
                          it != op_srv.response.op.at_end_assign_effects.end(); ++it) {
                         found_fluents.insert(it->LHS.name);
                     }
-
+                    for (size_t i = 0; i < op_srv.response.op.probabilistic_effects.size(); ++i) {
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].add_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].add_effects.end(); ++it) {
+                            found_fluents.insert(it->name);
+                        }
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].del_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].del_effects.end(); ++it) {
+                            found_fluents.insert(it->name);
+                        }
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].assign_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].assign_effects.end(); ++it) {
+                            found_fluents.insert(it->LHS.name);
+                        }
+                    }
                 }
             }
             // Check if the predicate appears in any of the effect lists
