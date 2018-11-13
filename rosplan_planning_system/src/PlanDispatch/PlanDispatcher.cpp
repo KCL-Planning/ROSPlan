@@ -189,6 +189,7 @@ namespace KCL_rosplan {
         }
         if (goal.response.attributes.empty()) return false;
         rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+        querySrv.request.knowledge = goal.response.attributes;
         if (not queryKnowledgeClient.call(querySrv)) {
             ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
             return false;
