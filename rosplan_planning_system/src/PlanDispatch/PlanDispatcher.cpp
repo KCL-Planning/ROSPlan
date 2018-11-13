@@ -87,7 +87,7 @@ namespace KCL_rosplan {
         reset();
         res.success = success;
         res.goal_achieved = goalAchieved();
-        return success;
+        return true;
     }
 
     /**
