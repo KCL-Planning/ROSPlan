@@ -104,6 +104,13 @@ namespace KCL_rosplan {
 
             res.operators.push_back(formula);
         }
+
+        // Add exogenous operator
+        rosplan_knowledge_msgs::DomainFormula formula;
+        formula.name = "exogenous";
+        // FIXME parameters?
+        res.operators.push_back(formula);
+
         return true;
     }
 
@@ -134,6 +141,17 @@ namespace KCL_rosplan {
             // Compute assign effects
             res.op.at_end_assign_effects = RDDLUtils::getOperatorAssignEffects(res.op.formula,
                                                                                        domain_parser.rddlTask->CPFDefinitions);
+            return true;
+        }
+        if (req.name == "exogenous") {
+            // operator name
+            res.op.formula.name = req.name;
+
+            // Compute effects
+            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            res.op.at_end_add_effects = eff.add;
+            res.op.at_end_del_effects = eff.del;
+            res.op.probabilistic_effects = eff.prob;
             return true;
         }
         return false;
