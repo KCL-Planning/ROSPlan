@@ -511,6 +511,7 @@ namespace KCL_rosplan {
             rosplan_knowledge_msgs::KnowledgeItem ki;
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
             ki.attribute_name = exp_var->variableName;
+            ki.is_negative = is_negative;
             for (auto pit = exp_var->params.begin(); pit != exp_var->params.end(); ++pit) {
                 diagnostic_msgs::KeyValue param;
 

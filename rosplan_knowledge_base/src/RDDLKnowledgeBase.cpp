@@ -167,7 +167,7 @@ namespace KCL_rosplan {
         loadMetric(); // model_metric;
 
         // See if there is a goal defined
-        model_goals = RDDLUtils::getGoals(domain_parser.rddlTask->CPFDefinitions);
+        //model_goals = RDDLUtils::getGoals(domain_parser.rddlTask->CPFDefinitions);
 
         _horizon = domain_parser.rddlTask->horizon;
         _discount_factor = domain_parser.rddlTask->discountFactor;
