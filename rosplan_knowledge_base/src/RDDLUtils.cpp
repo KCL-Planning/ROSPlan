@@ -290,7 +290,7 @@ namespace KCL_rosplan {
         //       - else -> add ~predicate if the condition is 1 (so if condition having the action fluent is false, then predicate is true means a negative effect)
 
         EffectDomainFormula effects = getOperatorEffects(op_head, pVariable, exp->condition, assign, action_found); // Checks if the condition has some implications on the effects of the operator
-        if ((effects.add.size() + effects.add.size() + effects.prob.size()) == 0) return effects; // If not found ignore the rest!
+
         EffectDomainFormula ret = effects;
 
         // Check if probabilistic effect
