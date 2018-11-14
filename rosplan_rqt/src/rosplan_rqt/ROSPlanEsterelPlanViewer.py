@@ -19,13 +19,16 @@ from rosplan_knowledge_msgs.msg import *
 from python_qt_binding import loadUi, QT_BINDING_VERSION
 from python_qt_binding.QtCore import Qt, QUrl, pyqtSignal, QRectF, QByteArray
 from python_qt_binding.QtSvg import QGraphicsSvgItem
-from python_qt_binding.QtWebKit import QGraphicsWebView
 
 if QT_BINDING_VERSION.startswith('4'):
     from python_qt_binding.QtGui import  QWidget, QGraphicsScene, QGraphicsItem, QGraphicsEllipseItem
     from python_qt_binding.QtSvg import  QGraphicsSvgItem, QSvgRenderer
+    from python_qt_binding.QtWebKit import QGraphicsWebView
 else:
     from python_qt_binding.QtWidgets import QWidget
+    from python_qt_binding.QtWebKitWidgets import QGraphicsWebView
+    from python_qt_binding.QtWidgets import QGraphicsScene
+    from python_qt_binding.QtSvg import QSvgRenderer
 
 class EsterelPlanViewerWidget(QWidget):
 
