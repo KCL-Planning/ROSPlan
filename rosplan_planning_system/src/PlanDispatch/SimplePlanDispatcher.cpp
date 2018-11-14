@@ -88,11 +88,18 @@ namespace KCL_rosplan {
 
 			} else {
 
+			    std:: string params = "(";
+			    for (size_t i = 0; i < currentMessage.parameters.size(); ++i) {
+			        if (i > 0) params += ", ";
+			        params += currentMessage.parameters[i].value;
+			    }
+			    params += ")";
 				// dispatch action
-				ROS_INFO("KCL: (%s) Dispatching action [%i, %s, %f, %f]",
+				ROS_INFO("KCL: (%s) Dispatching action [%i, %s%s, %f, %f]",
 						ros::this_node::getName().c_str(), 
 						currentMessage.action_id,
 						currentMessage.name.c_str(),
+						params.c_str(),
 						(currentMessage.dispatch_time+planStartTime-missionStartTime),
 						currentMessage.duration);
 
