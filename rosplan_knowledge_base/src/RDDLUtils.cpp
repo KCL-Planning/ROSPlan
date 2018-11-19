@@ -330,9 +330,12 @@ namespace KCL_rosplan {
         auto iffalse = dynamic_cast<const NumericConstant*>(exp->valueIfFalse);
         auto elseif = dynamic_cast<const IfThenElseExpression*>(exp->valueIfFalse);
         if (iffalse != nullptr) { // We have a true/False value
-            EffectDomainFormula cpy = effects;
-            if (iffalse->value == 1)  negate(cpy); // Negate the value
-            join(ret, cpy);
+            if (iffalse->value == 1)  {
+                EffectDomainFormula cpy = effects;
+                negate(cpy); // Negate the value
+                join(ret, cpy);
+            }
+
         }
         else if (elseif != nullptr) { // Elseif is identical to an if
             EffectDomainFormula elseif_result = getOperatorEffects(op_head, pVariable, elseif, assign, action_found);
