@@ -13,6 +13,7 @@
 	<run_depend>rqt_gui</run_depend>
 	<run_depend>rqt_gui_py</run_depend>
 	<run_depend>std_msgs</run_depend>
+	<run_depend>rqt_graph</run_depend>
 
 	<export>
 		<rqt_gui plugin="${prefix}/plugin.xml"/>
