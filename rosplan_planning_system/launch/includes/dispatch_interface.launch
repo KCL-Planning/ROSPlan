@@ -7,6 +7,8 @@
 	<arg name="plan_topic"               default="/rosplan_parsing_interface/complete_plan" />
 	<arg name="action_dispatch_topic"    default="action_dispatch" />
 	<arg name="action_feedback_topic"    default="action_feedback" />
+	<!-- visualize edges with colors: interference edge, conditional edge, etc -->
+	<arg name="display_edge_type"        default="false" />
 
 
 	<!-- plan dispatching -->
@@ -15,6 +17,7 @@
 		<param name="plan_topic"            value="$(arg plan_topic)" />
 		<param name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
 		<param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
+		<param name="display_edge_type"     value="$(arg display_edge_type)" />
 	</node>
 
 </launch>
