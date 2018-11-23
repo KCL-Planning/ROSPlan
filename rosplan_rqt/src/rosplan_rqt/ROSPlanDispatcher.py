@@ -44,9 +44,11 @@ class PlanViewWidget(QWidget):
         loadUi(ui_file, self)
         self.setObjectName('ROSPlanDispatcherUI')
 
+        rospy.loginfo('Waiting for rosplan_knowledge_base services to become available (5 sec timeout)')
+
         # populate goal combo boxes
-        rospy.wait_for_service('rosplan_knowledge_base/domain/predicates')
         try:
+            rospy.wait_for_service('rosplan_knowledge_base/domain/predicates', 5.0)
             predicates_client = rospy.ServiceProxy('rosplan_knowledge_base/domain/predicates', GetDomainAttributeService)
             resp = predicates_client()
             for pred in resp.items:
