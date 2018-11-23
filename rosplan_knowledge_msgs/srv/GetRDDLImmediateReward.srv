@@ -1,0 +1,3 @@
+std_msgs/String[] action # Instantiated actions in the last timestep (i.e. goto_Waypoint(kenny, printer)
+---
+float64 reward
