@@ -1,5 +1,6 @@
 ROSPlan Framework
 =================
+[![Build Status](https://travis-ci.com/KCL-Planning/ROSPlan.svg?branch=master)](https://travis-ci.com/KCL-Planning/ROSPlan)
 
 The main ROSPlan website and documentation is available here:
 http://kcl-planning.github.io/ROSPlan/

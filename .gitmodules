@@ -5,7 +5,7 @@
 [submodule "rosplan_dependencies/rddl_parser"]
 	path = rosplan_dependencies/rddl_parser
 	url = https://github.com/gerardcanal/rddl_parser.git
-    ignore = dirty
+  ignore = dirty
 [submodule "rosplan_dependencies/rddlsim"]
 	path = rosplan_dependencies/rddlsim
 	url = https://github.com/ssanner/rddlsim.git
@@ -15,4 +15,3 @@
 	url = https://github.com/gerardcanal/PPDDL_determinization.git
 	branch = stable
 	ignore = dirty
-

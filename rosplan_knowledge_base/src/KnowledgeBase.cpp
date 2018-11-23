@@ -584,7 +584,7 @@ int main(int argc, char **argv) {
         ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
     }
     else {
-        ROS_ERROR("KCL: (%s) Unexpected domain file extension %s", ros::this_node::getName().c_str(), extension.c_str());
+        ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
         ros::shutdown();
     }
 
