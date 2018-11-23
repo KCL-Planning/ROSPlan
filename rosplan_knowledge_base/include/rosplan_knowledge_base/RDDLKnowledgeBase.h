@@ -25,6 +25,7 @@
 #include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/GetRDDLParams.h"
+#include "rosplan_knowledge_msgs/GetRDDLImmediateReward.h"
 #include "rosplan_knowledge_msgs/SetFloat.h"
 #include "rosplan_knowledge_msgs/SetInt.h"
 
@@ -73,14 +74,16 @@ namespace KCL_rosplan {
 		ros::ServiceServer _setRDDLDiscountFactorSrv;
 		ros::ServiceServer _setRDDLHorizonSrv;
 		ros::ServiceServer _setRDDLMaxNonDefSrv;
+		ros::ServiceServer _setImmediateRewardsSrv;
 
 		bool getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req, rosplan_knowledge_msgs::GetRDDLParams::Response &res);
 		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
 		bool setRDDLHorizon(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 		bool setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
+		bool computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res);
         void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) override;
 	public:
-		RDDLKnowledgeBase(ros::NodeHandle& n) ;
+		RDDLKnowledgeBase(ros::NodeHandle& n);
 		~RDDLKnowledgeBase() = default;
 
 

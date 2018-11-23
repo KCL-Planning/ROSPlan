@@ -9,6 +9,7 @@
 #include "rosplan_dependencies/ippc_server.h"
 #include <rosplan_knowledge_msgs/GetAttributeService.h>
 #include <rosplan_knowledge_msgs/GetRDDLParams.h>
+#include <rosplan_knowledge_msgs/GetRDDLImmediateReward.h>
 #include <regex>
 
 namespace KCL_rosplan
@@ -22,10 +23,12 @@ namespace KCL_rosplan
         ros::ServiceClient queryPropositionsClient;
         ros::ServiceClient get_rddl_params;
         ros::ServiceClient get_planner_params;
+        ros::ServiceClient get_immediate_reward;
 
         /* current action to dispatch */
         int current_action;
         int server_port_;
+        bool compute_rewards_;
 
         ros::Publisher plan_publisher;
 

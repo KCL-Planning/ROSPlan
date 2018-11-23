@@ -13,6 +13,7 @@ namespace KCL_rosplan {
         // get port
         server_port_ = 3234;
         node_handle->getParam("ippc_server_port", server_port_);
+        node_handle->param("compute_rewards", compute_rewards_, false);
 
         // knowledge base services
         std::stringstream ss;
@@ -22,6 +23,10 @@ namespace KCL_rosplan {
 
         ss << "/" << kb_ << "/state/rddl_parameters";
         get_rddl_params = node_handle->serviceClient<rosplan_knowledge_msgs::GetRDDLParams>(ss.str());
+        ss.str("");
+
+        ss << "/" << kb_ << "/state/get_immediate_reward";
+        get_immediate_reward = node_handle->serviceClient<rosplan_knowledge_msgs::GetRDDLImmediateReward>(ss.str());
         ss.str("");
 
         get_planner_params =  node_handle->serviceClient<rosplan_dispatch_msgs::GetPlanningParams>("/rosplan_planner_interface/get_planning_params");
@@ -105,6 +110,9 @@ namespace KCL_rosplan {
         float planning_result;
         ros::Rate loop_rate(10);
         ros::Duration total_planning_time(0);
+        std::string action; // Action name
+        bool first_action = true; // To set reward 0 at the first planning round
+        std::regex commas (",(\\S)"); // Matches commas without a space
 
         // Loop over the horizon
         for (int horizon = 0; horizon < srvparams.response.horizon; ++horizon) {
@@ -122,11 +130,25 @@ namespace KCL_rosplan {
             rosplan_knowledge_msgs::GetAttributeService srv;
             if (not queryPropositionsClient.call(srv)) ROS_ERROR("KCL: (%s) Failed to call service to get current state.", ros::this_node::getName().c_str());
 
-            // Get next action
-            std::string action;
             try {
                 ros::Time start = ros::Time::now();
-                action = ippcserver.get_action(srv.response.attributes, planning_result);
+                double reward = 0;
+                if (compute_rewards_ and not first_action) {
+                    rosplan_knowledge_msgs::GetRDDLImmediateReward rwd_srv;
+                    if (action.empty()) action = "noop";
+                    std::istringstream ss(action);
+                    std::string a;
+                    while (std::getline(ss, a, ';')) {
+                        std_msgs::String msg;
+                        std::regex_replace (std::back_inserter(msg.data), a.begin(), a.end(), commas, ", $1"); // Adds a space after the commas for the param list. Needed for the reward computation
+                        // Note: \S matches the first letter of the parameter, so we add it back again
+                        rwd_srv.request.action.push_back(msg);
+                    }
+                    if (not get_immediate_reward.call(rwd_srv)) ROS_ERROR("KCL: (%s) Failed to call service to get immediate reward.", ros::this_node::getName().c_str());
+                    else reward = rwd_srv.response.reward;
+                }
+                else first_action = false;
+                action = ippcserver.get_action(srv.response.attributes, planning_result, reward);
                 total_planning_time += ros::Time::now()-start;
             }
             catch (std::runtime_error e) {
