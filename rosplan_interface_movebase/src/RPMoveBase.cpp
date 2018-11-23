@@ -18,7 +18,7 @@ namespace KCL_rosplan {
 		std::string wpID;
 		bool found = false;
 		for(size_t i=0; i<msg->parameters.size(); i++) {
-			if(0==msg->parameters[i].key.compare("to")) {
+			if(0==msg->parameters[i].key.compare("to") or 0==msg->parameters[i].key.compare("w1")) {
 				wpID = msg->parameters[i].value;
 				found = true;
 			}
