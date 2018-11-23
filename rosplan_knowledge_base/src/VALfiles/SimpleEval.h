@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __SIMPLE_EVALUATOR
-#define __SIMPLE_EVALUATOR
+#ifndef __SIMPLE_EVALUATOR_1_2
+#define __SIMPLE_EVALUATOR_1_2
 #include "VisitController.h"
 #include "FastEnvironment.h"
 #include <map>
@@ -33,7 +33,7 @@
 #include <set>
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 	class TypeChecker;
 

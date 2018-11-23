@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "ptree.h"
+#include "VALfiles/ptree.h"
 #include "FlexLexer.h"
 
 extern int yyparse();
@@ -28,15 +28,15 @@ namespace KCL_rosplan {
 	public:
 
 		/* VAL pointers */
-		VAL::analysis * val_analysis;
-		VAL::domain* domain;
+		VAL1_2::analysis * val_analysis;
+		VAL1_2::domain* domain;
 
 		/* domain information */
 		bool domain_parsed;
 		std::string domain_name;
 
 		/* domain parsing */
-		VAL::domain* parseDomain(const std::string domainPath);
+		VAL1_2::domain* parseDomain(const std::string domainPath);
 	};
 }
 #endif

@@ -44,10 +44,10 @@
   Strathclyde Planning Group
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
-#ifndef __TDIST
-#define __TDIST
+#ifndef __TDIST_1_2
+#define __TDIST_1_2
 
-namespace VAL {
+namespace VAL1_2 {
   
 //struct store the upper critial values of the student T Distribution
 struct Table5Percent

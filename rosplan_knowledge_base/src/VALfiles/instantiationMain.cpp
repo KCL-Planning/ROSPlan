@@ -40,7 +40,7 @@ using std::cerr;
 
 using namespace TIM;
 using namespace Inst;
-using namespace VAL;
+using namespace VAL1_2;
 
 int main(int argc,char * argv[])
 {

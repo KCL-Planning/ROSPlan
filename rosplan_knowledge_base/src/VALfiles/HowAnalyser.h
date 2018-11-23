@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __HOWANALYSER
-#define __HOWANALYSER
+#ifndef __HOWANALYSER_1_2
+#define __HOWANALYSER_1_2
 
 #include "ptree.h"
 #include "VisitController.h"
@@ -38,7 +38,7 @@ using std::set;
 using std::cout;
 using namespace TIM;
 
-namespace VAL {
+namespace VAL1_2 {
 
 class AbstractGraph;
 

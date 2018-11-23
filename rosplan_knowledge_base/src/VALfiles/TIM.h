@@ -24,13 +24,13 @@
  *
  ************************************************************************/
 
-#ifndef __TIM
-#define __TIM
+#ifndef __TIM_1_2
+#define __TIM_1_2
 
 #include "TimSupport.h"
 
 
-namespace VAL {
+namespace VAL1_2 {
 extern TypeChecker * theTC;
 };
 

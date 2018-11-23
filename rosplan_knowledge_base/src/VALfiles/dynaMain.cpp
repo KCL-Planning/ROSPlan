@@ -44,10 +44,10 @@ using std::cerr;
 
 using namespace TIM;
 using namespace Inst;
-using namespace VAL;
+using namespace VAL1_2;
 using namespace Planner;
 
-namespace VAL {
+namespace VAL1_2 {
 bool ContinueAnyway;
 bool ErrorReport;
 bool InvariantWarnings;

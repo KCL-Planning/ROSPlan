@@ -30,7 +30,7 @@
 using std::set;
 using std::find;
 
-namespace VAL {
+namespace VAL1_2 {
 
 bool FAverbose = true;
 

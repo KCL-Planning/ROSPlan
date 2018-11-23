@@ -47,7 +47,7 @@
 #include <map>
 #include <vector>
 
-namespace VAL {
+namespace VAL1_2 {
   
 class var_symbol;
 class const_symbol;
@@ -61,13 +61,13 @@ class Validator;
 using std::map;
 using std::vector;
 
-#ifndef __MYENVIRONMENT
-#define __MYENVIRONMENT
+#ifndef __MYENVIRONMENT_1_2
+#define __MYENVIRONMENT_1_2
 
   
 //#define vector std::vector
 
-namespace VAL {
+namespace VAL1_2 {
 
 template<class T> bool operator != (T & t1,T & t2) {return ! (t1==t2);};
 

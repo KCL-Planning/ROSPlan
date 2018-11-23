@@ -20,7 +20,7 @@
 extern int yyparse();
 extern int yydebug;
 
-namespace VAL
+namespace VAL1_2
 {
 
 extern parse_category* top_thing;

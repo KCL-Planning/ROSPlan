@@ -67,7 +67,7 @@ using std::list;
 using std::vector;
 using std::for_each;
 
-namespace VAL {
+namespace VAL1_2 {
   
 Action::~Action()
 {

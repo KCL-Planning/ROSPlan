@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __TYPECHECK
-#define __TYPECHECK
+#ifndef __TYPECHECK_1_2
+#define __TYPECHECK_1_2
 
 #include "ptree.h"
 #include <set>
@@ -36,7 +36,7 @@ using std::vector;
 
 //#define vector std::vector
 
-namespace VAL {
+namespace VAL1_2 {
 
 class PTypeRef;
 class UTypeRef;

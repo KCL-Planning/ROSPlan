@@ -10,7 +10,7 @@ namespace KCL_rosplan {
 	/**
 	 * Visit an prop to pack into ROS message
 	 */
-	void VALVisitorPredicate::visit_pred_decl(VAL::pred_decl *p) {
+	void VALVisitorPredicate::visit_pred_decl(VAL1_2::pred_decl *p) {
 
 		msg.typed_parameters.clear();
 
@@ -18,8 +18,8 @@ namespace KCL_rosplan {
 		msg.name = p->getPred()->symbol::getName();
 
 		// predicate variables
-		for (VAL::var_symbol_list::const_iterator vi = p->getArgs()->begin(); vi != p->getArgs()->end(); vi++) {
-			const VAL::var_symbol* var = *vi;
+		for (VAL1_2::var_symbol_list::const_iterator vi = p->getArgs()->begin(); vi != p->getArgs()->end(); vi++) {
+			const VAL1_2::var_symbol* var = *vi;
 			diagnostic_msgs::KeyValue param;
 			param.key = var->pddl_typed_symbol::getName();
 			param.value = var->type->getName();

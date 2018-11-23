@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "FlexLexer.h"
-#include "ptree.h"
+#include "VALfiles/ptree.h"
 #include "VisitController.h"
 #include "VALVisitorProblem.h"
 
@@ -29,15 +29,15 @@ namespace KCL_rosplan {
     public:
 
         /* VAL pointers */
-        VAL::analysis * val_analysis;
-        VAL::problem* problem;
+        VAL1_2::analysis * val_analysis;
+        VAL1_2::problem* problem;
 
         /* Problem information */
         bool problem_parsed;
         std::string problem_name;
 
         /* Problem parsing */
-        VAL::problem* parseProblem(const std::string ProblemPath);
+        VAL1_2::problem* parseProblem(const std::string ProblemPath);
 
 
     };

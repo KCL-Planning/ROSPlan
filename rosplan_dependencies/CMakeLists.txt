@@ -25,8 +25,8 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser
-        LIBRARIES val rddl_parser
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ppddl_parser/include ppddl_parser/src
+        LIBRARIES val rddl_parser ppddl_parser
         CATKIN_DEPENDS roscpp
         DEPENDS
 )
@@ -163,3 +163,92 @@ endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
 ## Install ##
 #############
 
+########################################################################################################################
+## PPDDL PARSER
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Preparing PPDDL parser dependency...")
+
+###########
+## Build ##
+###########
+set(PPDDL_DIR ${CMAKE_CURRENT_LIST_DIR}/ppddl_parser/src/PPDDLParser)
+# Lexer and parser
+# Compile FLEX and BISON
+find_package(BISON)
+find_package(FLEX)
+
+
+BISON_TARGET(PPDDL_PARSER ${PPDDL_DIR}/parser.yy ${CMAKE_CURRENT_BINARY_DIR}/ppddl_parser.tab.cc COMPILE_FLAGS -d)
+FLEX_TARGET(PPDDL_SCANNER ${PPDDL_DIR}/tokenizer.ll ${CMAKE_CURRENT_BINARY_DIR}/ppddl_lex.yy.cc)
+ADD_FLEX_BISON_DEPENDENCY(PPDDL_SCANNER PPDDL_PARSER)
+
+# Define variables
+set(FLEX_BISON_OUTPUTS ${BISON_PPDDL_PARSER_OUTPUTS}  ${FLEX_PPDDL_SCANNER_OUTPUTS} CACHE INTERNAL "" FORCE)
+
+set(PPDDL_PARSER_SOURCES
+        ${PPDDL_DIR}/actions.cc
+        ${PPDDL_DIR}/domains.cc
+        ${PPDDL_DIR}/effects.cc
+        ${PPDDL_DIR}/expressions.cc
+        ${PPDDL_DIR}/formulas.cc
+        ${PPDDL_DIR}/functions.cc
+        ${PPDDL_DIR}/predicates.cc
+        ${PPDDL_DIR}/problems.cc
+        ${PPDDL_DIR}/rational.cc
+        ${PPDDL_DIR}/requirements.cc
+        ${PPDDL_DIR}/terms.cc
+        ${PPDDL_DIR}/types.cc)
+
+set(PPDDL_PARSER_HEADERS
+        ${PPDDL_DIR}/actions.h
+        ${PPDDL_DIR}/domains.h
+        ${PPDDL_DIR}/effects.h
+        ${PPDDL_DIR}/expressions.h
+        ${PPDDL_DIR}/formulas.h
+        ${PPDDL_DIR}/functions.h
+        ${PPDDL_DIR}/predicates.h
+        ${PPDDL_DIR}/problems.h
+        ${PPDDL_DIR}/rational.h
+        ${PPDDL_DIR}/refcount.h
+        ${PPDDL_DIR}/requirements.h
+        ${PPDDL_DIR}/terms.h
+        ${PPDDL_DIR}/types.h)
+
+set(PPDDL_PARSER_ALL ${PPDDL_PARSER_SOURCES}
+        ${PPDDL_PARSER_HEADERS}
+        ${FLEX_BISON_OUTPUTS})
+
+include_directories(ppddl_parser/include ppddl_parser/src ${PPDDL_DIR} VAL/include) # We add the src as include because the PPDDLParser headers are there
+
+add_library(ppddl_parser SHARED
+        ppddl_parser/include/PPDDLDeterminizator.h ppddl_parser/src/PPDDLDeterminizator.cpp
+        ppddl_parser/src/PPDDLParserInterface.cpp ppddl_parser/include/PPDDLParserInterface.h
+        ppddl_parser/src/PDDLPrinter.cpp ppddl_parser/include/PDDLPrinter.h
+        ppddl_parser/src/VALConversion.cpp ppddl_parser/include/VALConversion.h
+        ${PPDDL_PARSER_ALL}
+        ppddl_parser/src/Strategies/MLODeterminizator.cpp ppddl_parser/include/Strategies/MLODeterminizator.h
+        ppddl_parser/src/Strategies/AODeterminizator.cpp ppddl_parser/include/Strategies/AODeterminizator.h
+        ppddl_parser/src/Strategies/TLDeterminizator.cpp ppddl_parser/include/Strategies/TLDeterminizator.h
+        ppddl_parser/src/PPDDLDeterminizatorFactory.cpp ppddl_parser/include/PPDDLDeterminizatorFactory.h)
+target_link_libraries(ppddl_parser val)
+
+
+#############
+## Install ##
+#############
+
+install(TARGETS ppddl_parser
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Mark cpp header files for installation
+install(DIRECTORY ppddl_parser/include/ ppddl_parser/src/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE)
+
+
+
+########################################################################################################################
+########################################################################################################################

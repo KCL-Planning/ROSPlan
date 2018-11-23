@@ -44,13 +44,13 @@
   Strathclyde Planning Group
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
-#ifndef __OWNERSHIP
-#define __OWNERSHIP
+#ifndef __OWNERSHIP_1_2
+#define __OWNERSHIP_1_2
 
 #include <map>
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class Validator;
 class Action;

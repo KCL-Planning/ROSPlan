@@ -24,10 +24,10 @@
  *
  ************************************************************************/
 
-#ifndef __LITERALPROPLINK
-#define __LITERALPROPLINK
+#ifndef __LITERALPROPLINK_1_2
+#define __LITERALPROPLINK_1_2
 
-namespace VAL {
+namespace VAL1_2 {
 class SimpleProposition;
 class Environment;
 };

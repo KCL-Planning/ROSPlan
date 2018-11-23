@@ -90,13 +90,8 @@ done
 # Run prost planner
 export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 cd $PROST_HOME
-<<<<<<< Updated upstream
-rm $INSTANCE_NAME >/dev/null 2>&1 # Sometimes prost may leave this file on wrong executions
-$PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >/dev/null 2>&1
-=======
 rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up previous files, in case some were left
 $PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >$PLANNER_OUTPUT_FILE 2>&1
->>>>>>> Stashed changes
 EXIT_CODE=$?
 
 ### Cleanup

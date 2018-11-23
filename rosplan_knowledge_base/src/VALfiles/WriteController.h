@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __WRITECONTROLLER
-#define __WRITECONTROLLER
+#ifndef __WRITECONTROLLER_1_2
+#define __WRITECONTROLLER_1_2
 
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 struct WriteController {
 	virtual ~WriteController() {};

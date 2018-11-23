@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __SEARCHSPACE
-#define __SEARCHSPACE
+#ifndef __SEARCHSPACE_1_2
+#define __SEARCHSPACE_1_2
 
 #include "Validator.h"
 #include "ptree.h"

@@ -54,7 +54,7 @@ namespace KCL_rosplan {
 		/* Get the metric from the task */
         void loadMetric();
 
-        /* Just fils the header for a fact */
+        /* Just fills the header for a fact */
         rosplan_knowledge_msgs::KnowledgeItem fillKI(const ParametrizedVariable* var, const std::vector<Parameter *> &params, double initialValue);
         /* Adds all the functions and facts that have a default value in the initial state with their grounded parameters */
         void fillKIAddAllGroundedParameters(const ParametrizedVariable *var,

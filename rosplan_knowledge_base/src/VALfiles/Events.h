@@ -57,7 +57,7 @@
   #ifndef __EVENTS
   #define __EVENTS
 
-namespace VAL {
+namespace VAL1_2 {
   
 class Events{
  private:

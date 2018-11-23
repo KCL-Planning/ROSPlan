@@ -69,7 +69,7 @@ using std::mem_fun;
 //#define map std::map
 //#define list std::list
 
-namespace VAL {
+namespace VAL1_2 {
   
 Happening::Happening(Validator * v,const vector<pair<double,Action*> > & as,double timeEndPlan) : vld(v),
  time(0.0), actions(), eventHappening(false), realHappening(false), afterPlan(false)

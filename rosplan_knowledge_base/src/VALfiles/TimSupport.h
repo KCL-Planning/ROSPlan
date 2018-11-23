@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __TIMSUPPORT
-#define __TIMSUPPORT
+#ifndef __TIMSUPPORT_1_2
+#define __TIMSUPPORT_1_2
 
 #include <algorithm>
 #include <iostream>
@@ -666,7 +666,7 @@ public:
 	
 	void reverse() {inserting = false;};
 	virtual void visit_conj_goal(VAL::conj_goal * cg) {        
-        using namespace VAL;
+        using namespace VAL1_2;
 
         replacePreconditionsOf->precondition = cg->getGoals()->front();
         const_cast<goal_list*>(cg->getGoals())->pop_front();
@@ -678,7 +678,7 @@ public:
 	
 	virtual void visit_durative_action(VAL::durative_action * p)
 	{
-		using namespace VAL;
+		using namespace VAL1_2;
 //		cout << "Treating " << p->name->getName() << "\n";
 		if(inserting) {
 			pred_symbol * nm = current_analysis->pred_tab.symbol_put(p->name->getName());
@@ -831,7 +831,7 @@ public:
 	{OUTPUT cout << "Disjunctive goal\n";};
 	virtual void visit_timed_goal(VAL::timed_goal * p) 
 	{
-		using namespace VAL;
+		using namespace VAL1_2;
 		if(p->getTime() == (atStart?E_AT_START:E_AT_END) || (overall && p->getTime()==E_OVER_ALL))
 			p->getGoal()->visit(this);
 	};	
@@ -855,13 +855,13 @@ public:
 	};
 	virtual void visit_timed_effect(VAL::timed_effect * p) 
 	{
-		using namespace VAL;
+		using namespace VAL1_2;
 		if(p->ts==(atStart?E_AT_START:E_AT_END))
 			p->effs->visit(this);
 	};
 	virtual void visit_effect_lists(VAL::effect_lists * p) 
 	{
-		using namespace VAL;
+		using namespace VAL1_2;
 		p->add_effects.pc_list<simple_effect*>::visit(this);
 		p->forall_effects.pc_list<forall_effect*>::visit(this);
 		p->cond_effects.pc_list<cond_effect*>::visit(this);

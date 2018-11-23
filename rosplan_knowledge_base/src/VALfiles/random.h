@@ -45,10 +45,10 @@
 #include <cmath>
 #include <ctime>
 
-#ifndef __RANDOM_H
-#define __RANDOM_H
+#ifndef __RANDOM_H_1_2
+#define __RANDOM_H_1_2
 
-namespace VAL {
+namespace VAL1_2 {
   
 // These classes must use 32 bit integers. If int is not 32 bit for your
 // compiler, then replace the following typedefs with a type that is.

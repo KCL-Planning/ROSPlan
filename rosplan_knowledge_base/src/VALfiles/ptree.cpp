@@ -50,7 +50,7 @@
   Parse category
   ---------------------------------------------------------------------------*/
 
-namespace VAL {
+namespace VAL1_2 {
 
 auto_ptr<WriteController> parse_category::wcntr = auto_ptr<WriteController>(new DebugWriteController);
 
@@ -765,7 +765,7 @@ void indent(int ind)
 	cout << "   ";
 }
 
-namespace VAL {
+namespace VAL1_2 {
 /*---------------------------------------------------------------------------
   Functions called from parser that perform checks, and possibly generate
   errors.

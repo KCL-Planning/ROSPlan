@@ -47,7 +47,7 @@
 #include "LaTeXSupport.h"
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
   
 extern analysis an_analysis;
 

@@ -5,7 +5,7 @@
 extern int yyparse();
 extern int yydebug;
 
-namespace VAL {
+namespace VAL1_2 {
     extern yyFlexLexer* yfl;
 };
 
@@ -19,7 +19,7 @@ namespace KCL_rosplan {
     /**
      * parse the problem file
      */
-    VAL::problem* PDDLProblemParser::parseProblem(const std::string ProblemPath) {
+    VAL1_2::problem* PDDLProblemParser::parseProblem(const std::string ProblemPath) {
 
         // only parse Problem once
         if(problem_parsed) return problem;
@@ -34,28 +34,28 @@ namespace KCL_rosplan {
         current_filename = &writable[0];
 
         // parse Problem
-        VAL::current_analysis = val_analysis;  // use the same analysis got from the domain
+        VAL1_2::current_analysis = val_analysis;  // use the same analysis got from the domain
         std::ifstream ProblemFile;
         ProblemFile.open(ProblemFileName.c_str());
         yydebug = 0;
 
-        VAL::yfl = new yyFlexLexer;
+        VAL1_2::yfl = new yyFlexLexer;
 
         if (ProblemFile.bad()) {
             ROS_ERROR("KCL: (%s) Failed to open problem file.", ros::this_node::getName().c_str());
             line_no = 0;
-            VAL::log_error(VAL::E_FATAL,"Failed to open file");
+            VAL1_2::log_error(VAL1_2::E_FATAL,"Failed to open file");
         } else {
             line_no = 1;
-            VAL::yfl->switch_streams(&ProblemFile, &std::cout);
+            VAL1_2::yfl->switch_streams(&ProblemFile, &std::cout);
             yyparse();
 
             // Problem name
-            problem = VAL::current_analysis->the_problem;
+            problem = VAL1_2::current_analysis->the_problem;
             //problem_name = problem->name;
 
         }
-        delete VAL::yfl;
+        delete VAL1_2::yfl;
         ProblemFile.close();
 
         return problem;

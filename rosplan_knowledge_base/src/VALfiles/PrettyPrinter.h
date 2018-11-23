@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __PRETTYPRINT
-#define __PRETTYPRINT
+#ifndef __PRETTYPRINT_1_2
+#define __PRETTYPRINT_1_2
 
 #include "WriteController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class PrettyPrinter : public WriteController {
 private:

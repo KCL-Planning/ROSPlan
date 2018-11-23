@@ -72,7 +72,7 @@ int yyerror(char *);
 
 extern int yylex();
 
-using namespace VAL;
+using namespace VAL1_2;
 
 %}
 
@@ -1518,7 +1518,7 @@ int line_no= 1;
 using std::istream;
 #include "lex.yy.cc"
 
-namespace VAL {
+namespace VAL1_2 {
 extern yyFlexLexer* yfl;
 };
 

@@ -350,7 +350,7 @@ namespace KCL_rosplan {
     void RDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
         RDDLTask* t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
         if (t == nullptr) {
-            ROS_ERROR("KCL: (%s) There were syntax errors in the domain file.", ros::this_node::getName().c_str());
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
             ros::shutdown();
         }
         if (problem_file_path != "") addInitialState();

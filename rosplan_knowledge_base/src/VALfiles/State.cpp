@@ -60,7 +60,7 @@ using std::cerr;
 //#define list std::list
 //#define map std::map
 
-namespace VAL {
+namespace VAL1_2 {
 
 vector<StateObserver *> State::sos;
 

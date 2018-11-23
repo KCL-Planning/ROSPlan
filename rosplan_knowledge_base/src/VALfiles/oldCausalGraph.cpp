@@ -32,7 +32,7 @@
 using namespace std;
 using namespace TIM;
 
-namespace VAL {
+namespace VAL1_2 {
 
 class CGAnalyser : public VisitController {
 private: 

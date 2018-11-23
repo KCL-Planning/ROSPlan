@@ -53,8 +53,8 @@
 
 
 
-#ifndef __PROPOSITION
-#define __PROPOSITION
+#ifndef __PROPOSITION_1_2
+#define __PROPOSITION_1_2
 
 //#define map std::map
 //#define vector std::vector
@@ -63,7 +63,7 @@ using std::vector;
 using std::set;
 using std::map;
 
-namespace VAL {
+namespace VAL1_2 {
   
 class State;
 class Action;

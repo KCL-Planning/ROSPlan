@@ -34,7 +34,7 @@
 using std::ostream;
 using std::iterator;
 
-namespace VAL {
+namespace VAL1_2 {
 class pddl_type;
 };
 

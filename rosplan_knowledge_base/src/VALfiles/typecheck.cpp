@@ -31,7 +31,7 @@
 #include "Exceptions.h"
 #include <algorithm>
 
-namespace VAL {
+namespace VAL1_2 {
 
 void TypeHierarchy::addDown(const PTypeRef & t1,const PTypeRef & t2)
 {

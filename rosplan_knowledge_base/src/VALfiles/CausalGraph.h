@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __CGA
-#define __CGA
+#ifndef __CGA_1_2
+#define __CGA_1_2
 
 #include <map>
 #include <set>

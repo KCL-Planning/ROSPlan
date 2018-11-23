@@ -58,10 +58,10 @@ extern int yyparse();
 extern int yydebug;
 
 using namespace TIM;
-using namespace VAL;
+using namespace VAL1_2;
 //using namespace Inst;
 
-namespace VAL {
+namespace VAL1_2 {
   
 extern analysis* current_analysis;
 
@@ -86,7 +86,7 @@ bool makespanDefault;
 
 typedef map<double,vector<string> > Ranking;
 
-using namespace VAL;
+using namespace VAL1_2;
 
 plan * getPlan(int & argc,char * argv[],int & argcount,TypeChecker & tc,vector<string> & failed,string & name)
 {
