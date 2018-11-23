@@ -146,12 +146,7 @@ namespace KCL_rosplan {
 			} else {
 				// update time and add to state now
 				if(req.knowledge.initial_time.toSec() == 0) req.knowledge.initial_time = time;
-
-				if(req.knowledge.is_negative && !use_unknowns) {
-					removeKnowledge(req.knowledge);
-				} else {
-					addKnowledge(req.knowledge);
-				}
+				addKnowledge(req.knowledge);
 			}
 			break;
 
@@ -306,7 +301,7 @@ namespace KCL_rosplan {
         std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
         for(pit=model_facts.begin(); pit!=model_facts.end(); ) {
             if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-                ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), msg.attribute_name.c_str());
+                ROS_INFO("KCL: (%s) Removing Fact (%s,%i)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), msg.is_negative);
                 pit = model_facts.erase(pit);
             } else {
                 pit++;
@@ -379,10 +374,17 @@ namespace KCL_rosplan {
 					ROS_WARN("KCL: (%s) fact (%s%s) already exists", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str());
 					return;
 				}
+				msg.is_negative = 1 - msg.is_negative;
+				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+					ROS_INFO("KCL: (%s) Setting fact (%s%s) is_negative=%i", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), (1-msg.is_negative));
+					pit->is_negative = 1 - pit->is_negative;
+					return;
+				}
+                msg.is_negative = 1 - msg.is_negative; // Reset it to the original value
 			}
 
 			// add fact
-			ROS_INFO("KCL: (%s) Adding fact (%s%s)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str());
+			ROS_INFO("KCL: (%s) Adding fact (%s%s, %i)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), msg.is_negative);
 			model_facts.push_back(msg);
 
 		}
