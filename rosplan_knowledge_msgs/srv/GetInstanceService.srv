@@ -1,4 +1,4 @@
-# PDDL problem generation; service(1/2):
+# PDDL problem generation; service(1/3):
 # Get all instances of the type with the name 'typeName'.
 string type_name
 ---
