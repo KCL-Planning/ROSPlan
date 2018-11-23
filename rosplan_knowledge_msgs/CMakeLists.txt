@@ -47,6 +47,7 @@ add_service_files(
   SetFloat.srv
   SetInt.srv
   GetRDDLParams.srv
+  GetRDDLImmediateReward.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

@@ -252,7 +252,7 @@ XMLServer_t::start_round()
 
 
 std::string
-XMLServer_t::get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result)
+XMLServer_t::get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result, double immediate_reward)
 {
     std::ostringstream oss;
     /** ************************************************************************
@@ -285,7 +285,7 @@ XMLServer_t::get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>
     */
 
     oss.str("");
-    oss << "<turn><turn-num>1</turn-num><time-left>" << time_allowed << "</time-left><immediate-reward>0</immediate-reward>";
+    oss << "<turn><turn-num>1</turn-num><time-left>" << time_allowed << "</time-left><immediate-reward>"<< immediate_reward <<"</immediate-reward>";
     for (auto predicate = state.begin(); predicate != state.end(); ++predicate) {
         if (DEBUG > 1)
             std::cout << "IppcServer::" << "Sending predicate: " << *predicate << std::endl;

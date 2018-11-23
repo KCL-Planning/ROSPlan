@@ -87,7 +87,7 @@ public:
     std::string start_session(uint port, const std::string &domain_path, const std::string &instance_path);
     void end_session();
 
-    std::string get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result);
+    std::string get_action(const std::vector<rosplan_knowledge_msgs::KnowledgeItem>& state, float& planning_result, double reward=0);
 
     std::string get_encoded_task(const std::string &domain_path, const std::string &instance_path);
 
