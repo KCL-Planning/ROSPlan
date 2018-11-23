@@ -1,0 +1,6 @@
+std_msgs/Empty req
+---
+bool success # True if the dispatch was successful
+bool goal_achieved # True if the goal is achieved after the dispatching
+---
+rosplan_dispatch_msgs/ActionFeedback feedback

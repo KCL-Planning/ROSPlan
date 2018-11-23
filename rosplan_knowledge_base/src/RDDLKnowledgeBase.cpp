@@ -104,6 +104,13 @@ namespace KCL_rosplan {
 
             res.operators.push_back(formula);
         }
+
+        // Add exogenous operator
+        rosplan_knowledge_msgs::DomainFormula formula;
+        formula.name = "exogenous";
+        // FIXME parameters?
+        res.operators.push_back(formula);
+
         return true;
     }
 
@@ -134,6 +141,17 @@ namespace KCL_rosplan {
             // Compute assign effects
             res.op.at_end_assign_effects = RDDLUtils::getOperatorAssignEffects(res.op.formula,
                                                                                        domain_parser.rddlTask->CPFDefinitions);
+            return true;
+        }
+        if (req.name == "exogenous") {
+            // operator name
+            res.op.formula.name = req.name;
+
+            // Compute effects
+            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            res.op.at_end_add_effects = eff.add;
+            res.op.at_end_del_effects = eff.del;
+            res.op.probabilistic_effects = eff.prob;
             return true;
         }
         return false;
@@ -167,7 +185,7 @@ namespace KCL_rosplan {
         loadMetric(); // model_metric;
 
         // See if there is a goal defined
-        model_goals = RDDLUtils::getGoals(domain_parser.rddlTask->CPFDefinitions);
+        //model_goals = RDDLUtils::getGoals(domain_parser.rddlTask->CPFDefinitions);
 
         _horizon = domain_parser.rddlTask->horizon;
         _discount_factor = domain_parser.rddlTask->discountFactor;
@@ -396,6 +414,18 @@ namespace KCL_rosplan {
         _max_nondef_actions = req.value;
         res.success = true;
         return true;
+    }
+
+    void RDDLKnowledgeBase::removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) {
+        // remove domain attribute (predicate) from knowledge base
+        for (auto pit = model_facts.begin(); pit!=model_facts.end(); ++pit) {
+            if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
+                ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(),
+                         msg.attribute_name.c_str());
+                pit->is_negative = 1 - pit->is_negative; // Negate attribute
+                break;
+            }
+        }
     }
 
 

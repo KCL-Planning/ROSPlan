@@ -48,7 +48,7 @@ namespace KCL_rosplan {
 	 * passes the problem to the Planner; the plan to post-processing.
 	 */
 	bool FFPlannerInterface::runPlanner() {
-
+		planner_output.clear(); // Clear previous plan
 		// save problem to file for planner
 		if(use_problem_topic && problem_instance_received) {
 			ROS_INFO("KCL: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());

@@ -152,7 +152,20 @@ namespace KCL_rosplan {
                          it != op_srv.response.op.at_end_assign_effects.end(); ++it) {
                         found_fluents.insert(it->LHS.name);
                     }
-
+                    for (size_t i = 0; i < op_srv.response.op.probabilistic_effects.size(); ++i) {
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].add_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].add_effects.end(); ++it) {
+                            found_fluents.insert(it->name);
+                        }
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].del_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].del_effects.end(); ++it) {
+                            found_fluents.insert(it->name);
+                        }
+                        for (auto it = op_srv.response.op.probabilistic_effects[i].assign_effects.begin();
+                             it != op_srv.response.op.probabilistic_effects[i].assign_effects.end(); ++it) {
+                            found_fluents.insert(it->LHS.name);
+                        }
+                    }
                 }
             }
             // Check if the predicate appears in any of the effect lists
@@ -173,7 +186,7 @@ namespace KCL_rosplan {
         rosplan_knowledge_msgs::GetDomainAttributeService domainAttrSrv;
         rosplan_knowledge_msgs::GetDomainAttributeService domainFunSrv;
         if (!getDomainPropsClient.call(domainAttrSrv) or !getDomainFuncsClient.call(domainFunSrv)) {
-            ROS_ERROR("KCL: (rDDLProblemGenerator) Failed to call service %s", domain_predicate_service.c_str());
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", domain_predicate_service.c_str());
         } else {
             for (auto it = domainAttrSrv.response.items.begin(); it != domainAttrSrv.response.items.end(); ++it) {
                 pred_funcs.push_back(it->name);

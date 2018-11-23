@@ -15,7 +15,9 @@ namespace KCL_rosplan {
 		// only parse domain once
 		if (domain_parsed) return rddlTask;
         ROS_INFO("KCL: (%s) Parsing domain: %s.", ros::this_node::getName().c_str(), domainPath.c_str());
-        ROS_INFO("KCL: (%s) Parsing initial state", ros::this_node::getName().c_str());
+        if (not instancePath.empty())
+            ROS_INFO("KCL: (%s) Parsing initial state: %s", ros::this_node::getName().c_str(), instancePath.c_str());
+        else ROS_INFO("KCL: (%s) Parsing initial state", ros::this_node::getName().c_str());
 
         // parse domain
         rddlTask = RDDLParser::parseRDDLTask(domainPath, instancePath);

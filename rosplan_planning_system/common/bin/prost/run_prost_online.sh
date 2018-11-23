@@ -71,12 +71,12 @@ while [[ -z $SERVER_PID ]]; do
 	sleep $WAIT_SERVER_TIME # Give time for the server to die
 done
 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 cd $PROST_HOME
-FIXME rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
+rm $INSTANCE_NAME parser_*.rddl parser_out*  >/dev/null 2>&1 # Clean-up previous files, in case some were left
 
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
 # Run prost planner (To change to any other IPPC planner only this section needs to be changed)
 export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 $PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >$PLANNER_OUTPUT_FILE 2>&1

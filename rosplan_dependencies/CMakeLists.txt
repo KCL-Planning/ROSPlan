@@ -1,19 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rosplan_dependencies)
 
-cmake_policy(SET CMP0054 NEW)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS rosplan_knowledge_msgs)
 
 # Get the git submodules...
 message(STATUS "[${PROJECT_NAME}] Checking out the submodules...")
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule init OUTPUT_QUIET ERROR_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --force OUTPUT_QUIET ERROR_QUIET WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 ###################################
 ## catkin specific configuration ##
@@ -25,9 +24,9 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ppddl_parser/include ppddl_parser/src
-        LIBRARIES val rddl_parser ppddl_parser
-        CATKIN_DEPENDS roscpp
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ippc_server/include ppddl_parser/include ppddl_parser/src
+        LIBRARIES val_kcl rddl_parser ippc_server ppddl_parser
+        CATKIN_DEPENDS roscpp rosplan_knowledge_msgs
         DEPENDS
 )
 
@@ -35,7 +34,7 @@ catkin_package(
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer -DNDEBUG")
 
-
+########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
 ## RDDL PARSER
@@ -54,7 +53,7 @@ endif(LBITS EQUAL 64)
 SET (RDDL_CMAKE_CXX_FLAGS "${RDDL_CMAKE_CXX_FLAGS} -g -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -std=c++11")
 
 # Lexer and parser
-find_package(BISON REQUIRED)
+find_package(BISON 3.0.4 REQUIRED)
 find_package(FLEX REQUIRED)
 
 BISON_TARGET(RDDL_PARSER rddl_parser/parser.ypp ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cc COMPILE_FLAGS -d)
@@ -100,6 +99,7 @@ install(DIRECTORY rddl_parser/
 
 ########################################################################################################################
 ########################################################################################################################
+########################################################################################################################
 ## VAL
 ########################################################################################################################
 message(STATUS "[${PROJECT_NAME}] Preparing VAL dependency...")
@@ -122,13 +122,13 @@ set(VAL_SOURCES
 
 include_directories("VAL/include")
 
-add_library(val SHARED ${VAL_SOURCES})
-add_dependencies(val ${catkin_EXPORTED_TARGETS})
+add_library(val_kcl SHARED ${VAL_SOURCES})
+add_dependencies(val_kcl ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
 #############
-install(TARGETS val
+install(TARGETS val_kcl
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -141,6 +141,7 @@ install(DIRECTORY VAL/include/
         PATTERN ".svn" EXCLUDE
         )
 
+########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
 ## rddlsim
@@ -164,13 +165,12 @@ endif(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/rddlsim/bin)
 #############
 
 ########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 ## PPDDL PARSER
 ########################################################################################################################
 message(STATUS "[${PROJECT_NAME}] Preparing PPDDL parser dependency...")
 
-###########
-## Build ##
-###########
 set(PPDDL_DIR ${CMAKE_CURRENT_LIST_DIR}/ppddl_parser/src/PPDDLParser)
 # Lexer and parser
 # Compile FLEX and BISON
@@ -230,8 +230,7 @@ add_library(ppddl_parser SHARED
         ppddl_parser/src/Strategies/AODeterminizator.cpp ppddl_parser/include/Strategies/AODeterminizator.h
         ppddl_parser/src/Strategies/TLDeterminizator.cpp ppddl_parser/include/Strategies/TLDeterminizator.h
         ppddl_parser/src/PPDDLDeterminizatorFactory.cpp ppddl_parser/include/PPDDLDeterminizatorFactory.h)
-target_link_libraries(ppddl_parser val)
-
+target_link_libraries(ppddl_parser val_kcl)
 
 #############
 ## Install ##
@@ -248,6 +247,37 @@ install(DIRECTORY ppddl_parser/include/ ppddl_parser/src/
         FILES_MATCHING PATTERN "*.h"
         PATTERN ".svn" EXCLUDE)
 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+## ippc_server
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Adding ippc_server dependency...")
+
+###########
+## Build ##
+###########
+
+include_directories(ippc_server/include ippc_server/cpp-base64 ${catkin_INCLUDE_DIRS})
+
+add_library(ippc_server SHARED ippc_server/src/ippc_server.cpp ippc_server/src/strxml.cpp ippc_server/cpp-base64/base64.cpp)
+add_dependencies(ippc_server ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
+
+install(TARGETS ippc_server
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+## Mark cpp header files for installation
+install(DIRECTORY ippc_server/include/
+        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE)
 
 
 ########################################################################################################################

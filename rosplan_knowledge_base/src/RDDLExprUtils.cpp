@@ -50,7 +50,10 @@ rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Connect
     else if (dynamic_cast<const Addition*>(expr) != nullptr || dynamic_cast<const Disjunction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::ADD;
     else if (dynamic_cast<const Subtraction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::SUB;
     else if (dynamic_cast<const Division*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::DIV;
-    else NOT_IMPLEMENTED_EXPR;
+    else {
+        NOT_IMPLEMENTED_EXPR;
+        return ret;
+    }
     ret.tokens.push_back(base);
 
     rosplan_knowledge_msgs::ExprComposite operand1 = getExpression(expr->exprs[0], assign);

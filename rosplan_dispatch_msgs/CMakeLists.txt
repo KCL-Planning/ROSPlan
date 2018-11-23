@@ -28,11 +28,14 @@ add_service_files(
   PlanningService.srv
   ProblemService.srv
   ParsingService.srv
+  GetPlanningParams.srv
+  DispatchService.srv
 )
 
 add_action_files(
   FILES
   Plan.action
+  NonBlockingDispatch.action
 )
 
 ## Generate added messages and services with any dependencies listed here

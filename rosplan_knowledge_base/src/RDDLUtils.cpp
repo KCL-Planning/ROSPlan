@@ -183,7 +183,9 @@ namespace KCL_rosplan {
             std::map<std::string, std::string> assign; // Replacement for each parameter of the cpd to the parameter of the action as defined in the operator header op_head
             bool action_found = false;
             EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign, action_found);
-            if (not action_found) continue;
+            if (not action_found and op_head.name != "exogenous") { // If an action fluent was found, it will return empty lists so it means it was an exogenous event.
+                continue;
+            }
             join(eff_ret, eff_i);
         }
         return eff_ret;
@@ -288,7 +290,7 @@ namespace KCL_rosplan {
         //       - else -> add ~predicate if the condition is 1 (so if condition having the action fluent is false, then predicate is true means a negative effect)
 
         EffectDomainFormula effects = getOperatorEffects(op_head, pVariable, exp->condition, assign, action_found); // Checks if the condition has some implications on the effects of the operator
-        if ((effects.add.size() + effects.add.size() + effects.prob.size()) == 0) return effects; // If not found ignore the rest!
+
         EffectDomainFormula ret = effects;
 
         // Check if probabilistic effect
@@ -328,9 +330,12 @@ namespace KCL_rosplan {
         auto iffalse = dynamic_cast<const NumericConstant*>(exp->valueIfFalse);
         auto elseif = dynamic_cast<const IfThenElseExpression*>(exp->valueIfFalse);
         if (iffalse != nullptr) { // We have a true/False value
-            EffectDomainFormula cpy = effects;
-            if (iffalse->value == 1)  negate(cpy); // Negate the value
-            join(ret, cpy);
+            if (iffalse->value == 1)  {
+                EffectDomainFormula cpy = effects;
+                negate(cpy); // Negate the value
+                join(ret, cpy);
+            }
+
         }
         else if (elseif != nullptr) { // Elseif is identical to an if
             EffectDomainFormula elseif_result = getOperatorEffects(op_head, pVariable, elseif, assign, action_found);
@@ -511,6 +516,7 @@ namespace KCL_rosplan {
             rosplan_knowledge_msgs::KnowledgeItem ki;
             ki.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
             ki.attribute_name = exp_var->variableName;
+            ki.is_negative = is_negative;
             for (auto pit = exp_var->params.begin(); pit != exp_var->params.end(); ++pit) {
                 diagnostic_msgs::KeyValue param;
 

@@ -87,14 +87,21 @@ while [[ -z $(netstat -tulpn 2>&1 | grep $SERVER_PORT) ]]; do
 	sleep 0.1
 done
 
-# Run prost planner
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+# Run prost planner (To change to any other IPPC planner only this section needs to be changed)
 export LIBC_FATAL_STDERR_=1 # To avoid printing planner errors: https://stackoverflow.com/a/4616162
 cd $PROST_HOME
 rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up previous files, in case some were left
 $PROST_HOME/prost $INSTANCE_NAME -h localhost -p $SERVER_PORT $SEARCH_OPTIONS >$PLANNER_OUTPUT_FILE 2>&1
 EXIT_CODE=$?
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 
 ### Cleanup
+rm $INSTANCE_NAME parser_*.rddl parser_out* >/dev/null 2>&1 # Clean-up previous files, in case some were left
 if [[ $MOVED_PROBLEM_FILE -eq 1 ]]; then
 	rm $RDDL_PROBLEM_FILE;
 fi
