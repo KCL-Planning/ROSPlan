@@ -137,8 +137,7 @@ namespace KCL_rosplan {
 
 		case rosplan_knowledge_msgs::KnowledgeItem::FUNCTION:
 
-			// check function value
-			if(a.function_value != b.function_value) return false;
+ 			// compare functions (use _inequalityTrue_ to check function values)
 
 		// check function or fact label and parameters all match
 		case rosplan_knowledge_msgs::KnowledgeItem::FACT:

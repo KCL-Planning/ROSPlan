@@ -1,0 +1,4 @@
+- git:
+    uri: 'https://github.com/clearpathrobotics/occupancy_grid_utils.git'
+    local-name: occupancy_grid_utils
+    version: indigo-devel
