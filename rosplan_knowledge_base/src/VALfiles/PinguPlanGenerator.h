@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __PINGUPLANGEN
-#define __PINGUPLANGEN
+#ifndef __PINGUPLANGEN_1_2
+#define __PINGUPLANGEN_1_2
 
 #include "ptree.h"
 #include "VisitController.h"
@@ -43,7 +43,7 @@ using std::cout;
 using std::set;
 using namespace TIM;
 
-namespace VAL {
+namespace VAL1_2 {
 
 struct PinguPosition {
 	float first;

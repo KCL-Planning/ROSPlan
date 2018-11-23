@@ -44,12 +44,12 @@
   Strathclyde Planning Group
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
-#ifndef SIM__EXCEPTIONS
-#define SIM__EXCEPTIONS
+#ifndef SIM__EXCEPTIONS_1_2
+#define SIM__EXCEPTIONS_1_2
 #include <exception>
 using std::exception;
 
-namespace VAL {
+namespace VAL1_2 {
   
 struct UndefinedPolyError : public exception {
 

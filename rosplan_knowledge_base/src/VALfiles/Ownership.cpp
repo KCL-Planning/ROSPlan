@@ -54,7 +54,7 @@
 using std::make_pair;
 using std::cerr;
 
-namespace VAL {
+namespace VAL1_2 {
   
 bool 
 Ownership::ownsForAdd(const Action * a,const SimpleProposition * p)

@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __OPTINTERFACE
-#define __OPTINTERFACE
+#ifndef __OPTINTERFACE_1_2
+#define __OPTINTERFACE_1_2
 
 
 void initialiser(int ndim,ColumnVector & x)

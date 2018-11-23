@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __FASTENV
-#define __FASTENV
+#ifndef __FASTENV_1_2
+#define __FASTENV_1_2
 
 #include <vector>
 using std::vector;
@@ -35,7 +35,7 @@ using std::vector;
 
 #include "ptree.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 template<class U>
 class IDsymbol : public U {

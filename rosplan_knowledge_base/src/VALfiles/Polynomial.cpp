@@ -59,7 +59,7 @@ using std::cout;
 //#define vector std::vector
 //#define map std::map
 
-namespace VAL {
+namespace VAL1_2 {
   
 ostream & operator <<(ostream & o,const Intervals & i)
 {

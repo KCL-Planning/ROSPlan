@@ -51,7 +51,7 @@
  #include "Action.h"
  #include "RobustAnalyse.h"
 
-namespace VAL {
+namespace VAL1_2 {
    
 Events::Events(const operator_list * ops) : ungroundEvents(), ungroundProcesses(),
   triggeredEvents(), triggeredProcesses(), untriggeredProcesses(), activeProcesses(), eventsForMutexCheck(), oldTriggeredEvents(), lastHappeningTime(0), ctsEventTriggered(false)  //, noevents(0)

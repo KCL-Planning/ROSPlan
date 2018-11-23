@@ -27,7 +27,7 @@
 #include "HowAnalyser.h"
 #include "AbstractGraph.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 HowAnalyser::HowAnalyser() : VisitController(), ag(new AbstractGraph())
 {};

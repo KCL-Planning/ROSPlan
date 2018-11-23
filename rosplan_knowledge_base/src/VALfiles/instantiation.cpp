@@ -42,7 +42,7 @@
 using std::ifstream;
 using std::cerr;
 
-using namespace VAL;
+using namespace VAL1_2;
 
 namespace Inst {
 
@@ -1023,7 +1023,7 @@ public:
 
 	virtual void visit_forall_effect(forall_effect * p) 
 	{
-//		p->getEffects()->visit(this);
+//		p->fillEffects()->visit(this);
 		vector<vector<VAL::const_symbol*>::const_iterator> vals(p->getVarsList()->size());
 		vector<vector<VAL::const_symbol*>::const_iterator> starts(p->getVarsList()->size());
 		vector<vector<VAL::const_symbol*>::const_iterator> ends(p->getVarsList()->size());

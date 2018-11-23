@@ -52,7 +52,7 @@
 using std::cerr;
 using std::for_each;
 
-namespace VAL {
+namespace VAL1_2 {
 
 void TypeStripWriteController::write_symbol(ostream & o,const symbol * p)
 {

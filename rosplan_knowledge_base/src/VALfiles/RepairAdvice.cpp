@@ -48,7 +48,7 @@
 #include "Validator.h"
 #include "Utils.h"
 
-namespace VAL {
+namespace VAL1_2 {
   
 auto_ptr<UnsatConditionFactory> ErrorLog::fac(new UnsatConditionFactory);
 

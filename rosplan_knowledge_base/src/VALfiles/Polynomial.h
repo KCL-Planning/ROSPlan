@@ -51,8 +51,8 @@
 #include <utility>
 //#include "Proposition.h"
 
-#ifndef __POLYNOMIAL
-#define __POLYNOMIAL
+#ifndef __POLYNOMIAL_1_2
+#define __POLYNOMIAL_1_2
 
 using std::make_pair;
 using std::pair;
@@ -61,7 +61,7 @@ using std::ostream;
 using std::map;
 
 //#define vector std::vector
-namespace VAL {
+namespace VAL1_2 {
   
 class Polynomial;
 class Comparison;

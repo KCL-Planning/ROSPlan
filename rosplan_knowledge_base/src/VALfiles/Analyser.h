@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __ANALYSER
-#define __ANALYSER
+#ifndef __ANALYSER_1_2
+#define __ANALYSER_1_2
 
 #include <vector>
 #include <iostream>
@@ -36,7 +36,7 @@ using std::ostream;
 #include "ptree.h"
 #include "VisitController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class extended_pred_symbol : public pred_symbol {
 private:

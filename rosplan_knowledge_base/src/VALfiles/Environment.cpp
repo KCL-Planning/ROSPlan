@@ -46,7 +46,7 @@
  ----------------------------------------------------------------------------*/
 #include "Environment.h"
 
-namespace VAL {
+namespace VAL1_2 {
   
 map<Validator *,vector<Environment *> > Environment::copies 
 						= map<Validator *,vector<Environment*> >();

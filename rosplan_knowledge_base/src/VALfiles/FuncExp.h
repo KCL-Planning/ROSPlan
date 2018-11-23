@@ -51,13 +51,13 @@
 #include "Environment.h"
 #include "Utils.h"
 
-#ifndef __FUNCEXP
-#define __FUNCEXP
+#ifndef __FUNCEXP_1_2
+#define __FUNCEXP_1_2
 
 //#define map std::map
 using std::map;
 
-namespace VAL {
+namespace VAL1_2 {
   
 class State;
 extern bool LaTeX;

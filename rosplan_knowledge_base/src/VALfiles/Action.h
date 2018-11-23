@@ -56,10 +56,10 @@
 using std::ostream_iterator;
 using std::set;
 
-#ifndef __ACTION
-#define __ACTION
+#ifndef __ACTION_1_2
+#define __ACTION_1_2
 
-namespace VAL {
+namespace VAL1_2 {
   
 class State;
 class Ownership;

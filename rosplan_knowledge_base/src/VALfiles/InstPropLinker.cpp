@@ -33,7 +33,7 @@
 #include "FastEnvironment.h"
 #include "Environment.h"
 
-using namespace VAL;
+using namespace VAL1_2;
 
 
 namespace Inst {

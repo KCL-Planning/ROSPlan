@@ -24,12 +24,12 @@
  *
  ************************************************************************/
 
-#ifndef __HYPSP
-#define __HYPSP
+#ifndef __HYPSP_1_2
+#define __HYPSP_1_2
 
 #include <ostream>
 
-namespace VAL {
+namespace VAL1_2 {
 
 class GoalHypothesisSpace {
 public:

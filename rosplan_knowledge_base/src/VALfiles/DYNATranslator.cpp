@@ -59,7 +59,7 @@ using std::for_each;
 using std::find;
 
 //#define set std::set
-namespace VAL {
+namespace VAL1_2 {
 
 void DYNATranslator::write_symbol(ostream & o,const symbol * p)
 {

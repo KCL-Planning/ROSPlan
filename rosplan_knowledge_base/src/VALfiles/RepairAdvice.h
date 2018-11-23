@@ -45,8 +45,8 @@
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
 
-#ifndef __REPAIRADVICE
-#define __REPAIRADVICE
+#ifndef __REPAIRADVICE_1_2
+#define __REPAIRADVICE_1_2
 #include "Action.h"
 #include "State.h"
 #include <memory>
@@ -54,7 +54,7 @@
 
 using std::auto_ptr;
 
-namespace VAL {
+namespace VAL1_2 {
   
 class UnsatCondition {
 protected:

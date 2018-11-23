@@ -46,13 +46,13 @@
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
 
-#ifndef __TYPESTRIPWC
-#define __TYPESTRIPWC
+#ifndef __TYPESTRIPWC_1_2
+#define __TYPESTRIPWC_1_2
 
 #include "typecheck.h"
 #include "WriteController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 class TypeStripWriteController : public WriteController {
 private:

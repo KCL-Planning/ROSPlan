@@ -34,10 +34,10 @@
 
 using namespace std;
 using namespace TIM;
-using namespace VAL;
+using namespace VAL1_2;
 //using namespace Inst;
 
-namespace VAL {
+namespace VAL1_2 {
 
 extern yyFlexLexer * yfl;
 }

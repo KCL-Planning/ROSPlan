@@ -68,7 +68,7 @@ using std::make_pair;
 //#define map std::map
 //#define vector std::vector
 
-namespace VAL {
+namespace VAL1_2 {
 
 string getName(plan_step* ps)
 {

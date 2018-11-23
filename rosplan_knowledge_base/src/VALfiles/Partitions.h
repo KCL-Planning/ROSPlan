@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __PARTITIONS
-#define __PARTITIONS
+#ifndef __PARTITIONS_1_2
+#define __PARTITIONS_1_2
 
 /* This code is designed to support a simple problem in managing partitions.
    The idea is that we have a collection of objects that are going to start 

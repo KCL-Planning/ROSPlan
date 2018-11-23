@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __FUNCANALYSIS
-#define __FUNCANALYSIS
+#ifndef __FUNCANALYSIS_1_2
+#define __FUNCANALYSIS_1_2
 
 #include <iostream>
 #include <utility>
@@ -39,7 +39,7 @@ using std::ostream;
 using std::max;
 using std::min;
 
-namespace VAL {
+namespace VAL1_2 {
 
 class extended_func_symbol;
 typedef std::map<extended_func_symbol*,std::set<extended_func_symbol*> > IGraph;
@@ -48,7 +48,7 @@ typedef std::map<extended_func_symbol*,std::set<extended_func_symbol*> > IGraph;
 
 #include "VisitController.h"
 
-namespace VAL {
+namespace VAL1_2 {
 
 extern bool FAverbose;
 

@@ -24,8 +24,8 @@
  *
  ************************************************************************/
 
-#ifndef __CGA
-#define __CGA
+#ifndef __CGA_1_2
+#define __CGA_1_2
 
 #include <map>
 #include <set>
@@ -34,7 +34,7 @@ namespace TIM {
 class Property;
 }
 
-namespace VAL {
+namespace VAL1_2 {
 using TIM::Property;
 
 class CausalGraph {

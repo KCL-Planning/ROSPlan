@@ -577,9 +577,14 @@ int main(int argc, char **argv) {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
         ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
     }
+    else if (extension == ".ppddl") {
+        kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
+        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+        ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
+    }
 	else if (extension == ".rddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
-        VAL::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
         ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
     }
     else {

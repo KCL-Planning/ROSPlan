@@ -9,7 +9,7 @@
 #include "RDDLParser.h" // From the RDDL_parser_library
 
 /**
- * Domain storage and parsing. Uses VAL parser and storage.
+ * Domain storage and parsing.
  */
 namespace KCL_rosplan {
 

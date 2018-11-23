@@ -64,7 +64,7 @@
 
 //#define vector std::vector
 
-namespace VAL {
+namespace VAL1_2 {
   
 class State;
 class Proposition;

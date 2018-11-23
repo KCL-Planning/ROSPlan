@@ -61,7 +61,7 @@ using std::ostream;
 extern int yyparse();
 extern int yydebug;
 
-namespace VAL {
+namespace VAL1_2 {
 parse_category* top_thing=NULL;
 
 
@@ -76,7 +76,7 @@ ostream * report = & cout;
 };
 
 char * current_filename;
-using namespace VAL;
+using namespace VAL1_2;
 
 int main(int argc,char * argv[])
 {

@@ -1063,7 +1063,7 @@ static yyconst flex_int16_t yy_chk[1846] =
   using std::cout;
   using std::cerr;
   using std::istream;
-  using namespace VAL;
+  using namespace VAL1_2;
 extern "C" int yywrap();
 
 #line 1070 "lex.yy.cc"

@@ -51,15 +51,15 @@
 //#include "random.h"
 #include "ptree.h"
 
-#ifndef __ROBUSTANALYSE
-#define __ROBUSTANALYSE
+#ifndef __ROBUSTANALYSE_1_2
+#define __ROBUSTANALYSE_1_2
 
 using std::map;
 using std::pair;
 using std::vector;
 using std::make_pair;
 
-namespace VAL {
+namespace VAL1_2 {
 
 extern bool Robust;
 extern double RobustPNEJudder;

@@ -51,7 +51,7 @@
 #include "RobustAnalyse.h"
 
 //#define map std::map
-namespace VAL {
+namespace VAL1_2 {
   
 double
 FuncExp::evaluate(const State * s) const 

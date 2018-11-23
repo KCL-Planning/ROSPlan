@@ -45,8 +45,8 @@
   http://planning.cis.strath.ac.uk
  ----------------------------------------------------------------------------*/
 
-#ifndef __LATEXSUPPORT
-#define __LATEXSUPPORT
+#ifndef __LATEXSUPPORT_1_2
+#define __LATEXSUPPORT_1_2
 
 #include <vector>
 #include <string>
@@ -60,7 +60,7 @@ using std::ostream;
 using std::string;
 using std::vector;
 
-namespace VAL {
+namespace VAL1_2 {
   
 struct showList {
 	void operator()(const pair<double,vector<string> > & ps) const

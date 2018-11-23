@@ -52,7 +52,7 @@ extern int yydebug;
 using std::ifstream;
 using std::ofstream;
 
-namespace VAL {
+namespace VAL1_2 {
 
 bool Verbose = false;
 ostream * report = &cout;
@@ -70,7 +70,7 @@ int PropInfo::x = 0;
 };
 
 char * current_filename;
-using namespace VAL;
+using namespace VAL1_2;
 
 
 int main(int argc,char * argv[])
