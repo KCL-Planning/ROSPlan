@@ -93,9 +93,9 @@ namespace KCL_rosplan {
 		/* GRAPH METHODS */
 		/*---------------*/
 
-		void makeEdge(int source_node_id, int sink_node_id) {
+		void makeEdge(int source_node_id, int sink_node_id, int edge_type) {
 			// create an ordering that only specifies after
-			makeEdge(source_node_id, sink_node_id, 0, std::numeric_limits<double>::max());
+			makeEdge(source_node_id, sink_node_id, 0, std::numeric_limits<double>::max(), edge_type);
 		}
 
 		/**
@@ -202,7 +202,7 @@ namespace KCL_rosplan {
 		void fetchTILs();
 		void createGraph();
 		bool addInterferenceEdges(std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node);
-		void makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound);
+		void makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound, int edge_type);
 		bool addConditionEdge(
 				std::multimap<double,int> &node_map, std::multimap<double,int>::iterator &current_node,
 				rosplan_knowledge_msgs::DomainFormula &condition, bool negative_condition, bool overall_condition);
