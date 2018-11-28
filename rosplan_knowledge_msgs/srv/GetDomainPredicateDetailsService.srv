@@ -3,3 +3,4 @@
 string name
 ---
 rosplan_knowledge_msgs/DomainFormula predicate
+bool is_sensed

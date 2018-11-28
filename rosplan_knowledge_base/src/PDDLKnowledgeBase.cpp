@@ -131,6 +131,13 @@ namespace KCL_rosplan {
 			if((*ci)->getPred()->symbol::getName() == req.name) {
 				pred_visitor.visit_pred_decl(*ci);
 				res.predicate = pred_visitor.msg;
+
+                // predicate is sensed
+                if(sensed_predicates.find(req.name) == sensed_predicates.end()) {
+                    sensed_predicates[req.name] = false;
+                }
+                res.is_sensed = sensed_predicates[req.name];
+
 				return true;
 			}
 		}

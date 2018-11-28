@@ -11,6 +11,7 @@
 #include "rosplan_knowledge_msgs/KnowledgeUpdateService.h"
 #include "rosplan_knowledge_msgs/KnowledgeUpdateServiceArray.h"
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
+#include "rosplan_knowledge_msgs/SetNamedBool.h"
 
 #include "rosplan_knowledge_msgs/GetDomainNameService.h"
 #include "rosplan_knowledge_msgs/GetDomainTypeService.h"
@@ -72,7 +73,6 @@ namespace KCL_rosplan {
         void removeMissionGoal(rosplan_knowledge_msgs::KnowledgeItem &msg);
 		void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
-
 		/* PDDL model (current state) */
 		std::map<std::string, std::vector<std::string> > model_constants;
 		std::map<std::string, std::vector<std::string> > model_instances;
@@ -86,6 +86,9 @@ namespace KCL_rosplan {
 
 		/* conditional planning */
 		std::vector<std::vector<rosplan_knowledge_msgs::KnowledgeItem> > model_oneof_constraints;
+
+		/* sensing information */
+		std::map<std::string, bool> sensed_predicates;
 
         ros::NodeHandle _nh;
     public:
@@ -129,6 +132,9 @@ namespace KCL_rosplan {
 		/* service methods for conditional planning */
 		bool updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 		// TODO bool getCurrentConstraintsOneOf(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
+
+		/* service methods for conditional planning */
+		bool setSensedPredicate(rosplan_knowledge_msgs::SetNamedBool::Request  &req, rosplan_knowledge_msgs::SetNamedBool::Response &res);
 
 		/* main loop */
 		void runKnowledgeBase();

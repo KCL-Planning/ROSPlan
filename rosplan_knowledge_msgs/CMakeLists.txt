@@ -46,6 +46,7 @@ add_service_files(
   GenerateProblemService.srv
   SetFloat.srv
   SetInt.srv
+  SetNamedBool.srv
   GetRDDLParams.srv
 )
 
