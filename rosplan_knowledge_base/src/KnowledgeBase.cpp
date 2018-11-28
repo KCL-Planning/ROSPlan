@@ -523,6 +523,12 @@ namespace KCL_rosplan {
 		return true;
 	}
 
+	bool KnowledgeBase::setSensedPredicate(rosplan_knowledge_msgs::SetNamedBool::Request  &req, rosplan_knowledge_msgs::SetNamedBool::Response &res) {
+        sensed_predicates[req.name] = req.value;
+        res.success = true;
+        return true;
+    }
+
     KnowledgeBase::KnowledgeBase(ros::NodeHandle& n) {
 		_nh = n;
 
@@ -552,6 +558,10 @@ namespace KCL_rosplan {
 		stateServer4 = _nh.advertiseService("state/timed_knowledge",	&KCL_rosplan::KnowledgeBase::getTimedKnowledge, this);
 		stateServer5 = _nh.advertiseService("state/goals",				&KCL_rosplan::KnowledgeBase::getGoals, this);
 		stateServer6 = _nh.advertiseService("state/metric",			    &KCL_rosplan::KnowledgeBase::getMetric, this);
+
+		// set sensed predicates
+		senseServer = _nh.advertiseService("update_sensed_predicates", &KCL_rosplan::KnowledgeBase::setSensedPredicate, this);
+
     }
 
 

@@ -166,6 +166,14 @@ namespace KCL_rosplan {
 
             // predicate parameters
             res.predicate.typed_parameters = getTypedParams(it->second->params);
+
+            // predicate is sensed
+            if(sensed_predicates.find(it->second->variableName) == sensed_predicates.end()) {
+                sensed_predicates[it->second->variableName] = false;
+            }
+            res.is_sensed = sensed_predicates[it->second->variableName];
+
+
             return true;
         }
         ROS_WARN("KCL: (%s) Unknown predicate \"%s\".", ros::this_node::getName().c_str(), req.name.c_str());

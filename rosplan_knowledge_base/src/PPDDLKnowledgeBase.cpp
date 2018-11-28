@@ -81,6 +81,13 @@ namespace KCL_rosplan {
                 // predicate variables
                 auto pred = domain_parser.domain->predicates().find_predicate(*it);
                 res.predicate.typed_parameters = getTypedParams(domain_parser.domain->predicates().parameters(*pred));
+
+                // predicate is sensed
+                if(sensed_predicates.find(*it) == sensed_predicates.end()) {
+                    sensed_predicates[*it] = false;
+                }
+                res.is_sensed = sensed_predicates[*it];
+
                 return true;
             }
         }
