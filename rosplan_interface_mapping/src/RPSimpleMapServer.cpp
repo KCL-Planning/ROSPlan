@@ -11,7 +11,7 @@ namespace KCL_rosplan {
 
 		// config
 		std::string dataPath("common/");
-		nh.param("/rosplan/data_path", data_path, dataPath);
+		nh.param("data_path", data_path, dataPath);
 
 		// knowledge interface
 		std::string kb = "knowledge_base";
@@ -62,7 +62,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		// clear previous roadmap from knowledge base
-		ROS_INFO("KCL: (RPSimpleMapServer) Loading roadmap from file");
+		ROS_INFO("KCL: (RPSimpleMapServer) Loading roadmap from file %s", filename.c_str());
 
 		// load configuration file
 		std::ifstream infile(filename.c_str());
