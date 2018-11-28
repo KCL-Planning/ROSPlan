@@ -133,7 +133,7 @@ namespace KCL_rosplan {
 		bool updateKnowledgeConstraintsOneOf(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request  &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res);
 		// TODO bool getCurrentConstraintsOneOf(rosplan_knowledge_msgs::GetAttributeService::Request  &req, rosplan_knowledge_msgs::GetAttributeService::Response &res);
 
-		/* service methods for conditional planning */
+		/* service methods for sensed predicates */
 		bool setSensedPredicate(rosplan_knowledge_msgs::SetNamedBool::Request  &req, rosplan_knowledge_msgs::SetNamedBool::Response &res);
 
 		/* main loop */
