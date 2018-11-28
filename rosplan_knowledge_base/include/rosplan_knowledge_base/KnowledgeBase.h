@@ -44,6 +44,7 @@ namespace KCL_rosplan {
 
         // query knowledge
         ros::ServiceServer queryServer; // queryKnowledge
+        ros::ServiceServer senseServer; // queryKnowledge
 
         // update knowledge
         ros::ServiceServer updateServer0; // clearKnowledge
