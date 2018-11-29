@@ -7,13 +7,17 @@ namespace KCL_rosplan {
 	/* constructor */
 	/*-------------*/
 
-	EsterelPlanDispatcher::EsterelPlanDispatcher(ros::NodeHandle& nh): PlanDispatcher(nh)  {
+	EsterelPlanDispatcher::EsterelPlanDispatcher(ros::NodeHandle& nh): display_edge_type_(false),
+        PlanDispatcher(nh)  {
 
 		node_handle = &nh;
 
 		std::string plan_graph_topic = "plan_graph";
 		nh.getParam("plan_graph_topic", plan_graph_topic);
 		plan_graph_publisher = node_handle->advertise<std_msgs::String>(plan_graph_topic, 1000, true);
+
+		// display edge type with colors (conditional edge, interference edge, etc)
+		nh.param("display_edge_type", display_edge_type_, false);
 
 		reset();
 	}
@@ -58,7 +62,7 @@ namespace KCL_rosplan {
 		ros::Rate loop_rate(10);
 		replan_requested = false;
 		plan_cancelled = false;
-		
+
 		// initialise machine
 		initialise();
 
@@ -86,7 +90,7 @@ namespace KCL_rosplan {
 
 			// for each node check completion, conditions, and dispatch
 			for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
-				
+
 				rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
 
 				// activate plan start edges
@@ -103,7 +107,7 @@ namespace KCL_rosplan {
 					state_changed = true;
 					plan_started = true;
 				}
-				
+
 				// do not check actions for nodes which are not action nodes
 				if(node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && node.node_type != rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
 					continue;
@@ -128,7 +132,7 @@ namespace KCL_rosplan {
 
 					// query KMS for condition edges
 					bool condition_activate_action = false;
-					if(edges_activate_action) {			
+					if(edges_activate_action) {
 						condition_activate_action = checkPreconditions(node.action);
 					}
 
@@ -141,7 +145,7 @@ namespace KCL_rosplan {
 
 						// dispatch action
 						ROS_INFO("KCL: (%s) Dispatching action [%i, %s, %f, %f]",
-								ros::this_node::getName().c_str(), 
+								ros::this_node::getName().c_str(),
 								node.action.action_id,
 								node.action.name.c_str(),
 								(node.action.dispatch_time+planStartTime-missionStartTime),
@@ -204,7 +208,7 @@ namespace KCL_rosplan {
 		}
 
 		ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
-		
+
 		reset();
 		return true;
 	}
@@ -270,7 +274,22 @@ namespace KCL_rosplan {
 
 		// nodes
 		for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::iterator nit = current_plan.nodes.begin(); nit!=current_plan.nodes.end(); nit++) {
-			dest <<  nit->node_id << "[ label=\"" << nit->name;
+
+			std::stringstream params;
+			// do not print parameters for start node
+			if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START) {
+				// to print action parameters in graph, get parameters from action
+				for(auto pit = nit->action.parameters.begin(); pit != nit->action.parameters.end(); pit++) {
+					params << pit-> value << ",";
+				}
+				// replace last character "," with a ")"
+				params.seekp(-1, params.cur); params << ')';
+				dest <<  nit->node_id << "[ label=\"" << nit->name << "\n(" << params.str();
+			}
+			else {
+
+				dest <<  nit->node_id << "[ label=\"" << nit->name;
+			}
 
 			switch(nit->node_type) {
 			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
@@ -311,9 +330,35 @@ namespace KCL_rosplan {
 				} else {
 					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << eit->duration_upper_bound << "]\"";
 				}
-				dest << " , penwidth=2"
-						<< ((edge_active[eit->edge_id]) ? " , color=\"red\"" : " , color=\"black\"")
-						<< "]" << std::endl;
+
+				// decide edge color
+				std::string edge_color = "black";
+
+				if(display_edge_type_) {
+
+					// green if conditional edge, red if start to end, blue if interference edge
+					if(eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE){
+					edge_color = "green";
+					}
+					else if(eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::INTERFERENCE_EDGE){
+							edge_color = "blue";
+					}
+					else if(eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::START_END_ACTION_EDGE){
+							edge_color = "red";
+					}
+				}
+				else {
+
+					if(edge_active[eit->edge_id]) {
+							edge_color = "red";
+					}
+					else {
+							edge_color = "black";
+					}
+				}
+
+				dest << " , penwidth=2, color=\"" << edge_color << "\"]" << std::endl;
+
 			}};
 		}
 

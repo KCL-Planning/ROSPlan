@@ -290,7 +290,8 @@ namespace KCL_rosplan {
 			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
 
 				// if action end, insert edge from action start with duration equal to action duration
-				makeEdge(node->node_id-1, node->node_id, node->action.duration, node->action.duration);
+				makeEdge(node->node_id-1, node->node_id, node->action.duration, node->action.duration,
+					rosplan_dispatch_msgs::EsterelPlanEdge::START_END_ACTION_EDGE);
 
 			case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
 
@@ -323,7 +324,7 @@ namespace KCL_rosplan {
 
 				// create an edge from the plan start
 				if(!edge_created) {
-					makeEdge(0, node->node_id);
+					makeEdge(0, node->node_id, rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				}
 
 				break;
@@ -356,9 +357,11 @@ namespace KCL_rosplan {
 			if(satisfiesPrecondition(condition, tit->second, !negative_condition)) {
 				if(overall_condition) {
 					// edge goes to end action node instead of start action
-					makeEdge(0, current_node->second + 1, 0, tit->first);
+					makeEdge(0, current_node->second + 1, 0, tit->first,
+						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				} else {
-					makeEdge(0, current_node->second, 0, tit->first);
+					makeEdge(0, current_node->second, 0, tit->first,
+						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				}
 			}
 
@@ -373,14 +376,16 @@ namespace KCL_rosplan {
 
 				// check TIL support
 				if(satisfiesPrecondition(condition, tit->second, negative_condition)) {
-					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max());
+					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max(),
+						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 					return true;
 				}
 				tit++;
 			}
 			// check action support
 			if(satisfiesPrecondition(condition, last_plan.nodes[rit->second], negative_condition)) {
-				makeEdge(rit->second, current_node->second);
+				makeEdge(rit->second, current_node->second,
+						 rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				return true;
 			}
 		}
@@ -451,7 +456,8 @@ namespace KCL_rosplan {
 			}
 
 			if(interferes) {
-				makeEdge(prenode->node_id, node->node_id);
+				makeEdge(prenode->node_id, node->node_id,
+						 rosplan_dispatch_msgs::EsterelPlanEdge::INTERFERENCE_EDGE);
 				edge_added = true;
 			}
 		}
@@ -459,7 +465,8 @@ namespace KCL_rosplan {
 		return edge_added;
 	}
 
-	void PDDLEsterelPlanParser::makeEdge(int source_node_id, int sink_node_id, double lower_bound, double upper_bound) {
+	void PDDLEsterelPlanParser::makeEdge(int source_node_id, int sink_node_id,
+				double lower_bound, double upper_bound, int edge_type) {
 
 		// see if there is already an existing edge
 		std::vector<int>::iterator eit = last_plan.nodes[source_node_id].edges_out.begin();
@@ -482,6 +489,8 @@ namespace KCL_rosplan {
 
 		// create and add edge
 		rosplan_dispatch_msgs::EsterelPlanEdge newEdge;
+		// conditional , start-end, or interference edge
+		newEdge.edge_type = edge_type;
 		newEdge.edge_id = last_plan.edges.size();
 		std::stringstream ss;
 		ss << "edge" << "_" << newEdge.edge_id;

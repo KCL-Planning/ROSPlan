@@ -59,6 +59,8 @@ namespace KCL_rosplan
 		ros::ServiceClient query_knowledge_client;
 		ros::ServiceClient query_domain_client;
 
+		bool display_edge_type_;
+
 	public:
 
 		/* constructor */

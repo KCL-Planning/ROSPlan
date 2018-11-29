@@ -1,4 +1,10 @@
 #EsterelPlanEdge message
+
+byte CONDITION_EDGE   = 0
+byte START_END_ACTION_EDGE = 1
+byte INTERFERENCE_EDGE = 2
+
+byte edge_type
 int32 edge_id
 string edge_name
 int32 signal_type
