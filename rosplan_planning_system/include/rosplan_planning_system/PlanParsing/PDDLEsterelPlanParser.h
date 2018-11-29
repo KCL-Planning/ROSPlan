@@ -98,41 +98,6 @@ namespace KCL_rosplan {
 			makeEdge(source_node_id, sink_node_id, 0, std::numeric_limits<double>::max(), edge_type);
 		}
 
-		/**
-		 * @returns a std::pair describing the upper and lower bounds on the ordering
-		 */
-		std::pair<double,double> getBounds(rosplan_dispatch_msgs::EsterelPlanNode &a, rosplan_dispatch_msgs::EsterelPlanNode &b) {
-			std::set<int> checked_flags;
-			return getBounds(a, b, checked_flags);
-		}
-
-		std::pair<double,double> getBounds(rosplan_dispatch_msgs::EsterelPlanNode &a, rosplan_dispatch_msgs::EsterelPlanNode &b, std::set<int> &checked_flags) {
-
-			// a node happens when it happens
-			if(a.node_id==b.node_id) 
-				return std::make_pair<double,double>(0,0);
-
-			// potentially no bounds
-			std::pair<double,double> bounds = std::make_pair<double,double>(-std::numeric_limits<double>::max(),std::numeric_limits<double>::max());
-
-			// else check all nodes ordered after a
-			for(size_t i=0; i<a.edges_out.size(); i++) {
-				int edge_id = a.edges_out[i];
-				for(size_t j=0; j<last_plan.edges[edge_id].sink_ids.size(); j++) {
-					int node_id = last_plan.edges[edge_id].sink_ids[j];
-					// get bounds from child
-					std::pair<double,double> newbounds = getBounds(last_plan.nodes[node_id], b, checked_flags);
-					// update bounds
-					if(bounds.first < newbounds.first + last_plan.edges[edge_id].duration_lower_bound)
-						bounds.first = newbounds.first + last_plan.edges[edge_id].duration_lower_bound;
-					if(bounds.second > newbounds.second + last_plan.edges[edge_id].duration_upper_bound)
-						bounds.second = newbounds.second + last_plan.edges[edge_id].duration_upper_bound;
-				}
-			}
-
-			return bounds;
-		}
-
 		/*------------------------*/
 		/* DOMAIN FORMULA METHODS */
 		/*------------------------*/
