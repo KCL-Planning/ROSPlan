@@ -374,6 +374,7 @@ namespace KCL_rosplan {
     }
 
     void RDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
+        domain_path_ = domain_file_path;
         RDDLTask* t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
         if (t == nullptr) {
             ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
@@ -394,6 +395,7 @@ namespace KCL_rosplan {
         _setRDDLHorizonSrv = _nh.advertiseService("state/set_rddl_horizon",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLHorizon, this);
         _setRDDLMaxNonDefSrv = _nh.advertiseService("state/set_rddl_max_nondef_actions",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLMAxNonDefActions, this);
         _setImmediateRewardsSrv = _nh.advertiseService("state/get_immediate_reward",  &KCL_rosplan::RDDLKnowledgeBase::computeImmediateReward, this);
+        _reloadDomainStructureSrv = _nh.advertiseService("reload_rddl_domain",  &KCL_rosplan::RDDLKnowledgeBase::reloadDomain, this);
     }
 
     bool RDDLKnowledgeBase::getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req,
@@ -425,6 +427,16 @@ namespace KCL_rosplan {
         return true;
     }
 
+    bool RDDLKnowledgeBase::reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res) {
+        RDDLTask* t = domain_parser.parseTask(domain_path_, req.problem_path, true); // The parser stores the task
+        if (t == nullptr) {
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
+            res.success = false;
+        }
+        else res.success = true;
+        return true;
+    }
+
     bool RDDLKnowledgeBase::computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res) {
 
         // Compute current state
@@ -447,12 +459,6 @@ namespace KCL_rosplan {
                 int index = statefluent->second->index;
                 if (index >= 0) current.state[index] = 1 - it->is_negative;
             }
-            else { // Update non fluents FIXME can be optimised to update it only when they have changed?
-                auto nonFluent = domain_parser.rddlTask->nonFluentMap.find(predicate);
-                if (nonFluent != domain_parser.rddlTask->nonFluentMap.end()) {
-                    nonFluent->second->initialValue = 1 - it->is_negative;
-                }
-            }
         }
 
         for (auto it = model_functions.begin(); it != model_functions.end(); ++it) {
@@ -472,12 +478,6 @@ namespace KCL_rosplan {
                 int index = statefluent->second->index;
                 if (index >= 0) current.state[index] = it->function_value;
             }
-            else { // Update non fluents FIXME can be optimised to update it only when they have changed?
-                auto nonFluent = domain_parser.rddlTask->nonFluentMap.find(predicate);
-                if (nonFluent != domain_parser.rddlTask->nonFluentMap.end()) {
-                    nonFluent->second->initialValue = it->function_value;
-                }
-            }
         }
 
         // Compute action state
@@ -493,7 +493,7 @@ namespace KCL_rosplan {
         }
 
         // Compute reward
-        double reward;
+        double reward = 0;
         domain_parser.rddlTask->rewardCPF->formula->evaluate(reward, current, action_state);
         res.reward = reward;
         return true;

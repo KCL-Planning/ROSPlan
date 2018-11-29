@@ -5,6 +5,7 @@
 #include "rosplan_planning_system/ProblemGeneration/RDDLProblemGenerator.h"
 
 namespace KCL_rosplan {
+
     RDDLProblemGenerator::RDDLProblemGenerator(const std::string& kb) : ProblemGenerator(kb) {
         // Get domain name
         ros::ServiceClient getNameClient = _nh.serviceClient<rosplan_knowledge_msgs::GetDomainNameService>(domain_name_service);
@@ -16,6 +17,25 @@ namespace KCL_rosplan {
         }
         _domain_name = nameSrv.response.domain_name;
         _non_fluents_name = "nf_" + _domain_name + "__generate_instance";
+        reload_domain_ = _nh.serviceClient<rosplan_knowledge_msgs::ReloadRDDLDomainProblem>(kb + "/reload_rddl_domain");
+    }
+
+
+    /**
+     * generates a RDDL problem file.
+     * This file is later read by the planner.
+     */
+    void RDDLProblemGenerator::generateProblemFile(std::string &problemPath) {
+        if (knowledge_base.size() == 0) ROS_ERROR("KCL: (%s) Knowledge base is not set!", ros::this_node::getName().c_str());
+        std::ofstream pFile;
+        pFile.open((problemPath).c_str());
+        makeProblem(pFile);
+        pFile.close();
+        rosplan_knowledge_msgs::ReloadRDDLDomainProblem srv;
+        srv.request.problem_path = problemPath;
+        if (not reload_domain_.call(srv) or not srv.response.success) {
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s.", reload_domain_.getService().c_str());
+        }
     }
 
     void RDDLProblemGenerator::makeProblem(std::ofstream &pFile) {

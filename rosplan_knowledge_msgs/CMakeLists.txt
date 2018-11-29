@@ -49,6 +49,7 @@ add_service_files(
   SetNamedBool.srv
   GetRDDLParams.srv
   GetRDDLImmediateReward.srv
+  ReloadRDDLDomainProblem.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

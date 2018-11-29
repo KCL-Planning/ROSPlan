@@ -28,6 +28,7 @@
 #include "rosplan_knowledge_msgs/GetRDDLImmediateReward.h"
 #include "rosplan_knowledge_msgs/SetFloat.h"
 #include "rosplan_knowledge_msgs/SetInt.h"
+#include "rosplan_knowledge_msgs/ReloadRDDLDomainProblem.h"
 
 #include "KnowledgeBase.h"
 #include "KnowledgeComparitor.h"
@@ -65,6 +66,7 @@ namespace KCL_rosplan {
 
 		/* parsing domain */
 		RDDLTaskParser domain_parser;
+		std::string domain_path_; // Path to the domain file
 		int _horizon;
 		int _max_nondef_actions;
 		float _discount_factor;
@@ -75,12 +77,14 @@ namespace KCL_rosplan {
 		ros::ServiceServer _setRDDLHorizonSrv;
 		ros::ServiceServer _setRDDLMaxNonDefSrv;
 		ros::ServiceServer _setImmediateRewardsSrv;
+		ros::ServiceServer _reloadDomainStructureSrv;
 
 		bool getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req, rosplan_knowledge_msgs::GetRDDLParams::Response &res);
 		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
 		bool setRDDLHorizon(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 		bool setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 		bool computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res);
+		bool reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res);
         void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) override;
 	public:
 		RDDLKnowledgeBase(ros::NodeHandle& n);

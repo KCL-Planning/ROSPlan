@@ -37,7 +37,7 @@ namespace KCL_rosplan {
 
 
 		/* domain parsing */
-		RDDLTask* parseTask(const std::string& domainPath, const std::string& instancePath);
+		RDDLTask* parseTask(const std::string& domainPath, const std::string& instancePath, bool reload=false);
 	};
 }
 #endif
