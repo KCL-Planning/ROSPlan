@@ -409,10 +409,8 @@ namespace KCL_rosplan {
 
 			rosplan_dispatch_msgs::EsterelPlanNode *prenode = &last_plan.nodes[rit->second];
 
-			// if already ordered, then skip
-			std::pair<double,double> bounds = getBounds(*prenode, *node);
-			if( (bounds.first>=0) || (bounds.second<=0) )
-				continue;
+			// TODO: redundant (interference) edges can be removed from esterel plan by checking here
+			// if node is already ordered (must be done efficiently)
 
 			bool interferes = false;
 
