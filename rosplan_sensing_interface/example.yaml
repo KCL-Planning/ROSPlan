@@ -1,0 +1,58 @@
+functions:
+    - $(find rosplan_sensing_interface)/example.py
+    #- /home/gerard/Dropbox/rosplan_sensing_interface/example.py
+topics:
+    test:
+        - /topic
+        - std_msgs/String # Not needed, but useful for topics not yet published!
+        #- msg.data == 'TRUE' # value computation
+
+    docked:
+        - params kenny
+        - /mobile_base/sensors/core
+        - kobuki_msgs/SensorState
+        - msg.charger != msg.DISCHARGING
+
+    undocked:
+        - params kenny
+        - /mobile_base/sensors/core
+        - kobuki_msgs/SensorState
+        - msg.charger == msg.DISCHARGING
+
+    robot_at:
+        - params kenny *
+        - /amcl_pose
+        - geometry_msgs/PoseWithCovarianceStamped
+
+    localised:
+        - params kenny
+        - /localised_mock
+        - std_msgs/Bool
+        - msg.data
+
+    somebody_at:
+        - /somebodyat_mock
+        - diagnostic_msgs/KeyValue
+        - '[(msg.key, msg.value == "yes")]'
+
+    is_busy:
+        - params *
+        - /isbusy_mock
+        - diagnostic_msgs/KeyValue
+        - '[(msg.key, msg.value == "yes")]'
+
+services:
+    is_busy:
+        - /testsrv
+        - std_srvs/SetBool
+        - xxx
+        - lalala req
+        - lalala res
+
+#import rospy
+#from std_srvs.srv import SetBool, SetBoolResponse
+#rospy.init_node('test')
+#def test_srv(msg):
+#    return SetBoolResponse(msg.data, 'Called service test!')
+#s = rospy.Service('testsrv', SetBool, test_srv)
+#rospy.spin()

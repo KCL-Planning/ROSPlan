@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+<node name="rosplan_sensing_interface" pkg="rosplan_sensing_interface" type="sensing_interface.py" respawn="false" output="screen">
+    <rosparam command="load" file="$(find rosplan_sensing_interface)/example.yaml" />
+</node>
+
+</launch>
