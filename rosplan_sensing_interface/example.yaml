@@ -46,8 +46,8 @@ services:
         - /testsrv
         - std_srvs/SetBool
         - xxx
-        - lalala req
-        - lalala res
+        - req code
+        - 'res.lala < ee'
 
 #import rospy
 #from std_srvs.srv import SetBool, SetBoolResponse

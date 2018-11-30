@@ -23,6 +23,7 @@ from rosplan_knowledge_msgs.msg import KnowledgeItem
 class RosplanSensing:
     def __init__(self):
         self.mutex = Lock()
+        self.srv_mutex = Lock()
 
         ################################################################################################################
         # Init clients and publishers
@@ -103,7 +104,7 @@ class RosplanSensing:
             self.import_msg(msg_type)
             rospy.Subscriber(predicate_info[offset+0], eval(msg_type[msg_type.rfind('/')+1:]), self.subs_callback, predicate_name)
             # self.sensed_topics[predicate_name] = (None, False)
-            try:
+            try:  # Update KB to inform about the sensed predicates
                 sensed_srv_req = SetNamedBoolRequest()
                 sensed_srv_req.name = predicate_name
                 sensed_srv_req.value = True
@@ -119,12 +120,16 @@ class RosplanSensing:
         self.service_clients = []
         self.service_type_names = []
         self.service_predicate_names = []
+        self.last_called_time = []
+        self.time_between_calls = []
+        self.request_src = []
+        self.response_process_src = []
         for predicate_name, predicate_info in self.cfg_service.iteritems():
             params_loaded = self.load_params(predicate_name, predicate_info)  # If parameters found, add 1 to the indexes
             if not params_loaded[0]:
                 continue
             offset = self.offset[predicate_name] = int(params_loaded[1])
-            if len(predicate_info) < 2+offset:  ## FIXME ofset correct?
+            if len(predicate_info) < 2+offset:
                 rospy.logerr("Error: Wrong configuration file for predicate %s" % predicate_name)
                 continue
             srv_type = predicate_info[offset+1]
@@ -132,7 +137,27 @@ class RosplanSensing:
             self.service_type_names.append(srv_typename)
             self.service_clients.append(rospy.ServiceProxy(predicate_info[offset+0], eval(srv_typename)))
             self.service_predicate_names.append(predicate_name)
-            try:
+            self.last_called_time.append(rospy.Time(0))
+            self.time_between_calls.append(predicate_info[offset+2])
+
+            # Gets the request creation
+            request_offset = 1
+            if predicate_info[offset+3].find('req ') == 0:
+                self.request_src.append(predicate_info[offset+3].replace('req ', '', 1))
+            elif predicate_info[offset+3].find('request ') == 0:
+                self.request_src.append(predicate_info[offset+3].replace('request ', '', 1))
+            else:
+                self.request_src.append(None)
+                request_offset = 0
+
+            # Gets the string processing
+            if len(predicate_info) == offset+request_offset+4:
+                self.response_process_src.append(predicate_info[offset+request_offset+3])
+            else:
+                self.response_process_src.append(None)
+
+
+            try:  # Update KB to inform about the sensed predicates
                 sensed_srv_req = SetNamedBoolRequest()
                 sensed_srv_req.name = predicate_name
                 sensed_srv_req.value = True
@@ -262,16 +287,74 @@ class RosplanSensing:
         # TODO time handling and parameters and outer loop
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
-            for client, predname, type, last_time in zip(self.service_clients, self.service_predicate_names, self.service_type_names, self.last_called_time):
+            for i in xrange(len(self.service_clients)):
                 now = rospy.Time.now()
-                if now-last_time < XX:
+                if (now-self.last_called_time[i]) < rospy.Duration(self.time_between_calls[i]):
                     continue
-                req = eval(type+"Request()")
+
+                pred_name = self.service_predicate_names[i]
+                # Get request
+                if self.request_src[i]:
+                    python_string = self.request_src[i]
+                else:  # Call the method from the scripts.py file
+                    if not ('req_' + pred_name) in dir(self.scripts):
+                        rospy.logerr(
+                            'KCL: (RosplanSensing) Predicate "%s" does not have either a Request creation method' % pred_name)
+                        continue
+                    python_string = "self.scripts." + 'req_' + pred_name + "()"
+
+                req = eval(python_string, globals(), locals())
+
                 try:
-                    client.call(req)
+                    res = self.service_clients[i].call(req)
                     self.last_called_time[i] = now
                 except Exception as e:
-                    rospy.logerr("KCL (SensingInterface) Failed to call service for predicate %s base: %s" % (predname, e.message))
+                    rospy.logerr("KCL (SensingInterface) Failed to call service for predicate %s base: %s" % (pred_name, e.message))
+                    continue
+
+                # Process response
+                if self.request_src[i]:
+                    python_string = self.request_src[i]
+                else:  # Call the method from the scripts.py file
+                    if not pred_name in dir(self.scripts):
+                        rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' %
+                            pred_name)
+                        continue
+                    python_string = "self.scripts." + pred_name + "(res, self.params[pred_name])"
+
+                result = eval(python_string, globals(), locals())
+                changed = False
+
+                if type(result) is list:
+                    for params, val in result:
+                        self.srv_mutex.acquire(True)  # ROS subscribers are multithreaded in Python
+                        try:
+                            if type(val) is bool:
+                                changed = self.sensed_services[pred_name + ':' + params][0] ^ val
+                            else:
+                                changed = self.sensed_services[pred_name + ':' + params][0] != val
+                        except:  # If hasn't been added yet just ignore it
+                            changed = True
+                        self.sensed_services[pred_name + ':' + params] = (val, changed)
+                        self.srv_mutex.release()
+                else:
+                    params = reduce(lambda r, x: r + ':' + x, self.params[pred_name])
+                    if type(params) == list:
+                        rospy.logerr(
+                            'KCL: (RosplanSensing) Predicate "%s" needs to have all the parameters defined and fully instantiated' % pred_name)
+                        rospy.signal_shutdown('Wrong cfg params')
+                        return None
+                    self.srv_mutex.acquire(True)  # ROS subscribers are multithreaded in Python
+                    try:
+                        if type(result) is bool:
+                            changed = self.sensed_services[pred_name + ':' + params][0] ^ result
+                        else:
+                            changed = self.sensed_services[pred_name + ':' + params][0] != result
+                    except:  # If hasn't been added yet just ignore it
+                        changed = True
+                    self.sensed_services[pred_name + ':' + params] = (result, changed)
+                    self.srv_mutex.release()
+
             r.sleep()
         return None  # Finish thread
 
@@ -280,14 +363,23 @@ class RosplanSensing:
         # Get info from KB functions and propositions (to know type of variable)
         # Fill update
         self.mutex.acquire(True)
-        sensed_topics_cp = self.sensed_topics.copy()
+        sensed_predicates = self.sensed_topics.copy()
         self.mutex.release()
-        for predicate, (val, changed) in sensed_topics_cp.iteritems():
+        self.srv_mutex.acquire(True)
+        sensed_predicates.update(self.sensed_services.copy())
+        self.srv_mutex.release()
+        for predicate, (val, changed) in sensed_predicates.iteritems():
             if not changed:
                 continue
-            self.mutex.acquire(True)
-            self.sensed_topics[predicate] = (self.sensed_topics[predicate][0], False)  # Set to not changed
-            self.mutex.release()
+
+            if predicate in self.sensed_topics:
+                self.mutex.acquire(True)
+                self.sensed_topics[predicate] = (self.sensed_topics[predicate][0], False)  # Set to not changed
+                self.mutex.release()
+            else:
+                self.srv_mutex.acquire(True)
+                self.sensed_services[predicate] = (self.sensed_services[predicate][0], False)  # Set to not changed
+                self.srv_mutex.release()
             predicate_info = predicate.split(':')
             ki = KnowledgeItem()
             ki.attribute_name = predicate_info.pop(0)
