@@ -128,7 +128,7 @@ namespace KCL_rosplan {
             res.op.formula.typed_parameters = getTypedParams(it->second->params);
 
             // Compute preconditions
-            PosNegDomainFormula prec = RDDLUtils::getOperatorPreconditions(res.op.formula, domain_parser.rddlTask->SACs);
+            PosNegDomainFormula prec = RDDLUtils::getOperatorPreconditions(res.op.formula, domain_parser.uninstantiated_SACs);
             res.op.at_start_simple_condition = prec.pos;
             res.op.at_start_neg_condition = prec.neg;
 
@@ -374,6 +374,7 @@ namespace KCL_rosplan {
     }
 
     void RDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
+        domain_path_ = domain_file_path;
         RDDLTask* t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
         if (t == nullptr) {
             ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
@@ -393,6 +394,8 @@ namespace KCL_rosplan {
         _setRDDLDiscountFactorSrv = _nh.advertiseService("state/set_rddl_discount_factor",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLDiscountFactor, this);
         _setRDDLHorizonSrv = _nh.advertiseService("state/set_rddl_horizon",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLHorizon, this);
         _setRDDLMaxNonDefSrv = _nh.advertiseService("state/set_rddl_max_nondef_actions",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLMAxNonDefActions, this);
+        _setImmediateRewardsSrv = _nh.advertiseService("state/get_immediate_reward",  &KCL_rosplan::RDDLKnowledgeBase::computeImmediateReward, this);
+        _reloadDomainStructureSrv = _nh.advertiseService("reload_rddl_domain",  &KCL_rosplan::RDDLKnowledgeBase::reloadDomain, this);
     }
 
     bool RDDLKnowledgeBase::getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req,
@@ -421,6 +424,78 @@ namespace KCL_rosplan {
                                                     rosplan_knowledge_msgs::SetInt::Response &res) {
         _max_nondef_actions = req.value;
         res.success = true;
+        return true;
+    }
+
+    bool RDDLKnowledgeBase::reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res) {
+        RDDLTask* t = domain_parser.parseTask(domain_path_, req.problem_path, true); // The parser stores the task
+        if (t == nullptr) {
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
+            res.success = false;
+        }
+        else res.success = true;
+        return true;
+    }
+
+    bool RDDLKnowledgeBase::computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res) {
+
+        // Compute current state
+        State current(domain_parser.rddlTask->CPFs.size());
+
+        for (auto it = model_facts.begin(); it != model_facts.end(); ++it) {
+            // Create predicate instantiated string
+            std::string predicate = it->attribute_name;
+            bool params = not it->values.empty();
+            if (params) predicate += "(";
+            for (size_t i = 0; i < it->values.size(); ++i) {
+                if (i > 0) predicate += ", ";
+                predicate += it->values[i].value;
+            }
+            if (params) predicate += ")";
+
+            // Check state
+            auto statefluent = domain_parser.rddlTask->stateFluentMap.find(predicate);
+            if (statefluent != domain_parser.rddlTask->stateFluentMap.end()) {
+                int index = statefluent->second->index;
+                if (index >= 0) current.state[index] = 1 - it->is_negative;
+            }
+        }
+
+        for (auto it = model_functions.begin(); it != model_functions.end(); ++it) {
+            // Create predicate instantiated string
+            std::string predicate = it->attribute_name;
+            bool params = not it->values.empty();
+            if (params) predicate += "(";
+            for (size_t i = 0; i < it->values.size(); ++i) {
+                if (i > 0) predicate += ", ";
+                predicate += it->values[i].value;
+            }
+            if (params) predicate += ")";
+
+            // Check state
+            auto statefluent = domain_parser.rddlTask->stateFluentMap.find(predicate);
+            if (statefluent != domain_parser.rddlTask->stateFluentMap.end()) {
+                int index = statefluent->second->index;
+                if (index >= 0) current.state[index] = it->function_value;
+            }
+        }
+
+        // Compute action state
+        ActionState action_state((int)domain_parser.rddlTask->actionFluents.size());
+        for (auto it = req.action.begin(); it != req.action.end(); ++it) {
+            if (it->data == "noop") continue;
+            // Check state
+            auto actionfluent = domain_parser.rddlTask->actionFluentMap.find(it->data);
+            if (actionfluent != domain_parser.rddlTask->actionFluentMap.end()) {
+                int index = actionfluent->second->index;
+                if (index >= 0) action_state.state[index] = 1;
+            }
+        }
+
+        // Compute reward
+        double reward = 0;
+        domain_parser.rddlTask->rewardCPF->formula->evaluate(reward, current, action_state);
+        res.reward = reward;
         return true;
     }
 

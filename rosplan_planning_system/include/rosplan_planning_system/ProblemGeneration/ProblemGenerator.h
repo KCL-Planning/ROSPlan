@@ -49,7 +49,7 @@ namespace KCL_rosplan {
 
         ProblemGenerator(const std::string& kb);
 
-		void generateProblemFile(std::string &problemPath);
+		virtual void generateProblemFile(std::string &problemPath);
 
 	};
 } // close namespace

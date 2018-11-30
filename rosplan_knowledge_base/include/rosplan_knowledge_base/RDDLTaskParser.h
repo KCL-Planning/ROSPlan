@@ -7,6 +7,8 @@
 #include <fstream>
 
 #include "RDDLParser.h" // From the RDDL_parser_library
+#include "instantiator.h" // From the RDDL_parser_library
+#include "preprocessor.h" // From the RDDL_parser_library
 
 /**
  * Domain storage and parsing.
@@ -26,6 +28,7 @@ namespace KCL_rosplan {
 
 		/* RDDL task pointers */
 		RDDLTask* rddlTask;
+		std::vector<LogicalExpression*> uninstantiated_SACs; // As the instantiation breaks the SACs structure
 
 		/* domain information */
 		bool domain_parsed;
@@ -34,7 +37,7 @@ namespace KCL_rosplan {
 
 
 		/* domain parsing */
-		RDDLTask* parseTask(const std::string& domainPath, const std::string& instancePath);
+		RDDLTask* parseTask(const std::string& domainPath, const std::string& instancePath, bool reload=false);
 	};
 }
 #endif

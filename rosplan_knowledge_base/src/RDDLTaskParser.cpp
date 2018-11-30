@@ -11,9 +11,9 @@ namespace KCL_rosplan {
 	/**
 	 * parse the domain file
 	 */
-    RDDLTask *RDDLTaskParser::parseTask(const std::string &domainPath, const std::string &instancePath) {
+    RDDLTask *RDDLTaskParser::parseTask(const std::string &domainPath, const std::string &instancePath, bool reload) {
 		// only parse domain once
-		if (domain_parsed) return rddlTask;
+		if (domain_parsed and not reload) return rddlTask;
         ROS_INFO("KCL: (%s) Parsing domain: %s.", ros::this_node::getName().c_str(), domainPath.c_str());
         if (not instancePath.empty())
             ROS_INFO("KCL: (%s) Parsing initial state: %s", ros::this_node::getName().c_str(), instancePath.c_str());
@@ -27,6 +27,15 @@ namespace KCL_rosplan {
         }
         domain_name = rddlTask->domainName;
         problem_name = rddlTask->name;
+
+        ROS_INFO("KCL: (%s) Pre-pocessing domain...", ros::this_node::getName().c_str());
+        uninstantiated_SACs = rddlTask->SACs;
+        Instantiator instantiator(rddlTask);
+        instantiator.instantiate(false);
+        Preprocessor preprocessor(rddlTask, true);
+        preprocessor.preprocess(false);
+        ROS_INFO("KCL: (%s) RDDL domain is ready!", ros::this_node::getName().c_str());
+
         domain_parsed = true;
 
 		return rddlTask;
