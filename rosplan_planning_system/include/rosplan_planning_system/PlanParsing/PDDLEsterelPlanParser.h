@@ -8,6 +8,7 @@
 #include "rosplan_knowledge_msgs/DomainOperator.h"
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 #include "diagnostic_msgs/KeyValue.h"
+#include "rosplan_planning_system/PlanParsing/floyd_warshall.h"
 
 #include <stdlib.h>
 #include <string>
@@ -159,6 +160,12 @@ namespace KCL_rosplan {
 		ros::ServiceClient get_functions_client;
 		ros::ServiceClient get_operator_details_client;
 		std::multimap<double, rosplan_knowledge_msgs::KnowledgeItem> til_list;
+
+		// class used to check for node connectivity in a directed graph
+		floydWarshall graph_as_matrix_;
+
+		// update distance matrix every time an interference edge is added
+		bool strong_graph_optimization_;
 
 	protected:
 

@@ -4,13 +4,17 @@
 namespace KCL_rosplan {
 
 	/* constructor */
-	PDDLEsterelPlanParser::PDDLEsterelPlanParser(ros::NodeHandle &nh)
+	PDDLEsterelPlanParser::PDDLEsterelPlanParser(ros::NodeHandle &nh): strong_graph_optimization_(false)
 	{
 		node_handle = &nh;
 
 		// fetching problem info for TILs
 		std::string kb = "knowledge_base";
 		node_handle->getParam("knowledge_base", kb);
+
+		// get from parameter server if you want extensive interference edge pruning or partial
+		strong_graph_optimization_ = false;
+		node_handle->getParam("strong_graph_optimization", strong_graph_optimization_);
 
 		std::stringstream ss;
 
@@ -259,8 +263,7 @@ namespace KCL_rosplan {
 		std::multimap<double,int> nodes;
 
 		// construct an ordered list of the nodes
-		std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ait = last_plan.nodes.begin();
-		for(; ait!=last_plan.nodes.end(); ait++) {
+		for(auto ait = last_plan.nodes.begin(); ait!=last_plan.nodes.end(); ait++) {
 
 			// get node time
 			double time = 0;
@@ -280,9 +283,11 @@ namespace KCL_rosplan {
 			nodes.insert(std::pair<double,int>(time,ait->node_id));
 		}		
 
+		// get number of nodes from last_plan
+		graph_as_matrix_.setEmptyDistanceMatrix(last_plan.nodes.size());
+
 		// get the next node
-		std::multimap<double,int>::iterator nit = nodes.begin();
-		for(; nit!=nodes.end(); nit++) {
+		for(auto nit = nodes.begin(); nit!=nodes.end(); nit++) {
 			
 			rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[nit->second];
 
@@ -319,15 +324,24 @@ namespace KCL_rosplan {
 						if(addConditionEdge(nodes, nit, *cit, true, false)) edge_created = true;
 				}
 
-				// interference edges
-				if(addInterferenceEdges(nodes, nit)) edge_created = true;
-
 				// create an edge from the plan start
 				if(!edge_created) {
 					makeEdge(0, node->node_id, rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				}
 
 				break;
+			}
+		}
+
+		// update connectivity graph with start-end edges and conditional edges only
+		graph_as_matrix_.updateDistanceMatrix(); // uses Floyd-Warshall algorithm
+
+		// iterate over all nodes again, this time checking only for interference edges
+		for(auto nit = nodes.begin(); nit!=nodes.end(); nit++) {
+			if(addInterferenceEdges(nodes, nit)) {
+				// perform update on distance matrix every time an interference edge is added
+				if(strong_graph_optimization_)
+					graph_as_matrix_.updateDistanceMatrix(); // uses Floyd-Warshall algorithm
 			}
 		}
 	}
@@ -409,8 +423,9 @@ namespace KCL_rosplan {
 
 			rosplan_dispatch_msgs::EsterelPlanNode *prenode = &last_plan.nodes[rit->second];
 
-			// TODO: redundant (interference) edges can be removed from esterel plan by checking here
-			// if node is already ordered (must be done efficiently)
+			// if there is already a path connecting prenode and node, don't create edge
+			if(graph_as_matrix_.connectedSingleQuery(prenode->node_id, node->node_id))
+				continue;
 
 			bool interferes = false;
 
@@ -467,22 +482,9 @@ namespace KCL_rosplan {
 				double lower_bound, double upper_bound, int edge_type) {
 
 		// see if there is already an existing edge
-		std::vector<int>::iterator eit = last_plan.nodes[source_node_id].edges_out.begin();
-		std::vector<int>::iterator nit = last_plan.nodes[source_node_id].edges_out.begin();
-		for(; eit!=last_plan.nodes[source_node_id].edges_out.end(); eit++) {
-			int edgeID = (*eit);
-			if(edgeID < 0 && edgeID >= last_plan.edges.size()) continue;
-			nit = std::find(last_plan.edges[edgeID].sink_ids.begin(), last_plan.edges[edgeID].sink_ids.end(), sink_node_id);
-			if(nit != last_plan.edges[edgeID].sink_ids.end()) {
-
-				// update the bounds and return
-				if(lower_bound > last_plan.edges[edgeID].duration_lower_bound)
-					last_plan.edges[edgeID].duration_lower_bound = lower_bound;
-				if(upper_bound < last_plan.edges[edgeID].duration_upper_bound)
-					last_plan.edges[edgeID].duration_upper_bound = upper_bound;
-				return;
-				
-			}
+		if(graph_as_matrix_.checkEdgeExistance(source_node_id, sink_node_id)) {
+			// edge already exists, don't add
+			return;
 		}
 
 		// create and add edge
@@ -504,6 +506,9 @@ namespace KCL_rosplan {
 
 		last_plan.nodes[source_node_id].edges_out.push_back(newEdge.edge_id);
 		last_plan.nodes[sink_node_id].edges_in.push_back(newEdge.edge_id);
+
+		// maintain connectivity graph distance matrix
+		graph_as_matrix_.makeNonDuplicateEdge(source_node_id, sink_node_id, lower_bound);
 	}
 
 } // close namespace

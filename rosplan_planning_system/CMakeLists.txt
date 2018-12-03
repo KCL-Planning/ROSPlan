@@ -46,6 +46,9 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
+## Libraries
+add_library(floyd_warshall src/PlanParsing/floyd_warshall.cpp)
+
 ## Declare cpp executables
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGenerator.cpp
@@ -103,7 +106,7 @@ target_link_libraries(upm_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pprp_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(online_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_parser ${catkin_LIBRARIES})
-target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
+target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES} floyd_warshall)
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(online_plan_dispatcher ${catkin_LIBRARIES})

@@ -6,6 +6,7 @@
 	<arg name="knowledge_base"   default="rosplan_knowledge_base" />
 	<arg name="planner_topic"    default="/rosplan_planner_interface/planner_output" />
 	<arg name="plan_topic"       default="complete_plan" />
+	<arg name="strong_graph_optimization" default="false" />
 
 
 	<!-- plan parsing -->
@@ -13,6 +14,7 @@
 		<param name="knowledge_base" value="$(arg knowledge_base)" />
 		<param name="planner_topic"  value="$(arg planner_topic)" />
 		<param name="plan_topic"     value="$(arg plan_topic)" />
+		<param name="strong_graph_optimization" value="$(arg strong_graph_optimization)" />
 	</node>
 
 </launch>
