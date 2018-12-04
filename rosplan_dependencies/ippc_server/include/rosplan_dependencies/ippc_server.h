@@ -18,7 +18,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <boost/tr1/regex.hpp>
 #include "base64.h"
 #include <fstream>
 
