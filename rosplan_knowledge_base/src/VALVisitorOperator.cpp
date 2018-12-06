@@ -234,43 +234,47 @@ namespace KCL_rosplan {
 	/*-------------*/
 
 	void VALVisitorOperator::visit_plus_expression(VAL1_2::plus_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::ADD;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_minus_expression(VAL1_2::minus_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::SUB;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_mul_expression(VAL1_2::mul_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::MUL;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_div_expression(VAL1_2::div_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::DIV;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_uminus_expression(VAL1_2::uminus_expression * s) {
@@ -297,17 +301,11 @@ namespace KCL_rosplan {
 	void VALVisitorOperator::visit_special_val_expr(VAL1_2::special_val_expr * s) {
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::SPECIAL;
-        switch(s->getKind()) {
-            case VAL1_2::E_HASHT:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::HASHT;
-                break;
-            case VAL1_2::E_DURATION_VAR:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::DURATION;
-                break;
-            case VAL1_2::E_TOTAL_TIME:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME;
-				break;
-        }
+		switch(s->getKind()) {
+			case VAL1_2::E_HASHT: op.special_type = rosplan_knowledge_msgs::ExprBase::HASHT; break;
+			case VAL1_2::E_DURATION_VAR: op.special_type = rosplan_knowledge_msgs::ExprBase::DURATION; break;
+			case VAL1_2::E_TOTAL_TIME: op.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME; break;
+        	}
 		last_expr.tokens.push_back(op);
 	}
 
