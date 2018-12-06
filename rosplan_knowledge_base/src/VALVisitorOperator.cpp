@@ -42,6 +42,9 @@ namespace KCL_rosplan {
 		msg.at_start_neg_condition.clear();
 		msg.over_all_neg_condition.clear();
 		msg.at_end_neg_condition.clear();
+		msg.at_start_comparison.clear();
+		msg.at_end_comparison.clear();
+		msg.over_all_comparison.clear();
 
 		// effects
 		op->effects->visit(this);
@@ -91,7 +94,7 @@ namespace KCL_rosplan {
 
 	void VALVisitorOperator::visit_neg_goal(VAL1_2::neg_goal *c) {
 		cond_neg = !cond_neg;
-        c->getGoal()->visit(this);
+		c->getGoal()->visit(this);
 		cond_neg = !cond_neg;
 	}
 
@@ -114,7 +117,36 @@ namespace KCL_rosplan {
 		}
 	}
 
-	void VALVisitorOperator::visit_comparison(VAL1_2::comparison * c) {}
+	void VALVisitorOperator::visit_comparison(VAL1_2::comparison * c) {
+
+		rosplan_knowledge_msgs::DomainInequality ineq;
+		ineq.grounded = false;
+
+		// assignment left hand side
+		last_expr.tokens.clear();
+		c->getLHS()->visit(this);
+		ineq.LHS = last_expr;
+
+		// assignment right hand side
+		last_expr.tokens.clear();
+		c->getRHS()->visit(this);
+		ineq.RHS = last_expr;
+
+		// assignment operator
+		switch(c->getOp()) {
+			case VAL1_2::E_GREATER: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATER; break;
+			case VAL1_2::E_GREATEQ: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATEREQ; break;
+			case VAL1_2::E_LESS:    ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESS; break;
+			case VAL1_2::E_LESSEQ:  ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESSEQ; break;
+			case VAL1_2::E_EQUALS:  ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::EQUALS; break;
+		}
+
+		switch(cond_time) {
+			case VAL1_2::E_AT_START: msg.at_start_comparison.push_back(ineq); break;
+			case VAL1_2::E_AT_END: msg.at_end_comparison.push_back(ineq); break;
+			case VAL1_2::E_OVER_ALL: msg.over_all_comparison.push_back(ineq); break;
+		}
+	}
 
 	void VALVisitorOperator::visit_qfied_goal(VAL1_2::qfied_goal *) {}
 
