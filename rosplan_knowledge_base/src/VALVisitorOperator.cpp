@@ -319,6 +319,7 @@ namespace KCL_rosplan {
 		last_func.name = s->getFunction()->getName();
 
 		// func_term variables
+		last_func.typed_parameters.clear();
 		for (VAL1_2::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
 			diagnostic_msgs::KeyValue param;
 			param.key = (*vi)->pddl_typed_symbol::getName();
