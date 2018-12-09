@@ -1150,7 +1150,6 @@ class Animation(object):
 
     def start(self):
         self.timeout_id = QTimer();
-        self.dot_widget.connect(self.timeout_id, SIGNAL('timeout()'), self.tick)
         self.timeout_id.start(int(self.step * 1000))
 
     def stop(self):
