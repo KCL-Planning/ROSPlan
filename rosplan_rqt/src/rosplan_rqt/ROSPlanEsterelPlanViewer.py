@@ -1,58 +1,39 @@
 #!/usr/bin/env python
 
 import os
-import pydot
-
 import rospy
 import rospkg
 from std_msgs.msg import String
-# for resizing graph we use functionality from rqt_graph
-from rqt_graph.interactive_graphics_view import InteractiveGraphicsView
+
+# reused from ros smach
+from rosplan_rqt.xdot_qt import DotWidget
 
 # common imports that work for both versions PyQt4 and PyQt5
 from python_qt_binding import loadUi, QT_BINDING_VERSION
-from python_qt_binding.QtCore import QByteArray
-from python_qt_binding.QtSvg import QGraphicsSvgItem
 
 # check user Qt version and import libraries accordingly
 if QT_BINDING_VERSION.startswith('4'):
-    from python_qt_binding.QtGui import  QWidget, QGraphicsScene
-    from python_qt_binding.QtSvg import  QSvgRenderer
-    from python_qt_binding.QtWebKit import QGraphicsWebView
+    from PyQt4.QtGui import QWidget, QFileDialog
 elif QT_BINDING_VERSION.startswith('5'):
-    from PyQt5.QtWidgets import QWidget
-    from PyQt5.QtWebKitWidgets import QGraphicsWebView
-    from PyQt5.QtWidgets import QGraphicsScene
-    from PyQt5.QtSvg import QSvgRenderer
-    from PyQt5.QtWidgets import QFileDialog
+    from PyQt5.QtWidgets import QWidget, QFileDialog
 else:
-    rospy.logerr('Unsupported Qt version, (supported are : PyQt4, PyQt5)')
+    raise ValueError('Unsupported Qt version, supported versions: PyQt4, PyQt5')
 
 
 class EsterelPlanViewerWidget(QWidget):
-
-    # plan view
-    _scene = QGraphicsScene()
-    _webview = QGraphicsWebView()
-    _svg = QGraphicsSvgItem()
-    _renderer = QSvgRenderer()
 
     def __init__(self, plugin=None):
         super(EsterelPlanViewerWidget, self).__init__()
 
         # Create QWidget
         ui_file = os.path.join(rospkg.RosPack().get_path('rosplan_rqt'), 'resource', 'esterel_plan_viewer.ui')
-        loadUi(ui_file, self, {'InteractiveGraphicsView': InteractiveGraphicsView})
+        loadUi(ui_file, self)
         self.setObjectName('ROSPlanEsterelPlanViewer')
-
-        self.graphicsView.setScene(self._scene)
-        self._scene.addItem(self._svg)
 
         self.refreshButton.clicked[bool].connect(self._handle_refresh_clicked)
         self.saveButton.clicked[bool].connect(self._handle_save_button_clicked)
 
         self._sub = rospy.Subscriber('/rosplan_plan_dispatcher/plan_graph', String, self.planReceivedCallback)
-        self._plugin = plugin
 
         # to store the graph msg received in callback, later on is used to save the graph if needed
         self.graph = None
@@ -63,11 +44,10 @@ class EsterelPlanViewerWidget(QWidget):
         '''
         # save graph in member variable in case user clicks save button later
         self.graph = msg.data
-        # render graph
-        temp_buffer_graph = pydot.graph_from_dot_data(self.graph)
-        svg_string = temp_buffer_graph.create_svg()
-        self._renderer.load(QByteArray(svg_string))
-        self._svg.setSharedRenderer(self._renderer)
+        # render graph using DotWidget class
+        rospy.loginfo('Rendering graph started...')
+        self.xdot_widget.set_dotcode(msg.data)
+        rospy.loginfo('Rendering graph ended !')
 
     def _handle_refresh_clicked(self, checked):
         '''
@@ -88,7 +68,8 @@ class EsterelPlanViewerWidget(QWidget):
         else:
             # if self.graph is None it will fall in this case
             rospy.logerr('Could not save Graph: is empty, currently subscribing to: %s, try' +\
-                         ' clicking "Update subscriber" button and make sure graph is published at least one time', self.topicText.text())
+                         ' clicking "Update subscriber" button and make sure graph is published at least one time'\
+                         , self.topicText.text())
 
     def _handle_save_button_clicked(self, checked):
         '''
