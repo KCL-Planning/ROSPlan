@@ -27,7 +27,7 @@ class EsterelPlanViewerWidget(QWidget):
 
         # Create QWidget
         ui_file = os.path.join(rospkg.RosPack().get_path('rosplan_rqt'), 'resource', 'esterel_plan_viewer.ui')
-        loadUi(ui_file, self)
+        loadUi(ui_file, self, {'DotWidget':DotWidget})
         self.setObjectName('ROSPlanEsterelPlanViewer')
 
         self.refreshButton.clicked[bool].connect(self._handle_refresh_clicked)
