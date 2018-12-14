@@ -1453,7 +1453,8 @@ class DotWidget(QWidget):
         #print xdotcode
         parser = XDotParser(xdotcode)
         self.graph = parser.parse()
-        self.zoom_image(self.zoom_ratio, center=center)
+        # zoom out and center image everytime a new graph is set
+        # self.zoom_image(self.zoom_ratio, center=center)
 
     def reload(self):
         if self.openfilename is not None:

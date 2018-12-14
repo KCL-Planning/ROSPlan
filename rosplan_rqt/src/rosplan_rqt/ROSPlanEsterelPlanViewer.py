@@ -35,8 +35,24 @@ class EsterelPlanViewerWidget(QWidget):
 
         self._sub = rospy.Subscriber('/rosplan_plan_dispatcher/plan_graph', String, self.planReceivedCallback)
 
+        # flag used to zoom out to fit graph the first time it's received
+        self.first_time_graph_received = True
         # to store the graph msg received in callback, later on is used to save the graph if needed
         self.graph = None
+        # inform user that no graph has been received by drawing a single node in the rqt
+        self.gen_single_node('no plan received')
+
+    def gen_single_node(self, node_text):
+        '''
+        input: the node content (text)
+        return dot code corresponding to a graph of 1 node
+        '''
+        # generate dot code (of a single node) from received text
+        graph = 'digraph plan {0[ label="' + node_text + '",style=filled,fillcolor=white,fontcolor=black];}'
+        # render single node graph
+        self.xdot_widget.set_dotcode(graph)
+        # zoom the single node to be clearly visible
+        self.xdot_widget.zoom_image(5.0, center=True)
 
     def planReceivedCallback(self, msg):
         '''
@@ -46,7 +62,16 @@ class EsterelPlanViewerWidget(QWidget):
         self.graph = msg.data
         # render graph using DotWidget class
         rospy.loginfo('Rendering graph started...')
+        # inform the user his graph is being rendered
+        if self.first_time_graph_received:
+            self.gen_single_node('Plan received! rendering...')
+        # start rendering graph, might take a while depending on the graph size
         self.xdot_widget.set_dotcode(msg.data)
+        if self.first_time_graph_received:
+            # zoom out until graph fits in screen
+            self.xdot_widget.zoom_to_fit()
+            # only zoom to fit for the first graph
+            self.first_time_graph_received = False
         rospy.loginfo('Rendering graph ended !')
 
     def _handle_refresh_clicked(self, checked):
