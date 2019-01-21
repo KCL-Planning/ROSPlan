@@ -67,6 +67,7 @@ add_executable(pddl_esterel_plan_parser src/PlanParsing/PDDLEsterelPlanParser.cp
 add_executable(pddl_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
 add_executable(pddl_esterel_plan_dispatcher src/PlanDispatch/EsterelPlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
 add_executable(online_plan_dispatcher src/PlanDispatch/OnlinePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
+add_executable(csp_exec_generator src/PlanDispatch/csp_exec_generator.cpp)
 add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cpp src/ActionInterface/RPActionInterface.cpp)
 
 ## Add dependencies
@@ -107,6 +108,7 @@ target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(online_plan_dispatcher ${catkin_LIBRARIES})
+target_link_libraries(csp_exec_generator ${catkin_LIBRARIES})
 target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 
 ## Declare libraries
