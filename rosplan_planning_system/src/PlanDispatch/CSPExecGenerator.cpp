@@ -10,7 +10,7 @@
  * 
  */
 
-#include <rosplan_planning_system/PlanDispatch/csp_exec_generator.h>
+#include <rosplan_planning_system/PlanDispatch/CSPExecGenerator.h>
 #include <string>
 #include <vector>
 
