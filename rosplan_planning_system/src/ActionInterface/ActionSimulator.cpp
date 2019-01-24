@@ -13,12 +13,15 @@
 
 /** @file */
 
-#include <rosplan_action_interface/ActionSimulator.h>
+#include "rosplan_action_interface/ActionSimulator.h"
 
 ActionSimulator::ActionSimulator() : nh_("~")
 {
     // for now we call from constructor, in future we can remove
     prepareServices();
+
+    // call real KB to get all of its data, save in member variables
+    mirrorKB();
 }
 
 ActionSimulator::~ActionSimulator() {}
@@ -48,6 +51,53 @@ void ActionSimulator::prepareServices()
     ss.str("");
     ss << "/" << kb << "/state/propositions";
     sp_srv_client_ = nh_.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str());
+
+    // prepare service to get all state goals
+    ss.str("");
+    ss << "/" << kb << "/state/goals";
+    sg_srv_client_ = nh_.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str());
+}
+
+bool ActionSimulator::mirrorKB()
+{
+    // call real KB services and save them in member variables
+    // this includes all operator names, operator details, etc. This funcion should only be called once
+    // and is called automatically from constructor
+
+    // get a list of all operator names, save in operator_names_
+    if(!getOperatorNames(operator_names_))
+        return false;
+
+    // get a list of all domain predicates, save in domain_predicates_
+    if(!getAllPredicateNames(domain_predicates_))
+        return false;
+
+    // get a list of all domain operator details, save in domain_operator_details_
+    if(!getAllOperatorDetails(domain_operator_details_))
+        return false;
+
+    // make map between operator_names_ and domain_operator_details_, save in domain_operator_map_
+    // make sure inputs are not empty
+    if(!operator_names_.size() > 0 && !domain_operator_details_.size() > 0) {
+        ROS_ERROR("operator_names_ or domain_operator_details_ is empty");
+        return false;
+    }
+    // iterator over operator_names_
+    domain_operator_map_.clear(); // delete previous data if any
+    auto doit = domain_operator_details_.begin();
+    for(auto it=operator_names_.begin(); it!=operator_names_.end(); it++) {
+        domain_operator_map_.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainOperator>(*it, *doit++));
+    }
+
+    // get all state grounded predicates, save them in kb_facts_
+    if(!getAllGroundedFacts(kb_facts_))
+        return false;
+
+    // get all state goals from real KB, save them in kb_goals_
+    if(!getAllGoals(kb_goals_))
+        return false;
+
+    return true;
 }
 
 bool ActionSimulator::checkServiceExistance(ros::ServiceClient &srv)
@@ -92,12 +142,6 @@ bool ActionSimulator::getOperatorNames(std::vector<std::string> &operator_names)
     return true;
 }
 
-bool ActionSimulator::saveOperatorNames()
-{
-    // get domain operator details, save them in member variable
-    return getOperatorNames(operator_names_);
-}
-
 bool ActionSimulator::getOperatorDetails(std::string &operator_name, rosplan_knowledge_msgs::DomainOperator &op)
 {
     // get from KB a single domain operator detail, based on input name (operator_name)
@@ -111,6 +155,7 @@ bool ActionSimulator::getOperatorDetails(std::string &operator_name, rosplan_kno
     srv.request.name = operator_name; // pddl_action_name
 
     if(od_srv_client_.call(srv)){
+        // write return value by reference
         op = srv.response.op;
     }
     else {
@@ -121,13 +166,22 @@ bool ActionSimulator::getOperatorDetails(std::string &operator_name, rosplan_kno
     return true;
 }
 
-bool ActionSimulator::getSomeOperatorDetails(std::vector<std::string> &operator_names,
-        std::vector<rosplan_knowledge_msgs::DomainOperator> &domain_operator_details)
+bool ActionSimulator::getAllOperatorDetails(std::vector<rosplan_knowledge_msgs::DomainOperator> &domain_operator_details)
 {
     // fetch some domain operator details (depending on operator_names) and store them locally for future use
 
+    // check if we have stored operator names before
+    std::vector<std::string> operator_names;
+    if(operator_names_.size() > 0)
+        // use stored operator names to save one service call
+        operator_names = operator_names_;
+    else
+        // get all operator names, store them in operator_names
+        getOperatorNames(operator_names);
+
     // make sure input is not empty
     if(!operator_names.size() > 0) {
+        ROS_ERROR("operator_names is empty, while trying to get all operator details");
         return false;
     }
 
@@ -147,28 +201,6 @@ bool ActionSimulator::getSomeOperatorDetails(std::vector<std::string> &operator_
     }
 
     return true;
-}
-
-bool ActionSimulator::getAllOperatorDetails(std::vector<rosplan_knowledge_msgs::DomainOperator> &domain_operator_details)
-{
-    // fetch all domain operatos names, call getSomeOperatorDetails()
-
-    // check if we have stored operator names before
-    if(operator_names_.size() > 0) {
-        return getSomeOperatorDetails(operator_names_, domain_operator_details);
-    }
-    else{
-        // get all operator names, store them in operator_names
-        std::vector<std::string> operator_names;
-        getOperatorNames(operator_names);
-        return getSomeOperatorDetails(operator_names, domain_operator_details);
-    }
-}
-
-bool ActionSimulator::saveAllOperatorDetails()
-{
-    // get all domain operator details and store them in member variable for future use
-    return getAllOperatorDetails(domain_operator_details_);
 }
 
 bool ActionSimulator::getPredicatesDetails(std::vector<rosplan_knowledge_msgs::DomainFormula> &domain_predicate_details)
@@ -200,12 +232,6 @@ bool ActionSimulator::getPredicatesDetails(std::vector<rosplan_knowledge_msgs::D
     return true;
 }
 
-bool ActionSimulator::saveAllPredicatesDetails()
-{
-    // get all domain predicate details and store them in member variable for future use
-    return getPredicatesDetails(domain_predicate_details_);
-}
-
 bool ActionSimulator::getAllPredicateNames(std::vector<std::string> &domain_predicates)
 {
     // get all domain predicates details, extract their names, return them by reference
@@ -223,140 +249,61 @@ bool ActionSimulator::getAllPredicateNames(std::vector<std::string> &domain_pred
     return true;
 }
 
-bool ActionSimulator::saveAllPredicateNames()
+bool ActionSimulator::getAllKnowledgeItems(ros::ServiceClient &srv_client,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> &knowledge)
 {
-    // get all domain predicates details, extract their names and store them in member variable list
-    return getAllPredicateNames(domain_predicates_);
-}
-
-bool ActionSimulator::makeOperatorDetailsMap()
-{
-    // make a map between operator_names_ and domain_operator_details_
-
-    // make sure inputs are not empty
-    if(!operator_names_.size() > 0 && !domain_operator_details_.size() > 0) {
-        ROS_ERROR("operator_names_ or domain_operator_details_ is empty, try calling initInternalKB() first");
-        return false;
-    }
-
-    // iterator over operator_names_
-    // delete previous data if any
-    domain_operator_map_.clear();
-    auto doit = domain_operator_details_.begin();
-    for(auto it=operator_names_.begin(); it!=operator_names_.end(); it++) {
-        domain_operator_map_.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainOperator>(*it, *doit++));
-    }
-
-    return true;
-}
-
-bool ActionSimulator::getGroundedPredicates(std::string &predicate_name, std::vector<rosplan_knowledge_msgs::KnowledgeItem> &facts)
-{
-    // get all grounded facts related with a specific predicate_name
+    // function either to get all predicates or all goals, depending on the input client
 
     // wait for service
-    if(!checkServiceExistance(sp_srv_client_))
+    if(!checkServiceExistance(srv_client))
         return false;
 
     // call srv
     rosplan_knowledge_msgs::GetAttributeService srv;
 
-    srv.request.predicate_name = predicate_name;
+    srv.request.predicate_name = ""; // get all knowledge (all facts or goals)
 
-    if(sp_srv_client_.call(srv))
+    if(srv_client.call(srv))
     {
         // clear previous data, if any
-        facts.clear();
+        knowledge.clear();
 
         for(auto it=srv.response.attributes.begin(); it!= srv.response.attributes.end(); it++) {
             // return by reference a list of domain operator names
-            facts.push_back(*it);
+            knowledge.push_back(*it);
         }
     }
     else {
-        ROS_ERROR("KCL: (ActionSimulator) Could not call Knowledge Base service: %s", sp_srv_client_.getService().c_str());
+        ROS_ERROR("KCL: (ActionSimulator) Could not call Knowledge Base service: %s", srv_client.getService().c_str());
         return false;
     }
 
     return true;
 }
 
-bool ActionSimulator::getAllGroundedPredicates(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &all_facts)
+bool ActionSimulator::getAllGroundedFacts(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &all_facts)
 {
     // get all grounded facts in the KB
+    return getAllKnowledgeItems(sp_srv_client_, all_facts);
+}
 
-    // get all predicate names
-    std::vector<std::string> domain_predicates;
-    if(!getAllPredicateNames(domain_predicates))
-        return false;
+bool ActionSimulator::saveKBSnapshot()
+{
+    // fetch goals and facts from the real KB, save them in internal KB
 
     // delete previous data if any
-    all_facts.clear();
+    kb_goals_.clear();
+    kb_facts_.clear();
 
-    // iterate over the domain predicates names
-    for(auto it = domain_predicates.begin(); it != domain_predicates.end();it++) {
-        // call service to get all facts related with this name
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> facts;
-        getGroundedPredicates(*it, facts);
+    // get all state grounded predicates, save them in kb_facts_
+    if(!getAllGroundedFacts(kb_facts_))
+        return false;
 
-        // iterate over the facts and save them all in one big combined KB
-        for(auto fit = facts.begin(); fit != facts.end(); fit++) {
-            all_facts.push_back(*fit);
-        }
-    }
+    // get all state goals from real KB, save them in kb_goals_
+    if(!getAllGoals(kb_goals_))
+        return false;
 
     return true;
-}
-
-bool ActionSimulator::saveAllGroundedPredicates()
-{
-    // get all grounded predicates in KB, save in member variable
-    return getAllGroundedPredicates(internal_kb_);
-}
-
-bool ActionSimulator::initInternalKB()
-{
-    // call all related functions that populate required member variables to simulate actions and more
-
-    // get all predicate details, save them in domain_predicate_details_
-    if(!saveAllPredicatesDetails())
-        return false;
-
-    // get a list of all operator names, save in operator_names_
-    if(!saveOperatorNames())
-        return false;
-
-    // get a list of all domain predicates, save in domain_predicates_
-    if(!saveAllPredicateNames())
-        return false;
-
-    // get a list of all domain operator details, save in domain_operator_details_
-    if(!saveAllOperatorDetails())
-        return false;
-
-    // make map between operator_names_ and domain_operator_details_, save in domain_operator_map_
-    if(!makeOperatorDetailsMap())
-        return false;
-
-    // get all state grounded predicates, save them in internal_kb_
-    if(!saveAllGroundedPredicates())
-        return false;
-
-    // make internal_kb_ bkp
-    backupInternalKB();
-
-    return true;
-}
-
-void ActionSimulator::deleteAllInternalKB()
-{
-    domain_predicate_details_.clear();
-    operator_names_.clear();
-    domain_predicates_.clear();
-    domain_operator_details_.clear();
-    domain_operator_map_.clear();
-    internal_kb_.clear();
-    internal_kb_.clear();
 }
 
 std::string ActionSimulator::convertPredToString(std::string &predicate_name, std::vector<std::string> &params)
@@ -386,16 +333,16 @@ bool ActionSimulator::printInternalKB()
 {
     // print all predicates in internal KB
 
-    // saveAllGroundedPredicates() needs to be called first
+    // saveAllGroundedFacts() needs to be called first
 
-    if(!internal_kb_.size() > 0) {
-        ROS_ERROR("internal KB is empty, failed to print (try calling initInternalKB() first?)");
+    if(!kb_facts_.size() > 0) {
+        ROS_ERROR("internal KB is empty, failed to print (try calling saveKBSnapshot() first?)");
         return false;
     }
 
     ROS_INFO("....internal KB.....");
 
-    for(auto it=internal_kb_.begin(); it!=internal_kb_.end(); it++)
+    for(auto it=kb_facts_.begin(); it!=kb_facts_.end(); it++)
     {
         std::stringstream predicate_ss;
 
@@ -423,7 +370,7 @@ void ActionSimulator::backupInternalKB()
 {
     // save internal KB in second member variable for reset purposes: in case user wants to go
     // back to previoud KB version, without having to perform another service call
-    internal_kb_bkp_ = internal_kb_;
+    kb_facts_bkp_ = kb_facts_;
 }
 
 bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> &args,
@@ -432,8 +379,8 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<
     // find predicate inside KB, return by reference an iterator to the element
 
     // check that internal KB has at least 1 element
-    if(!internal_kb_.size() > 0) {
-        ROS_ERROR("internal_kb_ is empty");
+    if(!kb_facts_.size() > 0) {
+        ROS_ERROR("kb_facts_ is empty");
         return false;
     }
 
@@ -441,7 +388,7 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<
     bool found = false;
 
     // iterate over internal KB
-    for(auto it=internal_kb_.begin(); it!=internal_kb_.end(); it++)
+    for(auto it=kb_facts_.begin(); it!=kb_facts_.end(); it++)
     {
         // ensure we are dealing with a fact
         if(!it->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT)
@@ -546,7 +493,7 @@ bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vecto
 
     if(findFactInternal(predicate_name, args, it)) {
         // element exists, delete knowledge item from internal KB
-        internal_kb_.erase(it);
+        kb_facts_.erase(it);
     }
     else {
         // element does not exist
@@ -609,7 +556,7 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
         return;
     }
 
-    // internal_kb_ is of type -> std::vector<rosplan_knowledge_msgs::KnowledgeItem>
+    // kb_facts_ is of type -> std::vector<rosplan_knowledge_msgs::KnowledgeItem>
 
     rosplan_knowledge_msgs::KnowledgeItem knowledge_item;
 
@@ -639,7 +586,7 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
     }
 
     // add knowledge item to internal KB
-    internal_kb_.push_back(knowledge_item);
+    kb_facts_.push_back(knowledge_item);
 }
 
 void ActionSimulator::addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
@@ -679,7 +626,7 @@ bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<st
 
     // ensure domain_operator_map_ has data
     if(!domain_operator_map_.size() > 0) {
-        ROS_ERROR("domain_operator_map_ is empty, try calling initInternalKB() first");
+        ROS_ERROR("domain_operator_map_ is empty, try calling saveKBSnapshot() first");
         return false;
     }
 
@@ -731,7 +678,7 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
 
     // ensure domain_operator_details_ has data
     if(!domain_operator_details_.size() > 0) {
-        ROS_ERROR("domain_operator_details_ is empty, try calling initInternalKB() first");
+        ROS_ERROR("domain_operator_details_ is empty, try calling saveKBSnapshot() first");
         return false;
     }
 
@@ -790,6 +737,37 @@ bool ActionSimulator::simulateActionEnd(std::string &action_name, std::vector<st
     return simulateAction(action_name, params, false);
 }
 
+bool ActionSimulator::getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &kb_goals)
+{
+    // get all goals from real KB
+
+    // wait for service
+    if(!checkServiceExistance(sg_srv_client_))
+        return false;
+
+    // call srv
+    rosplan_knowledge_msgs::GetAttributeService srv;
+
+    srv.request.predicate_name = ""; // empty means get all goals in KB
+
+    if(sg_srv_client_.call(srv))
+    {
+        // clear previous data, if any
+        kb_goals.clear();
+
+        for(auto it=srv.response.attributes.begin(); it!= srv.response.attributes.end(); it++) {
+            // return by reference a list of domain operator names
+            kb_goals.push_back(*it);
+        }
+    }
+    else {
+        ROS_ERROR("KCL: (ActionSimulator) Could not call Knowledge Base service: %s", sg_srv_client_.getService().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     // init node
@@ -822,7 +800,7 @@ int main(int argc, char **argv)
     }
 
     // save all predicates to internal KB
-    action_simulator_tester.saveAllGroundedPredicates();
+    action_simulator_tester.saveKBSnapshot();
 
     // snippet: print internal KB
     ROS_INFO("print internal KB:");
@@ -878,7 +856,7 @@ int main(int argc, char **argv)
     std::vector<std::string> params = {"batdad","car","ben_school"}; // person, car, location
     ROS_INFO("check if action is applicable: (get_down_from_car batdad car ben_school), expected outcome is true");
     ROS_INFO("================");
-    action_simulator_tester.initInternalKB();
+    action_simulator_tester.saveKBSnapshot();
     if(action_simulator_tester.isActionAplicable(action_name, params))
         ROS_INFO("action is applicable!");
     else
@@ -892,7 +870,7 @@ int main(int argc, char **argv)
     ROS_INFO("================");
     std::string action_name2 = "get_down_from_car";
     std::vector<std::string> params2 = {"batdad","car","ben_school"};
-    // action_simulator_tester.initInternalKB(); // call only once, here it has been called before, therefore not calling
+    // action_simulator_tester.saveKBSnapshot(); // call only once, here it has been called before, therefore not calling
     action_simulator_tester.simulateActionStart(action_name2, params2);
     // print to see the difference in KB
     ROS_INFO("KB after simulating action:");

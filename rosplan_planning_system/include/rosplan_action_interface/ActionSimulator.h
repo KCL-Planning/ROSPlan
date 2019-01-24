@@ -25,20 +25,16 @@
 class ActionSimulator
 {
     public:
+
+        /**
+         * @brief constructor
+         */
         ActionSimulator();
+
+        /**
+         * @brief destructor
+         */
         ~ActionSimulator();
-
-        /**
-         * @brief Create service clients for various KB services, store them in member variables for future use
-         */
-        void prepareServices();
-
-        /**
-         * @brief Check if service exists within a timeout of 10 secs
-         * @param srv any ros::ServiceClient client already initialized
-         * @return true if service exists, false otherwise
-         */
-        bool checkServiceExistance(ros::ServiceClient &srv);
 
         /**
          * @brief returns by reference a list of domain operator names
@@ -46,12 +42,6 @@ class ActionSimulator
          * @return true if KB domain service was available, false otherwise
          */
         bool getOperatorNames(std::vector<std::string> &operator_names);
-
-        /**
-         * @brief get domain operator details, save them in member variable
-         * @return true if KB service exists, false otherwise
-         */
-        bool saveOperatorNames();
 
         /**
          * @brief get from KB a single domain operator detail, based on input name (operator_name)
@@ -78,23 +68,11 @@ class ActionSimulator
         bool getAllOperatorDetails(std::vector<rosplan_knowledge_msgs::DomainOperator> &domain_operator_details);
 
         /**
-         * @brief get all domain operator details and store them in member variable for future use
-         * @return true if service was found and it's call was successful, false otherwise
-         */
-        bool saveAllOperatorDetails();
-
-        /**
          * @brief get all domain predicate details
          * @param domain_predicate_details return value gets written here by reference
          * @return true if service was found and it's call was successful, false otherwise
          */
         bool getPredicatesDetails(std::vector<rosplan_knowledge_msgs::DomainFormula> &domain_predicate_details);
-
-        /**
-         * @brief get all domain predicate details and store them in member variable for future use
-         * @return true if service was found and it's call was successful, false otherwise
-         */
-        bool saveAllPredicatesDetails();
 
         /**
          * @brief get all domain predicates details, extract their names, return them by reference
@@ -104,49 +82,26 @@ class ActionSimulator
         bool getAllPredicateNames(std::vector<std::string> &domain_predicates);
 
         /**
-         * @brief get all domain predicates details, extract their names and store them in member variable list
-         * @return this function calls GetAllPredicateNames(), it returns whatever received from it
+         * @brief get all knowledge items in KB, can be facts or goals
+         * @param srv_client a GetAttributeService KB client, can be either kb_name/state/propositions or kb_name/state/goals
+         * @param knowledge return type gets written in this variable by reference
+         * @return true if able to fetch knowledge from KB, false otherwise
          */
-        bool saveAllPredicateNames();
-
-        /**
-         * @brief get all operator (action) names, and make a map against their details
-         * @param
-         * @return
-         */
-        bool makeOperatorDetailsMap();
-
-        /**
-         * @brief get all grounded facts related with a specific predicate_name
-         * @param predicate_name the name of the predicate to search in KB
-         * @param facts return value gets written here by reference
-         * @return this function first calls GetAllPredicateNames(), if successful then will return true
-         */
-        bool getGroundedPredicates(std::string &predicate_name, std::vector<rosplan_knowledge_msgs::KnowledgeItem> &facts);
+        bool getAllKnowledgeItems(ros::ServiceClient &srv_client,
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem> &knowledge);
 
         /**
          * @brief get all grounded facts in the KB, performs multiple calls to getGroundedPredicates()
          * @param all_facts return value gets written here by reference
-         * @return this function performs a call to GetAllPredicateNames(), if successful then will return true
+         * @return true if able to fetch grounded facts from KB, false otherwise
          */
-        bool getAllGroundedPredicates(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &all_facts);
+        bool getAllGroundedFacts(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &all_facts);
 
         /**
-         * @brief get all grounded predicates in KB, save in member variable
-         * @return this function performs a call to getAllGroundedPredicates(), it returns what it receives from it
+         * @brief fetch goals and facts from the real KB, save them in internal KB
+         * @return true if call to real KB is successful, false otherwise
          */
-        bool saveAllGroundedPredicates();
-
-        /**
-         * @brief call all related functions that populate required member variables to simulate actions and more
-         * @return true if internal KB succeeded to initialize, false otherwise
-         */
-        bool initInternalKB();
-
-        /**
-         * @brief delete all member variables that store an internal KB
-         */
-        void deleteAllInternalKB();
+        bool saveKBSnapshot();
 
         /**
          * @brief handy function to help facilitate the printing of predicates
@@ -158,7 +113,7 @@ class ActionSimulator
 
         /**
          * @brief print all predicates in internal KB, SaveAllGroundedPredicates() needs to be called first
-         * @return false if internal_kb_ is empty, true otherwise
+         * @return false if kb_facts_ is empty, true otherwise
          */
         bool printInternalKB();
 
@@ -290,15 +245,40 @@ class ActionSimulator
          */
         bool simulateActionEnd(std::string &action_name, std::vector<std::string> &params);
 
+        /**
+         * @brief get all goals from real KB
+         * @param kb_goals return value gets written in this variable by reference
+         * @return true if call to real KB was possible, false otherwise
+         */
+        bool getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &kb_goals);
+
     private:
+
+         /**
+         * @brief initialize service clients for various KB services, they are stored in member variables for future use
+         * this function gets called one time from constructor
+         */
+        void prepareServices();
+
+        /**
+         * @brief call real KB services and save them in member variables
+         * this includes all operator names, operator details, etc. This funcion should only be called once
+         * and is called automatically from constructor
+         */
+        bool mirrorKB();
+
+        /**
+         * @brief Check if service exists within a timeout of 10 secs
+         * @param srv any ros::ServiceClient client already initialized
+         * @return true if service exists, false otherwise
+         */
+        bool checkServiceExistance(ros::ServiceClient &srv);
+
         /// used to setup service connection clients with real KB
         ros::NodeHandle nh_;
 
         /// clients to communicate with real KB and get information from it (one time only)
-        ros::ServiceClient od_srv_client_, on_srv_client_, dp_srv_client_, sp_srv_client_;
-
-        /// store a list of ungrounded domain predicate details
-        std::vector<rosplan_knowledge_msgs::DomainFormula> domain_predicate_details_;
+        ros::ServiceClient od_srv_client_, on_srv_client_, dp_srv_client_, sp_srv_client_, sg_srv_client_;
 
         /// store a list of domain predicates
         std::vector<std::string> domain_predicates_;
@@ -313,8 +293,11 @@ class ActionSimulator
         std::map<std::string, rosplan_knowledge_msgs::DomainOperator> domain_operator_map_;
 
         /// stores all grounded facts (is like an internal copy of KB)
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> internal_kb_;
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> kb_facts_;
 
-        /// stores all grounded facts (bkp of internal_kb_)
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> internal_kb_bkp_;
+        /// store a kb_facts_ bkp for reset internal KB purposes
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> kb_facts_bkp_;
+
+        /// store all goals in KB
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> kb_goals_;
 };
