@@ -433,6 +433,18 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name)
     return findFactInternal(predicate_name, args, kiit);
 }
 
+bool ActionSimulator::findFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
+{
+    // overloaded function that alows to find predicate in KB with an input DomainFormula (which can store a predicate)
+    
+    // extract params from DomainFormula
+    std::vector<std::string> params;
+    for(auto it=predicate.typed_parameters.begin(); it!=predicate.typed_parameters.end(); it++)
+        params.push_back(it->value);
+    
+    return findFactInternal(predicate.name, params);
+}
+
 bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vector<std::string> &args)
 {
     // remove fact from internal KB
@@ -479,6 +491,45 @@ bool ActionSimulator::removeFactInternal(std::vector<std::string> &predicate_and
     return removeFactInternal(predicate_name, args);
 }
 
+bool ActionSimulator::isActionAplicable(std::string &action_name)
+{
+    // check if action preconditions are consistent with internal KB information
+    
+    // ensure domain_operator_map_ has data
+    if(!domain_operator_map_.size() > 0) {
+        ROS_ERROR("domain_operator_map_ is empty, try calling makeOperatorDetailsMap() first");
+        return false;
+    }
+    
+    // get operator from action name (std::map of names, operators)
+    auto oit = domain_operator_map_.find(action_name)->second;
+    
+    // check action preconditions
+    
+    // iterate over grounded positive preconditions, find in KB
+    for(auto it=oit.at_start_simple_condition.begin(); it!=oit.at_start_simple_condition.end(); it++) {
+        // if not found, action is not aplicable
+        if(!findFactInternal(*it))
+            return false;
+    }
+    
+    // iterate over overall conditions, find in KB
+    for(auto it=oit.over_all_simple_condition.begin(); it!=oit.over_all_simple_condition.end(); it++) {
+        // if not found, action is not aplicable
+        if(!findFactInternal(*it))
+            return false;
+    }
+    
+    // iterate over at_start_neg_condition, make sure they are not in KB
+    for(auto it=oit.at_start_neg_condition.begin(); it!=oit.at_start_neg_condition.end(); it++) {
+        // if found, action is not aplicable
+        if(findFactInternal(*it))
+            return false;
+    }
+    
+    return true;
+}
+
 bool ActionSimulator::simulateAction(std::string &action_name)
 {
     // apply delete and add list to KB current state
@@ -486,40 +537,8 @@ bool ActionSimulator::simulateAction(std::string &action_name)
     // get domain operator details and save them in member variable
     saveAllOperatorDetails(); // domain_operator_details_ is populated    
     
-    // simple START del effects
-//     for(int i=0; i<op.at_start_del_effects.size(); i++) {
-//         rosplan_knowledge_msgs::KnowledgeItem item;
-//         item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-//         item.attribute_name = op.at_start_del_effects[i].name;
-//         item.values.clear();
-//         diagnostic_msgs::KeyValue pair;
-//         for(size_t j=0; j<op.at_start_del_effects[i].typed_parameters.size(); j++) {
-//             pair.key = predicates[op.at_start_del_effects[i].name].typed_parameters[j].key;
-//             pair.value = boundParameters[op.at_start_del_effects[i].typed_parameters[j].key];
-//             item.values.push_back(pair);
-//         }
-//         updatePredSrv.request.knowledge.push_back(item);
-//         updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::REMOVE_KNOWLEDGE);
-//     }
-// 
-//     // simple START add effects
-//     for(int i=0; i<op.at_start_add_effects.size(); i++) {
-//         rosplan_knowledge_msgs::KnowledgeItem item;
-//         item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
-//         item.attribute_name = op.at_start_add_effects[i].name;
-//         item.values.clear();
-//         diagnostic_msgs::KeyValue pair;
-//         for(size_t j=0; j<op.at_start_add_effects[i].typed_parameters.size(); j++) {
-//             pair.key = predicates[op.at_start_add_effects[i].name].typed_parameters[j].key;
-//             pair.value = boundParameters[op.at_start_add_effects[i].typed_parameters[j].key];
-//             item.values.push_back(pair);
-//         }
-//         updatePredSrv.request.knowledge.push_back(item);
-//         updatePredSrv.request.update_type.push_back(rosplan_knowledge_msgs::KnowledgeUpdateService::Request::ADD_KNOWLEDGE);
-//     }
-// 
-//     if(updatePredSrv.request.knowledge.size()>0 && !update_knowledge_client.call(updatePredSrv))
-//         ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base", params.name.c_str());
+    //TODO
+    
     return true;
 }
 

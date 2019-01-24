@@ -19,6 +19,7 @@
 #include <rosplan_knowledge_msgs/GetDomainAttributeService.h>
 #include <rosplan_knowledge_msgs/KnowledgeItem.h>
 #include <rosplan_knowledge_msgs/GetAttributeService.h>
+#include <rosplan_dispatch_msgs/ActionDispatch.h>
 
 class ActionSimulator
 {
@@ -174,6 +175,14 @@ class ActionSimulator
         bool findFactInternal(std::string &predicate_name);
         
         /**
+         * @brief overloaded function that alows to find predicate in KB with an input DomainFormula
+         * (which can store a predicate)
+         * @param predicate the fact that will be searched in KB
+         * @return true if predicate was found, false otherwise
+         */
+        bool findFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
+        
+        /**
          * @brief remove fact from internal KB
          * @param predicate_name the name of the predicate to be removed from KB
          * @param args the grounded predicate parameters
@@ -188,6 +197,13 @@ class ActionSimulator
          * @return true if predicate was found, false otherwise
          */
         bool removeFactInternal(std::vector<std::string> &predicate_and_args);
+        
+        /**
+         * @brief check if action preconditions are consistent with internal KB information
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @return true if action is aplicable, false otherwise
+         */
+        bool isActionAplicable(std::string &action_name);
         
         /**
          * @brief apply delete and add list to KB current state
