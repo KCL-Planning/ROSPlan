@@ -138,6 +138,20 @@ class ActionSimulator
         bool saveAllGroundedPredicates();
         
         /**
+         * @brief call all related functions that populate required member variables to simulate actions and more
+         * @return true if internal KB succeeded to initialize, false otherwise 
+         */
+        bool initInternalKB();
+        
+        /**
+         * @brief handy function to help facilitate the printing of predicates
+         * @param predicate_name string with the name of the predicate
+         * @param params list of predicate arguments
+         * @return string with the predicate ready to be printed
+         */
+        std::string convertPredToString(std::string &predicate_name, std::vector<std::string> &params);
+        
+        /**
          * @brief print all predicates in internal KB, SaveAllGroundedPredicates() needs to be called first
          * @return false if internal_kb_ is empty, true otherwise
          */
@@ -174,6 +188,14 @@ class ActionSimulator
          * @return true if predicate was found, false otherwise
          */
         bool findFactInternal(std::string &predicate_name);
+        
+        /**
+         * @brief overloaded function offered to call FindFactInternal() when we don't care about the returned iterator
+         * and args are empty and we have a single vector representing the predicate where the first element is the predicate name
+         * @param predicate_name_and_params first element is the predicate name, succesive elements are predicate arguments
+         * @return true if predicate was found, false otherwise
+         */
+        bool findFactInternal(std::vector<std::string> &predicate_name_and_params);
         
         /**
          * @brief overloaded function that alows to find predicate in KB with an input DomainFormula
@@ -222,33 +244,46 @@ class ActionSimulator
         void addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
         
         /**
+         * @brief receive an operator and a dictionary of key values, return grounded predicate
+         * @param ungrounded_precondition taken from operator details, this is a DomainFormula precondition
+         * @param ground_dictionary std map of string to string with key value information: key, grounded parameter
+         * @return a grounded predicate, in form of list of string
+         */
+        std::vector<std::string> GroundParams(rosplan_knowledge_msgs::DomainFormula &ungrounded_precondition,
+            std::map<std::string, std::string> &ground_dictionary);
+        
+        /**
          * @brief check if action preconditions are consistent with internal KB information
          * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
          * @return true if action is aplicable, false otherwise
          */
-        bool isActionAplicable(std::string &action_name);
+        bool isActionAplicable(std::string &action_name, std::vector<std::string> &params);
         
         /**
          * @brief apply delete and add list to KB current state (start or end action, depends on parameter action_start)
          * @param action_name the name of the action to be simulated
+         * @param params action parameters as list of strings
          * @param action_start input boolena: set to true for action start behavior, set false for action end
          * @return true if action was applied successful, false otherwise
          */
-        bool simulateAction(std::string &action_name, bool action_start);
+        bool simulateAction(std::string &action_name, std::vector<std::string> &params, bool action_start);
         
         /**
          * @brief apply delete and add list to KB current state (start action only)
          * @param action_name the name of the action to apply
+         * @param params action parameters as list of strings
          * @return true if action was applied successful, false otherwise
          */
-        bool simulateActionStart(std::string &action_name);
+        bool simulateActionStart(std::string &action_name, std::vector<std::string> &params);
         
         /**
          * @brief apply delete and add list to KB current state (end action only)
          * @param action_name the name of the action to apply
+         * @param params action parameters as list of strings
          * @return true if action was applied successful, false otherwise
          */
-        bool simulateActionEnd(std::string &action_name);
+        bool simulateActionEnd(std::string &action_name, std::vector<std::string> &params);
 
     private:
         /// used to setup service connection clients with real KB
@@ -256,6 +291,12 @@ class ActionSimulator
         
         /// clients to communicate with real KB and get information from it (one time only)
         ros::ServiceClient od_srv_client_, on_srv_client_, dp_srv_client_, sp_srv_client_;
+        
+        /// store a list of ungrounded domain predicate details
+        std::vector<rosplan_knowledge_msgs::DomainFormula> domain_predicate_details_;
+        
+        /// store a list of domain predicates
+        std::vector<std::string> domain_predicates_;
         
         /// store a list of all domain operator names
         std::vector<std::string> operator_names_;
@@ -265,12 +306,6 @@ class ActionSimulator
         
         /// store a map of operator_names_ vs domain_operator_details_
         std::map<std::string, rosplan_knowledge_msgs::DomainOperator> domain_operator_map_;
-
-        /// store a list of ungrounded domain predicate details
-        std::vector<rosplan_knowledge_msgs::DomainFormula> domain_predicate_details_;
-        
-        /// store a list of domain predicates
-        std::vector<std::string> domain_predicates_;
         
         /// stores all grounded facts (is like an internal copy of KB)
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> internal_kb_;
