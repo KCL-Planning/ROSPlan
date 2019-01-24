@@ -11,6 +11,8 @@
  * 
  */
 
+/** @file */
+
 #include <rosplan_action_interface/ActionSimulator.h>
 
 ActionSimulator::ActionSimulator() : nh_("~")
@@ -491,6 +493,71 @@ bool ActionSimulator::removeFactInternal(std::vector<std::string> &predicate_and
     return removeFactInternal(predicate_name, args);
 }
 
+bool ActionSimulator::removeFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
+{
+    // overloaded method that allows to remove facts with DomainFormula input format
+    
+    // extract args from predicate
+    std::vector<std::string> params;
+    for(auto it=predicate.typed_parameters.begin(); it!=predicate.typed_parameters.end(); it++) {
+        params.push_back(it->value);
+    }
+    
+    // call original method with adjusted args
+    return removeFactInternal(predicate.name, params);
+}
+
+void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> &params)
+{
+    // add fact to internal KB
+    
+    // internal_kb_ is of type -> std::vector<rosplan_knowledge_msgs::KnowledgeItem>
+    
+    rosplan_knowledge_msgs::KnowledgeItem knowledge_item;
+    
+    knowledge_item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+    knowledge_item.is_negative = false; // negative predicates not supported (close world assumption)
+    knowledge_item.attribute_name = predicate_name;
+    
+    bool is_params_empty = false;
+    if(params.size() == 0)
+        is_params_empty = true;
+    if(params.size() == 1) {
+        if(params.at(0) == "")
+            is_params_empty = true;
+    }
+    
+    if(!is_params_empty)
+    {
+        // non empty args
+        
+        // iterate over params
+        for(auto it=params.begin(); it!=params.end(); it++) {
+            diagnostic_msgs::KeyValue params_key_value;
+            params_key_value.key = "";
+            params_key_value.value = *it;
+            knowledge_item.values.push_back(params_key_value);
+        }
+    }
+
+    // add knowledge item to internal KB
+    internal_kb_.push_back(knowledge_item);
+}
+
+void ActionSimulator::addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
+{
+    // overloaded method that allows to add facts to internal KB with DomainFormula input
+    
+    // extract params from predicate input
+    std::vector<std::string> params;
+    for(auto it=predicate.typed_parameters.begin(); it!=predicate.typed_parameters.end(); it++) {
+        params.push_back(it->value);
+    }
+    
+    // call original method with adjusted arguments
+    return addFactInternal(predicate.name, params);
+}
+
 bool ActionSimulator::isActionAplicable(std::string &action_name)
 {
     // check if action preconditions are consistent with internal KB information
@@ -530,16 +597,69 @@ bool ActionSimulator::isActionAplicable(std::string &action_name)
     return true;
 }
 
-bool ActionSimulator::simulateAction(std::string &action_name)
+bool ActionSimulator::simulateAction(std::string &action_name, bool action_start)
 {
     // apply delete and add list to KB current state
     
-    // get domain operator details and save them in member variable
-    saveAllOperatorDetails(); // domain_operator_details_ is populated    
+    // ensure domain_operator_details_ has data
+    if(!domain_operator_details_.size() > 0) {
+        ROS_ERROR("domain_operator_details_ is empty, try calling saveAllOperatorDetails() first");
+        return false;
+    }
     
-    //TODO
+    // check if action is applicable
+    if(!isActionAplicable(action_name)) {
+        ROS_ERROR("action is not applicable, will not simulate");
+        return false;
+    }
+    
+    // query action effects
+    
+    // get operator from action name (std::map of names, operators)
+    auto oit = domain_operator_map_.find(action_name)->second;
+    
+    if(action_start)
+    {
+        // action start effects
+    
+        // iterate over positive start action effects and apply to KB
+        for(auto it=oit.at_start_add_effects.begin(); it!=oit.at_start_add_effects.end(); it++)
+            addFactInternal(*it);
+        
+        // iterate over negative start action effects and apply to KB
+        for(auto it=oit.at_start_del_effects.begin(); it!=oit.at_start_del_effects.end(); it++) {
+            if(!removeFactInternal(*it))
+                return false;
+        }
+    }
+    else
+    {
+        // action end effects
+        
+        // iterate over positive start action effects and apply to KB
+        for(auto it=oit.at_end_add_effects.begin(); it!=oit.at_end_add_effects.end(); it++)
+            addFactInternal(*it);
+        
+        // iterate over negative start action effects and apply to KB
+        for(auto it=oit.at_end_del_effects.begin(); it!=oit.at_end_del_effects.end(); it++) {
+            if(!removeFactInternal(*it))
+                return false;
+        }
+    }
     
     return true;
+}
+
+bool ActionSimulator::simulateActionStart(std::string &action_name)
+{
+    // apply at start action effects to internal KB
+    return simulateAction(action_name, true);
+}
+
+bool ActionSimulator::simulateActionEnd(std::string &action_name)
+{
+    // apply at end action effects to internal KB
+    return simulateAction(action_name, false);
 }
 
 int main(int argc, char **argv)

@@ -20,6 +20,7 @@
 #include <rosplan_knowledge_msgs/KnowledgeItem.h>
 #include <rosplan_knowledge_msgs/GetAttributeService.h>
 #include <rosplan_dispatch_msgs/ActionDispatch.h>
+#include <diagnostic_msgs/KeyValue.h>
 
 class ActionSimulator
 {
@@ -199,6 +200,28 @@ class ActionSimulator
         bool removeFactInternal(std::vector<std::string> &predicate_and_args);
         
         /**
+         * @brief remove fact from internal KB, this in an overloaded method that
+         * accepts the predicate in DomainFormula format
+         * @param predicate the predicate that needs to be removed from KB in DomainFormula format
+         * @return true if predicate was found, false otherwise
+         */
+        bool removeFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
+        
+        /**
+         * @brief add fact to internal KB, warning: does not fill keys on knowledge items, it leaves the keys empty
+         * @param predicate_name the name of the predicate to be added to internal KB
+         * @param params the parameters of the predicate to be added to internal KB
+         */
+        void addFactInternal(std::string &predicate_name, std::vector<std::string> &params);
+        
+        /**
+         * @brief add fact to internal KB, warning: does not fill keys on knowledge items, it leaves the keys empty,
+         * overloaded method that allows to add facts to internal KB with DomainFormula input
+         * @param predicate the fact we want to add to KB in DomainFormula format1
+         */
+        void addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
+        
+        /**
          * @brief check if action preconditions are consistent with internal KB information
          * @param action_name the name of the action to check if preconditions are met in KB
          * @return true if action is aplicable, false otherwise
@@ -206,36 +229,52 @@ class ActionSimulator
         bool isActionAplicable(std::string &action_name);
         
         /**
-         * @brief apply delete and add list to KB current state
+         * @brief apply delete and add list to KB current state (start or end action, depends on parameter action_start)
          * @param action_name the name of the action to be simulated
-         * @return
+         * @param action_start input boolena: set to true for action start behavior, set false for action end
+         * @return true if action was applied successful, false otherwise
          */
-        bool simulateAction(std::string &action_name);
+        bool simulateAction(std::string &action_name, bool action_start);
+        
+        /**
+         * @brief apply delete and add list to KB current state (start action only)
+         * @param action_name the name of the action to apply
+         * @return true if action was applied successful, false otherwise
+         */
+        bool simulateActionStart(std::string &action_name);
+        
+        /**
+         * @brief apply delete and add list to KB current state (end action only)
+         * @param action_name the name of the action to apply
+         * @return true if action was applied successful, false otherwise
+         */
+        bool simulateActionEnd(std::string &action_name);
 
     private:
-        // ros related variables
+        /// used to setup service connection clients with real KB
         ros::NodeHandle nh_;
         
+        /// clients to communicate with real KB and get information from it (one time only)
         ros::ServiceClient od_srv_client_, on_srv_client_, dp_srv_client_, sp_srv_client_;
         
-        // store a list of all domain operator names
+        /// store a list of all domain operator names
         std::vector<std::string> operator_names_;
         
-        // store a list of ungrounded domain operator details
+        /// store a list of ungrounded domain operator details
         std::vector<rosplan_knowledge_msgs::DomainOperator> domain_operator_details_;
         
-        // store a map of operator_names_ vs domain_operator_details_
+        /// store a map of operator_names_ vs domain_operator_details_
         std::map<std::string, rosplan_knowledge_msgs::DomainOperator> domain_operator_map_;
 
-        // store a list of ungrounded domain predicate details
+        /// store a list of ungrounded domain predicate details
         std::vector<rosplan_knowledge_msgs::DomainFormula> domain_predicate_details_;
         
-        // store a list of domain predicates
+        /// store a list of domain predicates
         std::vector<std::string> domain_predicates_;
         
-        // stores all grounded facts (is like an internal copy of KB)
+        /// stores all grounded facts (is like an internal copy of KB)
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> internal_kb_;
         
-        // stores all grounded facts (bkp of internal_kb_)
+        /// stores all grounded facts (bkp of internal_kb_)
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> internal_kb_bkp_;
 };
