@@ -348,6 +348,17 @@ bool ActionSimulator::initInternalKB()
     return true;
 }
 
+void ActionSimulator::deleteAllInternalKB()
+{
+    domain_predicate_details_.clear();
+    operator_names_.clear();
+    domain_predicates_.clear();
+    domain_operator_details_.clear();
+    domain_operator_map_.clear();
+    internal_kb_.clear();
+    internal_kb_.clear();
+}
+
 std::string ActionSimulator::convertPredToString(std::string &predicate_name, std::vector<std::string> &params)
 {
     // handy function to help facilitate the printing of predicates
@@ -590,6 +601,13 @@ bool ActionSimulator::removeFactInternal(rosplan_knowledge_msgs::DomainFormula &
 void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> &params)
 {
     // add fact to internal KB
+    
+    // make sure fact is not already there
+    if(findFactInternal(predicate_name, params)) {
+        // element exists
+        ROS_WARN("Tried to add fact twice, doing nothing... (%s)", convertPredToString(predicate_name, params).c_str());
+        return;
+    }
     
     // internal_kb_ is of type -> std::vector<rosplan_knowledge_msgs::KnowledgeItem>
     
@@ -865,6 +883,21 @@ int main(int argc, char **argv)
         ROS_INFO("action is applicable!");
     else
         ROS_INFO("action is not applicable");
+    
+    // snippet: simulate an action
+    ROS_INFO("KB before simulating action:");
+    ROS_INFO("================");
+    action_simulator_tester.printInternalKB();
+    ROS_INFO("action simulation: (get_down_from_car batdad car ben_school)");
+    ROS_INFO("================");
+    std::string action_name2 = "get_down_from_car";
+    std::vector<std::string> params2 = {"batdad","car","ben_school"};
+    // action_simulator_tester.initInternalKB(); // call only once, here it has been called before, therefore not calling
+    action_simulator_tester.simulateActionStart(action_name2, params2);
+    // print to see the difference in KB
+    ROS_INFO("KB after simulating action:");
+    ROS_INFO("================");
+    action_simulator_tester.printInternalKB();
     
     return 0;
 }

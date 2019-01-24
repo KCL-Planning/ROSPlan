@@ -144,6 +144,11 @@ class ActionSimulator
         bool initInternalKB();
         
         /**
+         * @brief delete all member variables that store an internal KB
+         */
+        void deleteAllInternalKB();
+        
+        /**
          * @brief handy function to help facilitate the printing of predicates
          * @param predicate_name string with the name of the predicate
          * @param params list of predicate arguments
