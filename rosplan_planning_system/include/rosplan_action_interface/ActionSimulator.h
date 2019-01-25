@@ -27,9 +27,14 @@ class ActionSimulator
     public:
 
         /**
-         * @brief constructor
+         * @brief empty constructor, internal KB is needed
          */
         ActionSimulator();
+
+        /**
+         * @brief empty constructor, provide the option not to mirror any KB at startup
+         */
+        ActionSimulator(bool internal_KB_required);
 
         /**
          * @brief destructor
@@ -112,16 +117,54 @@ class ActionSimulator
         std::string convertPredToString(std::string &predicate_name, std::vector<std::string> &params);
 
         /**
-         * @brief print all predicates in internal KB, SaveAllGroundedPredicates() needs to be called first
+         * @brief handy function to help facilitate the printing of predicates
+         * @param knowledge_item predicate to be converted to string given in KnowledgeItem format
+         * @return string with the predicate ready to be printed
+         */
+        std::string convertPredToString(rosplan_knowledge_msgs::KnowledgeItem &knowledge_item);
+
+        /**
+         * @brief print all elements in a KnowledgeItem array (used for printing all facts or goals)
+         * @param ki_array either kb_goals_ or kb_facts_, in general the array to be printed
+         */
+        void printArrayKI(std::vector<rosplan_knowledge_msgs::KnowledgeItem> ki_array, std::string header_msg);
+
+        /**
+         * @brief print all facts in internal KB
          * @return false if kb_facts_ is empty, true otherwise
          */
-        bool printInternalKB();
+        void printInternalKBFacts();
+
+        /**
+         * @brief print all goals in internal KB
+         * @return false if kb_goals_ is empty, true otherwise
+         */
+        void printInternalKBGoals();
 
         /**
          * @brief save internal KB in second member variable for reset purposes: in case user wants to go
          * back to previoud KB version, without having to perform another service call
          */
         void backupInternalKB();
+
+        /**
+         * @brief find predicate (fact or goal) inside knowledge item array, return by reference an iterator to the element
+         * @param predicate_name
+         * @param args list of predicate parameters
+         * @param kiit return value gets written here by reference, an iterator to the element (if it was found)
+         * @param item_array the list in which the predicate will be searched
+         */
+        bool findKnowledgeItem(std::string &predicate_name, std::vector<std::string> &args,
+                        std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit,
+                        std::vector<rosplan_knowledge_msgs::KnowledgeItem> &item_array);
+
+        /**
+         * @brief find either a predicate (goal or fact) with KnowledgeItem input
+         * @param predicate fact or goal to be searched in KnowledgeItem format
+         * @param is_fact if true then it will search in fact KB (kb_facts_), otherwise it will search in goals KB (kb_goals_)
+         * @return true if found, false otherwise
+         */
+        bool findPredicateInternal(rosplan_knowledge_msgs::KnowledgeItem &predicate, bool is_fact);
 
         /**
          * @brief find (grounded) predicate inside KB, return by reference an iterator to the element
@@ -158,12 +201,46 @@ class ActionSimulator
         bool findFactInternal(std::vector<std::string> &predicate_name_and_params);
 
         /**
-         * @brief overloaded function that alows to find predicate in KB with an input DomainFormula
-         * (which can store a predicate)
-         * @param predicate the fact that will be searched in KB
+         * @brief overloaded function that allows to find predicate in KB with an input KnowledgeItem
+         * @param fact proposition in form of KnowledgeItem
          * @return true if predicate was found, false otherwise
          */
-        bool findFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
+        bool findFactInternal(rosplan_knowledge_msgs::KnowledgeItem &fact);
+
+        /**
+         * @brief allows to find a single goal in internal KB
+         * @param predicate_name goal predicate name
+         * @param args goal predicate parameters if any
+         * @param kiit return value gets written here, an iterator to the goal, if found
+         * @return true if goal was found, false otherwise
+         */
+        bool findGoalInternal(std::string &predicate_name, std::vector<std::string> &args,
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit);
+
+        /**
+         * @brief allows to find a single goal in internal KB with KnowledgeItem as input
+         * @param predicate_name goal predicate name
+         * @param args goal predicate parameters if any
+         * @return true if goal was found, false otherwise
+         */
+        bool findGoalInternal(std::string &predicate_name, std::vector<std::string> &args);
+
+        /**
+         * @brief allows to find a single goal in internal KB with KnowledgeItem as input
+         * @param goal proposition in form of KnowledgeItem
+         * @return true if goal was found, false otherwise
+         */
+        bool findGoalInternal(rosplan_knowledge_msgs::KnowledgeItem &goal);
+
+        /**
+         * @brief remove predicate from KnowledgeItem item_array
+         * @param predicate_name the name of the predicate to be removed from KB
+         * @param args the grounded predicate parameters
+         * @param item_array KnowledgeItem array from which to remove the predicate (goal or fact)
+         * @return true if predicate was found, false otherwise
+         */
+        bool removePredicateInternal(std::string &predicate_name, std::vector<std::string> &args,
+                std::vector<rosplan_knowledge_msgs::KnowledgeItem> &item_array);
 
         /**
          * @brief remove fact from internal KB
@@ -188,6 +265,13 @@ class ActionSimulator
          * @return true if predicate was found, false otherwise
          */
         bool removeFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
+
+        /**
+         * @brief remove a goal from internal goal KB (kb_goals_)
+         * @param predicate_name the name of the predicate that needs to be removed
+         * @param args the grounded predicate parameters
+         */
+        bool removeGoalInternal(std::string &predicate_name, std::vector<std::string> &args);
 
         /**
          * @brief add fact to internal KB, warning: does not fill keys on knowledge items, it leaves the keys empty
@@ -251,6 +335,12 @@ class ActionSimulator
          * @return true if call to real KB was possible, false otherwise
          */
         bool getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &kb_goals);
+
+        /**
+         * @brief check if all goals are satisfied in internal KB
+         * @return true if goals are satisfied (present in internal KB)
+         */
+        bool isGoalAchieved();
 
     private:
 

@@ -24,6 +24,16 @@ ActionSimulator::ActionSimulator() : nh_("~")
     mirrorKB();
 }
 
+ActionSimulator::ActionSimulator(bool internal_KB_required) : nh_("~")
+{
+    // for now we call from constructor, in future we can remove
+    prepareServices();
+
+    if(internal_KB_required)
+        // call real KB to get all of its data, save in member variables
+        mirrorKB();
+}
+
 ActionSimulator::~ActionSimulator() {}
 
 void ActionSimulator::prepareServices()
@@ -329,41 +339,59 @@ std::string ActionSimulator::convertPredToString(std::string &predicate_name, st
     return predicate_as_string.str();
 }
 
-bool ActionSimulator::printInternalKB()
+std::string ActionSimulator::convertPredToString(rosplan_knowledge_msgs::KnowledgeItem &knowledge_item)
 {
-    // print all predicates in internal KB
+    std::stringstream predicate_ss;
 
-    // saveAllGroundedFacts() needs to be called first
+    predicate_ss << knowledge_item.attribute_name;
 
-    if(!kb_facts_.size() > 0) {
-        ROS_ERROR("internal KB is empty, failed to print (try calling saveKBSnapshot() first?)");
-        return false;
+    for(auto vit=knowledge_item.values.begin(); vit!=knowledge_item.values.end(); vit++) {
+        predicate_ss << " ";
+        predicate_ss << vit->value;
     }
 
-    ROS_INFO("....internal KB.....");
+    return predicate_ss.str();
+}
 
-    for(auto it=kb_facts_.begin(); it!=kb_facts_.end(); it++)
+void ActionSimulator::printArrayKI(std::vector<rosplan_knowledge_msgs::KnowledgeItem> ki_array,
+    std::string header_msg)
+{
+    // print all elements in a KnowledgeItem array (used for printing all facts or goals)
+
+    // print header msg
+    ROS_INFO("%s", header_msg.c_str());
+
+    // handle empty array scenario
+    if(!ki_array.size() > 0) {
+        ROS_INFO("empty!");
+        ROS_INFO("...................");
+        return;
+    }
+
+    // non empty array scenario
+    for(auto it=ki_array.begin(); it!=ki_array.end(); it++)
     {
-        std::stringstream predicate_ss;
-
-        predicate_ss << it->attribute_name;
-
-        for(auto vit=it->values.begin(); vit!=it->values.end(); vit++) {
-            predicate_ss << " ";
-            predicate_ss << vit->value;
-        }
-
         if(it->is_negative) {
-            ROS_INFO("(not(%s))", predicate_ss.str().c_str());
+            ROS_INFO("(not(%s))", convertPredToString(*it).c_str());
         }
         else {
-            ROS_INFO("(%s)", predicate_ss.str().c_str());
+            ROS_INFO("(%s)", convertPredToString(*it).c_str());
         }
     }
 
     ROS_INFO("...................");
+}
 
-    return true;
+void ActionSimulator::printInternalKBFacts()
+{
+    // print all predicates in internal KB
+    printArrayKI(kb_facts_, std::string("....internal KB Facts....."));
+}
+
+void ActionSimulator::printInternalKBGoals()
+{
+    // print all predicates in internal KB
+    printArrayKI(kb_goals_, std::string("....internal KB Goals....."));
 }
 
 void ActionSimulator::backupInternalKB()
@@ -373,14 +401,15 @@ void ActionSimulator::backupInternalKB()
     kb_facts_bkp_ = kb_facts_;
 }
 
-bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> &args,
-    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit)
+bool ActionSimulator::findKnowledgeItem(std::string &predicate_name, std::vector<std::string> &args,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> &item_array)
 {
-    // find predicate inside KB, return by reference an iterator to the element
+    // find predicate (fact or goal) inside knowledge item array, return by reference an iterator to the element
 
     // check that internal KB has at least 1 element
-    if(!kb_facts_.size() > 0) {
-        ROS_ERROR("kb_facts_ is empty");
+    if(!item_array.size() > 0) {
+        ROS_ERROR("item_array is empty");
         return false;
     }
 
@@ -388,7 +417,7 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<
     bool found = false;
 
     // iterate over internal KB
-    for(auto it=kb_facts_.begin(); it!=kb_facts_.end(); it++)
+    for(auto it=item_array.begin(); it!=item_array.end(); it++)
     {
         // ensure we are dealing with a fact
         if(!it->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT)
@@ -434,16 +463,39 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<
     return found;
 }
 
+bool ActionSimulator::findPredicateInternal(rosplan_knowledge_msgs::KnowledgeItem &predicate, bool is_fact)
+{
+    // find either a predicate (goal or fact) with KnowledgeItem input
+
+    // extract params from KnowledgeItem
+    std::vector<std::string> params;
+    for(auto it=predicate.values.begin(); it!=predicate.values.end(); it++)
+        params.push_back(it->value);
+
+    if(is_fact)
+        // fact, call fact search function
+        return findFactInternal(predicate.attribute_name, params);
+    else
+        // goal, call goal search function
+        return findGoalInternal(predicate.attribute_name, params);
+}
+
+bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> &args,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit)
+{
+    return findKnowledgeItem(predicate_name, args, kiit, kb_facts_);
+}
+
 bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> &args)
 {
-    // overloaded function offered to call findFactInternal() when we don't care about the returned iterator
+    // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
     std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kiit;
     return findFactInternal(predicate_name, args, kiit);
 }
 
 bool ActionSimulator::findFactInternal(std::string &predicate_name)
 {
-    // overloaded function offered to call findFactInternal() when we don't care about the returned iterator
+    // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
     // and args are empty
     std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kiit;
     std::vector<std::string> args = {""};
@@ -452,7 +504,7 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name)
 
 bool ActionSimulator::findFactInternal(std::vector<std::string> &predicate_name_and_params)
 {
-    // overloaded function offered to call findFactInternal() when we don't care about the returned iterator
+    // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
     // and args are empty, but we have a single vector in which the first element is the predicate name
 
     if(!predicate_name_and_params.size() > 0) {
@@ -472,28 +524,42 @@ bool ActionSimulator::findFactInternal(std::vector<std::string> &predicate_name_
     return findFactInternal(predicate_name_and_params.at(0), args, kiit);
 }
 
-bool ActionSimulator::findFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
+bool ActionSimulator::findFactInternal(rosplan_knowledge_msgs::KnowledgeItem &fact)
 {
-    // overloaded function that alows to find predicate in KB with an input DomainFormula (which can store a predicate)
-
-    // extract params from DomainFormula
-    std::vector<std::string> params;
-    for(auto it=predicate.typed_parameters.begin(); it!=predicate.typed_parameters.end(); it++)
-        params.push_back(it->value);
-
-    return findFactInternal(predicate.name, params);
+    // overloaded method that allows to find a single fact in KB with an input KnowledgeItem
+    return findPredicateInternal(fact, true);
 }
 
-bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vector<std::string> &args)
+bool ActionSimulator::findGoalInternal(std::string &predicate_name, std::vector<std::string> &args,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator &kiit)
 {
-    // remove fact from internal KB
+    return findKnowledgeItem(predicate_name, args, kiit, kb_goals_);
+}
+
+bool ActionSimulator::findGoalInternal(std::string &predicate_name, std::vector<std::string> &args)
+{
+    // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kiit;
+    return findGoalInternal(predicate_name, args, kiit);
+}
+
+bool ActionSimulator::findGoalInternal(rosplan_knowledge_msgs::KnowledgeItem &goal)
+{
+    // overloaded method that allows to find a single goal in KB with an input KnowledgeItem
+    return findPredicateInternal(goal, false);
+}
+
+bool ActionSimulator::removePredicateInternal(std::string &predicate_name, std::vector<std::string> &args,
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> &item_array)
+{
+    // remove predicate from KnowledgeItem array
 
     // find element in KB and get a pointer to it
     std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator it;
 
     if(findFactInternal(predicate_name, args, it)) {
         // element exists, delete knowledge item from internal KB
-        kb_facts_.erase(it);
+        item_array.erase(it);
     }
     else {
         // element does not exist
@@ -503,6 +569,12 @@ bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vecto
     }
 
     return true;
+}
+
+bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vector<std::string> &args)
+{
+    // remove fact from internal KB
+    return removePredicateInternal(predicate_name, args, kb_facts_);
 }
 
 bool ActionSimulator::removeFactInternal(std::vector<std::string> &predicate_and_args)
@@ -543,6 +615,12 @@ bool ActionSimulator::removeFactInternal(rosplan_knowledge_msgs::DomainFormula &
 
     // call original method with adjusted args
     return removeFactInternal(predicate.name, params);
+}
+
+bool ActionSimulator::removeGoalInternal(std::string &predicate_name, std::vector<std::string> &args)
+{
+    // remove fact from internal KB
+    return removePredicateInternal(predicate_name, args, kb_goals_);
 }
 
 void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> &params)
@@ -626,7 +704,7 @@ bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<st
 
     // ensure domain_operator_map_ has data
     if(!domain_operator_map_.size() > 0) {
-        ROS_ERROR("domain_operator_map_ is empty, try calling saveKBSnapshot() first");
+        ROS_ERROR("domain_operator_map_ is empty");
         return false;
     }
 
@@ -678,7 +756,7 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
 
     // ensure domain_operator_details_ has data
     if(!domain_operator_details_.size() > 0) {
-        ROS_ERROR("domain_operator_details_ is empty, try calling saveKBSnapshot() first");
+        ROS_ERROR("domain_operator_details_ is empty");
         return false;
     }
 
@@ -768,6 +846,39 @@ bool ActionSimulator::getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeI
     return true;
 }
 
+bool ActionSimulator::isGoalAchieved()
+{
+    // check if all goals are satisfied in internal KB
+
+    //remove
+    ROS_INFO("is goooooooal achieved started");
+
+    if(kb_goals_.size() == 0) {
+        ROS_WARN("received empty goal query, will return true, means goals are satisfied");
+        return true;
+    }
+
+    // iterate over kb_goals_
+    for(auto it=kb_goals_.begin(); it!=kb_goals_.end(); it++) {
+        //remove
+        ROS_INFO("checking if predicate : (%s) is in KB", convertPredToString(*it).c_str());
+        // find fact in internal KB using KnowledgeItem version
+        if(!findFactInternal(*it)) {
+            // remove
+            ROS_INFO("goals not achieved, missing goal : (%s)", convertPredToString(*it).c_str());
+            return false;
+        }
+        else {
+            ROS_INFO("found in KB");
+        }
+    }
+
+    //remove
+    ROS_INFO("is goooooal achieve ended");
+
+    return true;
+}
+
 int main(int argc, char **argv)
 {
     // init node
@@ -802,10 +913,15 @@ int main(int argc, char **argv)
     // save all predicates to internal KB
     action_simulator_tester.saveKBSnapshot();
 
-    // snippet: print internal KB
-    ROS_INFO("print internal KB:");
+    // snippet: print internal KB facts
+    ROS_INFO("print internal KB facts:");
     ROS_INFO("================");
-    action_simulator_tester.printInternalKB();
+    action_simulator_tester.printInternalKBFacts();
+
+    // snippet: print internal KB goals
+    ROS_INFO("print internal KB goals:");
+    ROS_INFO("================");
+    action_simulator_tester.printInternalKBGoals();
 
     // snippet: find fact in KB (with no args)
     ROS_INFO("find fact in internal KB no args:");
@@ -841,7 +957,7 @@ int main(int argc, char **argv)
     action_simulator_tester.removeFactInternal(predicate_name, args3);
     ROS_INFO("internal KB after having removed predicate (has_driver_license batdad):");
     ROS_INFO("================");
-    action_simulator_tester.printInternalKB();
+    action_simulator_tester.printInternalKBFacts();
 
     // snippet: remove predicate from KB (no args)
     std::string predicate_name5 = "person_descending";
@@ -849,7 +965,7 @@ int main(int argc, char **argv)
     ROS_INFO("internal KB after having removed predicate (person_descending):");
     ROS_INFO("================");
     action_simulator_tester.removeFactInternal(predicate_name5, args4);
-    action_simulator_tester.printInternalKB();
+    action_simulator_tester.printInternalKBFacts();
 
     // snippet: see if action is aplicable
     std::string action_name = "get_down_from_car";
@@ -865,17 +981,40 @@ int main(int argc, char **argv)
     // snippet: simulate an action
     ROS_INFO("KB before simulating action:");
     ROS_INFO("================");
-    action_simulator_tester.printInternalKB();
+    action_simulator_tester.printInternalKBFacts();
     ROS_INFO("action simulation: (get_down_from_car batdad car ben_school)");
     ROS_INFO("================");
     std::string action_name2 = "get_down_from_car";
     std::vector<std::string> params2 = {"batdad","car","ben_school"};
-    // action_simulator_tester.saveKBSnapshot(); // call only once, here it has been called before, therefore not calling
+    action_simulator_tester.saveKBSnapshot();
     action_simulator_tester.simulateActionStart(action_name2, params2);
     // print to see the difference in KB
     ROS_INFO("KB after simulating action:");
     ROS_INFO("================");
-    action_simulator_tester.printInternalKB();
+    action_simulator_tester.printInternalKBFacts();
+
+    // snippet: test isGoalAchieved()
+    ROS_INFO("Check if goal is achieved:");
+    ROS_INFO("================");
+    ROS_INFO("kb goals:");
+    action_simulator_tester.printInternalKBGoals();
+    ROS_INFO("KB facts:");
+    action_simulator_tester.printInternalKBFacts();
+    if(action_simulator_tester.isGoalAchieved())
+        ROS_INFO("goals achieved");
+    else
+        ROS_INFO("goals not achieved");
+
+    // find predicate (person_at_location ben_school ben)
+    ROS_INFO("find fact in internal KB with args:");
+    ROS_INFO("================");
+    std::string predicate_name6 = "person_at_location";
+    std::vector<std::string> args5 = {"ben_school", "ben"};
+    action_simulator_tester.printInternalKBFacts();
+    if(action_simulator_tester.findFactInternal(predicate_name6, args5))
+        ROS_INFO("predicate : (person_at_location ben_school ben) found in internal KB");
+    else
+        ROS_INFO("predicate : (person_at_location ben_school ben) not found in internal KB");
 
     return 0;
 }
