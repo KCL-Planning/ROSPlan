@@ -182,7 +182,7 @@ class ActionSimulator
          * @param args the predicate grounded parameters
          * @return true if predicate was found, false otherwise
          */
-        bool findFactInternal(std::string &predicate_name, std::vector<std::string> &args);
+        bool findFactInternal(std::string &predicate_name, std::vector<std::string> args);
 
         /**
          * @brief overloaded function offered to call FindFactInternal() when we don't care about the returned iterator
@@ -198,7 +198,7 @@ class ActionSimulator
          * @param predicate_name_and_params first element is the predicate name, succesive elements are predicate arguments
          * @return true if predicate was found, false otherwise
          */
-        bool findFactInternal(std::vector<std::string> &predicate_name_and_params);
+        bool findFactInternal(std::vector<std::string> predicate_name_and_params);
 
         /**
          * @brief overloaded function that allows to find predicate in KB with an input KnowledgeItem
@@ -248,7 +248,7 @@ class ActionSimulator
          * @param args the grounded predicate parameters
          * @return true if predicate was found, false otherwise
          */
-        bool removeFactInternal(std::string &predicate_name, std::vector<std::string> &args);
+        bool removeFactInternal(std::string &predicate_name, std::vector<std::string> args);
 
         /**
          * @brief remove fact from internal KB, this in an overloaded method that
@@ -278,26 +278,31 @@ class ActionSimulator
          * @param predicate_name the name of the predicate to be added to internal KB
          * @param params the parameters of the predicate to be added to internal KB
          */
-        void addFactInternal(std::string &predicate_name, std::vector<std::string> &params);
+        void addFactInternal(std::string &predicate_name, std::vector<std::string> params);
 
         /**
-         * @brief add fact to internal KB, warning: does not fill keys on knowledge items, it leaves the keys empty,
-         * overloaded method that allows to add facts to internal KB with DomainFormula input
-         * @param predicate the fact we want to add to KB in DomainFormula format1
-         */
-        void addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate);
-
-        /**
-         * @brief receive an operator and a dictionary of key values, return grounded predicate
+         * @brief receive an operator and a dictionary of key values, return grounded predicate parameters
          * @param ungrounded_precondition taken from operator details, this is a DomainFormula precondition
          * @param ground_dictionary std map of string to string with key value information: key, grounded parameter
          * @return a grounded predicate, in form of list of string
          */
-        std::vector<std::string> GroundParams(rosplan_knowledge_msgs::DomainFormula &ungrounded_precondition,
+        std::vector<std::string> groundParams(rosplan_knowledge_msgs::DomainFormula ungrounded_precondition,
             std::map<std::string, std::string> &ground_dictionary);
 
         /**
-         * @brief check if action preconditions are consistent with internal KB information
+         * @brief overloaded function that checks if action preconditions are consistent with internal KB information
+         * but returning the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action is aplicable, false otherwise
+         */
+        bool isActionAplicable(std::string &action_name, std::vector<std::string> &params,
+                std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that check if action preconditions are consistent with internal KB information
+         * without returning the ground dictionary
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters
          * @return true if action is aplicable, false otherwise
@@ -340,7 +345,7 @@ class ActionSimulator
          * @brief check if all goals are satisfied in internal KB
          * @return true if goals are satisfied (present in internal KB)
          */
-        bool isGoalAchieved();
+        bool areGoalsAchieved();
 
     private:
 

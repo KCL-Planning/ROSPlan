@@ -413,9 +413,6 @@ bool ActionSimulator::findKnowledgeItem(std::string &predicate_name, std::vector
         return false;
     }
 
-    // flag to indicate that the predicate was found
-    bool found = false;
-
     // iterate over internal KB
     for(auto it=item_array.begin(); it!=item_array.end(); it++)
     {
@@ -440,27 +437,40 @@ bool ActionSimulator::findKnowledgeItem(std::string &predicate_name, std::vector
             if(it->values.size() == 0) {
                 // found element (no args), return iterator "it"
                 kiit = it;
-                found = true;
                 // in theory there should'nt be duplicate predicates in KB, so no need to look for more
-                break;
+                return true;
             }
             else
                 continue;
         }
 
         // compare arguments one by one
-        for(auto ait=args.begin(); ait!=args.end(); ait++)
-            if(!(*ait == it->values.at(ait - args.begin()).value))
-                continue;
+        // first ensure they have the same amount of parameters
+        // they should, because they have the same predicate name...
+        if(args.size() != it->values.size()) {
+            ROS_ERROR("found predicates with same name but different arg size, while finding predicate.");
+            ROS_ERROR("your query : (%s) vs KB : (%s)", convertPredToString(predicate_name, args).c_str(), convertPredToString(*it).c_str());
+            return false;
+        }
+        bool predicate_have_same_args = true;
+        // start comparing args one by one, return false at the first arg that is not same
+        for(auto ait=args.begin(); ait!=args.end(); ait++) {
+            if(*ait != it->values.at(ait - args.begin()).value) {
+                predicate_have_same_args = false; // flag to jump in the outside for loop
+                break; // break this inner for loop, not the outer one
+            }
+        }
+        if(!predicate_have_same_args)
+            continue;
 
         // found element (has args), return iterator "it"
         kiit = it;
-        found = true;
+
         // in theory there should'nt be duplicate predicates in KB, so no need to look for more
-        break;
+        return true;
     }
 
-    return found;
+    return false;
 }
 
 bool ActionSimulator::findPredicateInternal(rosplan_knowledge_msgs::KnowledgeItem &predicate, bool is_fact)
@@ -486,7 +496,7 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<
     return findKnowledgeItem(predicate_name, args, kiit, kb_facts_);
 }
 
-bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> &args)
+bool ActionSimulator::findFactInternal(std::string &predicate_name, std::vector<std::string> args)
 {
     // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
     std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kiit;
@@ -502,7 +512,7 @@ bool ActionSimulator::findFactInternal(std::string &predicate_name)
     return findFactInternal(predicate_name, args, kiit);
 }
 
-bool ActionSimulator::findFactInternal(std::vector<std::string> &predicate_name_and_params)
+bool ActionSimulator::findFactInternal(std::vector<std::string> predicate_name_and_params)
 {
     // overloaded method offered to call findFactInternal() when we don't care about the returned iterator
     // and args are empty, but we have a single vector in which the first element is the predicate name
@@ -571,7 +581,7 @@ bool ActionSimulator::removePredicateInternal(std::string &predicate_name, std::
     return true;
 }
 
-bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vector<std::string> &args)
+bool ActionSimulator::removeFactInternal(std::string &predicate_name, std::vector<std::string> args)
 {
     // remove fact from internal KB
     return removePredicateInternal(predicate_name, args, kb_facts_);
@@ -623,7 +633,7 @@ bool ActionSimulator::removeGoalInternal(std::string &predicate_name, std::vecto
     return removePredicateInternal(predicate_name, args, kb_goals_);
 }
 
-void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> &params)
+void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> params)
 {
     // add fact to internal KB
 
@@ -667,38 +677,25 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
     kb_facts_.push_back(knowledge_item);
 }
 
-void ActionSimulator::addFactInternal(rosplan_knowledge_msgs::DomainFormula &predicate)
+std::vector<std::string> ActionSimulator::groundParams(rosplan_knowledge_msgs::DomainFormula ungrounded_precondition,
+        std::map<std::string, std::string> &ground_dictionary)
 {
-    // overloaded method that allows to add facts to internal KB with DomainFormula input
+    // receive an operator and a dictionary of key values, return grounded predicate parameters
 
-    // extract params from predicate input
-    std::vector<std::string> params;
-    for(auto it=predicate.typed_parameters.begin(); it!=predicate.typed_parameters.end(); it++) {
-        params.push_back(it->value);
-    }
-
-    // call original method with adjusted arguments
-    return addFactInternal(predicate.name, params);
-}
-
-std::vector<std::string> ActionSimulator::GroundParams(rosplan_knowledge_msgs::DomainFormula &ungrounded_precondition,
-    std::map<std::string, std::string> &ground_dictionary)
-{
-    // receive an operator and a dictionary of key values, return grounded predicate
-
-    std::vector<std::string> grounded_fact;
-
-    // insert as first element the predicate name
-    grounded_fact.push_back(ungrounded_precondition.name);
+    std::vector<std::string> grounded_fact_args;
 
     // iterate over the ungrounded params
-    for(auto it=ungrounded_precondition.typed_parameters.begin(); it!=ungrounded_precondition.typed_parameters.end(); it++)
-        grounded_fact.push_back(ground_dictionary.find(it->key)->second);
+    for(auto it=ungrounded_precondition.typed_parameters.begin(); it!=ungrounded_precondition.typed_parameters.end(); it++) {
+        std::string grounded_arg = ground_dictionary.find(it->key)->second;
+        ROS_INFO("grounded arg = (%s)", grounded_arg.c_str());
+        grounded_fact_args.push_back(grounded_arg);
+    }
 
-    return grounded_fact;
+    return grounded_fact_args;
 }
 
-bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<std::string> &params)
+bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<std::string> &params,
+    std::map<std::string, std::string> &ground_dictionary)
 {
     // check if action preconditions are consistent with internal KB information
 
@@ -709,45 +706,64 @@ bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<st
     }
 
     // get operator from action name (std::map of names, operators)
-    auto oit = domain_operator_map_.find(action_name)->second;
+    rosplan_knowledge_msgs::DomainOperator op = domain_operator_map_.find(action_name)->second;
 
-    // construct ground dictionary from params
-    std::map<std::string, std::string> ground_dictionary; // key value
+    // construct ground dictionary from params (key vs grounded args)
     // ensure they have the same size
-    if(!(oit.formula.typed_parameters.size() == params.size())) {
-        ROS_ERROR("wrong parameters, size of operator parameters and params size do not match");
+    if(!(op.formula.typed_parameters.size() == params.size())) {
+        ROS_ERROR("size of domain operator parameters and action params do not match, (while creating ground dictionary)");
         return false;
     }
-    for(auto it=oit.formula.typed_parameters.begin(); it!=oit.formula.typed_parameters.end(); it++)
-        ground_dictionary.insert(std::pair<std::string, std::string>(it->key, params.at(std::distance(oit.formula.typed_parameters.begin(), it))));
+    for(auto it=op.formula.typed_parameters.begin(); it!=op.formula.typed_parameters.end(); it++)
+        // value gets passed by reference, to be used by action simulator but also is used for the rest of this function
+        ground_dictionary.insert(std::pair<std::string, std::string>(it->key, params.at(std::distance(op.formula.typed_parameters.begin(), it))));
 
     // check action preconditions
 
+    bool preconditions_met = true;
+
     // iterate over ungrounded positive preconditions, find in KB
-    for(auto it=oit.at_start_simple_condition.begin(); it!=oit.at_start_simple_condition.end(); it++) {
-        // if not found, action is not aplicable
-        std::vector<std::string> gp = GroundParams(*it, ground_dictionary);
-        if(!findFactInternal(gp)) // "it" is in DomainFormula format
-            return false;
+    for(auto it=op.at_start_simple_condition.begin(); it!=op.at_start_simple_condition.end(); it++) {
+        // if not found, action is not applicable
+        std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+        if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format, gp = grounded parameters
+            // inform which precondition was not met
+            ROS_INFO("precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+            preconditions_met = false;
+        }
     }
 
     // iterate over ungrounded overall conditions, find in KB
-    for(auto it=oit.over_all_simple_condition.begin(); it!=oit.over_all_simple_condition.end(); it++) {
-        // if not found, action is not aplicable
-        std::vector<std::string> gp = GroundParams(*it, ground_dictionary);
-        if(!findFactInternal(gp))
-            return false;
+    for(auto it=op.over_all_simple_condition.begin(); it!=op.over_all_simple_condition.end(); it++) {
+        // if not found, action is not applicable
+        std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+        if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
+            // inform which precondition was not met
+            ROS_INFO("precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+            preconditions_met = false;
+        }
     }
 
     // iterate over ungrounded at_start_neg_condition, make sure they are not in KB
-    for(auto it=oit.at_start_neg_condition.begin(); it!=oit.at_start_neg_condition.end(); it++) {
-        // if found, action is not aplicable
-        std::vector<std::string> gp = GroundParams(*it, ground_dictionary);
-        if(findFactInternal(gp))
-            return false;
+    for(auto it=op.at_start_neg_condition.begin(); it!=op.at_start_neg_condition.end(); it++) {
+        // if found, action is not applicable
+        std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+        if(findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
+            // inform which precondition was not met
+            ROS_INFO("precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+            preconditions_met = false;
+        }
     }
 
-    return true;
+    return preconditions_met;
+}
+
+bool ActionSimulator::isActionAplicable(std::string &action_name, std::vector<std::string> &params)
+{
+    // overloaded function that check if action preconditions are consistent with internal KB information
+    // without returning the ground dictionary
+    std::map<std::string, std::string> ground_dictionary;
+    return isActionAplicable(action_name, params, ground_dictionary);
 }
 
 bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
@@ -760,28 +776,29 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
         return false;
     }
 
-    // check if action is applicable
-    if(!isActionAplicable(action_name, params)) {
+    // check if action is applicable and get ground dictionary
+    std::map<std::string, std::string> ground_dictionary;
+    if(!isActionAplicable(action_name, params, ground_dictionary)) {
         ROS_ERROR("action is not applicable, will not simulate");
         return false;
     }
 
     // query action effects
 
-    // get operator from action name (std::map of names, operators)
-    auto oit = domain_operator_map_.find(action_name)->second;
+    // get domain operator details corresponding to the action to simulate
+    rosplan_knowledge_msgs::DomainOperator op = domain_operator_map_.find(action_name)->second;
 
     if(action_start)
     {
         // action start effects
 
         // iterate over positive start action effects and apply to KB
-        for(auto it=oit.at_start_add_effects.begin(); it!=oit.at_start_add_effects.end(); it++)
-            addFactInternal(*it);
+        for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++)
+            addFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=oit.at_start_del_effects.begin(); it!=oit.at_start_del_effects.end(); it++) {
-            if(!removeFactInternal(*it))
+        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++) {
+            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
                 return false;
         }
     }
@@ -790,12 +807,12 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
         // action end effects
 
         // iterate over positive start action effects and apply to KB
-        for(auto it=oit.at_end_add_effects.begin(); it!=oit.at_end_add_effects.end(); it++)
-            addFactInternal(*it);
+        for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++)
+            addFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=oit.at_end_del_effects.begin(); it!=oit.at_end_del_effects.end(); it++) {
-            if(!removeFactInternal(*it))
+        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++) {
+            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
                 return false;
         }
     }
@@ -846,37 +863,28 @@ bool ActionSimulator::getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeI
     return true;
 }
 
-bool ActionSimulator::isGoalAchieved()
+bool ActionSimulator::areGoalsAchieved()
 {
     // check if all goals are satisfied in internal KB
-
-    //remove
-    ROS_INFO("is goooooooal achieved started");
 
     if(kb_goals_.size() == 0) {
         ROS_WARN("received empty goal query, will return true, means goals are satisfied");
         return true;
     }
 
+    bool goal_state_reached = true;
+
     // iterate over kb_goals_
     for(auto it=kb_goals_.begin(); it!=kb_goals_.end(); it++) {
-        //remove
-        ROS_INFO("checking if predicate : (%s) is in KB", convertPredToString(*it).c_str());
         // find fact in internal KB using KnowledgeItem version
         if(!findFactInternal(*it)) {
-            // remove
-            ROS_INFO("goals not achieved, missing goal : (%s)", convertPredToString(*it).c_str());
-            return false;
-        }
-        else {
-            ROS_INFO("found in KB");
+            // inform user about which goals are not achieved
+            ROS_INFO("missing goal : (%s)", convertPredToString(*it).c_str());
+            goal_state_reached =  false;
         }
     }
 
-    //remove
-    ROS_INFO("is goooooal achieve ended");
-
-    return true;
+    return goal_state_reached;
 }
 
 int main(int argc, char **argv)
@@ -967,54 +975,39 @@ int main(int argc, char **argv)
     action_simulator_tester.removeFactInternal(predicate_name5, args4);
     action_simulator_tester.printInternalKBFacts();
 
-    // snippet: see if action is aplicable
+    // snippet: see if action is applicable
     std::string action_name = "get_down_from_car";
     std::vector<std::string> params = {"batdad","car","ben_school"}; // person, car, location
     ROS_INFO("check if action is applicable: (get_down_from_car batdad car ben_school), expected outcome is true");
     ROS_INFO("================");
-    action_simulator_tester.saveKBSnapshot();
+//     action_simulator_tester.saveKBSnapshot();
     if(action_simulator_tester.isActionAplicable(action_name, params))
         ROS_INFO("action is applicable!");
     else
         ROS_INFO("action is not applicable");
 
-    // snippet: simulate an action
-    ROS_INFO("KB before simulating action:");
+    // snippet: simulate an action start
+    ROS_INFO("simulate action start: (get_down_from_car batdad car ben_school)");
     ROS_INFO("================");
+    ROS_INFO("KB before simulation");
     action_simulator_tester.printInternalKBFacts();
-    ROS_INFO("action simulation: (get_down_from_car batdad car ben_school)");
-    ROS_INFO("================");
     std::string action_name2 = "get_down_from_car";
     std::vector<std::string> params2 = {"batdad","car","ben_school"};
-    action_simulator_tester.saveKBSnapshot();
     action_simulator_tester.simulateActionStart(action_name2, params2);
-    // print to see the difference in KB
-    ROS_INFO("KB after simulating action:");
-    ROS_INFO("================");
+    ROS_INFO("KB after simulation");
     action_simulator_tester.printInternalKBFacts();
 
-    // snippet: test isGoalAchieved()
-    ROS_INFO("Check if goal is achieved:");
-    ROS_INFO("================");
-    ROS_INFO("kb goals:");
-    action_simulator_tester.printInternalKBGoals();
-    ROS_INFO("KB facts:");
-    action_simulator_tester.printInternalKBFacts();
-    if(action_simulator_tester.isGoalAchieved())
-        ROS_INFO("goals achieved");
-    else
-        ROS_INFO("goals not achieved");
-
-    // find predicate (person_at_location ben_school ben)
-    ROS_INFO("find fact in internal KB with args:");
-    ROS_INFO("================");
-    std::string predicate_name6 = "person_at_location";
-    std::vector<std::string> args5 = {"ben_school", "ben"};
-    action_simulator_tester.printInternalKBFacts();
-    if(action_simulator_tester.findFactInternal(predicate_name6, args5))
-        ROS_INFO("predicate : (person_at_location ben_school ben) found in internal KB");
-    else
-        ROS_INFO("predicate : (person_at_location ben_school ben) not found in internal KB");
+    // snippet: test areGoalsAchieved()
+//     ROS_INFO("Check if goals are achieved:");
+//     ROS_INFO("================");
+//     ROS_INFO("KB goals:");
+//     action_simulator_tester.printInternalKBGoals();
+//     ROS_INFO("KB facts:");
+//     action_simulator_tester.printInternalKBFacts();
+//     if(action_simulator_tester.areGoalsAchieved())
+//         ROS_INFO("goals achieved");
+//     else
+//         ROS_INFO("goals not achieved");
 
     return 0;
 }
