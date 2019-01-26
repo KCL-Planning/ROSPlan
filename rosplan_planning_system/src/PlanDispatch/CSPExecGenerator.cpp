@@ -14,18 +14,18 @@
 
 CSPExecGenerator::CSPExecGenerator() : nh_("~"), is_esterel_plan_received_(false)
 {
-    // subscriptions: subscribe to esterel plan, a partial order plan
-    sub_esterel_plan_ = nh_.subscribe("esterel_plan", 1, &CSPExecGenerator::esterelPlanCB, this);
+    // subscriptions: subscribe to esterel plan, a fully ordered plan
+    sub_esterel_plan_ = nh_.subscribe("/rosplan_parsing_interface/complete_plan", 1, &CSPExecGenerator::esterelPlanCB, this);
 
-    // publications: publish an array of esterel plans with different execution alternatives
+    // publications
+    // array of esterel plans with different execution alternatives
     pub_set_of_solutions_ = nh_.advertise<rosplan_dispatch_msgs::EsterelPlanArray>("~set_of_solutions", 1);
+    // partially ordered plan = original plan - conditional edges = plan with only interference edges
+    pub_pop_ = nh_.advertise<rosplan_dispatch_msgs::EsterelPlan>("~partially_ordered_plan", 1);
 
     // services: compute different execution alternatives from a partially ordered esterel plan (a plan
     // with no conditional edges, but only interference edges)
     ros::ServiceServer service = nh_.advertiseService("gen_exec_alternatives", &CSPExecGenerator::srvCB, this);
-
-    // querying parameters from parameter server
-    getParams();
 }
 
 CSPExecGenerator::~CSPExecGenerator()
@@ -33,35 +33,36 @@ CSPExecGenerator::~CSPExecGenerator()
     // shut down publishers and subscribers
     sub_esterel_plan_.shutdown();
     pub_set_of_solutions_.shutdown();
-}
-
-void CSPExecGenerator::getParams()
-{
-//     // setup script default arguments
-//     std::vector<std::string> default_args;
-//     default_args.push_back("no_args");
-//
-//     nh_.param<std::string>("script_path", full_path_to_script_, "/home/user/my_script.sh");
-//     nh_.param<std::vector<std::string> >("script_arguments", script_arguments_, default_args);
-//
-//     // informing the user about the parameters which will be used
-//     ROS_INFO("Script path : %s", full_path_to_script_.c_str());
-//
-//     ROS_INFO("Script will run with the following arguments :");
-//     for (int i = 0; i < script_arguments_.size() ; i++)
-//     {
-//         ROS_INFO("arg %d : %s", i + 1, script_arguments_.at(i).c_str());
-//     }
+    pub_pop_.shutdown();
 }
 
 void CSPExecGenerator::esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::ConstPtr& msg)
 {
-    esterel_plan_msg_ = *msg;
+    original_fully_ordered_plan_ = *msg;
     is_esterel_plan_received_ = true;
 }
 
-bool CSPExecGenerator::compute_exec_alternatives()
+rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(rosplan_dispatch_msgs::EsterelPlan plan)
 {
+    // remove conditional edges from a fully connected esterel plan received in original_fully_ordered_plan_
+
+    // iterate over edges
+    for(auto it=original_fully_ordered_plan_.edges.begin(); it!=original_fully_ordered_plan_.edges.end(); it++) {
+        // discriminate by conditional edges
+        if(it->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE)
+            // delete elements which match criteria
+            original_fully_ordered_plan_.edges.erase(it);
+    }
+
+    // publish the partially ordered plan, previous plan without conditional edges
+    pub_pop_.publish(original_fully_ordered_plan_);
+}
+
+bool CSPExecGenerator::computeExecAlternatives()
+{
+    // remove conditional edges from plan
+    partial_order_plan_ = removeConditionalEdges(original_fully_ordered_plan_);
+
     rosplan_dispatch_msgs::EsterelPlan valid_execution_alternative;
 
     rosplan_dispatch_msgs::EsterelPlanNode node;
@@ -113,13 +114,13 @@ bool CSPExecGenerator::srvCB(std_srvs::SetBool::Response &req, std_srvs::SetBool
     // req.data
 
     if(!is_esterel_plan_received_) {
-        ROS_ERROR("Esterel plan has not being received yet");
+        ROS_ERROR("requires esterel plan input has not being received yet, can't generate exec alternatives");
         // set result of srv as failure
         res.success = false;
-        return false;
+        return true;
     }
 
-    if(compute_exec_alternatives())
+    if(computeExecAlternatives())
     {
         // indicates that at least one valid execution was found
         res.success = true; // set result of srv as success
@@ -143,45 +144,18 @@ bool CSPExecGenerator::srvCB(std_srvs::SetBool::Response &req, std_srvs::SetBool
     return true;
 }
 
-void CSPExecGenerator::update()
-{
-    // listen to callbacks
-    ros::spinOnce();
-
-    if (!is_esterel_plan_received_) return;
-
-    // reset flag
-    is_esterel_plan_received_ = false;
-
-    // TODO: perform algorithm
-}
-
 int main(int argc, char **argv)
 {
+    // init node
     ros::init(argc, argv, "csp_exec_generator_node");
-
     ROS_INFO("Node is going to initialize...");
 
     // create object of the node class (CSPExecGenerator)
     CSPExecGenerator csp_exec_generator_node;
-
-    // setup node frequency
-    double node_frequency = 10.0;
-    ros::NodeHandle nh("~");
-    nh.param("node_frequency", node_frequency, 10.0);
-    ROS_INFO("Node will run at : %lf [hz]", node_frequency);
-    ros::Rate loop_rate(node_frequency);
-
     ROS_INFO("Node initialized.");
 
-    while (ros::ok())
-    {
-        // main loop function
-        csp_exec_generator_node.update();
-
-        // sleep to control the node frequency
-        loop_rate.sleep();
-    }
+    // wait for callbacks (incoming topics or service calls
+    ros::spin();
 
     return 0;
 }

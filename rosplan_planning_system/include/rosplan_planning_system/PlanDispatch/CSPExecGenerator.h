@@ -27,40 +27,64 @@
 class CSPExecGenerator
 {
     public:
+
+        /**
+         * @brief constructor, empty
+         */
         CSPExecGenerator();
+
+        /**
+         * @brief destructor, shutdown publishers and subscribers
+         */
         ~CSPExecGenerator();
 
-        // get parameters from param server
-        void getParams();
-
-        // callback for event_in received msg
+        /**
+         * @brief callback to receive the fully ordered esterel plan
+         * @param msg the plan is received in this variable, is written by reference
+         */
         void esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::ConstPtr& msg);
 
-        // generate plan alternatives based on search
-        bool compute_exec_alternatives();
+        /**
+         * @brief remove conditional edges from a fully connected esterel plan received in original_fully_ordered_plan_
+         * @param plan the plan from which the conditional edges need to be removed
+         * @return a partially ordered plan with only interference edges in EsterelPlan format
+         */
+        rosplan_dispatch_msgs::EsterelPlan removeConditionalEdges(rosplan_dispatch_msgs::EsterelPlan plan);
 
-        // service callback
+        /**
+         * @brief generate plan alternatives based on search
+         * @return true if succeeded
+         */
+        bool computeExecAlternatives();
+
+        /**
+         * @brief service callback with user request to generate execution alternatives
+         * @param req input from user gets received in this variable
+         * @param res service response gets written here by reference, true if at least
+         * one possible execution was found, false if replan is needed (means plan is invalid)
+         * @return true if service finished execution, false otherwise
+         */
         bool srvCB(std_srvs::SetBool::Response &req, std_srvs::SetBool::Response &res);
-
-        // ros node main loop
-        void update();
 
     private:
         // ros related variables
         ros::NodeHandle nh_;
-        ros::Publisher pub_set_of_solutions_;
+        ros::Publisher pub_set_of_solutions_, pub_pop_;
         ros::Subscriber sub_esterel_plan_;
 
-        // flag used to know when we have received a callback
+        /// flag used to know when we have received a callback
         bool is_esterel_plan_received_;
 
-        // stores the received msg in esterel plan callback
-        rosplan_dispatch_msgs::EsterelPlan esterel_plan_msg_;
+        /// stores the received msg in esterel plan callback
+        rosplan_dispatch_msgs::EsterelPlan original_fully_ordered_plan_;
 
-        // plan execution alternatives, each one is a fully ordered esterel plan
+        /// to store the partial ordered plan, only with interference edges
+        rosplan_dispatch_msgs::EsterelPlan partial_order_plan_;
+
+        /// plan execution alternatives, each one is a fully ordered esterel plan
         rosplan_dispatch_msgs::EsterelPlanArray solution_set_;
 
-        // to simulate actions in a private (own) KB
+        /// to simulate actions in a private (own) KB
         ActionSimulator action_simulator_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H
