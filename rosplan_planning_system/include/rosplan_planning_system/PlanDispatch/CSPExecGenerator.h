@@ -22,8 +22,8 @@
 #include <diagnostic_msgs/KeyValue.h>
 #include <std_msgs/String.h>
 #include <std_srvs/SetBool.h>
-// #include <rosplan_dispatch_msgs/ExecAlternatives.h>
 #include "rosplan_action_interface/ActionSimulator.h"
+#include <algorithm>
 
 class CSPExecGenerator
 {
@@ -99,6 +99,9 @@ class CSPExecGenerator
          * @brief wait for callbacks to arrive
          */
         void update();
+
+        // remove
+        void testCheckTemporalConstraints();
 
     private:
         // ros related variables

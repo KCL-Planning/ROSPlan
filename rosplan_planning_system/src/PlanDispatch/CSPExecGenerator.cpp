@@ -50,7 +50,7 @@ void CSPExecGenerator::esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::C
 
 void CSPExecGenerator::initConstraints(std::map<int, int> &set_of_constraints)
 {
-    // construct set of contraints from original received esterel plan
+    // construct set of constraints from original received esterel plan
     // example:
     // C : [2:3, 5:6]; node 3 goes after node 2, node 6 goes after node 5
 
@@ -75,9 +75,39 @@ bool CSPExecGenerator::checkTemporalConstraints(std::vector<int> &set_of_ordered
 {
     // check if set of ordered nodes (F) satisfies the set of constraints (C)
 
-    // TODO
+    // iterate over set of constraints
+    for(auto cit=set_of_constraints.begin(); cit!=set_of_constraints.end(); cit++) {
+        // find key in set_of_ordered_nodes
+        std::vector<int>::iterator kit = std::find(set_of_ordered_nodes.begin(),
+                            set_of_ordered_nodes.end(), cit->first);
+        // check if element was found
+        if(kit != set_of_ordered_nodes.end()) {
+            // key was found, now find value
+            std::vector<int>::iterator vit = std::find(set_of_ordered_nodes.begin(),
+                            set_of_ordered_nodes.end(), set_of_constraints.find(cit->first)->second);
+            // check if value was found
+            if(vit != set_of_ordered_nodes.end())
+                // if vit index < kit index, then constraint is violated
+                if(std::distance(kit, vit) < 0)
+                    return false;
+        }
+    }
 
     return true;
+}
+
+void CSPExecGenerator::testCheckTemporalConstraints()
+{
+    // example of how to use CheckTemporalConstraints()
+
+    std::vector<int> set_of_ordered_nodes = {1, 3, 2, 4, 5, 6}; // violates constraints
+    // std::vector<int> set_of_ordered_nodes = {1, 2, 3, 4, 5, 6}; // does not violate constraints
+    std::map<int, int> set_of_constraints = {{2, 3},{5, 6}};
+
+    if(checkTemporalConstraints(set_of_ordered_nodes, set_of_constraints))
+        ROS_INFO("constraints are satisfied");
+    else
+        ROS_INFO("constraints are violated");
 }
 
 bool CSPExecGenerator::areGoalsAchieved(ActionSimulator &as)
@@ -196,6 +226,9 @@ int main(int argc, char **argv)
 
     // create object of the node class (CSPExecGenerator)
     CSPExecGenerator csp_exec_generator_node;
+
+    // remove
+    csp_exec_generator_node.testCheckTemporalConstraints();
 
     // setup node frequency
     double node_frequency = 1.0;
