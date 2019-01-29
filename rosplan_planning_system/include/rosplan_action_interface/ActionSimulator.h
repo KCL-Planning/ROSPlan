@@ -32,7 +32,7 @@ class ActionSimulator
         ActionSimulator();
 
         /**
-         * @brief empty constructor, provide the option not to mirror any KB at startup
+         * @brief constructor, provide the option not to mirror any KB at startup
          * @param mirror_KB_at_startup if true, a query is performed to real KB domain details and values stored internally
          * @param mirror_facts_and_goals if true, facts and goals are fetched from real KB and stored internally
          */
