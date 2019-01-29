@@ -297,22 +297,86 @@ class ActionSimulator
             std::map<std::string, std::string> &ground_dictionary);
 
         /**
-         * @brief overloaded function that checks if action preconditions are consistent with internal KB information
-         * but returning the ground dictionary for simulation action purposes
+         * @brief check if action start/end/overall preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_start if true then action start preconditions are checked, if false at end preconditions are checked
+         * @param overall_preconditions if true the overall action preconditions are checked, if conflict
+         * between action_start and overall_preconditions, overall_preconditions will be checked
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters
          * @param ground_dictionary return value gets written here by reference
-         * @return true if action is aplicable, false otherwise
+         * @return true if action start/end/overall is applicable, false otherwise
+         */
+        bool isActionAplicable(bool action_start, bool overall_preconditions, std::string &action_name,
+                std::vector<std::string> &params, std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action start is applicable, false otherwise
+         */
+        bool isActionStartAplicable(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @return true if action start is applicable, false otherwise
+         */
+        bool isActionStartAplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if action overall preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action overall is applicable, false otherwise
+         */
+        bool isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action end is applicable, false otherwise
+         */
+        bool isActionEndAplicable(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @return true if action end is applicable, false otherwise
+         */
+        bool isActionEndAplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if all action preconditions (start, end, overall) are consistent with
+         * internal KB information and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action is applicable, false otherwise
          */
         bool isActionAplicable(std::string &action_name, std::vector<std::string> &params,
                 std::map<std::string, std::string> &ground_dictionary);
 
         /**
-         * @brief overloaded function that check if action preconditions are consistent with internal KB information
-         * without returning the ground dictionary
+         * @brief overloaded function that checks if all action preconditions (start, end, overall) are consistent with
+         * internal KB information
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters
-         * @return true if action is aplicable, false otherwise
+         * @return true if action is applicable, false otherwise
          */
         bool isActionAplicable(std::string &action_name, std::vector<std::string> &params);
 

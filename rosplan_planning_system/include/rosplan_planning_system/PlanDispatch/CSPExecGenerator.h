@@ -38,6 +38,13 @@ class CSPExecGenerator
         ~CSPExecGenerator();
 
         /**
+         * @brief easy print vector nodes
+         * @param msg the name of the node list, e.g. "open list"
+         * @param nodes the node list
+         */
+        void printNodes(std::string msg, std::vector<int> &nodes);
+
+        /**
          * @brief callback to receive the fully ordered esterel plan
          * @param msg the plan is received in this variable, is written by reference
          */
@@ -75,8 +82,9 @@ class CSPExecGenerator
          * @param action_name return value is written here by reference
          * @param params return value is written here by reference
          * @param plan the plan from where to extract the actions name and params
+         * @return true if node is action start, false if node is action end
          */
-        void getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
+        bool getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
             rosplan_dispatch_msgs::EsterelPlan &plan);
 
         /**

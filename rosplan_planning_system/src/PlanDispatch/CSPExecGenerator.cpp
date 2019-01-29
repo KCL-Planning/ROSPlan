@@ -31,8 +31,19 @@ CSPExecGenerator::~CSPExecGenerator()
     sub_esterel_plan_.shutdown();
 }
 
+void CSPExecGenerator::printNodes(std::string msg, std::vector<int> &nodes)
+{
+    std::stringstream ss;
+    for(auto nit=nodes.begin(); nit!=nodes.end(); nit++) {
+        ss << *nit;
+        ss << ",";
+    }
+    ROS_INFO("%s : {%s}", msg.c_str(), ss.str().c_str());
+}
+
 void CSPExecGenerator::esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::ConstPtr& msg)
 {
+    ROS_INFO("esterel plan received");
     original_plan_ = *msg;
     is_esterel_plan_received_ = true;
 }
@@ -89,42 +100,75 @@ void CSPExecGenerator::testFunctions()
 {
     // example of how to use CheckTemporalConstraints()
 
-    std::vector<int> set_of_ordered_nodes = {1, 3, 2, 4, 5, 6}; // violates constraints
-    // std::vector<int> set_of_ordered_nodes = {1, 2, 3, 4, 5, 6}; // does not violate constraints
-    std::map<int, int> set_of_constraints = {{2, 3},{5, 6}};
-    if(checkTemporalConstraints(set_of_ordered_nodes, set_of_constraints))
-        ROS_INFO("constraints are satisfied");
-    else
-        ROS_INFO("constraints are violated");
+//     std::vector<int> set_of_ordered_nodes = {1, 3, 2, 4, 5, 6}; // violates constraints
+//     // std::vector<int> set_of_ordered_nodes = {1, 2, 3, 4, 5, 6}; // does not violate constraints
+//     std::map<int, int> set_of_constraints = {{2, 3},{5, 6}};
+//     if(checkTemporalConstraints(set_of_ordered_nodes, set_of_constraints))
+//         ROS_INFO("constraints are satisfied");
+//     else
+//         ROS_INFO("constraints are violated");
+//
+//     // test function findNodesBeforeA
+//     std::vector<int> open_list = {1, 4, 3, 2};
+//     std::vector<int> s = findNodesBeforeA(3, open_list);
+//     //print s
+//     std::stringstream ss;
+//     for(auto nit=s.begin(); nit!=s.end(); nit++) {
+//         ss << *nit;
+//         ss << ",";
+//     }
+//     ROS_INFO("nodes before a : {%s}", ss.str().c_str());
 
-    // test function findNodesBeforeA
-    std::vector<int> open_list = {1, 4, 3, 2};
-    std::vector<int> s = findNodesBeforeA(3, open_list);
-    //print s
-    std::stringstream ss;
-    for(auto nit=s.begin(); nit!=s.end(); nit++) {
-        ss << *nit;
-        ss << ",";
+    ROS_INFO("Generating execution alternatives test is computing now");
+
+    while(!is_esterel_plan_received_) {
+        ROS_INFO("waiting for plan to arrive");
+        ros::spinOnce();
+        ros::Duration(0.5).sleep();
     }
-    ROS_INFO("nodes before a : {%s}", ss.str().c_str());
+
+    // lower flag
+    is_esterel_plan_received_ = false;
+
+    if(generateFullyConnectedPlan())
+        // indicates that at least one valid execution was found
+        ROS_INFO("Found valid execution(s)");
+    else
+        // indicates that no valid execution was found, means replanning is needed
+        ROS_INFO("No valid execution was found, replanning is needed");
 }
 
-void CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
+bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
     rosplan_dispatch_msgs::EsterelPlan &plan)
 {
     // input a node id and return the action name and params
+
+    // delete previous data if any
+    params.clear();
 
     // iterate over the original plan
     for(auto nit=plan.nodes.begin(); nit!=plan.nodes.end(); nit++) {
         // check if node id matches with node
         if(nit->node_id == action_id) {
-            action_name = nit->name;
+            action_name = nit->action.name;
             // extract params
-            params.clear(); // delete previous data if any
             for(auto pit=nit->action.parameters.begin(); pit!=nit->action.parameters.end(); pit++)
                 params.push_back(pit->value);
+
+            // discriminate node action start or end
+            if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START)
+                return true;
+            else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+                return false;
+            else {
+                ROS_ERROR("node should be either start or end, while getting action");
+                return false;
+            }
         }
     }
+
+    ROS_ERROR("get action: node id was not found in plan");
+    return false;
 }
 
 std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
@@ -136,10 +180,29 @@ std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
     for(auto nit=open_list.begin(); nit!=open_list.end(); nit++) {
         std::string action_name;
         std::vector<std::string> params;
-        getAction(*nit, action_name, params, original_plan_);
-        if(action_simulator_.isActionAplicable(action_name, params))
-            valid_nodes.push_back(*nit);
+        bool action_start = getAction(*nit, action_name, params, original_plan_);
+        if(action_start) {
+            ROS_INFO("check if action start is applicable : (%s)",
+                         action_simulator_.convertPredToString(action_name, params).c_str());
+            if(action_simulator_.isActionStartAplicable(action_name, params)) {
+                valid_nodes.push_back(*nit);
+            }
+        }
+        else {
+            ROS_INFO("check if action end is applicable : (%s)",
+                         action_simulator_.convertPredToString(action_name, params).c_str());
+            if(action_simulator_.isActionEndAplicable(action_name, params)) {
+                valid_nodes.push_back(*nit);
+            }
+        }
     }
+
+    // print valid nodes
+    std::stringstream ss;
+    if(valid_nodes.size() > 0)
+        printNodes("valid nodes", valid_nodes);
+    else
+        ROS_INFO("no valid nodes were found");
 
     return valid_nodes;
 }
@@ -165,7 +228,7 @@ std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &ope
 
 bool CSPExecGenerator::orderNodes()
 {
-    ROS_INFO("order nodes");
+    ROS_INFO("ordering nodes now");
 
     // shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
     if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
@@ -176,13 +239,7 @@ bool CSPExecGenerator::orderNodes()
     // check if goals are achieved
     if(action_simulator_.areGoalsAchieved()) {
         ROS_INFO("valid plan found as follows:");
-        std::stringstream ss;
-        for(auto nit=ordered_nodes_.begin(); nit!=ordered_nodes_.end(); nit++) {
-            ss << *nit;
-            ss << ", ";
-        }
-
-        ROS_INFO("plan: %s", ss.str().c_str());
+        printNodes("plan", ordered_nodes_);
 
         // add new valid ordering to ordered plans (R)
         ordered_plans_.push_back(ordered_nodes_);
@@ -202,8 +259,17 @@ bool CSPExecGenerator::orderNodes()
         // find all nodes (b) ordered before (a)
         std::vector<int> s = findNodesBeforeA(*a, open_list_);
 
+        // remove, print a and nodes before a
+        ROS_INFO("a=%d", *a);
+        printNodes("open list=", open_list_);
+        printNodes("Nodes before a in open list (O), s=", s);
+
         // order a
         ordered_nodes_.push_back(*a);
+
+        //remove
+        ROS_INFO("remove a and s from open list");
+        printNodes("open list before removing", open_list_);
 
         // remove a and s from open list (O)
         std::vector<int>::iterator ait = std::find(open_list_.begin(),open_list_.end(), *a);
@@ -216,11 +282,30 @@ bool CSPExecGenerator::orderNodes()
                 open_list_.erase(sp);
             }
 
+        // remove
+        printNodes("open list after removing", open_list_);
+        ROS_INFO("applying action a, world state before:");
+        action_simulator_.printInternalKBFacts();
+
         // apply action a to current state (P)
         std::string action_name;
         std::vector<std::string> params;
-        getAction(*a, action_name, params, original_plan_);
-        action_simulator_.simulateActionStart(action_name, params);
+        if(getAction(*a, action_name, params, original_plan_))
+            // action start
+            if(!action_simulator_.simulateActionStart(action_name, params)) {
+                ROS_ERROR("could not simulate action start");
+                return false;
+            }
+        else
+            // action end
+            if(!action_simulator_.simulateActionEnd(action_name, params)) {
+                ROS_ERROR("could not simulate action end");
+                return false;
+            }
+
+        // remove
+        ROS_INFO("applying action a, world state after:");
+        action_simulator_.printInternalKBFacts();
 
         // recurse
         return orderNodes();
@@ -238,8 +323,11 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
 
     // init open list (O), initially contains all nodes in partial order plan
     open_list_.clear();
-    for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) // nit=node iterator
-        open_list_.push_back(nit->node_id);
+    for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) { // nit=node iterator
+        // do not add plan start node
+        if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START)
+            open_list_.push_back(nit->node_id);
+    }
 
     // init set of constraints (C)
     initConstraints(set_of_constraints_);
@@ -256,7 +344,7 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
 
 bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& req, rosplan_dispatch_msgs::ExecAlternatives::Response& res)
 {
-    ROS_INFO("Generating execution alternatives service is computing now");
+    ROS_INFO("generating execution alternatives service is computing now");
 
     if(!is_esterel_plan_received_) {
         ROS_ERROR("requires esterel plan input has not being received yet, can't generate exec alternatives");
@@ -265,6 +353,9 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
         res.exec_alternatives_generated = false;
         return true;
     }
+
+    // lower flag
+    is_esterel_plan_received_ = false;
 
     if(generateFullyConnectedPlan())
     {
@@ -296,13 +387,10 @@ int main(int argc, char **argv)
 {
     // init node
     ros::init(argc, argv, "csp_exec_generator_node");
-    ROS_INFO("Node is going to initialize...");
+    ROS_INFO("node is going to initialize...");
 
     // create object of the node class (CSPExecGenerator)
     CSPExecGenerator csp_exec_generator_node;
-
-    // remove
-    csp_exec_generator_node.testFunctions();
 
     // setup node frequency
     double node_frequency = 1.0;
@@ -313,14 +401,16 @@ int main(int argc, char **argv)
 
     ROS_INFO("Node initialized.");
 
-    while (ros::ok())
-    {
-        // main loop function
-        csp_exec_generator_node.update();
+    csp_exec_generator_node.testFunctions();
 
-        // sleep to control the node frequency
-        loop_rate.sleep();
-    }
+//     while (ros::ok())
+//     {
+//         // main loop function
+//         csp_exec_generator_node.update();
+//
+//         // sleep to control the node frequency
+//         loop_rate.sleep();
+//     }
 
     return 0;
 }
