@@ -16,12 +16,10 @@
 #include <ros/ros.h>
 #include <rosplan_dispatch_msgs/ActionDispatch.h>
 #include <rosplan_dispatch_msgs/EsterelPlan.h>
-#include <rosplan_dispatch_msgs/EsterelPlanArray.h>
 #include <rosplan_dispatch_msgs/EsterelPlanNode.h>
 #include <rosplan_dispatch_msgs/EsterelPlanEdge.h>
+#include <rosplan_dispatch_msgs/ExecAlternatives.h>
 #include <diagnostic_msgs/KeyValue.h>
-#include <std_msgs/String.h>
-#include <std_srvs/SetBool.h>
 #include "rosplan_action_interface/ActionSimulator.h"
 #include <algorithm>
 
@@ -115,7 +113,8 @@ class CSPExecGenerator
          * one possible execution was found, false if replan is needed (means plan is invalid)
          * @return true if service finished execution, false otherwise
          */
-        bool srvCB(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
+        bool srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& req,
+                   rosplan_dispatch_msgs::ExecAlternatives::Response& res);
 
         /**
          * @brief wait for callbacks to arrive
@@ -136,7 +135,7 @@ class CSPExecGenerator
         rosplan_dispatch_msgs::EsterelPlan original_plan_;
 
         /// P: to simulate actions in a private (own) KB
-        ActionSimulator *action_simulator_;
+        ActionSimulator action_simulator_;
 
         /// O: open list, the list of nodes id's to order
         std::vector<int> open_list_;

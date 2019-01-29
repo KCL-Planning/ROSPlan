@@ -27,19 +27,26 @@ class ActionSimulator
     public:
 
         /**
-         * @brief empty constructor, internal KB is needed
+         * @brief empty constructor
          */
         ActionSimulator();
 
         /**
          * @brief empty constructor, provide the option not to mirror any KB at startup
+         * @param mirror_KB_at_startup if true, a query is performed to real KB domain details and values stored internally
+         * @param mirror_facts_and_goals if true, facts and goals are fetched from real KB and stored internally
          */
-        ActionSimulator(bool internal_KB_required);
+        ActionSimulator(bool mirror_KB_at_startup, bool mirror_facts_and_goals);
 
         /**
          * @brief destructor
          */
         ~ActionSimulator();
+
+        /**
+         * @brief prepare services to connect to real KB and get domain data
+         */
+        void init();
 
         /**
          * @brief returns by reference a list of domain operator names
@@ -347,6 +354,14 @@ class ActionSimulator
          */
         bool areGoalsAchieved();
 
+        /**
+         * @brief call real KB services and save them in member variables
+         * this includes all operator names, operator details, etc. This funcion should only be called once
+         * @param mirror_facts_and_goals if true, facts and goals are fetched from KB and stored
+         * @return true if communication with real KB was successful, false otherwise
+         */
+        bool mirrorKB(bool mirror_facts_and_goals);
+
     private:
 
          /**
@@ -354,13 +369,6 @@ class ActionSimulator
          * this function gets called one time from constructor
          */
         void prepareServices();
-
-        /**
-         * @brief call real KB services and save them in member variables
-         * this includes all operator names, operator details, etc. This funcion should only be called once
-         * and is called automatically from constructor
-         */
-        bool mirrorKB();
 
         /**
          * @brief Check if service exists within a timeout of 10 secs

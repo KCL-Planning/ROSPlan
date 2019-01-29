@@ -15,31 +15,20 @@
 CSPExecGenerator::CSPExecGenerator() : nh_("~"), is_esterel_plan_received_(false)
 {
     // subscriptions: subscribe to esterel plan, a fully ordered plan
-    sub_esterel_plan_ = nh_.subscribe("/rosplan_parsing_interface/complete_plan2", 1, &CSPExecGenerator::esterelPlanCB, this);
-
-    // publications
-    // array of esterel plans with different execution alternatives
-    pub_set_of_solutions_ = nh_.advertise<rosplan_dispatch_msgs::EsterelPlanArray>("set_of_solutions", 1);
-    // partially ordered plan = original plan - conditional edges = plan with only interference edges
-    pub_pop_ = nh_.advertise<rosplan_dispatch_msgs::EsterelPlan>("/rosplan_parsing_interface/complete_plan", 1);
+    sub_esterel_plan_ = nh_.subscribe("/rosplan_parsing_interface/complete_plan", 1, &CSPExecGenerator::esterelPlanCB, this);
 
     // services: compute different execution alternatives from a partially ordered esterel plan (a plan
     // with no conditional edges, but only interference edges)
     srv_gen_alternatives_ = nh_.advertiseService("gen_exec_alternatives", &CSPExecGenerator::srvCB, this);
 
-    // call constructor, mirror KB (query real KB and get its data) but without facts and goals
-    action_simulator_ = new ActionSimulator(true, false);
+    // mirror KB (query real KB and get its data) but without facts and goals
+    action_simulator_.init();
 }
 
 CSPExecGenerator::~CSPExecGenerator()
 {
-    // delete pointer
-    delete action_simulator_;
-
     // shut down publishers and subscribers
     sub_esterel_plan_.shutdown();
-    pub_set_of_solutions_.shutdown();
-    pub_pop_.shutdown();
 }
 
 void CSPExecGenerator::esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::ConstPtr& msg)
@@ -148,7 +137,7 @@ std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
         std::string action_name;
         std::vector<std::string> params;
         getAction(*nit, action_name, params, original_plan_);
-        if(action_simulator_->isActionAplicable(action_name, params))
+        if(action_simulator_.isActionAplicable(action_name, params))
             valid_nodes.push_back(*nit);
     }
 
@@ -176,6 +165,8 @@ std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &ope
 
 bool CSPExecGenerator::orderNodes()
 {
+    ROS_INFO("order nodes");
+
     // shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
     if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
         ROS_ERROR("temporal constraints not satisfied");
@@ -183,7 +174,7 @@ bool CSPExecGenerator::orderNodes()
     }
 
     // check if goals are achieved
-    if(action_simulator_->areGoalsAchieved()) {
+    if(action_simulator_.areGoalsAchieved()) {
         ROS_INFO("valid plan found as follows:");
         std::stringstream ss;
         for(auto nit=ordered_nodes_.begin(); nit!=ordered_nodes_.end(); nit++) {
@@ -229,19 +220,21 @@ bool CSPExecGenerator::orderNodes()
         std::string action_name;
         std::vector<std::string> params;
         getAction(*a, action_name, params, original_plan_);
-        action_simulator_->simulateActionStart(action_name, params);
+        action_simulator_.simulateActionStart(action_name, params);
 
         // recurse
-        orderNodes();
+        return orderNodes();
     }
 
-    return true;
+    // should never reach this point
+    ROS_ERROR("Ran out of nodes without achieving goal");
+    return false;
 }
 
 bool CSPExecGenerator::generateFullyConnectedPlan()
 {
     // get current state (P) and store in memory
-    action_simulator_->saveKBSnapshot();
+    action_simulator_.saveKBSnapshot();
 
     // init open list (O), initially contains all nodes in partial order plan
     open_list_.clear();
@@ -261,38 +254,32 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
     return orderNodes();
 }
 
-bool CSPExecGenerator::srvCB(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res)
+bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& req, rosplan_dispatch_msgs::ExecAlternatives::Response& res)
 {
     ROS_INFO("Generating execution alternatives service is computing now");
-
-    // boolean not needed, we could use it in future to make algorithm to produce
-    // req.data
 
     if(!is_esterel_plan_received_) {
         ROS_ERROR("requires esterel plan input has not being received yet, can't generate exec alternatives");
         // set result of srv as failure
-        res.success = false;
+        res.replan_needed = true;
+        res.exec_alternatives_generated = false;
         return true;
     }
 
     if(generateFullyConnectedPlan())
     {
         // indicates that at least one valid execution was found
-        res.success = true; // set result of srv as success
+        res.replan_needed = false;
+        res.exec_alternatives_generated = true;
         ROS_INFO("Found valid execution(s)");
-
-        // publish esterel graph array (multiple ways of executing plan)
-        // pub_set_of_solutions_.publish(ordered_plans_); // cannot publish anymore, now plans are list of node index
     }
     else
     {
         // indicates that no valid execution was found, means replanning is needed
-        res.success = false; // set result of srv as failure
+        res.replan_needed = true;
+        res.exec_alternatives_generated = false;
         ROS_INFO("No valid execution was found, replanning is needed");
     }
-
-    // we don't need this msg but is part of the std srv..
-    res.message = "empty msg";
 
     ROS_INFO("Generating execution alternatives service has finished");
 

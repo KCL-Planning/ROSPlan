@@ -15,26 +15,30 @@
 
 #include "rosplan_action_interface/ActionSimulator.h"
 
-ActionSimulator::ActionSimulator() : nh_("~")
+ActionSimulator::ActionSimulator() : nh_("~") {}
+
+ActionSimulator::ActionSimulator(bool mirror_KB_at_startup, bool mirror_facts_and_goals) : nh_("~")
 {
-    // for now we call from constructor, in future we can remove
+    // query param server for kb name and setup services to get real KB information
     prepareServices();
 
-    // call real KB to get all of its data, save in member variables
-    mirrorKB();
-}
-
-ActionSimulator::ActionSimulator(bool internal_KB_required) : nh_("~")
-{
-    // for now we call from constructor, in future we can remove
-    prepareServices();
-
-    if(internal_KB_required)
+    if(mirror_KB_at_startup)
         // call real KB to get all of its data, save in member variables
-        mirrorKB();
+        mirrorKB(mirror_facts_and_goals);
 }
 
 ActionSimulator::~ActionSimulator() {}
+
+void ActionSimulator::init()
+{
+    // prepare services to connect to real KB and get domain data
+
+    // query param server for kb name and setup services to get real KB information
+    prepareServices();
+
+    // call real KB to get all of its data, save in member variables, fetch predicates and goals as well
+    mirrorKB(true);
+}
 
 void ActionSimulator::prepareServices()
 {
@@ -68,7 +72,7 @@ void ActionSimulator::prepareServices()
     sg_srv_client_ = nh_.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str());
 }
 
-bool ActionSimulator::mirrorKB()
+bool ActionSimulator::mirrorKB(bool mirror_facts_and_goals)
 {
     // call real KB services and save them in member variables
     // this includes all operator names, operator details, etc. This funcion should only be called once
@@ -99,13 +103,16 @@ bool ActionSimulator::mirrorKB()
         domain_operator_map_.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainOperator>(*it, *doit++));
     }
 
-    // get all state grounded predicates, save them in kb_facts_
-    if(!getAllGroundedFacts(kb_facts_))
-        return false;
+    if(mirror_facts_and_goals) {
 
-    // get all state goals from real KB, save them in kb_goals_
-    if(!getAllGoals(kb_goals_))
-        return false;
+        // get all state grounded predicates, save them in kb_facts_
+        if(!getAllGroundedFacts(kb_facts_))
+            return false;
+
+        // get all state goals from real KB, save them in kb_goals_
+        if(!getAllGoals(kb_goals_))
+            return false;
+    }
 
     return true;
 }
