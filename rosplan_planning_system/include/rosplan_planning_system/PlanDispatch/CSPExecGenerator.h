@@ -61,18 +61,40 @@ class CSPExecGenerator
             std::map<int, int> &set_of_constraints);
 
         /**
+         * @brief example of how to use the functions of this class
+         */
+        void testFunctions();
+
+        /**
          * @brief check if curent state (P) satisfies all goals proposed in (G)
          * @param as action simulator object, it contains a method to check if goals ae achieved
          */
         bool areGoalsAchieved(ActionSimulator &as);
 
         /**
+         * @brief input a node id and return the action name and params
+         * @param action_id an integer identifying the action by id
+         * @param action_name return value is written here by reference
+         * @param params return value is written here by reference
+         * @param plan the plan from where to extract the actions name and params
+         */
+        void getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
+            rosplan_dispatch_msgs::EsterelPlan &plan);
+
+        /**
          * @brief iterate over open list (O), check if node preconditions are met in current state (P)
          * @param open_list set of unordered nodes
          * @return set of nodes (V) which preconditions are met in current state (P)
          */
-        std::vector<rosplan_dispatch_msgs::EsterelPlanNode> validNodes(
-            std::vector<rosplan_dispatch_msgs::EsterelPlanNode> open_list);
+        std::vector<int> validNodes(std::vector<int> &open_list);
+
+        /**
+         * @brief find all nodes b in open list (O) ordered before a
+         * @param a integer representing the node id, which is the reference for this function
+         * @param open_list the list of nodes which have not yet being ordered
+         * @return a list of nodes b ordered before a, e.g. open_list = {1,4,3,2}, a = 3, return = {1, 4}
+         */
+        std::vector<int> findNodesBeforeA(int a, std::vector<int> &open_list);
 
         /**
          * @brief shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
@@ -100,9 +122,6 @@ class CSPExecGenerator
          */
         void update();
 
-        // remove
-        void testCheckTemporalConstraints();
-
     private:
         // ros related variables
         ros::NodeHandle nh_;
@@ -129,6 +148,6 @@ class CSPExecGenerator
         std::vector<int> ordered_nodes_;
 
         /// R: plan execution alternatives, each one is a fully ordered esterel plan
-        rosplan_dispatch_msgs::EsterelPlanArray ordered_plans_;
+        std::vector<std::vector<int> > ordered_plans_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H

@@ -96,57 +96,144 @@ bool CSPExecGenerator::checkTemporalConstraints(std::vector<int> &set_of_ordered
     return true;
 }
 
-void CSPExecGenerator::testCheckTemporalConstraints()
+void CSPExecGenerator::testFunctions()
 {
     // example of how to use CheckTemporalConstraints()
 
     std::vector<int> set_of_ordered_nodes = {1, 3, 2, 4, 5, 6}; // violates constraints
     // std::vector<int> set_of_ordered_nodes = {1, 2, 3, 4, 5, 6}; // does not violate constraints
     std::map<int, int> set_of_constraints = {{2, 3},{5, 6}};
-
     if(checkTemporalConstraints(set_of_ordered_nodes, set_of_constraints))
         ROS_INFO("constraints are satisfied");
     else
         ROS_INFO("constraints are violated");
-}
 
-bool CSPExecGenerator::areGoalsAchieved(ActionSimulator &as)
-{
-    // check if curent state (P) satisfies all goals proposed in (G)
-
-    if(as.areGoalsAchieved()) {
-        // add new valid ordering to ordered plans (R)
-        // TODO
-
-        // return success
-        return true;
+    // test function findNodesBeforeA
+    std::vector<int> open_list = {1, 4, 3, 2};
+    std::vector<int> s = findNodesBeforeA(3, open_list);
+    //print s
+    std::stringstream ss;
+    for(auto nit=s.begin(); nit!=s.end(); nit++) {
+        ss << *nit;
+        ss << ",";
     }
-
-    // goals are not achieved yet
-    return false;
+    ROS_INFO("nodes before a : {%s}", ss.str().c_str());
 }
 
-std::vector<rosplan_dispatch_msgs::EsterelPlanNode> CSPExecGenerator::validNodes(
-    std::vector<rosplan_dispatch_msgs::EsterelPlanNode> open_list)
+void CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
+    rosplan_dispatch_msgs::EsterelPlan &plan)
+{
+    // input a node id and return the action name and params
+
+    // iterate over the original plan
+    for(auto nit=plan.nodes.begin(); nit!=plan.nodes.end(); nit++) {
+        // check if node id matches with node
+        if(nit->node_id == action_id) {
+            action_name = nit->name;
+            // extract params
+            params.clear(); // delete previous data if any
+            for(auto pit=nit->action.parameters.begin(); pit!=nit->action.parameters.end(); pit++)
+                params.push_back(pit->value);
+        }
+    }
+}
+
+std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
 {
     // iterate over open list (O), check if node preconditions are met in current state (P)
 
-    std::vector<rosplan_dispatch_msgs::EsterelPlanNode> valid_nodes;
+    std::vector<int> valid_nodes;
 
-    // TODO: complete
-    rosplan_dispatch_msgs::EsterelPlanNode node;
-    valid_nodes.push_back(node);
+    for(auto nit=open_list.begin(); nit!=open_list.end(); nit++) {
+        std::string action_name;
+        std::vector<std::string> params;
+        getAction(*nit, action_name, params, original_plan_);
+        if(action_simulator_->isActionAplicable(action_name, params))
+            valid_nodes.push_back(*nit);
+    }
 
     return valid_nodes;
+}
+
+std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &open_list)
+{
+    // find all nodes b in open list (O) ordered before a
+
+    std::vector<int> nodes_before_a;
+
+    // iterate over all node b in open list (O), if b < a then add to s, return s
+    for(auto b=open_list.begin(); b!=open_list.end(); b++) {
+        // find a and b in open list
+        std::vector<int>::iterator ait = std::find(open_list.begin(), open_list.end(), a);
+        std::vector<int>::iterator bit = std::find(open_list.begin(), open_list.end(), *b);
+
+        if(std::distance(ait, bit) < 0)
+            nodes_before_a.push_back(*b);
+    }
+
+    return nodes_before_a;
 }
 
 bool CSPExecGenerator::orderNodes()
 {
     // shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
-    if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_))
+    if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
+        ROS_ERROR("temporal constraints not satisfied");
         return false;
+    }
 
-    // TODO: largely unfinished
+    // check if goals are achieved
+    if(action_simulator_->areGoalsAchieved()) {
+        ROS_INFO("valid plan found as follows:");
+        std::stringstream ss;
+        for(auto nit=ordered_nodes_.begin(); nit!=ordered_nodes_.end(); nit++) {
+            ss << *nit;
+            ss << ", ";
+        }
+
+        ROS_INFO("plan: %s", ss.str().c_str());
+
+        // add new valid ordering to ordered plans (R)
+        ordered_plans_.push_back(ordered_nodes_);
+
+        return true;
+    }
+
+    // see which nodes preconditions are met and construct valid nodes list (V)
+    std::vector<int> valid_nodes = validNodes(open_list_);
+    if(valid_nodes.size() == 0) {
+        ROS_ERROR("valid nodes are empty");
+        return false;
+    }
+
+    // iterate over actions in valid nodes (V)
+    for(auto a=valid_nodes.begin(); a!=valid_nodes.end(); a++) {
+        // find all nodes (b) ordered before (a)
+        std::vector<int> s = findNodesBeforeA(*a, open_list_);
+
+        // order a
+        ordered_nodes_.push_back(*a);
+
+        // remove a and s from open list (O)
+        std::vector<int>::iterator ait = std::find(open_list_.begin(),open_list_.end(), *a);
+        open_list_.erase(ait);
+        // iterate over s
+        if(s.size() > 0)
+            for(auto sit=s.begin(); sit!=s.end(); sit++) {
+                // find and remove elements of s
+                std::vector<int>::iterator sp = std::find(open_list_.begin(),open_list_.end(), *sit);
+                open_list_.erase(sp);
+            }
+
+        // apply action a to current state (P)
+        std::string action_name;
+        std::vector<std::string> params;
+        getAction(*a, action_name, params, original_plan_);
+        action_simulator_->simulateActionStart(action_name, params);
+
+        // recurse
+        orderNodes();
+    }
 
     return true;
 }
@@ -168,7 +255,7 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
     ordered_nodes_.clear();
 
     // init set of totally ordered plans (R)
-    ordered_plans_.esterel_plans.clear();
+    ordered_plans_.clear();
 
     // if true, it means at least one valid execution alternative was found
     return orderNodes();
@@ -195,7 +282,7 @@ bool CSPExecGenerator::srvCB(std_srvs::SetBool::Request& req, std_srvs::SetBool:
         ROS_INFO("Found valid execution(s)");
 
         // publish esterel graph array (multiple ways of executing plan)
-        pub_set_of_solutions_.publish(ordered_plans_);
+        // pub_set_of_solutions_.publish(ordered_plans_); // cannot publish anymore, now plans are list of node index
     }
     else
     {
@@ -228,7 +315,7 @@ int main(int argc, char **argv)
     CSPExecGenerator csp_exec_generator_node;
 
     // remove
-    csp_exec_generator_node.testCheckTemporalConstraints();
+    csp_exec_generator_node.testFunctions();
 
     // setup node frequency
     double node_frequency = 1.0;
