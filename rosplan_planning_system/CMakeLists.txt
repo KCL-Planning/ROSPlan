@@ -24,7 +24,7 @@ add_compile_options(-std=c++11)
 ## Declare things to be passed to dependent projects
 catkin_package(
   INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
-  LIBRARIES rosplan_action_interface
+  LIBRARIES rosplan_action_interface action_simulator
   CATKIN_DEPENDS roscpp rospy actionlib std_msgs std_srvs diagnostic_msgs rosplan_dispatch_msgs rosplan_knowledge_msgs
   DEPENDS
 )
@@ -67,7 +67,7 @@ add_executable(pddl_esterel_plan_parser src/PlanParsing/PDDLEsterelPlanParser.cp
 add_executable(pddl_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
 add_executable(pddl_esterel_plan_dispatcher src/PlanDispatch/EsterelPlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
 add_executable(online_plan_dispatcher src/PlanDispatch/OnlinePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
-add_executable(csp_exec_generator src/PlanDispatch/csp_exec_generator.cpp)
+add_executable(csp_exec_generator src/PlanDispatch/CSPExecGenerator.cpp)
 add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cpp src/ActionInterface/RPActionInterface.cpp)
 
 ## Add dependencies
@@ -108,7 +108,7 @@ target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_dispatcher ${catkin_LIBRARIES})
 target_link_libraries(online_plan_dispatcher ${catkin_LIBRARIES})
-target_link_libraries(csp_exec_generator ${catkin_LIBRARIES})
+target_link_libraries(csp_exec_generator ${catkin_LIBRARIES} action_simulator)
 target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 
 ## Declare libraries
@@ -117,6 +117,9 @@ target_link_libraries(simulatedAction ${catkin_LIBRARIES})
 #add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 add_library(rosplan_action_interface src/ActionInterface/RPActionInterface.cpp)
 add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
+
+add_library(action_simulator src/ActionInterface/ActionSimulator.cpp)
+add_dependencies(action_simulator ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
