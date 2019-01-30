@@ -28,11 +28,11 @@ namespace KCL_rosplan {
         domain_name = rddlTask->domainName;
         problem_name = rddlTask->name;
 
-        ROS_INFO("KCL: (%s) Pre-pocessing domain...", ros::this_node::getName().c_str());
+        ROS_INFO("KCL: (%s) Pre-processing domain...", ros::this_node::getName().c_str());
         uninstantiated_SACs = rddlTask->SACs;
         Instantiator instantiator(rddlTask);
         instantiator.instantiate(false);
-        Preprocessor preprocessor(rddlTask, true);
+        Preprocessor preprocessor(rddlTask, false); // ipc2018 to false
         preprocessor.preprocess(false);
         ROS_INFO("KCL: (%s) RDDL domain is ready!", ros::this_node::getName().c_str());
 
