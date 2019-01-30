@@ -9,6 +9,7 @@
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorService.h"
 #include "rosplan_knowledge_msgs/GetRDDLParams.h"
+#include "rosplan_knowledge_msgs/GetEnumerableTypeService.h"
 #include "rosplan_knowledge_msgs/ReloadRDDLDomainProblem.h"
 
 namespace KCL_rosplan {
@@ -33,7 +34,8 @@ namespace KCL_rosplan {
         std::string _domain_name;
         std::string _non_fluents_name;
         ros::NodeHandle _nh;
-        ros::ServiceClient reload_domain_;
+        ros::ServiceClient _reload_domain;
+        std::map<std::string, std::vector<std::string>> _enumeration_types;
     public:
         RDDLProblemGenerator(const std::string& kb);
         void generateProblemFile(std::string &problemPath) override;

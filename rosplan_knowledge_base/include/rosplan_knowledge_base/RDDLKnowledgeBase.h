@@ -18,6 +18,7 @@
 #include "rosplan_knowledge_msgs/GetDomainOperatorService.h"
 #include "rosplan_knowledge_msgs/GetDomainOperatorDetailsService.h"
 #include "rosplan_knowledge_msgs/GetDomainPredicateDetailsService.h"
+#include "rosplan_knowledge_msgs/GetEnumerableTypeService.h"
 #include "rosplan_knowledge_msgs/DomainFormula.h"
 
 #include "rosplan_knowledge_msgs/GetAttributeService.h"
@@ -78,6 +79,7 @@ namespace KCL_rosplan {
 		ros::ServiceServer _setRDDLMaxNonDefSrv;
 		ros::ServiceServer _setImmediateRewardsSrv;
 		ros::ServiceServer _reloadDomainStructureSrv;
+		ros::ServiceServer _getEnumtypesSrv;
 
 		bool getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req, rosplan_knowledge_msgs::GetRDDLParams::Response &res);
 		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
@@ -85,6 +87,7 @@ namespace KCL_rosplan {
 		bool setRDDLMAxNonDefActions(rosplan_knowledge_msgs::SetInt::Request &req, rosplan_knowledge_msgs::SetInt::Response &res);
 		bool computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res);
 		bool reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res);
+		bool getEnumTypes(rosplan_knowledge_msgs::GetEnumerableTypeService::Request &req, rosplan_knowledge_msgs::GetEnumerableTypeService::Response &res);
         void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) override;
 	public:
 		RDDLKnowledgeBase(ros::NodeHandle& n);

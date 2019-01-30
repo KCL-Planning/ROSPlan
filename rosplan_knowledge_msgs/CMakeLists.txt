@@ -50,6 +50,7 @@ add_service_files(
   GetRDDLParams.srv
   GetRDDLImmediateReward.srv
   ReloadRDDLDomainProblem.srv
+  GetEnumerableTypeService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
