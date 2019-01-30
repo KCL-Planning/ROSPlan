@@ -57,17 +57,26 @@ void CSPExecGenerator::initConstraints(std::map<int, int> &set_of_constraints)
     // delete previous data if any
     set_of_constraints.clear();
 
+    // to print constraints at the end
+    std::stringstream ss;
+
     // init set of temporal constraints (C)
-    for(auto eit=original_plan_.edges.begin(); eit!=original_plan_.edges.begin(); eit++) { // eit = edge iterator
+    for(auto eit=original_plan_.edges.begin(); eit!=original_plan_.edges.end(); eit++) {
         // discriminate for interference edges
         if(eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::INTERFERENCE_EDGE ||
             eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::START_END_ACTION_EDGE) {
             // add constraint
             set_of_constraints.insert(std::pair<int, int>(eit->source_ids[0], eit->sink_ids[0]));
+
+            // add constraint to print buffer
+            ss << "(" << eit->source_ids[0] << ":" << eit->sink_ids[0] << ")";
             continue;
         }
         // NOTE: condition edges are ignored: we consider only a partially orderes plan
     }
+
+    // print constraints
+    ROS_INFO("constraints: %s", ss.str().c_str());
 }
 
 bool CSPExecGenerator::checkTemporalConstraints(std::vector<int> &set_of_ordered_nodes,
@@ -180,14 +189,14 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
         std::vector<std::string> params;
         bool action_start = getAction(*nit, action_name, params, original_plan_);
         if(action_start) {
-            ROS_INFO("check if action start is applicable : (%s)",
+            ROS_DEBUG("check if action start is applicable : (%s)",
                          action_simulator_.convertPredToString(action_name, params).c_str());
             if(action_simulator_.isActionStartAplicable(action_name, params)) {
                 valid_nodes.push_back(*nit);
             }
         }
         else {
-            ROS_INFO("check if action end is applicable : (%s)",
+            ROS_DEBUG("check if action end is applicable : (%s)",
                          action_simulator_.convertPredToString(action_name, params).c_str());
             if(action_simulator_.isActionEndAplicable(action_name, params)) {
                 valid_nodes.push_back(*nit);
@@ -292,21 +301,24 @@ bool CSPExecGenerator::orderNodes()
         // apply action a to current state (P)
         std::string action_name;
         std::vector<std::string> params;
-        if(getAction(*a, action_name, params, original_plan_))
+        if(getAction(*a, action_name, params, original_plan_)) {
             // action start
+            ROS_INFO("applying action a (start), world state after:");
             if(!action_simulator_.simulateActionStart(action_name, params)) {
                 ROS_ERROR("could not simulate action start");
                 return false;
             }
-        else
+        }
+        else {
             // action end
+            ROS_INFO("applying action a (end), world state after:");
             if(!action_simulator_.simulateActionEnd(action_name, params)) {
                 ROS_ERROR("could not simulate action end");
                 return false;
             }
+        }
 
         // remove
-        ROS_INFO("applying action a, world state after:");
         action_simulator_.printInternalKBFacts();
 
         // recurse
