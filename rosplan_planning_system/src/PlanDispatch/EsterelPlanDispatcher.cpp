@@ -284,11 +284,11 @@ namespace KCL_rosplan {
 				}
 				// replace last character "," with a ")"
 				params.seekp(-1, params.cur); params << ')';
-				dest <<  nit->node_id << "[ label=\"" << nit->name << "\n(" << params.str();
+				dest <<  nit->node_id << "[ label=\"" << nit->node_id << ". " << nit->name << "\n(" << params.str();
 			}
 			else {
 
-				dest <<  nit->node_id << "[ label=\"" << nit->name;
+				dest <<  nit->node_id << "[ label=\"" << nit->node_id << ". " << nit->name;
 			}
 
 			switch(nit->node_type) {
