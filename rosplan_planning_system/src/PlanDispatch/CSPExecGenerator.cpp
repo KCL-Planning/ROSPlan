@@ -171,11 +171,9 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
     return false;
 }
 
-std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
+bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> &valid_nodes)
 {
     // iterate over open list (O), check if node preconditions are met in current state (P)
-
-    std::vector<int> valid_nodes;
 
     for(auto nit=open_list.begin(); nit!=open_list.end(); nit++) {
         std::string action_name;
@@ -199,12 +197,15 @@ std::vector<int> CSPExecGenerator::validNodes(std::vector<int> &open_list)
 
     // print valid nodes
     std::stringstream ss;
-    if(valid_nodes.size() > 0)
+    if(valid_nodes.size() > 0) {
         printNodes("valid nodes", valid_nodes);
+        return true;
+    }
     else
         ROS_INFO("no valid nodes were found");
 
-    return valid_nodes;
+    // no valid nodes
+    return false;
 }
 
 std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &open_list)
@@ -248,7 +249,8 @@ bool CSPExecGenerator::orderNodes()
     }
 
     // see which nodes preconditions are met and construct valid nodes list (V)
-    std::vector<int> valid_nodes = validNodes(open_list_);
+    std::vector<int> valid_nodes;
+    validNodes(open_list_, valid_nodes);
     if(valid_nodes.size() == 0) {
         ROS_ERROR("valid nodes are empty");
         return false;

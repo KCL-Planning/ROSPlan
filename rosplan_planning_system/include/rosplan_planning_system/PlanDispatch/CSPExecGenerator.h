@@ -90,9 +90,10 @@ class CSPExecGenerator
         /**
          * @brief iterate over open list (O), check if node preconditions are met in current state (P)
          * @param open_list set of unordered nodes
-         * @return set of nodes (V) which preconditions are met in current state (P)
+         * @param valid_nodes return value gets written here by reference, list of nodes
+         * @return true if valid nodes were found, false otherwise
          */
-        std::vector<int> validNodes(std::vector<int> &open_list);
+        bool validNodes(std::vector<int> &open_list, std::vector<int> &valid_nodes);
 
         /**
          * @brief find all nodes b in open list (O) ordered before a
