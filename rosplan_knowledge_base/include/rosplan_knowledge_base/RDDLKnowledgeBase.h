@@ -26,6 +26,7 @@
 #include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/GetRDDLParams.h"
+#include "rosplan_knowledge_msgs/GetRDDLFluentType.h"
 #include "rosplan_knowledge_msgs/GetRDDLImmediateReward.h"
 #include "rosplan_knowledge_msgs/SetFloat.h"
 #include "rosplan_knowledge_msgs/SetInt.h"
@@ -80,6 +81,7 @@ namespace KCL_rosplan {
 		ros::ServiceServer _setImmediateRewardsSrv;
 		ros::ServiceServer _reloadDomainStructureSrv;
 		ros::ServiceServer _getEnumtypesSrv;
+		ros::ServiceServer _getFluentTypeSrv;
 
 		bool getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req, rosplan_knowledge_msgs::GetRDDLParams::Response &res);
 		bool setRDDLDiscountFactor(rosplan_knowledge_msgs::SetFloat::Request &req, rosplan_knowledge_msgs::SetFloat::Response &res);
@@ -88,6 +90,7 @@ namespace KCL_rosplan {
 		bool computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res);
 		bool reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res);
 		bool getEnumTypes(rosplan_knowledge_msgs::GetEnumerableTypeService::Request &req, rosplan_knowledge_msgs::GetEnumerableTypeService::Response &res);
+		bool getFluentType(rosplan_knowledge_msgs::GetRDDLFluentType::Request &req, rosplan_knowledge_msgs::GetRDDLFluentType::Response &res);
         void removeFact(const rosplan_knowledge_msgs::KnowledgeItem &msg) override;
 	public:
 		RDDLKnowledgeBase(ros::NodeHandle& n);

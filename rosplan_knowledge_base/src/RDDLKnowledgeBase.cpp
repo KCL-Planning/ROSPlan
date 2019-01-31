@@ -441,6 +441,8 @@ namespace KCL_rosplan {
                                                          &KCL_rosplan::RDDLKnowledgeBase::reloadDomain, this);
         _getEnumtypesSrv = _nh.advertiseService("domain/enumerable_type",
                                                 &KCL_rosplan::RDDLKnowledgeBase::getEnumTypes, this);
+        _getFluentTypeSrv = _nh.advertiseService("domain/fluent_type",
+                                                 &KCL_rosplan::RDDLKnowledgeBase::getFluentType, this);
     }
 
     bool RDDLKnowledgeBase::getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req,
@@ -556,5 +558,17 @@ namespace KCL_rosplan {
                 break;
             }
         }
+    }
+
+    bool RDDLKnowledgeBase::getFluentType(rosplan_knowledge_msgs::GetRDDLFluentType::Request &req,
+                                          rosplan_knowledge_msgs::GetRDDLFluentType::Response &res) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin(); it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+            if (it->first == req.fluent_name) {
+                res.type = it->second->valueType->name;
+                return true;
+            }
+        }
+        ROS_ERROR("KCL: (%s) getFluentType: Fluent %s was not found!", ros::this_node::getName().c_str(), req.fluent_name.c_str());
+        return true;
     }
 }

@@ -18,6 +18,7 @@ namespace KCL_rosplan {
         _domain_name = nameSrv.response.domain_name;
         _non_fluents_name = "nf_" + _domain_name + "__generate_instance";
         _reload_domain = _nh.serviceClient<rosplan_knowledge_msgs::ReloadRDDLDomainProblem>(kb + "/reload_rddl_domain");
+        _get_fluent_type = _nh.serviceClient<rosplan_knowledge_msgs::GetRDDLFluentType>(kb + "/domain/fluent_type");
     }
 
 
@@ -254,7 +255,14 @@ namespace KCL_rosplan {
                 pFile << ((pfit->is_negative == 0)? "true" : "false");
             }
             else { // FUNCTION
-                auto enum_type = _enumeration_types.find(pfit->instance_type);
+                rosplan_knowledge_msgs::GetRDDLFluentType gft;
+                gft.request.fluent_name = pfit->attribute_name;
+                if (!_get_fluent_type.call(gft)) {
+                    ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                              _get_fluent_type.getService().c_str(), gft.request.fluent_name.c_str());
+                    return;
+                }
+                auto enum_type = _enumeration_types.find(gft.response.type);
                 if (enum_type != _enumeration_types.end()) {
                     pFile << enum_type->second[pfit->function_value];
                 }
@@ -271,14 +279,14 @@ namespace KCL_rosplan {
             rosplan_knowledge_msgs::GetAttributeService attrSrv;
             attrSrv.request.predicate_name = *it;
             if (!getPropsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
                           state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
                 continue;
             }
 
             // If it was not a proposition, try functions
             if (attrSrv.response.attributes.size() == 0 and !getFuncsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
                           state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
                 continue;
             }
