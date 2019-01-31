@@ -102,9 +102,11 @@ namespace KCL_rosplan {
                         std::string action_name = (match[1].str().empty())? match[3].str(): match[1].str();
                         planner_output +=  std::to_string(action_idx) + ": (" + action_name; // Action name
                         std::istringstream p(match[2].str()); // parameters
+                        for (auto it = match.begin(); it != match.end(); ++it) std::cout << *it << std::endl;
                         std::string param;
                         while (getline(p, param, ',')) {
-                            planner_output += " "+ param;
+                        	if (param[0] != ' ') planner_output += " ";
+                            planner_output += param;
                         }
                         planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
                     }
