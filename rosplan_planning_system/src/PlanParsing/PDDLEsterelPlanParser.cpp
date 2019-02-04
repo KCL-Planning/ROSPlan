@@ -466,6 +466,12 @@ namespace KCL_rosplan {
 	void PDDLEsterelPlanParser::makeEdge(int source_node_id, int sink_node_id,
 				double lower_bound, double upper_bound, int edge_type) {
 
+		// add epsilon separation; TODO paramterize
+		if(lower_bound == 0)
+			lower_bound = 0.001;
+		if(upper_bound == 0)
+			upper_bound = 0.001;
+		
 		// see if there is already an existing edge
 		std::vector<int>::iterator eit = last_plan.nodes[source_node_id].edges_out.begin();
 		std::vector<int>::iterator nit = last_plan.nodes[source_node_id].edges_out.begin();
