@@ -127,7 +127,7 @@ namespace KCL_rosplan {
 	 */
     bool PlanDispatcher::checkPreconditions(rosplan_dispatch_msgs::ActionDispatch msg) {
 
-        // get domain opertor details
+        // get domain operator details
         rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
         srv.request.name = msg.name;
         if(!queryDomainClient.call(srv)) {
@@ -137,7 +137,7 @@ namespace KCL_rosplan {
 
         // setup service call
         rosplan_knowledge_msgs::DomainOperator op = srv.response.op;
-        rosplan_knowledge_msgs::KnowledgeQueryService querySrv;
+        rosplan_knowledge_msgs::KnowledgeQueryService positiveQuerySrv;
 
         // iterate through conditions
         std::vector<rosplan_knowledge_msgs::DomainFormula>::iterator cit = op.at_start_simple_condition.begin();
@@ -163,18 +163,72 @@ namespace KCL_rosplan {
                 }
                 condition.values.push_back(param);
             }
-            querySrv.request.knowledge.push_back(condition);
+            positiveQuerySrv.request.knowledge.push_back(condition);
         }
 
-        // check conditions in knowledge base
-        if (queryKnowledgeClient.call(querySrv)) {
+        // checking negative preconditions
+        cit = op.at_start_neg_condition.begin();
+        // flag to indicate that at least one of the negative conditions was found in KB
+        bool neg_preconditions = false;
+        rosplan_knowledge_msgs::KnowledgeQueryService negativeQuerySrv;
+        for(; cit!=op.at_start_neg_condition.end(); cit++) {
+            // create condition
+            rosplan_knowledge_msgs::KnowledgeItem condition;
+            condition.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+            condition.attribute_name = cit->name;
 
-            if(!querySrv.response.all_true) {
+            // populate parameters
+            for(int i=0; i<cit->typed_parameters.size(); i++) {
+
+                // set parameter label to predicate label
+                diagnostic_msgs::KeyValue param;
+                param.key = cit->typed_parameters[i].key;
+
+                // search for correct operator parameter value
+                for(int j=0; j<msg.parameters.size() && j<op.formula.typed_parameters.size(); j++) {
+                    if(op.formula.typed_parameters[j].key == cit->typed_parameters[i].key) {
+                        param.value = msg.parameters[j].value;
+                    }
+                }
+                condition.values.push_back(param);
+            }
+            negativeQuerySrv.request.knowledge.push_back(condition);
+        }
+
+        // check negative conditions in knowledge base (conditions that should not be present in KB)
+        if (queryKnowledgeClient.call(negativeQuerySrv)) {
+            // iterate over results to check if at least one fact was found in KB
+            for(auto it = negativeQuerySrv.response.results.begin(); it != negativeQuerySrv.response.results.end(); it++)
+                if (*it) {
+                    // rise flag to indicate that at least one neg condition was not achieved
+                    neg_preconditions = true;
+
+                    // print which negative condition was found in KB
+                    std::stringstream ss;
+                    // get index of failed neg precondition
+                    int index = std::distance(it, negativeQuerySrv.response.results.begin());
+                    ss << negativeQuerySrv.request.knowledge[index].attribute_name;
+                    auto pit = negativeQuerySrv.request.knowledge[index].values.begin();
+                    for(; pit != negativeQuerySrv.request.knowledge[index].values.end(); pit++) {
+                        ss << " ";
+                        ss << pit->value.c_str();
+                    }
+
+                    ROS_INFO("Negative precondition not achieved : not (%s)", ss.str().c_str());
+                }
+        } else {
+            ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
+        }
+
+        // check positive conditions in knowledge base
+        if (queryKnowledgeClient.call(positiveQuerySrv)) {
+
+            if(!positiveQuerySrv.response.all_true) {
                 std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator kit;
-                for(kit=querySrv.response.false_knowledge.begin(); kit != querySrv.response.false_knowledge.end(); kit++)
+                for(kit=positiveQuerySrv.response.false_knowledge.begin(); kit != positiveQuerySrv.response.false_knowledge.end(); kit++)
                     ROS_INFO("KCL: (%s) Precondition not achieved: %s", ros::this_node::getName().c_str(), kit->attribute_name.c_str());
             }
-            return querySrv.response.all_true;
+            return positiveQuerySrv.response.all_true && !neg_preconditions;
 
         } else {
             ROS_ERROR("KCL: (%s) Failed to call service query_state", ros::this_node::getName().c_str());
