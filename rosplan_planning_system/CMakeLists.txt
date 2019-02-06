@@ -120,6 +120,8 @@ add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 ## Install ##
 #############
 
+
+
 install(TARGETS rosplan_action_interface simulatedAction
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -148,3 +150,28 @@ install(DIRECTORY include/rosplan_action_interface
 install(DIRECTORY common/bin
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin/
         FILE_PERMISSIONS OWNER_EXECUTE)
+
+
+#############
+##  Tests  ##
+#############
+
+# in the same way as build
+
+# catkin add gtests ( src file)
+# assert true test
+
+
+include_directories(googletest-master/googletest/include)
+include_directories(googletest-master/googlemock/include)
+
+add_executable(rosplan_planning_system test/utest.cpp)
+
+target_link_libraries(rosplan_planning_system gtest gtest_main)
+
+if (APPLE)
+    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
+    add_definitions(-D__GLIBCXX__)
+endif (APPLE)
+
+#catkin_add_gtest(utest test/utest.cpp)
