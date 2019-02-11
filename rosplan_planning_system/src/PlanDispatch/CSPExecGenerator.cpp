@@ -180,6 +180,49 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
     return false;
 }
 
+bool CSPExecGenerator::getStartNodeID(int end_node_id, int &action_start_node_id)
+{
+    // receive as input a node id from a end action node,
+    // return by reference the node id of the correspondent action start
+
+    // get the node from the node id
+    for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) {
+        // find needed node by comparing id
+        if(!(nit->node_id == end_node_id))
+            continue;
+
+        // id matches, now ensure it is an action end node
+        if(!(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)) {
+            ROS_ERROR("Cannot return action start node id, Node id matches but is not an action end");
+            return false;
+        }
+
+        // node is an action end node, find its correspondent start node id
+
+        // iterate over the edges in id's
+        for(auto enit=nit->edges_in.begin(); enit!=nit->edges_in.end(); enit++) {
+            // get complete edge msg from edge id
+            for(auto eit=original_plan_.edges.begin(); eit!=original_plan_.edges.end(); eit++) {
+                // ignore edges which id don't match
+                if(eit->edge_id != *enit) {
+                    continue;
+                }
+
+                // ensure is an "action end" edge
+                if(eit->edge_type==rosplan_dispatch_msgs::EsterelPlanEdge::START_END_ACTION_EDGE) {
+                    // return by reference the node id of the start action
+                    action_start_node_id = eit->source_ids[0];
+                    ROS_INFO("found correspondent action start node (%d) from action end node (%d)", action_start_node_id, end_node_id);
+                    return true;
+                }
+            }
+        }
+    }
+
+    ROS_ERROR("failed to get action start node id (of action end :%d)", end_node_id);
+    return false;
+}
+
 bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> &valid_nodes)
 {
     // iterate over open list (O), check if node preconditions are met in current state (P)
@@ -199,7 +242,25 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
             ROS_DEBUG("check if action end is applicable : (%s)",
                          action_simulator_.convertPredToString(action_name, params).c_str());
             if(action_simulator_.isActionEndAplicable(action_name, params)) {
-                valid_nodes.push_back(*nit);
+                // Ignore action ends in validNodes for actions that have not started
+
+                // get action id of start node
+                int start_node_id;
+                if(!getStartNodeID(*nit, start_node_id))
+                    return false;
+
+                // add only if start node is already ordered
+                bool ordered = false;
+                for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
+                    if(start_node_id == *onit) {
+                        ordered = true;
+                        valid_nodes.push_back(*nit);
+                    }
+
+                if(!ordered)
+                    ROS_INFO("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
+
+                // printNodes("ordered nodes F", ordered_nodes_);
             }
         }
     }

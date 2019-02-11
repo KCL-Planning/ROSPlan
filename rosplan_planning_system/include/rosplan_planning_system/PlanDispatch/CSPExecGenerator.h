@@ -88,6 +88,15 @@ class CSPExecGenerator
             rosplan_dispatch_msgs::EsterelPlan &plan);
 
         /**
+         * @brief receive as input a node id from a end action node,
+         * return by reference the node id of the correspondent action start
+         * @param end_node_id input node id, needs to be an action end id
+         * @param action_start_node_id return value is written here by reference
+         * @return true if function was able to find correspondent start action node id, false if it was unable
+         */
+        bool getStartNodeID(int end_node_id, int &action_start_node_id);
+
+        /**
          * @brief iterate over open list (O), check if node preconditions are met in current state (P)
          * @param open_list set of unordered nodes
          * @param valid_nodes return value gets written here by reference, list of nodes
