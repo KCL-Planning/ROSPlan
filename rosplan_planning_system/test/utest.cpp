@@ -8,18 +8,12 @@
 // Created by Martin Köling on 2019-02-05.
 //
 
-
+using testing::Eq;
 
 
 
 // Declare a test
-TEST(ProblemInterfaceTest, testCase1)
-{
-    EXPECT_EQ(1,1);
+TEST(basic_check, test_1){
+    ASSERT_EQ("","");
 }
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv){
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

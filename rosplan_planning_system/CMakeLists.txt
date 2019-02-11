@@ -161,17 +161,15 @@ install(DIRECTORY common/bin
 # catkin add gtests ( src file)
 # assert true test
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+add_subdirectory(googletest-master)
 include_directories(googletest-master/googletest/include)
 include_directories(googletest-master/googlemock/include)
 
-add_executable(rosplan_planning_system test/utest.cpp)
+set(SOURCE_FILES main.cpp)
+add_executable(rosplan_planning_system ${SOURCE_FILES})
 
 target_link_libraries(rosplan_planning_system gtest gtest_main)
 
-if (APPLE)
-    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
-    add_definitions(-D__GLIBCXX__)
-endif (APPLE)
-
-#catkin_add_gtest(utest test/utest.cpp)
+catkin_add_gtest(utest test/utest.cpp)
