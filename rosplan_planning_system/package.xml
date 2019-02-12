@@ -8,7 +8,6 @@
   <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
 
   <buildtool_depend>catkin</buildtool_depend>
-
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>actionlib</build_depend>
@@ -21,6 +20,7 @@
   <build_depend>rosplan_knowledge_msgs</build_depend>
   <build_depend>mongodb_store</build_depend>
   <build_depend>rosplan_dependencies</build_depend>
+  <build_depend>rostest</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>

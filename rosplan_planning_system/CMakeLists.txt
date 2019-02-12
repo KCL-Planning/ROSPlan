@@ -161,15 +161,25 @@ install(DIRECTORY common/bin
 # catkin add gtests ( src file)
 # assert true test
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_subdirectory(googletest-master)
-include_directories(googletest-master/googletest/include)
-include_directories(googletest-master/googlemock/include)
+#add_subdirectory(googletest-master)
+#include_directories(googletest-master/googletest/include)
+#include_directories(googletest-master/googlemock/include)
 
-set(SOURCE_FILES main.cpp)
-add_executable(rosplan_planning_system ${SOURCE_FILES})
+#set(SOURCE_FILES main.cpp)
+#add_executable(rosplan_planning_system ${SOURCE_FILES})
 
-target_link_libraries(rosplan_planning_system gtest gtest_main)
+if (CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED COMPONENTS rostest)
+endif()
 
-catkin_add_gtest(utest test/utest.cpp)
+#Declare your rostest launch scripts
+#Compare with mongodb_store
+if (CATKIN_ENABLE_TESTING)
+    add_rostest(tests/your_first_rostest.test)
+    add_rostest(tests/your_second_rostest.test)
+endif()
+
+
+#target_link_libraries(rosplan_planning_system gtest gtest_main)
+#catkin_add_gtest(utest test/utest.cpp)
