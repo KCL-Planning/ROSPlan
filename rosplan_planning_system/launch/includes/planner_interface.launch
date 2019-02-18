@@ -11,6 +11,8 @@
 	<arg name="data_path"            default="$(find rosplan_demos)/common/" />
 	<arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
 	<arg name="planner_interface"    default="popf_planner_interface" />
+	<arg name="test_path"         	 default="utest.cc" />
+
 
 	<!-- planner interface -->
 	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" respawn="false" output="screen">
@@ -30,5 +32,7 @@
 		<!-- to run the planner -->
 		<param name="planner_command" value="$(arg planner_command)" />
 	</node>
+
+	<test test-name="utest" pkg="rosplan_planning_system" type="utest" />
 
 </launch>
