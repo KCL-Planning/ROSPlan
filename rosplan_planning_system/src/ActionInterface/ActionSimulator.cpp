@@ -4,7 +4,7 @@
  * KCL: King's College London
  * ISR: Institue for Systems and Robotics
  *
- * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima_84@yahoo.com)
+ * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima@isr.tecnico.ulisboa.pt)
  *
  * Helper object to simulate actions. Query KB for action effects so later those can be applied to
  * KB and update actions (simulate actions).
@@ -700,11 +700,10 @@ std::vector<std::string> ActionSimulator::groundParams(rosplan_knowledge_msgs::D
     return grounded_fact_args;
 }
 
-bool ActionSimulator::isActionAplicable(bool action_start, bool overall_preconditions, std::string &action_name, std::vector<std::string> &params,
-    std::map<std::string, std::string> &ground_dictionary)
+bool ActionSimulator::computeGroundDictionary(std::string &action_name, std::vector<std::string> &params,
+        std::map<std::string, std::string> &ground_dictionary, rosplan_knowledge_msgs::DomainOperator &op)
 {
-    // check if action start/end/overall preconditions are consistent with internal KB information
-    // and return by reference the ground dictionary for simulation action purposes
+    // get domain operator corresponding to the received action, make a map between keys and grounded action params
 
     // ensure domain_operator_map_ has data
     if(!domain_operator_map_.size() > 0) {
@@ -720,7 +719,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
         return false;
     }
 
-    rosplan_knowledge_msgs::DomainOperator op = opit->second;
+    op = opit->second;
 
     // construct ground dictionary from params (key vs grounded args)
     // ensure they have the same size
@@ -731,6 +730,18 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
     for(auto it=op.formula.typed_parameters.begin(); it!=op.formula.typed_parameters.end(); it++)
         // value gets passed by reference, to be used by action simulator but also is used for the rest of this function
         ground_dictionary.insert(std::pair<std::string, std::string>(it->key, params.at(std::distance(op.formula.typed_parameters.begin(), it))));
+}
+
+bool ActionSimulator::isActionAplicable(bool action_start, bool overall_preconditions, std::string &action_name, std::vector<std::string> &params,
+    std::map<std::string, std::string> &ground_dictionary)
+{
+    // check if action start/end/overall preconditions are consistent with internal KB information
+    // and return by reference the ground dictionary for simulation action purposes
+
+    rosplan_knowledge_msgs::DomainOperator op;
+
+    // get ground dictionary, a map between keys and grounded action parameters
+    computeGroundDictionary(action_name, params, ground_dictionary, op);
 
     // check action preconditions
 
@@ -922,6 +933,76 @@ bool ActionSimulator::simulateActionEnd(std::string &action_name, std::vector<st
     return simulateAction(action_name, params, false);
 }
 
+bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
+{
+    // inverse of apply action, used for backtracking purposes
+    // revert means: check action effects and revert them (delete positive effects, add negative effects)
+
+    rosplan_knowledge_msgs::DomainOperator op;
+    std::map<std::string, std::string> ground_dictionary;
+
+    // get ground dictionary, a map between keys and grounded action parameters
+    if(!computeGroundDictionary(action_name, params, ground_dictionary, op))
+        return false;
+
+    // query action effects from domain operator
+    if(action_start)
+    {
+        // revert action start effects
+
+        // iterate over positive start action effects and apply to KB
+        for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++)
+            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
+                return false;
+
+        // iterate over negative start action effects and apply to KB
+        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++) {
+            addFactInternal(it->name, groundParams(*it, ground_dictionary));
+        }
+    }
+    else
+    {
+        // revert action end effects
+
+        // iterate over positive start action effects and apply to KB
+        for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++)
+            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
+                return false;
+
+        // iterate over negative start action effects and apply to KB
+        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++) {
+            addFactInternal(it->name, groundParams(*it, ground_dictionary));
+        }
+    }
+
+    return true;
+}
+
+bool ActionSimulator::revertActionStart(std::string &action_name, std::vector<std::string> &params)
+{
+    // overloaded function to revert action start effects
+    return revertAction(action_name, params, true);
+}
+
+bool ActionSimulator::revertActionEnd(std::string &action_name, std::vector<std::string> &params)
+{
+    // overloaded function to revert action end effects
+    return revertAction(action_name, params, false);
+}
+
+bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::string> &params)
+{
+    // overloaded function to revert both action start and end effects
+
+    // revert action start effects
+    if(revertAction(action_name, params, true))
+        // revert action end effects
+        return revertAction(action_name, params, false);
+    else
+        // something went wrong while reverting action start effects
+        return false;
+}
+
 bool ActionSimulator::getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &kb_goals)
 {
     // get all goals from real KB
@@ -1087,16 +1168,27 @@ int main(int argc, char **argv)
     action_simulator_tester.printInternalKBFacts();
 
     // snippet: test areGoalsAchieved()
-//     ROS_INFO("Check if goals are achieved:");
-//     ROS_INFO("================");
-//     ROS_INFO("KB goals:");
-//     action_simulator_tester.printInternalKBGoals();
-//     ROS_INFO("KB facts:");
-//     action_simulator_tester.printInternalKBFacts();
-//     if(action_simulator_tester.areGoalsAchieved())
-//         ROS_INFO("goals achieved");
-//     else
-//         ROS_INFO("goals not achieved");
+    ROS_INFO("Check if goals are achieved:");
+    ROS_INFO("================");
+    ROS_INFO("KB goals:");
+    action_simulator_tester.printInternalKBGoals();
+    ROS_INFO("KB facts:");
+    action_simulator_tester.printInternalKBFacts();
+    if(action_simulator_tester.areGoalsAchieved())
+        ROS_INFO("goals achieved");
+    else
+        ROS_INFO("goals not achieved");
+
+    // snippet: test revert actions
+    ROS_INFO("Check reverting action: (get_down_from_car batdad car ben_school)");
+    ROS_INFO("================");
+    ROS_INFO("KB facts:");
+    action_simulator_tester.printInternalKBFacts();
+    std::string action_name3 = "get_down_from_car";
+    std::vector<std::string> params3 = {"batdad","car","ben_school"}; // person, car, location
+    action_simulator_tester.revertAction(action_name3, params3);
+    ROS_INFO("KB facts after reverting action:");
+    action_simulator_tester.printInternalKBFacts();
 
     return 0;
 }

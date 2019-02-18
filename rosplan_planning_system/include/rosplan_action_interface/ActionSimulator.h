@@ -4,7 +4,7 @@
  * KCL: King's College London
  * ISR: Institue for Systems and Robotics
  *
- * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima_84@yahoo.com)
+ * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima@isr.tecnico.ulisboa.pt)
  *
  * Helper object to simulate actions. Query KB for action effects so later those can be applied to
  * KB and update actions (simulate actions).
@@ -297,6 +297,17 @@ class ActionSimulator
             std::map<std::string, std::string> &ground_dictionary);
 
         /**
+         * @brief get domain operator corresponding to the received action, make a map between keys and grounded action params
+         * @param action_name name of the action from which to construct the ground dictionary
+         * @param params grounded action parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @param op return value gets written here by reference, pass empty value
+         * @return true if success, false if failure
+         */
+        bool computeGroundDictionary(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary, rosplan_knowledge_msgs::DomainOperator &op);
+
+        /**
          * @brief check if action start/end/overall preconditions are consistent with internal KB information
          * and return by reference the ground dictionary for simulation action purposes
          * @param action_start if true then action start preconditions are checked, if false at end preconditions are checked
@@ -404,6 +415,40 @@ class ActionSimulator
          * @return true if action was applied successful, false otherwise
          */
         bool simulateActionEnd(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief inverse of apply action, used for backtracking purposes
+         * revert means: check action effects and revert them (delete positive effects, add negative effects)
+         * @param action_name the name of the action to revert
+         * @param params the parameters of the action to revert
+         * @param action_start if true, action start effects are reverted, if false action end params are reverted
+         * @return true if action was reverted succesfully, false otherwise
+         */
+        bool revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start);
+
+        /**
+         * @brief overloaded function to revert action start effects
+         * @param action_name the name of the action to revert
+         * @param params the parameters of the action to revert
+         * @return true if action was reverted succesfully, false otherwise
+         */
+        bool revertActionStart(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function to revert action end effects
+         * @param action_name the name of the action to revert
+         * @param params the parameters of the action to revert
+         * @return true if action was reverted succesfully, false otherwise
+         */
+        bool revertActionEnd(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function to revert both action start and end effects
+         * @param action_name the name of the action to revert
+         * @param params the parameters of the action to revert
+         * @return true if action was reverted succesfully, false otherwise
+         */
+        bool revertAction(std::string &action_name, std::vector<std::string> &params);
 
         /**
          * @brief get all goals from real KB
