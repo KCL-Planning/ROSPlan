@@ -730,6 +730,8 @@ bool ActionSimulator::computeGroundDictionary(std::string &action_name, std::vec
     for(auto it=op.formula.typed_parameters.begin(); it!=op.formula.typed_parameters.end(); it++)
         // value gets passed by reference, to be used by action simulator but also is used for the rest of this function
         ground_dictionary.insert(std::pair<std::string, std::string>(it->key, params.at(std::distance(op.formula.typed_parameters.begin(), it))));
+
+    return true;
 }
 
 bool ActionSimulator::isActionAplicable(bool action_start, bool overall_preconditions, std::string &action_name, std::vector<std::string> &params,
@@ -741,7 +743,10 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
     rosplan_knowledge_msgs::DomainOperator op;
 
     // get ground dictionary, a map between keys and grounded action parameters
-    computeGroundDictionary(action_name, params, ground_dictionary, op);
+    if(!computeGroundDictionary(action_name, params, ground_dictionary, op)) {
+        ROS_ERROR("failed to compute ground dictionary");
+        return false;
+    }
 
     // check action preconditions
 
@@ -942,8 +947,10 @@ bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::st
     std::map<std::string, std::string> ground_dictionary;
 
     // get ground dictionary, a map between keys and grounded action parameters
-    if(!computeGroundDictionary(action_name, params, ground_dictionary, op))
+    if(!computeGroundDictionary(action_name, params, ground_dictionary, op)) {
+        ROS_WARN("failed to compute ground dictionary");
         return false;
+    }
 
     // query action effects from domain operator
     if(action_start)
@@ -1186,7 +1193,10 @@ int main(int argc, char **argv)
     action_simulator_tester.printInternalKBFacts();
     std::string action_name3 = "get_down_from_car";
     std::vector<std::string> params3 = {"batdad","car","ben_school"}; // person, car, location
-    action_simulator_tester.revertAction(action_name3, params3);
+    if(action_simulator_tester.revertActionStart(action_name3, params3))
+        ROS_INFO("action reverted succesfully");
+    else
+        ROS_ERROR("failed to revert action");
     ROS_INFO("KB facts after reverting action:");
     action_simulator_tester.printInternalKBFacts();
 
