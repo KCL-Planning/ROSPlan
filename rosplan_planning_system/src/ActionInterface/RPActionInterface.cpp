@@ -113,23 +113,23 @@ namespace KCL_rosplan {
 		// listen for action dispatch
 		std::string adt = "default_dispatch_topic";
 		nh.getParam("action_dispatch_topic", adt);
-		ros::Subscriber ds = nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
+
+        ros::SubscribeOptions ops;
+        ops.template init<rosplan_dispatch_msgs::ActionDispatch>(adt, 1000, boost::bind(&KCL_rosplan::RPActionInterface::dispatchCallback, this, _1));
+        ops.transport_hints = ros::TransportHints();
+        ops.allow_concurrent_callbacks = true;
+		ros::Subscriber ds = nh.subscribe(ops); // nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
 
 		// loop
-		ros::Rate loopRate(50);
-		int counter = 0;
+		ros::Rate loopRate(1);
+		ros::AsyncSpinner spinner(4);
+        spinner.start();
+
 		ROS_INFO("KCL: (%s) Ready to receive", params.name.c_str());
 
 		while(ros::ok()) {
-
-			counter++;
-			if(counter==20) {
-				pddl_action_parameters_pub.publish(params);
-				counter = 0;
-			}
-
+			pddl_action_parameters_pub.publish(params);
 			loopRate.sleep();
-			ros::spinOnce();
 		}
 	}
 
