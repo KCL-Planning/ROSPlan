@@ -156,29 +156,13 @@ install(DIRECTORY common/bin
 ##  Tests  ##
 #############
 
-# in the same way as build
 
-# catkin add gtests ( src file)
-# assert true test
-
-
-#add_subdirectory(googletest-master)
-#include_directories(googletest-master/googletest/include)
-#include_directories(googletest-master/googlemock/include)
-
-#set(SOURCE_FILES main.cpp)
-#add_executable(rosplan_planning_system test/utest.cpp)
-
-#catkin_add_gtest(utest test/utest.cpp)
-
-
-#Declare your rostest launch scripts
-#Compare with mongodb_store
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     #find_package(catkin REQUIRED COMPONENTS rostest)
-    add_rostest_gtest(utest launch/includes/planner_interface.launch test/utest.cc) #add more src files
+    add_rostest_gtest(utest launch/includes/planner_interface.launch test/utest.cpp  src/PlannerInterface/PlannerInterface.cpp) #add more src files
     target_link_libraries(utest ${catkin_LIBRARIES})
+    add_dependencies(utest ${catkin_EXPORTED_TARGETS}) #not needed?
 endif()
 
 

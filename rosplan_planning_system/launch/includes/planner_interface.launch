@@ -11,7 +11,7 @@
 	<arg name="data_path"            default="$(find rosplan_demos)/common/" />
 	<arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
 	<arg name="planner_interface"    default="popf_planner_interface" />
-	<arg name="test_path"         	 default="utest.cc" />
+	<arg name="test_path"         	 default="utest.cpp" />
 
 
 	<!-- planner interface -->
