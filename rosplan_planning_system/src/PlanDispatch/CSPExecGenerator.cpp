@@ -4,7 +4,7 @@
  * KCL: King's College London
  * ISR: Institue for Systems and Robotics
  *
- * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima_84@yahoo.com)
+ * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima@isr.tecnico.ulisboa.pt)
  *
  * Finds out many different alternatives for a esterel plan to be executed.
  *
@@ -148,7 +148,7 @@ void CSPExecGenerator::testFunctions()
 }
 
 bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
-    rosplan_dispatch_msgs::EsterelPlan &plan)
+    rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start)
 {
     // input a node id and return the action name and params
 
@@ -159,16 +159,21 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
     for(auto nit=plan.nodes.begin(); nit!=plan.nodes.end(); nit++) {
         // check if node id matches with node
         if(nit->node_id == action_id) {
+            // get name
             action_name = nit->action.name;
             // extract params
             for(auto pit=nit->action.parameters.begin(); pit!=nit->action.parameters.end(); pit++)
                 params.push_back(pit->value);
 
             // discriminate node action start or end
-            if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START)
+            if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
+                action_start = true;
                 return true;
-            else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END)
+            }
+            else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+                action_start = false;
                 return false;
+            }
             else {
                 ROS_ERROR("node should be either start or end, while getting action");
                 return false;
@@ -230,7 +235,8 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
     for(auto nit=open_list.begin(); nit!=open_list.end(); nit++) {
         std::string action_name;
         std::vector<std::string> params;
-        bool action_start = getAction(*nit, action_name, params, original_plan_);
+        bool unused;
+        bool action_start = getAction(*nit, action_name, params, original_plan_, unused);
         if(action_start) {
             ROS_DEBUG("check if action start is applicable : (%s)",
                          action_simulator_.convertPredToString(action_name, params).c_str());
@@ -299,9 +305,9 @@ std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &ope
 
 bool CSPExecGenerator::orderNodes()
 {
-    ROS_INFO("ordering nodes now");
+    // shift nodes from open list (O) to ordered plans (R)
+    // offering all possible different execution alternatives via DFS (Depth first search)
 
-    // shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
     if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
         ROS_ERROR("temporal constraints not satisfied");
         return false;
@@ -314,6 +320,22 @@ bool CSPExecGenerator::orderNodes()
 
         // add new valid ordering to ordered plans (R)
         ordered_plans_.push_back(ordered_nodes_);
+
+        // backtrack: popf, remove last element from f, store in variable and revert that action
+        if(!ordered_nodes_.empty()) { // ensure stack is not empty
+            // revert action
+            std::string action_name;
+            std::vector<std::string> params;
+            bool action_start;
+            if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+                ordered_nodes_.pop_back(); // eliminate last node from stack
+                // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
+                if(action_start)
+                    action_simulator_.revertActionStart(action_name, params);
+                else
+                    action_simulator_.revertActionEnd(action_name, params);
+            }
+        }
 
         return true;
     }
@@ -331,17 +353,8 @@ bool CSPExecGenerator::orderNodes()
         // find all nodes (b) ordered before (a)
         std::vector<int> s = findNodesBeforeA(*a, open_list_);
 
-        // remove, print a and nodes before a
-        ROS_INFO("a=%d", *a);
-        printNodes("open list=", open_list_);
-        printNodes("Nodes before a in open list (O), s=", s);
-
         // order a
         ordered_nodes_.push_back(*a);
-
-        //remove
-        ROS_INFO("remove a and s from open list");
-        printNodes("open list before removing", open_list_);
 
         // remove a and s from open list (O)
         std::vector<int>::iterator ait = std::find(open_list_.begin(),open_list_.end(), *a);
@@ -354,41 +367,51 @@ bool CSPExecGenerator::orderNodes()
                 open_list_.erase(sp);
             }
 
-        // remove
-        printNodes("open list after removing", open_list_);
-        ROS_INFO("applying action a, world state before:");
-        action_simulator_.printInternalKBFacts();
-
         // apply action a to current state (P)
         std::string action_name;
         std::vector<std::string> params;
-        if(getAction(*a, action_name, params, original_plan_)) {
+        bool unused;
+        if(getAction(*a, action_name, params, original_plan_, unused)) {
             // action start
-            ROS_INFO("applying action a (start), world state after:");
+            ROS_INFO("action a : (%s)", action_simulator_.convertPredToString(action_name, params).c_str());
             if(!action_simulator_.simulateActionStart(action_name, params)) {
                 ROS_ERROR("could not simulate action start");
                 return false;
             }
+
+            ROS_INFO("applying action a (start), world state after:");
         }
         else {
             // action end
-            ROS_INFO("applying action a (end), world state after:");
             if(!action_simulator_.simulateActionEnd(action_name, params)) {
                 ROS_ERROR("could not simulate action end");
                 return false;
             }
+
+            ROS_INFO("applying action a (end), world state after:");
         }
 
-        // remove
-        action_simulator_.printInternalKBFacts();
-
         // recurse
-        return orderNodes();
+        orderNodes();
     }
 
-    // should never reach this point
-    ROS_ERROR("Ran out of nodes without achieving goal");
-    return false;
+    // backtrack: popf, remove last element from f, store in variable and revert that action
+    if(!ordered_nodes_.empty()) { // ensure stack is not empty
+        // revert action
+        std::string action_name;
+        std::vector<std::string> params;
+        bool action_start;
+        if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+            ordered_nodes_.pop_back(); // eliminate last node from stack
+            // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
+            if(action_start)
+                action_simulator_.revertActionStart(action_name, params);
+            else
+                action_simulator_.revertActionEnd(action_name, params);
+        }
+    }
+
+    return true;
 }
 
 bool CSPExecGenerator::generateFullyConnectedPlan()
@@ -414,6 +437,7 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
     ordered_plans_.clear();
 
     // if true, it means at least one valid execution alternative was found
+    ROS_INFO("Finding all possible executions now");
     return orderNodes();
 }
 
@@ -438,6 +462,10 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
         res.replan_needed = false;
         res.exec_alternatives_generated = true;
         ROS_INFO("Found valid execution(s)");
+
+        // remove, print plans
+        for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
+            printNodes("plan", *it);
     }
     else
     {

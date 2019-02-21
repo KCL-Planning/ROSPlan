@@ -4,7 +4,7 @@
  * KCL: King's College London
  * ISR: Institue for Systems and Robotics
  *
- * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima_84@yahoo.com)
+ * Author: Michael Cashmore (michael.cashmore@kcl.ac.uk), Oscar Lima (olima@isr.tecnico.ulisboa.pt)
  *
  * Finds out different options for a plan to be executed.
  *
@@ -85,7 +85,7 @@ class CSPExecGenerator
          * @return true if node is action start, false if node is action end
          */
         bool getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
-            rosplan_dispatch_msgs::EsterelPlan &plan);
+            rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start);
 
         /**
          * @brief receive as input a node id from a end action node,
