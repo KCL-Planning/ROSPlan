@@ -580,7 +580,7 @@ bool ActionSimulator::removePredicateInternal(std::string &predicate_name, std::
     }
     else {
         // element does not exist
-        ROS_ERROR("Could not find predicate in internal KB (%s), while trying to delete",
+        ROS_INFO("Could not find predicate in internal KB (%s), while trying to delete",
                   convertPredToString(predicate_name, args).c_str());
         return false;
     }
@@ -903,10 +903,8 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             addFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++) {
-            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
-                return false;
-        }
+        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++)
+            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
     }
     else
     {
@@ -917,10 +915,8 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             addFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++) {
-            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
-                return false;
-        }
+        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++)
+            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
     }
 
     return true;
@@ -959,8 +955,7 @@ bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::st
 
         // iterate over positive start action effects and apply to KB
         for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++)
-            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
-                return false;
+            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
         for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++) {
@@ -973,8 +968,7 @@ bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::st
 
         // iterate over positive start action effects and apply to KB
         for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++)
-            if(!removeFactInternal(it->name, groundParams(*it, ground_dictionary)))
-                return false;
+            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
 
         // iterate over negative start action effects and apply to KB
         for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++) {
