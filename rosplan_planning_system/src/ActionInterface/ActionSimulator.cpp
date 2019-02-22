@@ -758,7 +758,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
             std::vector<std::string> gp = groundParams(*it, ground_dictionary);
             if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
                 // inform which precondition were not met
-                ROS_DEBUG("precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                ROS_INFO("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
         }
@@ -773,7 +773,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
             std::vector<std::string> gp = groundParams(*it, ground_dictionary);
             if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format, gp = grounded parameters
                 // inform which precondition were not met
-                ROS_DEBUG("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                ROS_INFO("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
         }
@@ -788,7 +788,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
         std::vector<std::string> gp = groundParams(*it, ground_dictionary);
         if(findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
             // inform which precondition was not met
-            ROS_DEBUG("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+            ROS_INFO("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
             return false;
         }
     }
@@ -809,6 +809,14 @@ bool ActionSimulator::isActionStartAplicable(std::string &action_name, std::vect
     // overloaded function that checks if action start preconditions are consistent with internal KB information
     std::map<std::string, std::string> ground_dictionary;
     return isActionAplicable(true, false, action_name, params, ground_dictionary);
+}
+
+bool ActionSimulator::isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params)
+{
+    // overloaded function that checks if action overall preconditions are consistent with internal KB information
+    // and return by reference the ground dictionary for simulation action purposes
+    std::map<std::string, std::string> ground_dictionary; // create dummy gd that will not be used
+    return isActionAplicable(false, true, action_name, params, ground_dictionary);
 }
 
 bool ActionSimulator::isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params,

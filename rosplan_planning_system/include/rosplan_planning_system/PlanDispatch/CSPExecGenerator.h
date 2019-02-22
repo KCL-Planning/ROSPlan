@@ -114,15 +114,18 @@ class CSPExecGenerator
 
         /**
          * @brief shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
+         * @param open_list the list of nodes which have not yet being ordered, at startup is composed of all nodes
+         * in the partially ordered plan, later the game is take from it the applicable nodes and pass them to
+         * the ordered list (which is used also as stack for the DFS search with backtrack)
          * @return true if at least one valid execution was found, false otherwise
          */
-        bool orderNodes();
+        bool orderNodes(std::vector<int> open_list);
 
         /**
          * @brief generate plan alternatives based on search
          * @return true if succeeded
          */
-        bool generateFullyConnectedPlan();
+        bool generatePlans();
 
         /**
          * @brief service callback with user request to generate execution alternatives
@@ -155,9 +158,6 @@ class CSPExecGenerator
         /// P: to simulate actions in a private (own) KB
         ActionSimulator action_simulator_;
 
-        /// O: open list, the list of nodes id's to order
-        std::vector<int> open_list_;
-
         /// C: set of constraints
         std::map<int, int> set_of_constraints_;
 
@@ -166,5 +166,8 @@ class CSPExecGenerator
 
         /// R: plan execution alternatives, each one is a fully ordered esterel plan
         std::vector<std::vector<int> > ordered_plans_;
+
+        // remove
+        std::vector<int> branching_factor_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H

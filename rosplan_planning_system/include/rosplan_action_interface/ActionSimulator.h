@@ -342,6 +342,15 @@ class ActionSimulator
 
         /**
          * @brief overloaded function that checks if action overall preconditions are consistent with internal KB information
+         * this funtion is useful when you don't care about the ground dictionary
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @return true if action overall is applicable, false otherwise
+         */
+        bool isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if action overall preconditions are consistent with internal KB information
          * and return by reference the ground dictionary for simulation action purposes
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters

@@ -139,12 +139,26 @@ void CSPExecGenerator::testFunctions()
     // lower flag
     is_esterel_plan_received_ = false;
 
-    if(generateFullyConnectedPlan())
+    // this function is put here for testing purposes
+    if(generatePlans())
+    {
         // indicates that at least one valid execution was found
-        ROS_INFO("Found valid execution(s)");
+        ROS_INFO("Found %ld valid execution(s)", ordered_plans_.size());
+
+        // remove, print plans
+        for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
+            printNodes("plan", *it);
+    }
     else
+    {
         // indicates that no valid execution was found, means replanning is needed
         ROS_INFO("No valid execution was found, replanning is needed");
+
+        // remove, print plans
+        ROS_INFO("An error happened, but anyway I will show you the plans I have found:");
+        for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
+            printNodes("plan", *it);
+    }
 }
 
 bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
@@ -157,31 +171,36 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
 
     // iterate over the original plan
     for(auto nit=plan.nodes.begin(); nit!=plan.nodes.end(); nit++) {
+
         // check if node id matches with node
         if(nit->node_id == action_id) {
-            // get name
+
+            // get name, write return value (1) by reference
             action_name = nit->action.name;
             // extract params
             for(auto pit=nit->action.parameters.begin(); pit!=nit->action.parameters.end(); pit++)
+                // write return value (2) by reference
                 params.push_back(pit->value);
 
             // discriminate node action start or end
             if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START) {
+                // write return value (3) by reference
                 action_start = true;
                 return true;
             }
             else if(nit->node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END) {
+                // write return value (3) by reference
                 action_start = false;
-                return false;
+                return true;
             }
             else {
-                ROS_ERROR("node should be either start or end, while getting action");
+                ROS_ERROR("node should be either start or end, while getting action (id: %d)", action_id);
                 return false;
             }
         }
     }
 
-    ROS_ERROR("get action: node id was not found in plan");
+    ROS_ERROR("get action: node id : %d, was not found in plan", action_id);
     return false;
 }
 
@@ -230,43 +249,72 @@ bool CSPExecGenerator::getStartNodeID(int end_node_id, int &action_start_node_id
 
 bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> &valid_nodes)
 {
-    // iterate over open list (O), check if node preconditions are met in current state (P)
+    // iterate over open list (O), check if node preconditions are met in current state (S)
 
+    // ensure open list is not empty
+    if(!open_list.size() > 0) {
+        ROS_INFO("open list is empty, while checking validNodes");
+        return false;
+    }
+
+    // iterate over open list
     for(auto nit=open_list.begin(); nit!=open_list.end(); nit++) {
+
+        // get action properties (name, params, type) from node id
         std::string action_name;
         std::vector<std::string> params;
-        bool unused;
-        bool action_start = getAction(*nit, action_name, params, original_plan_, unused);
+        bool action_start;
+        if(!getAction(*nit, action_name, params, original_plan_, action_start)) {
+            ROS_ERROR("failed to get action properties (while getting valid nodes)");
+            return false;
+        }
+
         if(action_start) {
-            ROS_DEBUG("check if action start is applicable : (%s)",
+            // check if action start + overall preconditions are met
+            ROS_INFO("check if action start (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
             if(action_simulator_.isActionStartAplicable(action_name, params)) {
-                valid_nodes.push_back(*nit);
+                if(action_simulator_.isActionOverAllAplicable(action_name, params)) {
+                    ROS_INFO("(action start) node is valid (id: %d), add to valid list", *nit);
+                    // node is valid, add to list
+                    valid_nodes.push_back(*nit);
+                }
+                else
+                    ROS_INFO("(action start) node %d is NOT valid", *nit);
             }
         }
         else {
-            ROS_DEBUG("check if action end is applicable : (%s)",
+            // check if action end + overall preconditions are met
+            ROS_INFO("check if action end (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
             if(action_simulator_.isActionEndAplicable(action_name, params)) {
-                // Ignore action ends in validNodes for actions that have not started
+                if(action_simulator_.isActionOverAllAplicable(action_name, params)) {
+                    ROS_INFO("(action end) node is valid, check if correspondent action start is ordered");
 
-                // get action id of start node
-                int start_node_id;
-                if(!getStartNodeID(*nit, start_node_id))
-                    return false;
+                    // Ignore action ends in validNodes for actions that have not started
 
-                // add only if start node is already ordered
-                bool ordered = false;
-                for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
-                    if(start_node_id == *onit) {
-                        ordered = true;
-                        valid_nodes.push_back(*nit);
-                    }
+                    // get action id of start node
+                    int start_node_id;
+                    if(!getStartNodeID(*nit, start_node_id))
+                        return false;
 
-                if(!ordered)
-                    ROS_INFO("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
+                    // add only if start node is already ordered
+                    bool ordered = false;
+                    for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
+                        if(start_node_id == *onit) {
+                            ordered = true;
+                            // node is valid, add to list
+                            valid_nodes.push_back(*nit);
 
-                // printNodes("ordered nodes F", ordered_nodes_);
+                            // remove
+                            ROS_INFO("checked if correspondent action start is ordered : yes is ordered, add action (%d) to valid list", *nit);
+                        }
+
+                    if(!ordered)
+                        ROS_INFO("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
+
+                    // printNodes("ordered nodes F", ordered_nodes_);
+                }
             }
         }
     }
@@ -303,10 +351,12 @@ std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &ope
     return nodes_before_a;
 }
 
-bool CSPExecGenerator::orderNodes()
+bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 {
     // shift nodes from open list (O) to ordered plans (R)
     // offering all possible different execution alternatives via DFS (Depth first search)
+
+    ROS_INFO("order nodes (recurse)");
 
     if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
         ROS_ERROR("temporal constraints not satisfied");
@@ -314,72 +364,152 @@ bool CSPExecGenerator::orderNodes()
     }
 
     // check if goals are achieved
+    ROS_INFO("checking if goals are achieved...");
     if(action_simulator_.areGoalsAchieved()) {
-        ROS_INFO("valid plan found as follows:");
+        ROS_WARN("goals achieved! valid plan found as follows:"); // TODO: move back to ROS_INFO
         printNodes("plan", ordered_nodes_);
 
         // add new valid ordering to ordered plans (R)
         ordered_plans_.push_back(ordered_nodes_);
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
+        ROS_INFO("backtrack because goal was achieved");
         if(!ordered_nodes_.empty()) { // ensure stack is not empty
             // revert action
+            ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
             std::string action_name;
             std::vector<std::string> params;
             bool action_start;
             if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+                // remove
+                ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
+
                 ordered_nodes_.pop_back(); // eliminate last node from stack
                 // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
                 if(action_start)
                     action_simulator_.revertActionStart(action_name, params);
                 else
                     action_simulator_.revertActionEnd(action_name, params);
+
+                // remove
+                action_simulator_.printInternalKBFacts();
             }
+            else
+                ROS_ERROR("failed to get action properties (while backtracking because goal was achieved)");
         }
 
         return true;
     }
+    else
+        ROS_INFO("goals not achieved yet");
 
     // see which nodes preconditions are met and construct valid nodes list (V)
+    // remove
+    printNodes("open list", open_list); // print open list for debuggin purposes
+    ROS_INFO("finding valid nodes from open list now");
     std::vector<int> valid_nodes;
-    validNodes(open_list_, valid_nodes);
+    validNodes(open_list, valid_nodes);
     if(valid_nodes.size() == 0) {
         ROS_ERROR("valid nodes are empty");
+
+        // backtrack: popf, remove last element from f, store in variable and revert that action
+        ROS_INFO("backtrack because nodes are empty");
+        if(!ordered_nodes_.empty()) { // ensure stack is not empty
+            // revert action
+            ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
+            std::string action_name;
+            std::vector<std::string> params;
+            bool action_start;
+            if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+                // remove
+                ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
+
+                ordered_nodes_.pop_back(); // eliminate last node from stack
+                // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
+                if(action_start)
+                    action_simulator_.revertActionStart(action_name, params);
+                else
+                    action_simulator_.revertActionEnd(action_name, params);
+
+                // remove
+                action_simulator_.printInternalKBFacts();
+            }
+            else
+                ROS_ERROR("failed to get action properties (while backtracking, valid nodes empty)");
+        }
+
         return false;
     }
+    else
+        ROS_INFO("valid nodes search has finished: found valid nodes");
+
+    // remove , keep track of the branching factor
+    branching_factor_.push_back(valid_nodes.size());
 
     // iterate over actions in valid nodes (V)
     for(auto a=valid_nodes.begin(); a!=valid_nodes.end(); a++) {
-        // find all nodes (b) ordered before (a)
-        std::vector<int> s = findNodesBeforeA(*a, open_list_);
 
-        // order a
+        // find all nodes (b) ordered before (a), s = skipped nodes
+        std::vector<int> s = findNodesBeforeA(*a, open_list);
+
+        // remove
+        ROS_INFO("add action to stack : %d", *a);
+        printNodes("stack before adding", ordered_nodes_);
+
+        // order a, (add to queue)
         ordered_nodes_.push_back(*a);
 
-        // remove a and s from open list (O)
-        std::vector<int>::iterator ait = std::find(open_list_.begin(),open_list_.end(), *a);
-        open_list_.erase(ait);
-        // iterate over s
-        if(s.size() > 0)
-            for(auto sit=s.begin(); sit!=s.end(); sit++) {
-                // find and remove elements of s
-                std::vector<int>::iterator sp = std::find(open_list_.begin(),open_list_.end(), *sit);
-                open_list_.erase(sp);
-            }
+        // remove
+        printNodes("stack after adding", ordered_nodes_);
 
-        // apply action a to current state (P)
+        // remove
+        ROS_INFO("remove action and skipped actions from open list");
+
+        // remove a (action) and s (skipped nodes) from open list (O)
+        if(open_list.size() > 0) { // make sure open list is not empty
+            ROS_INFO("open list size : %ld", open_list.size());
+            printNodes("open list", open_list);
+            std::vector<int>::iterator ait = std::find(open_list.begin(),open_list.end(), *a);
+            open_list.erase(ait);
+            // iterate over s (skipped nodes)
+            if(s.size() > 0)
+                for(auto sit=s.begin(); sit!=s.end(); sit++) {
+                    // find and remove elements of s
+                    std::vector<int>::iterator sp = std::find(open_list.begin(),open_list.end(), *sit);
+                    open_list.erase(sp);
+                }
+        }
+        else {
+            // put here to prevent seg fault error, but if code reaches here then it would be a bug
+            ROS_ERROR("open list is empty, this means an implementation error");
+            return false;
+        }
+
+        // remove
+        ROS_INFO("apply action : (%d), to current state S", *a);
+
+        // apply action a to current state (S)
+
+        // get action properties (name, params, type) from node id
         std::string action_name;
         std::vector<std::string> params;
-        bool unused;
-        if(getAction(*a, action_name, params, original_plan_, unused)) {
+        bool action_start;
+        if(!getAction(*a, action_name, params, original_plan_, action_start)) {
+            ROS_ERROR("failed to get action properties (while applying action)");
+            return false;
+        }
+
+        // remove
+        ROS_INFO("KB before applying action %d", *a);
+        action_simulator_.printInternalKBFacts();
+
+        if(action_start) {
             // action start
-            ROS_INFO("action a : (%s)", action_simulator_.convertPredToString(action_name, params).c_str());
+            ROS_INFO("apply action a : (%s)", action_simulator_.convertPredToString(action_name, params).c_str());
             if(!action_simulator_.simulateActionStart(action_name, params)) {
                 ROS_ERROR("could not simulate action start");
                 return false;
             }
-
-            ROS_INFO("applying action a (start), world state after:");
         }
         else {
             // action end
@@ -387,44 +517,57 @@ bool CSPExecGenerator::orderNodes()
                 ROS_ERROR("could not simulate action end");
                 return false;
             }
-
-            ROS_INFO("applying action a (end), world state after:");
         }
 
+        // remove
+        ROS_INFO("KB after applying action %d", *a);
+        action_simulator_.printInternalKBFacts();
+
         // recurse
-        orderNodes();
+        orderNodes(open_list);
     }
 
     // backtrack: popf, remove last element from f, store in variable and revert that action
+    ROS_INFO("backtrack because for loop ended (valid nodes exhausted)");
+    printNodes("branching factor", branching_factor_);
     if(!ordered_nodes_.empty()) { // ensure stack is not empty
         // revert action
+        ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
         std::string action_name;
         std::vector<std::string> params;
         bool action_start;
         if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+            // remove
+            ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
+
             ordered_nodes_.pop_back(); // eliminate last node from stack
             // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
             if(action_start)
                 action_simulator_.revertActionStart(action_name, params);
             else
                 action_simulator_.revertActionEnd(action_name, params);
+
+            // remove
+            action_simulator_.printInternalKBFacts();
         }
+        else
+            ROS_ERROR("failed to get action properties (while backtracking, nodes exhausted, end of for loop)");
     }
 
     return true;
 }
 
-bool CSPExecGenerator::generateFullyConnectedPlan()
+bool CSPExecGenerator::generatePlans()
 {
-    // get current state (P) and store in memory
+    // get current state (S) and store in memory
     action_simulator_.saveKBSnapshot();
 
     // init open list (O), initially contains all nodes in partial order plan
-    open_list_.clear();
+    std::vector<int> open_list;
     for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) { // nit=node iterator
         // do not add plan start node
         if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START)
-            open_list_.push_back(nit->node_id);
+            open_list.push_back(nit->node_id);
     }
 
     // init set of constraints (C)
@@ -438,7 +581,7 @@ bool CSPExecGenerator::generateFullyConnectedPlan()
 
     // if true, it means at least one valid execution alternative was found
     ROS_INFO("Finding all possible executions now");
-    return orderNodes();
+    return orderNodes(open_list);
 }
 
 bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& req, rosplan_dispatch_msgs::ExecAlternatives::Response& res)
@@ -456,12 +599,12 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
     // lower flag
     is_esterel_plan_received_ = false;
 
-    if(generateFullyConnectedPlan())
+    if(generatePlans())
     {
         // indicates that at least one valid execution was found
         res.replan_needed = false;
         res.exec_alternatives_generated = true;
-        ROS_INFO("Found valid execution(s)");
+        ROS_INFO("Found %ld valid execution(s)", ordered_plans_.size());
 
         // remove, print plans
         for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
@@ -473,6 +616,11 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
         res.replan_needed = true;
         res.exec_alternatives_generated = false;
         ROS_INFO("No valid execution was found, replanning is needed");
+
+        // remove, print plans
+        ROS_INFO("An error happened, but anyway I will show you the plans I have found:");
+        for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
+            printNodes("plan", *it);
     }
 
     ROS_INFO("Generating execution alternatives service has finished");
