@@ -357,6 +357,35 @@ std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &ope
     return nodes_before_a;
 }
 
+void CSPExecGenerator::backtrack(std::string reason_for_backtrack)
+{
+    // backtrack: popf, remove last element from f, store in variable and revert that action
+    ROS_INFO("backtrack because %s", reason_for_backtrack.c_str());
+    if(!ordered_nodes_.empty()) { // ensure stack is not empty
+        // revert action
+        ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
+        std::string action_name;
+        std::vector<std::string> params;
+        bool action_start;
+        if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+            // remove
+            ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
+
+            ordered_nodes_.pop_back(); // eliminate last node from stack
+            // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
+            if(action_start)
+                action_simulator_.revertActionStart(action_name, params);
+            else
+                action_simulator_.revertActionEnd(action_name, params);
+
+            // remove
+            action_simulator_.printInternalKBFacts();
+        }
+        else
+            ROS_ERROR("failed to get action properties (while backtracking)");
+    }
+}
+
 bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 {
     // shift nodes from open list (O) to ordered plans (R)
@@ -379,31 +408,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         ordered_plans_.push_back(ordered_nodes_);
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
-        ROS_INFO("backtrack because goal was achieved");
-        if(!ordered_nodes_.empty()) { // ensure stack is not empty
-            // revert action
-            ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
-            std::string action_name;
-            std::vector<std::string> params;
-            bool action_start;
-            if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
-                // remove
-                ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
-
-                ordered_nodes_.pop_back(); // eliminate last node from stack
-                // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
-                if(action_start)
-                    action_simulator_.revertActionStart(action_name, params);
-                else
-                    action_simulator_.revertActionEnd(action_name, params);
-
-                // remove
-                action_simulator_.printInternalKBFacts();
-            }
-            else
-                ROS_ERROR("failed to get action properties (while backtracking because goal was achieved)");
-        }
-
+        backtrack("goal was achieved");
         return true;
     }
     else
@@ -419,38 +424,11 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         ROS_ERROR("valid nodes are empty");
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
-        ROS_INFO("backtrack because nodes are empty");
-        if(!ordered_nodes_.empty()) { // ensure stack is not empty
-            // revert action
-            ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
-            std::string action_name;
-            std::vector<std::string> params;
-            bool action_start;
-            if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
-                // remove
-                ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
-
-                ordered_nodes_.pop_back(); // eliminate last node from stack
-                // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
-                if(action_start)
-                    action_simulator_.revertActionStart(action_name, params);
-                else
-                    action_simulator_.revertActionEnd(action_name, params);
-
-                // remove
-                action_simulator_.printInternalKBFacts();
-            }
-            else
-                ROS_ERROR("failed to get action properties (while backtracking, valid nodes empty)");
-        }
-
+        backtrack("nodes are empty");
         return false;
     }
     else
         ROS_INFO("valid nodes search has finished: found valid nodes");
-
-    // remove , keep track of the branching factor
-    branching_factor_.push_back(valid_nodes.size());
 
     // iterate over actions in valid nodes (V)
     for(auto a=valid_nodes.begin(); a!=valid_nodes.end(); a++) {
@@ -534,33 +512,8 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         orderNodes(open_list_copy);
     }
 
-    // backtrack: popf, remove last element from f, store in variable and revert that action
-    ROS_INFO("backtrack because for loop ended (valid nodes exhausted)");
-    printNodes("branching factor", branching_factor_);
-    if(!ordered_nodes_.empty()) { // ensure stack is not empty
-        // revert action
-        ROS_INFO("poping action (removing from stack), reverting action to S, action id: %d", ordered_nodes_.back());
-        std::string action_name;
-        std::vector<std::string> params;
-        bool action_start;
-        if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
-            // remove
-            ROS_INFO("KB after reverting action %d", ordered_nodes_.back());
-
-            ordered_nodes_.pop_back(); // eliminate last node from stack
-            // getAction() finds out if last element of "f" is action start or end, info is in action_start boolean
-            if(action_start)
-                action_simulator_.revertActionStart(action_name, params);
-            else
-                action_simulator_.revertActionEnd(action_name, params);
-
-            // remove
-            action_simulator_.printInternalKBFacts();
-        }
-        else
-            ROS_ERROR("failed to get action properties (while backtracking, nodes exhausted, end of for loop)");
-    }
-
+    // pop last element from stack (ordered_nodes_) revert action
+    backtrack("for loop ended (valid nodes exhausted)");
     return true;
 }
 

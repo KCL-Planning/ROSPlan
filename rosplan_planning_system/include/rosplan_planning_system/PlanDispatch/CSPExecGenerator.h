@@ -113,6 +113,12 @@ class CSPExecGenerator
         std::vector<int> findNodesBeforeA(int a, std::vector<int> &open_list);
 
         /**
+         * @brief backtrack: popf, remove last element from f, store in variable and revert that action
+         * @param reason_for_backtrack used for log information and feedback to user
+         */
+        void backtrack(std::string reason_for_backtrack);
+
+        /**
          * @brief shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
          * @param open_list the list of nodes which have not yet being ordered, at startup is composed of all nodes
          * in the partially ordered plan, later the game is take from it the applicable nodes and pass them to
@@ -166,8 +172,5 @@ class CSPExecGenerator
 
         /// R: plan execution alternatives, each one is a fully ordered esterel plan
         std::vector<std::vector<int> > ordered_plans_;
-
-        // remove
-        std::vector<int> branching_factor_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H
