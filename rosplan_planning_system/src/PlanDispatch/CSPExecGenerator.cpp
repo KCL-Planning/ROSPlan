@@ -334,18 +334,24 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
 
 std::vector<int> CSPExecGenerator::findNodesBeforeA(int a, std::vector<int> &open_list)
 {
-    // find all nodes b in open list (O) ordered before a
+    // find all nodes b in open list (O) which ordering constraints enforce them before a
 
     std::vector<int> nodes_before_a;
 
-    // iterate over all node b in open list (O), if b < a then add to s, return s
-    for(auto b=open_list.begin(); b!=open_list.end(); b++) {
-        // find a and b in open list
-        std::vector<int>::iterator ait = std::find(open_list.begin(), open_list.end(), a);
-        std::vector<int>::iterator bit = std::find(open_list.begin(), open_list.end(), *b);
-
-        if(std::distance(ait, bit) < 0)
-            nodes_before_a.push_back(*b);
+    // make sure constraints are non empty
+    if(set_of_constraints_.size() > 0) {
+        // iterate over the constraints
+        for(auto cit=set_of_constraints_.begin(); cit!=set_of_constraints_.end(); cit++) {
+            if(cit->second == a) {
+                // relevant constraint, find correspondent node in open list
+                for(auto oit=open_list.begin(); oit!=open_list.end() ;oit++) {
+                    if(*oit == cit->first)
+                        // found constraint in open list which should happen before a, aka skipped node
+                        // this happens when e.g. a human helps the robot to do the action
+                        nodes_before_a.push_back(cit->first);
+                }
+            }
+        }
     }
 
     return nodes_before_a;
@@ -468,11 +474,11 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         // remove a (action) and s (skipped nodes) from open list (O)
         std::vector<int> open_list_copy = open_list;
         if(open_list_copy.size() > 0) { // make sure open list is not empty
-            ROS_INFO("open list size : %ld", open_list_copy.size());
             printNodes("open list", open_list_copy);
+            // find current action "a" in open list and get a pointer to it
             std::vector<int>::iterator ait = std::find(open_list_copy.begin(),open_list_copy.end(), *a);
-            open_list_copy.erase(ait);
-            // iterate over s (skipped nodes)
+            open_list_copy.erase(ait); // delete current action "a"
+            // iterate over s (skipped nodes) and delete one at a time
             if(s.size() > 0)
                 for(auto sit=s.begin(); sit!=s.end(); sit++) {
                     // find and remove elements of s

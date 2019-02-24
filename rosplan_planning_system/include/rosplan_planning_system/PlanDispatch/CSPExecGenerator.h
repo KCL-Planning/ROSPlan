@@ -105,7 +105,7 @@ class CSPExecGenerator
         bool validNodes(std::vector<int> &open_list, std::vector<int> &valid_nodes);
 
         /**
-         * @brief find all nodes b in open list (O) ordered before a
+         * @brief find all nodes b in open list (O) which ordering constraints enforce them before a
          * @param a integer representing the node id, which is the reference for this function
          * @param open_list the list of nodes which have not yet being ordered
          * @return a list of nodes b ordered before a, e.g. open_list = {1,4,3,2}, a = 3, return = {1, 4}
