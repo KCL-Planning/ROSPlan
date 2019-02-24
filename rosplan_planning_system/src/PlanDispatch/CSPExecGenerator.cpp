@@ -466,17 +466,18 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         ROS_INFO("remove action and skipped actions from open list");
 
         // remove a (action) and s (skipped nodes) from open list (O)
-        if(open_list.size() > 0) { // make sure open list is not empty
-            ROS_INFO("open list size : %ld", open_list.size());
-            printNodes("open list", open_list);
-            std::vector<int>::iterator ait = std::find(open_list.begin(),open_list.end(), *a);
-            open_list.erase(ait);
+        std::vector<int> open_list_copy = open_list;
+        if(open_list_copy.size() > 0) { // make sure open list is not empty
+            ROS_INFO("open list size : %ld", open_list_copy.size());
+            printNodes("open list", open_list_copy);
+            std::vector<int>::iterator ait = std::find(open_list_copy.begin(),open_list_copy.end(), *a);
+            open_list_copy.erase(ait);
             // iterate over s (skipped nodes)
             if(s.size() > 0)
                 for(auto sit=s.begin(); sit!=s.end(); sit++) {
                     // find and remove elements of s
-                    std::vector<int>::iterator sp = std::find(open_list.begin(),open_list.end(), *sit);
-                    open_list.erase(sp);
+                    std::vector<int>::iterator sp = std::find(open_list_copy.begin(),open_list_copy.end(), *sit);
+                    open_list_copy.erase(sp);
                 }
         }
         else {
@@ -524,7 +525,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         action_simulator_.printInternalKBFacts();
 
         // recurse
-        orderNodes(open_list);
+        orderNodes(open_list_copy);
     }
 
     // backtrack: popf, remove last element from f, store in variable and revert that action
