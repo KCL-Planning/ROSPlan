@@ -27,10 +27,49 @@
     GTEST_TEST(ROSTest, TestROSNode_2) {
         ros::NodeHandle n("~");
 
-        ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("planning_server");
+        ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
         rosplan_dispatch_msgs::PlanningService srv;
 
+        srv.request.use_problem_topic = false;
+        srv.request.data_path = "rosplan_demos/common";
+        srv.request.domain_path = "rosplan_demos/common/utest_domain.pddl";
+        srv.request.problem_path = "rosplan_demos/common/utest_problem.pddl";
+        srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+
         EXPECT_TRUE(client1.call(srv));
+        ASSERT_EQ(0, srv.response.plan_found);
+    }
+
+    GTEST_TEST(ROSTest, TestROSNode_3) {
+    ros::NodeHandle n("~");
+
+    ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
+    rosplan_dispatch_msgs::PlanningService srv;
+
+    srv.request.use_problem_topic = false;
+    srv.request.data_path = "rosplan_demos/common";
+    srv.request.domain_path = "rosplan_demos/common/d.pddl";
+    srv.request.problem_path = "rosplan_demos/common/p.pddl";
+    srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+
+    client1.call(srv);
+    ASSERT_EQ(0, srv.response.plan_found);
+    }
+
+    GTEST_TEST(ROSTest, TestROSNode_4) {
+    ros::NodeHandle n("~");
+
+    ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
+    rosplan_dispatch_msgs::PlanningService srv;
+
+    srv.request.use_problem_topic = false;
+    srv.request.data_path = "rosplan_demos/common";
+    srv.request.domain_path = "rosplan_demos/common/elevators-domain.pddl";
+    srv.request.problem_path = "rosplan_demos/common/elevators-problem.pddl";
+    srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+
+    client1.call(srv);
+    ASSERT_EQ(0, srv.response.plan_found);
     }
 
 
@@ -39,43 +78,10 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
     ros::init(argc, argv, "utest");
 
+    ros::NodeHandle n("~");
+    // ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 1, &KCL_rosplan::PlannerInterface::problemCallback, <std_msgs::String*>);
+    ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_planner_interface/problem_instance", 1, true);
+
     return RUN_ALL_TESTS();
-
-
-   // ros::ServiceClient client2 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("planning_server_params");
-
-   // rosplan_dispatch_msgs::PlanningService srv;
-
-   // client1.call(srv);
-   // client2.call(srv);
-
-
-   // client.call( &KCL_rosplan::PlannerInterface::runPlanningServerDefault);
-
-    // srv.runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
-
-
-   // client.call()
-    //bool a = KCL_rosplan::PlannerInterface::testM();
-
-    //ros::Publisher problem_instance = n.advertise<std_msgs::String>("problem_instance", 1000);
-
-    //ros::Subscriber planner_output = n.subscribe("planner_output", 1000, &KCL_rosplan::PlannerInterface::problemCallback,
-                                              //   dynamic_cast<KCL_rosplan::PlannerInterface*>(&hej));
-
-    /*
-
-    // call the two services of the planner interface node
-    rosservice call /rosplan_planner_interface/planning_server
-    rosservice call /rosplan_planner_interface/planning_server_params
-
-    // subscribe to published topic
-    subscribe to /rosplan_planner_interface/planner_output
-
-    //publish on the problem topic
-    rostopic pub /rosplan_planner_interface/problem_instance std_msgs/String "data: ''"
-
-     */
-
 
 }

@@ -1,0 +1,6 @@
+(define (utest_problem)
+(:domain utest_domain)
+(:objects ball)
+(:init (inrooma ball)
+(:goal (and  (not (inrooma ball)) (inroomb ball)))
+)
