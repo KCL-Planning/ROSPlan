@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
   rosplan_dependencies
+  roslib
 )
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -159,12 +160,8 @@ install(DIRECTORY common/bin
 
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
-    #find_package(catkin REQUIRED COMPONENTS rostest)
+    find_package(roslib REQUIRED)
     add_rostest_gtest(utest launch/includes/planner_interface.launch test/utest.cpp  src/PlannerInterface/PlannerInterface.cpp) #add more src files
     target_link_libraries(utest ${catkin_LIBRARIES})
     add_dependencies(utest ${catkin_EXPORTED_TARGETS}) #not needed?
 endif()
-
-
-#target_link_libraries(rosplan_planning_system gtest gtest_main)
-#catkin_add_gtest(utest test/utest.cpp)

@@ -2,5 +2,5 @@
 (:domain utest_domain)
 (:objects ball)
 (:init (inrooma ball))
-(:goal (and  (not (inrooma ball)) (inroomb ball)))
+(:goal (inroomb ball))
 )
