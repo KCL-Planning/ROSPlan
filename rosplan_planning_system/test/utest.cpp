@@ -31,13 +31,13 @@
         rosplan_dispatch_msgs::PlanningService srv;
 
         srv.request.use_problem_topic = false;
-        srv.request.data_path = "rosplan_demos/common";
+        srv.request.data_path = "rosplan_demos/common/";
         srv.request.domain_path = "rosplan_demos/common/utest_domain.pddl";
         srv.request.problem_path = "rosplan_demos/common/utest_problem.pddl";
-        srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+        srv.request.planner_command = "timeout 60 rosplan_planning_system/common/bin/popf -n DOMAIN PROBLEM";
 
         EXPECT_TRUE(client1.call(srv));
-        ASSERT_EQ(0, srv.response.plan_found);
+        ASSERT_EQ(1, srv.response.plan_found);
     }
 
     GTEST_TEST(ROSTest, TestROSNode_3) {
@@ -47,10 +47,10 @@
     rosplan_dispatch_msgs::PlanningService srv;
 
     srv.request.use_problem_topic = false;
-    srv.request.data_path = "rosplan_demos/common";
+    srv.request.data_path = "rosplan_demos/common/";
     srv.request.domain_path = "rosplan_demos/common/d.pddl";
     srv.request.problem_path = "rosplan_demos/common/p.pddl";
-    srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+    srv.request.planner_command = "";
 
     client1.call(srv);
     ASSERT_EQ(0, srv.response.plan_found);
@@ -63,10 +63,10 @@
     rosplan_dispatch_msgs::PlanningService srv;
 
     srv.request.use_problem_topic = false;
-    srv.request.data_path = "rosplan_demos/common";
+    srv.request.data_path = "rosplan_demos/common/";
     srv.request.domain_path = "rosplan_demos/common/elevators-domain.pddl";
     srv.request.problem_path = "rosplan_demos/common/elevators-problem.pddl";
-    srv.request.planner_command = "timeout 60 rosplan_demps/common/bin/popf -n DOMAIN PROBLEM";
+    srv.request.planner_command = "timeout 60 rosplan_planning_system/common/bin/popf -n DOMAIN PROBLEM";
 
     client1.call(srv);
     ASSERT_EQ(0, srv.response.plan_found);
