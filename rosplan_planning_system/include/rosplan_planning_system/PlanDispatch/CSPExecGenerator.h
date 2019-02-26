@@ -18,6 +18,7 @@
 #include <rosplan_dispatch_msgs/EsterelPlan.h>
 #include <rosplan_dispatch_msgs/EsterelPlanNode.h>
 #include <rosplan_dispatch_msgs/EsterelPlanEdge.h>
+#include <rosplan_dispatch_msgs/EsterelPlanArray.h>
 #include <rosplan_dispatch_msgs/ExecAlternatives.h>
 #include <diagnostic_msgs/KeyValue.h>
 #include "rosplan_action_interface/ActionSimulator.h"
@@ -134,6 +135,20 @@ class CSPExecGenerator
         bool generatePlans();
 
         /**
+         * @brief iterate over the edges of the received esterel plan and delete all conditional edges
+         * @param esterel_plan the plan from which you want to remove its conditional edges
+         * @return esterel plan output, a modified version of the input plan, without conditional edges
+         */
+        rosplan_dispatch_msgs::EsterelPlan removeConditionalEdges(rosplan_dispatch_msgs::EsterelPlan &esterel_plan);
+
+        /**
+         * @brief add constrains to the partially ordered plan (esterel plan without conditional edges)
+         * @param ordered_nodes input, a totally odered list of nodes, which contains one possible way of executing the plan
+         * @return esterel plan msg
+         */
+        rosplan_dispatch_msgs::EsterelPlan convertListToEsterel(std::vector<int> &ordered_nodes);
+
+        /**
          * @brief service callback with user request to generate execution alternatives
          * @param req input from user gets received in this variable
          * @param res service response gets written here by reference, true if at least
@@ -151,7 +166,7 @@ class CSPExecGenerator
     private:
         // ros related variables
         ros::NodeHandle nh_;
-        ros::Publisher pub_set_of_solutions_, pub_pop_;
+        ros::Publisher pub_valid_plans_, pub_esterel_plan_;
         ros::Subscriber sub_esterel_plan_;
         ros::ServiceServer srv_gen_alternatives_;
 
@@ -159,7 +174,7 @@ class CSPExecGenerator
         bool is_esterel_plan_received_;
 
         /// stores the received msg in esterel plan callback
-        rosplan_dispatch_msgs::EsterelPlan original_plan_;
+        rosplan_dispatch_msgs::EsterelPlan original_plan_, partial_order_plan_;
 
         /// P: to simulate actions in a private (own) KB
         ActionSimulator action_simulator_;

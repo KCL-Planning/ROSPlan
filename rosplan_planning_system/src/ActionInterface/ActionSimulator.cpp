@@ -366,12 +366,12 @@ void ActionSimulator::printArrayKI(std::vector<rosplan_knowledge_msgs::Knowledge
     // print all elements in a KnowledgeItem array (used for printing all facts or goals)
 
     // print header msg
-    ROS_INFO("%s", header_msg.c_str());
+    ROS_DEBUG("%s", header_msg.c_str());
 
     // handle empty array scenario
     if(!ki_array.size() > 0) {
-        ROS_INFO("empty!");
-        ROS_INFO("...................");
+        ROS_DEBUG("empty!");
+        ROS_DEBUG("...................");
         return;
     }
 
@@ -379,14 +379,14 @@ void ActionSimulator::printArrayKI(std::vector<rosplan_knowledge_msgs::Knowledge
     for(auto it=ki_array.begin(); it!=ki_array.end(); it++)
     {
         if(it->is_negative) {
-            ROS_INFO("(not(%s))", convertPredToString(*it).c_str());
+            ROS_DEBUG("(not(%s))", convertPredToString(*it).c_str());
         }
         else {
-            ROS_INFO("(%s)", convertPredToString(*it).c_str());
+            ROS_DEBUG("(%s)", convertPredToString(*it).c_str());
         }
     }
 
-    ROS_INFO("...................");
+    ROS_DEBUG("...................");
 }
 
 void ActionSimulator::printInternalKBFacts()
@@ -580,7 +580,7 @@ bool ActionSimulator::removePredicateInternal(std::string &predicate_name, std::
     }
     else {
         // element does not exist
-        ROS_INFO("Could not find predicate in internal KB (%s), while trying to delete",
+        ROS_DEBUG("Could not find predicate in internal KB (%s), while trying to delete",
                   convertPredToString(predicate_name, args).c_str());
         return false;
     }
@@ -647,7 +647,7 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
     // make sure fact is not already there
     if(findFactInternal(predicate_name, params)) {
         // element exists
-        ROS_WARN("Tried to add fact twice, doing nothing... (%s)", convertPredToString(predicate_name, params).c_str());
+        ROS_DEBUG("Tried to add fact twice, doing nothing... (%s)", convertPredToString(predicate_name, params).c_str());
         return;
     }
 
@@ -758,7 +758,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
             std::vector<std::string> gp = groundParams(*it, ground_dictionary);
             if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
                 // inform which precondition were not met
-                ROS_INFO("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                ROS_DEBUG("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
         }
@@ -773,7 +773,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
             std::vector<std::string> gp = groundParams(*it, ground_dictionary);
             if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format, gp = grounded parameters
                 // inform which precondition were not met
-                ROS_INFO("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                ROS_DEBUG("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
         }
@@ -788,7 +788,7 @@ bool ActionSimulator::isActionAplicable(bool action_start, bool overall_precondi
         std::vector<std::string> gp = groundParams(*it, ground_dictionary);
         if(findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
             // inform which precondition was not met
-            ROS_INFO("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+            ROS_DEBUG("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
             return false;
         }
     }
@@ -1059,7 +1059,7 @@ bool ActionSimulator::areGoalsAchieved()
         // find fact in internal KB using KnowledgeItem version
         if(!findFactInternal(*it)) {
             // inform user about which goals are not achieved
-            ROS_INFO("missing goal : (%s)", convertPredToString(*it).c_str());
+            ROS_DEBUG("missing goal : (%s)", convertPredToString(*it).c_str());
             goal_state_reached =  false;
         }
     }
@@ -1071,135 +1071,135 @@ int main(int argc, char **argv)
 {
     // init node
     ros::init(argc, argv, "action_simulator_tester");
-    ROS_INFO("Node is going to initialize...");
+    ROS_DEBUG("Node is going to initialize...");
     // create object of the node class (ActionSimulator)
     ActionSimulator action_simulator_tester(true, true);
-    ROS_INFO("Node initialized.");
+    ROS_DEBUG("Node initialized.");
 
     // SNIPPETS: Example of how to use this library
 
     // snippet: get operator names
     std::vector<std::string> operator_names;
     action_simulator_tester.getOperatorNames(operator_names);
-    ROS_INFO("get operator names:");
-    ROS_INFO("===============");
+    ROS_DEBUG("get operator names:");
+    ROS_DEBUG("===============");
     for(auto it=operator_names.begin(); it != operator_names.end(); it++)
     {
-        ROS_INFO("%s", it->c_str());
+        ROS_DEBUG("%s", it->c_str());
     }
 
     // snippet: get all domain predicate names
     std::vector<std::string> domain_predicates;
     action_simulator_tester.getAllPredicateNames(domain_predicates);
-    ROS_INFO("get all predicate names:");
-    ROS_INFO("================");
+    ROS_DEBUG("get all predicate names:");
+    ROS_DEBUG("================");
     for(auto it=domain_predicates.begin(); it != domain_predicates.end(); it++)
     {
-        ROS_INFO("%s", it->c_str());
+        ROS_DEBUG("%s", it->c_str());
     }
 
     // save all predicates to internal KB
     action_simulator_tester.saveKBSnapshot();
 
     // snippet: print internal KB facts
-    ROS_INFO("print internal KB facts:");
-    ROS_INFO("================");
+    ROS_DEBUG("print internal KB facts:");
+    ROS_DEBUG("================");
     action_simulator_tester.printInternalKBFacts();
 
     // snippet: print internal KB goals
-    ROS_INFO("print internal KB goals:");
-    ROS_INFO("================");
+    ROS_DEBUG("print internal KB goals:");
+    ROS_DEBUG("================");
     action_simulator_tester.printInternalKBGoals();
 
     // snippet: find fact in KB (with no args)
-    ROS_INFO("find fact in internal KB no args:");
-    ROS_INFO("================");
+    ROS_DEBUG("find fact in internal KB no args:");
+    ROS_DEBUG("================");
     std::string predicate_name2 = "person_descending";
     if(action_simulator_tester.findFactInternal(predicate_name2))
-        ROS_INFO("predicate : (person_descending) found in internal KB");
+        ROS_DEBUG("predicate : (person_descending) found in internal KB");
     else
-        ROS_INFO("predicate : (person_descending) not found in internal KB");
+        ROS_DEBUG("predicate : (person_descending) not found in internal KB");
     // alternative option
-    ROS_INFO("find fact in internal KB no args (alternative option):");
-    ROS_INFO("================");
+    ROS_DEBUG("find fact in internal KB no args (alternative option):");
+    ROS_DEBUG("================");
     std::string predicate_name3 = "person_descending";
     std::vector<std::string> args1 = {""};
     if(action_simulator_tester.findFactInternal(predicate_name3, args1))
-        ROS_INFO("predicate : (person_descending) found in internal KB");
+        ROS_DEBUG("predicate : (person_descending) found in internal KB");
     else
-        ROS_INFO("predicate : (person_descending) not found in internal KB");
+        ROS_DEBUG("predicate : (person_descending) not found in internal KB");
 
     // snippet: find fact in KB (with args)
-    ROS_INFO("find fact in internal KB with args:");
-    ROS_INFO("================");
+    ROS_DEBUG("find fact in internal KB with args:");
+    ROS_DEBUG("================");
     std::string predicate_name4 = "has_driver_license";
     std::vector<std::string> args2 = {"batdad"};
     if(action_simulator_tester.findFactInternal(predicate_name4, args2))
-        ROS_INFO("predicate : (has_driver_license batdad) found in internal KB");
+        ROS_DEBUG("predicate : (has_driver_license batdad) found in internal KB");
     else
-        ROS_INFO("predicate : (has_driver_license batdad) not found in internal KB");
+        ROS_DEBUG("predicate : (has_driver_license batdad) not found in internal KB");
 
     // snippet: remove predicate from KB (with args)
     std::string predicate_name = "has_driver_license";
     std::vector<std::string> args3 = {"batdad"};
     action_simulator_tester.removeFactInternal(predicate_name, args3);
-    ROS_INFO("test: remove predicate with args (has_driver_license batdad):");
-    ROS_INFO("================");
+    ROS_DEBUG("test: remove predicate with args (has_driver_license batdad):");
+    ROS_DEBUG("================");
     action_simulator_tester.printInternalKBFacts();
 
     // snippet: remove predicate from KB (no args)
     std::string predicate_name5 = "person_descending";
     std::vector<std::string> args4 = {""};
-    ROS_INFO("test: remove predicate with no args (person_descending):");
-    ROS_INFO("================");
+    ROS_DEBUG("test: remove predicate with no args (person_descending):");
+    ROS_DEBUG("================");
     action_simulator_tester.removeFactInternal(predicate_name5, args4);
     action_simulator_tester.printInternalKBFacts();
 
     // snippet: see if action is applicable
     std::string action_name = "get_down_from_car";
     std::vector<std::string> params = {"batdad","car","ben_school"}; // person, car, location
-    ROS_INFO("check if action is applicable: (get_down_from_car batdad car ben_school), expected outcome is true");
-    ROS_INFO("================");
+    ROS_DEBUG("check if action is applicable: (get_down_from_car batdad car ben_school), expected outcome is true");
+    ROS_DEBUG("================");
     if(action_simulator_tester.isActionAplicable(action_name, params))
-        ROS_INFO("action is applicable!");
+        ROS_DEBUG("action is applicable!");
     else
-        ROS_INFO("action is not applicable");
+        ROS_DEBUG("action is not applicable");
 
     // snippet: simulate an action start
-    ROS_INFO("simulate action start: (get_down_from_car batdad car ben_school)");
-    ROS_INFO("================");
-    ROS_INFO("KB before simulation");
+    ROS_DEBUG("simulate action start: (get_down_from_car batdad car ben_school)");
+    ROS_DEBUG("================");
+    ROS_DEBUG("KB before simulation");
     action_simulator_tester.printInternalKBFacts();
     std::string action_name2 = "get_down_from_car";
     std::vector<std::string> params2 = {"batdad","car","ben_school"};
     action_simulator_tester.simulateActionStart(action_name2, params2);
-    ROS_INFO("KB after simulation");
+    ROS_DEBUG("KB after simulation");
     action_simulator_tester.printInternalKBFacts();
 
     // snippet: test areGoalsAchieved()
-    ROS_INFO("Check if goals are achieved:");
-    ROS_INFO("================");
-    ROS_INFO("KB goals:");
+    ROS_DEBUG("Check if goals are achieved:");
+    ROS_DEBUG("================");
+    ROS_DEBUG("KB goals:");
     action_simulator_tester.printInternalKBGoals();
-    ROS_INFO("KB facts:");
+    ROS_DEBUG("KB facts:");
     action_simulator_tester.printInternalKBFacts();
     if(action_simulator_tester.areGoalsAchieved())
-        ROS_INFO("goals achieved");
+        ROS_DEBUG("goals achieved");
     else
-        ROS_INFO("goals not achieved");
+        ROS_DEBUG("goals not achieved");
 
     // snippet: test revert actions
-    ROS_INFO("Check reverting action: (get_down_from_car batdad car ben_school)");
-    ROS_INFO("================");
-    ROS_INFO("KB facts:");
+    ROS_DEBUG("Check reverting action: (get_down_from_car batdad car ben_school)");
+    ROS_DEBUG("================");
+    ROS_DEBUG("KB facts:");
     action_simulator_tester.printInternalKBFacts();
     std::string action_name3 = "get_down_from_car";
     std::vector<std::string> params3 = {"batdad","car","ben_school"}; // person, car, location
     if(action_simulator_tester.revertActionStart(action_name3, params3))
-        ROS_INFO("action reverted succesfully");
+        ROS_DEBUG("action reverted succesfully");
     else
         ROS_ERROR("failed to revert action");
-    ROS_INFO("KB facts after reverting action:");
+    ROS_DEBUG("KB facts after reverting action:");
     action_simulator_tester.printInternalKBFacts();
 
     return 0;
