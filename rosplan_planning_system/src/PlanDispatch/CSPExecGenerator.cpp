@@ -596,7 +596,7 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::v
     int edge_id_count = last_edge.edge_id;
 
     // iterate over the ordered nodes
-    for(auto nit=ordered_nodes.begin(); nit!=ordered_nodes.end(); nit++) {
+    for(auto nit=ordered_nodes.begin(); nit!=(ordered_nodes.end() - 1); nit++) {
         // assume each pair of nodes is a constraint
         rosplan_dispatch_msgs::EsterelPlanEdge edge_msg;
 
@@ -610,6 +610,9 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::v
         edge_msg.sink_ids.push_back(*(nit + 1));
         edge_msg.duration_lower_bound = 0.0;
         edge_msg.duration_upper_bound = 0.0;
+
+        // add edge (as conditional edge -> workaround)
+        esterel_plan.edges.push_back(edge_msg);
     }
 
     return esterel_plan;
