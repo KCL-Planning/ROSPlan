@@ -120,6 +120,14 @@ class CSPExecGenerator
         void backtrack(std::string reason_for_backtrack);
 
         /**
+         * @brief iterate over the plan, get the probability of each action, multiply them all together
+         * @param ordered_nodes a valid ordering of node ids
+         * @param action_prob_map a map from node ids to probabilities, this was constructed during orderNodes recursive call
+         * @return double the combined plan propagated probability, in oder words: the probability of the plan of being executable
+         */
+        double computePlanProbability(std::vector<int> &ordered_nodes, std::map<int, double> &action_prob_map);
+
+        /**
          * @brief shift nodes from open list (O) to ordered plans (R) offering different execution alternatives
          * @param open_list the list of nodes which have not yet being ordered, at startup is composed of all nodes
          * in the partially ordered plan, later the game is take from it the applicable nodes and pass them to

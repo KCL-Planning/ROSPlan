@@ -374,6 +374,28 @@ void CSPExecGenerator::backtrack(std::string reason_for_backtrack)
     }
 }
 
+double CSPExecGenerator::computePlanProbability(std::vector<int> &ordered_nodes,
+        std::map<int, double> &action_prob_map)
+{
+    double combined_probability = 1.0;
+
+    //iterate over the plan
+    for(auto pit=ordered_nodes_.begin(); pit!=ordered_nodes_.end(); pit++) {
+        // get correspondent action probability from map
+        std::map<int, double>::const_iterator prob_it = action_prob_map.find(*pit);
+        if (prob_it == action_prob_map.end()) {
+            //handle the error
+            ROS_ERROR("could not found correspondent probability in map");
+            return -1.0;
+        } else {
+            // propagate probabilities along the plan
+            combined_probability *= prob_it->second;
+        }
+    }
+
+    return combined_probability;
+}
+
 bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 {
     // shift nodes from open list (O) to ordered plans (R)
@@ -400,7 +422,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         exec_aternatives_msg_.esterel_plans.push_back(esterel_plan_msg);
 
         // compute plan probability
-        double plan_success_probability = 1.0; // TODO getPlanProbability();
+        double plan_success_probability = computePlanProbability(ordered_nodes_, action_prob_map_);
 
         exec_aternatives_msg_.plan_success_prob.push_back(plan_success_probability);
 
