@@ -1,3 +1,4 @@
+int[] actions_executing            # action IDs of actions that are already started
 ---
 bool replan_needed                 # means no valid execution was found
 bool exec_alternatives_generated   # true if request finished without errors
