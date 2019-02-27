@@ -135,6 +135,17 @@ class CSPExecGenerator
         bool generatePlans();
 
         /**
+         * @brief iterate over input esterel plan edges, compare input edge id with all of the edges, if there is
+         * a match, return the edge by reference
+         * @param edge_id the edge id to found in the plan
+         * @param esterel_plan an esterel plan
+         * @param edge return value is written here by reference, an esterel edge
+         * @return true if edge was found, false if edge was not found
+         */
+        bool getEdgeFromEdgeID(int edge_id, rosplan_dispatch_msgs::EsterelPlan &esterel_plan,
+        rosplan_dispatch_msgs::EsterelPlanEdge &edge);
+
+        /**
          * @brief iterate over the edges of the received esterel plan and delete all conditional edges
          * @param esterel_plan the plan from which you want to remove its conditional edges
          * @param ordered_nodes the list of nodes to be included in the plan, nodes which are not in here will be removed

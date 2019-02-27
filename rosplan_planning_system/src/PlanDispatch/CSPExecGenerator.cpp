@@ -399,8 +399,9 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         // add new valid ordering to ordered plans (R)
         exec_aternatives_msg_.esterel_plans.push_back(esterel_plan_msg);
 
-        // probabilities missing, for now we fill same prob
-        double plan_success_probability = 1.0; // TODO: add probability based on map (action_prob_map_)
+        // compute plan probability
+        double plan_success_probability = 1.0; // TODO getPlanProbability();
+
         exec_aternatives_msg_.plan_success_prob.push_back(plan_success_probability);
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
@@ -542,6 +543,23 @@ bool CSPExecGenerator::generatePlans()
     return orderNodes(open_list);
 }
 
+bool CSPExecGenerator::getEdgeFromEdgeID(int edge_id, rosplan_dispatch_msgs::EsterelPlan &esterel_plan,
+        rosplan_dispatch_msgs::EsterelPlanEdge &edge)
+{
+    // iterate over the edges of the plan
+    for(auto eit=esterel_plan.edges.begin(); eit!=esterel_plan.edges.end(); eit++) {
+        // compare edge id to the received input id
+        if(eit->edge_id == edge_id) {
+            // return edge by reference
+            edge = *eit;
+            return true;
+        }
+    }
+
+    ROS_ERROR("could not found matching edge from given edge id : (%d)", edge_id);
+    return false;
+}
+
 rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
         rosplan_dispatch_msgs::EsterelPlan &esterel_plan, std::vector<int> &ordered_nodes)
 {
@@ -555,7 +573,40 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
         // check if node id belongs to ordered_nodes
         if(std::find(ordered_nodes.begin(), ordered_nodes.end(), nit->node_id) != ordered_nodes.end()) {
             // found node id in ordered_nodes, add to plan
-            output_plan.nodes.push_back(*nit);
+            // output_plan.nodes.push_back(*nit);
+
+            rosplan_dispatch_msgs::EsterelPlanNode node_msg;
+            node_msg.node_type = nit->node_type;
+            node_msg.node_id = nit->node_id;
+            node_msg.name = nit->name;
+            node_msg.action = nit->action;
+
+            // the following 2 for loops will basically do:
+            // node_msg.edges_out = nit->edges_out;
+            // node_msg.edges_in = nit->edges_in;
+            // but without conditional edges
+
+            // iterate over nit->edges_out and ensure they are not conditional edges
+            for(auto reit=nit->edges_out.begin(); reit!=nit->edges_out.end(); reit++) {
+                // get edge from edge id
+                rosplan_dispatch_msgs::EsterelPlanEdge is_conditional_edge_question;
+                if(getEdgeFromEdgeID(*reit, esterel_plan, is_conditional_edge_question)) {
+                    if(is_conditional_edge_question.edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE)
+                        node_msg.edges_out.push_back(*reit);
+                }
+            }
+
+            // iterate over nit->edges_in and ensure they are not conditional edges
+            for(auto reit=nit->edges_in.begin(); reit!=nit->edges_in.end(); reit++) {
+                // get edge from edge id
+                rosplan_dispatch_msgs::EsterelPlanEdge is_conditional_edge_question;
+                if(getEdgeFromEdgeID(*reit, esterel_plan, is_conditional_edge_question)) {
+                    if(is_conditional_edge_question.edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE)
+                        node_msg.edges_in.push_back(*reit);
+                }
+            }
+
+            output_plan.nodes.push_back(node_msg);
         }
         else {
             // skipped node, keep a list of them
@@ -615,8 +666,6 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::v
     // keep memory of the last edge for naming future edges
     rosplan_dispatch_msgs::EsterelPlanEdge last_edge = esterel_plan.edges.back();
     int edge_id_count = last_edge.edge_id;
-
-    // TODO: update nodes edges_out and edges_in
 
     // iterate over the ordered nodes
     for(auto nit=ordered_nodes.begin(); nit!=(ordered_nodes.end() - 1); nit++) {
