@@ -310,75 +310,20 @@ class ActionSimulator
         /**
          * @brief check if action start/end/overall preconditions are consistent with internal KB information
          * and return by reference the ground dictionary for simulation action purposes
-         * @param action_start if true then action start preconditions are checked, if false at end preconditions are checked
-         * @param overall_preconditions if true the overall action preconditions are checked, if conflict
-         * between action_start and overall_preconditions, overall_preconditions will be checked
+         * and return the probability of this action to succeed, based on the combined probability of all facts being true
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters
+         * @param action_start if true then action start preconditions are checked, if false at end preconditions are checked
+         * @param check_both_start_and_end if true also action end preconditions are checked
+         * between action_start and overall_preconditions, overall_preconditions will be checked
          * @param ground_dictionary return value gets written here by reference
+         * @param combined_probability return value gets written here by reference, a multiplication of all involved facts
+         * probabilities of those facts being true
          * @return true if action start/end/overall is applicable, false otherwise
          */
-        bool isActionAplicable(bool action_start, bool overall_preconditions, std::string &action_name,
-                std::vector<std::string> &params, std::map<std::string, std::string> &ground_dictionary);
-
-        /**
-         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
-         * and return by reference the ground dictionary for simulation action purposes
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @param ground_dictionary return value gets written here by reference
-         * @return true if action start is applicable, false otherwise
-         */
-        bool isActionStartAplicable(std::string &action_name, std::vector<std::string> &params,
-            std::map<std::string, std::string> &ground_dictionary);
-
-        /**
-         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @return true if action start is applicable, false otherwise
-         */
-        bool isActionStartAplicable(std::string &action_name, std::vector<std::string> &params);
-
-        /**
-         * @brief overloaded function that checks if action overall preconditions are consistent with internal KB information
-         * this funtion is useful when you don't care about the ground dictionary
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @return true if action overall is applicable, false otherwise
-         */
-        bool isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params);
-
-        /**
-         * @brief overloaded function that checks if action overall preconditions are consistent with internal KB information
-         * and return by reference the ground dictionary for simulation action purposes
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @param ground_dictionary return value gets written here by reference
-         * @return true if action overall is applicable, false otherwise
-         */
-        bool isActionOverAllAplicable(std::string &action_name, std::vector<std::string> &params,
-            std::map<std::string, std::string> &ground_dictionary);
-
-        /**
-         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
-         * and return by reference the ground dictionary for simulation action purposes
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @param ground_dictionary return value gets written here by reference
-         * @return true if action end is applicable, false otherwise
-         */
-        bool isActionEndAplicable(std::string &action_name, std::vector<std::string> &params,
-            std::map<std::string, std::string> &ground_dictionary);
-
-        /**
-         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
-         * and return by reference the ground dictionary for simulation action purposes
-         * @param action_name the name of the action to check if preconditions are met in KB
-         * @param params action grounded parameters
-         * @return true if action end is applicable, false otherwise
-         */
-        bool isActionEndAplicable(std::string &action_name, std::vector<std::string> &params);
+        bool isActionApplicable(std::string &action_name, std::vector<std::string> &params,
+                bool action_start, bool check_both_start_and_end, std::map<std::string, std::string> &ground_dictionary,
+                double &combined_probability);
 
         /**
          * @brief overloaded function that checks if all action preconditions (start, end, overall) are consistent with
@@ -388,7 +333,7 @@ class ActionSimulator
          * @param ground_dictionary return value gets written here by reference
          * @return true if action is applicable, false otherwise
          */
-        bool isActionAplicable(std::string &action_name, std::vector<std::string> &params,
+        bool isActionApplicable(std::string &action_name, std::vector<std::string> &params,
                 std::map<std::string, std::string> &ground_dictionary);
 
         /**
@@ -398,7 +343,68 @@ class ActionSimulator
          * @param params action grounded parameters
          * @return true if action is applicable, false otherwise
          */
-        bool isActionAplicable(std::string &action_name, std::vector<std::string> &params);
+        bool isActionApplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action start is applicable, false otherwise
+         */
+        bool isActionStartApplicable(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @return true if action start is applicable, false otherwise
+         */
+        bool isActionStartApplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if action start preconditions are consistent with internal KB information
+         * we dont't care here about the ground dictionary but we do care about the combined probability
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param combined_probability return value gets written here by reference, multiply the probability
+         * of preconditions (action start and overall) being true
+         * @return true if action start is applicable, false otherwise
+         */
+        bool isActionStartApplicable(std::string &action_name, std::vector<std::string> &params, double &combined_probability);
+
+        /**
+         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param ground_dictionary return value gets written here by reference
+         * @return true if action end is applicable, false otherwise
+         */
+        bool isActionEndApplicable(std::string &action_name, std::vector<std::string> &params,
+            std::map<std::string, std::string> &ground_dictionary);
+
+        /**
+         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @return true if action end is applicable, false otherwise
+         */
+        bool isActionEndApplicable(std::string &action_name, std::vector<std::string> &params);
+
+        /**
+         * @brief overloaded function that checks if action end preconditions are consistent with internal KB information
+         * and return by reference the ground dictionary for simulation action purposes
+         * @param action_name the name of the action to check if preconditions are met in KB
+         * @param params action grounded parameters
+         * @param combined_probability return value gets written here by reference, multiply the probability
+         * of preconditions (overall and end) being true
+         * @return true if action end is applicable, false otherwise
+         */
+        bool isActionEndApplicable(std::string &action_name, std::vector<std::string> &params, double &combined_probability);
 
         /**
          * @brief apply delete and add list to KB current state (start or end action, depends on parameter action_start)
