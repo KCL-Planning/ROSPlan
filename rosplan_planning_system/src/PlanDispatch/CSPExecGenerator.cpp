@@ -637,7 +637,7 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
     }
 
     // lower flag, prepare flag for next time
-    is_esterel_plan_received_ = false;
+    // is_esterel_plan_received_ = false;
 
     if(generatePlans()) // compute exec alternatives
     {
