@@ -308,6 +308,14 @@ class ActionSimulator
             std::map<std::string, std::string> &ground_dictionary, rosplan_knowledge_msgs::DomainOperator &op);
 
         /**
+         * @brief query internal KB to fetch the probability of that fact being true
+         * @param action_name the name of the action you want its probability
+         * @param params the grounded parameters of the above action_name
+         * @return a double: the probability of that fact being true
+         */
+        double getFactProbability(std::string &action_name, std::vector<std::string> &params);
+
+        /**
          * @brief check if action start/end/overall preconditions are consistent with internal KB information
          * and return by reference the ground dictionary for simulation action purposes
          * and return the probability of this action to succeed, based on the combined probability of all facts being true

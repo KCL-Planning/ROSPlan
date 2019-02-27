@@ -734,6 +734,28 @@ bool ActionSimulator::computeGroundDictionary(std::string &action_name, std::vec
     return true;
 }
 
+double ActionSimulator::getFactProbability(std::string &fact_name, std::vector<std::string> &params)
+{
+    // find fact in KB and get its associated probability (probability of a fact being true)
+
+    // HACK for testing purposes, what would be the proper way is to sense predicates
+    // with robot sensors, add some bayesian binary formulation where if you sense the predicate mutliple times
+    // then you increase the prob of that fact being true, then upload this predicate to rosplan KB
+    // but filling the probability field: rosplan_knowledge_msgs::KnowledgeItem::probability
+
+    // remove
+    ROS_DEBUG("fact name: %s", fact_name.c_str());
+
+    if(fact_name == "machine_on")
+        return 0.5;
+    else if(fact_name == "machine_off")
+        return 0.5;
+    else if(fact_name == "robot_at")
+        return 0.5;
+
+    return 1.0;
+}
+
 bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<std::string> &params,
     bool action_start, bool check_both_start_and_end, std::map<std::string, std::string> &ground_dictionary,
     double &combined_probability)
@@ -750,9 +772,10 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
         return false;
     }
 
-    // check action preconditions
+    // check action preconditions, compute action probability at the same time
 
-    // TODO: fill combined_probability
+    // initialize prob to 1.0
+    combined_probability = 1.0;
 
     // check overall conditions for both start and end actions
     // iterate over ungrounded overall conditions, find in KB
@@ -764,6 +787,9 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
             ROS_DEBUG("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
             return false;
         }
+
+        // update action probability based on relevant fact probability (all start, end, overall preconditions)
+        combined_probability *= getFactProbability(it->name, gp);
     } // overall preconditions are met, continue to check action start or action end preconditions
 
     // check at start preconditions, if needed
@@ -777,6 +803,9 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
                 ROS_DEBUG("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
+
+            // update action probability based on relevant fact probability (all start, end, overall preconditions)
+            combined_probability *= getFactProbability(it->name, gp);
         }
         // at start preconditions are met
     }
@@ -792,6 +821,9 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
                 ROS_DEBUG("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
                 return false;
             }
+
+            // update action probability based on relevant fact probability (all start, end, overall preconditions)
+            combined_probability *= getFactProbability(it->name, gp);
         }
         // at end preconditions are met
     }
