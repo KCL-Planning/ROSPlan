@@ -45,7 +45,7 @@ namespace KCL_rosplan
 	
 		// current plan and time plan was recevied
 		rosplan_dispatch_msgs::EsterelPlan current_plan;
-		std::vector<long> actions_executing;
+		std::vector<int> actions_executing;
 
 		// plan status
 		std::map<int,bool> edge_active;

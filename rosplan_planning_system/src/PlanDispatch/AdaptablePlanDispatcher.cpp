@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 	/*-------------------*/
 
 	void AdaptablePlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlanArray plan) {
-		if(finished_execution) {
+//		if(finished_execution) {
             if(plan.plan_success_prob.size() != plan.esterel_plans.size()) {
     			ROS_WARN("KCL: (%s) Plans received, but probabilities array of different size. Ignoring.", ros::this_node::getName().c_str());
                 replan_requested = true;
@@ -67,9 +67,9 @@ namespace KCL_rosplan {
 			ROS_INFO("KCL: (%s) Plan selected with probability %f.", ros::this_node::getName().c_str(), bestProb);
 			plan_received = true;
 			printPlan();
-		} else {
-			ROS_INFO("KCL: (%s) Plan received, but current execution not yet finished.", ros::this_node::getName().c_str());
-		}
+//		} else {
+//			ROS_INFO("KCL: (%s) Plan received, but current execution not yet finished.", ros::this_node::getName().c_str());
+//		}
 	}
 
 	/*-----------------*/
