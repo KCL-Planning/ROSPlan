@@ -191,5 +191,8 @@ class CSPExecGenerator
         /// Information coming from the service call gets saved into member variable
         /// it tells which nodes are currently being/done executed
         std::vector<int> action_executing_;
+
+        /// map of actions and associated probabilities of success
+        std::map<int, double> action_prob_map_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H

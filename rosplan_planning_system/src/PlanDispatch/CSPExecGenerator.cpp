@@ -292,10 +292,15 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
             // check if action start + overall preconditions are met
             ROS_DEBUG("check if action start (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
-            if(action_simulator_.isActionStartApplicable(action_name, params)) {
+
+            double action_probability; // value will get written here by reference
+            if(action_simulator_.isActionStartApplicable(action_name, params, action_probability)) {
                 ROS_DEBUG("(action start) node is valid (id: %d), add to valid list", *nit);
                 // node is valid, add to list
                 valid_nodes.push_back(*nit);
+
+                // store (or update) action probability in map
+                action_prob_map_[*nit] = action_probability;
             }
             else
                 ROS_DEBUG("(action start) node %d is NOT valid", *nit);
@@ -304,7 +309,9 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
             // check if action end + overall preconditions are met
             ROS_DEBUG("check if action end (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
-            if(action_simulator_.isActionEndApplicable(action_name, params)) {
+
+            double action_probability; // value will get written here by reference
+            if(action_simulator_.isActionEndApplicable(action_name, params, action_probability)) {
                 ROS_DEBUG("(action end) node is valid, check if correspondent action start is ordered");
 
                 // Ignore action ends in validNodes for actions that have not started
@@ -325,8 +332,14 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
                         ROS_DEBUG("checked if correspondent action start is ordered : yes is ordered, add action (%d) to valid list", *nit);
                     }
 
-                if(!ordered)
+                if(!ordered) {
                     ROS_DEBUG("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
+                }
+                else {
+                    // store (or update) action probability in map
+                    action_prob_map_[*nit] = action_probability;
+                    // action_prob_map_.insert(std::pair<int, double>(*nit, action_probability));
+                }
 
                 // printNodes("ordered nodes F", ordered_nodes_);
             }
@@ -419,6 +432,8 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 
         // add new valid ordering to ordered plans (R)
         ordered_plans_.push_back(ordered_nodes_);
+
+        // TODO: add probability based on map (action_prob_map_)
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
         backtrack("goal was achieved");
