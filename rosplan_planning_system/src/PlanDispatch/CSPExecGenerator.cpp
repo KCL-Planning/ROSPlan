@@ -52,9 +52,6 @@ void CSPExecGenerator::esterelPlanCB(const rosplan_dispatch_msgs::EsterelPlan::C
     ROS_INFO("esterel plan received");
     original_plan_ = *msg;
 
-    // remove conditional edges from plan, store them in member variable partial_order_plan_
-    partial_order_plan_ = removeConditionalEdges(original_plan_);
-
     // raise flag to indicate a msg has been received in callback
     is_esterel_plan_received_ = true;
 }
@@ -119,7 +116,6 @@ bool CSPExecGenerator::checkTemporalConstraints(std::vector<int> &set_of_ordered
 void CSPExecGenerator::testFunctions()
 {
     // set here what you want to test
-    bool check_multiple_plan_generation = true;
     bool test_temporal_constraints = false;
 
     if(test_temporal_constraints) {
@@ -144,39 +140,6 @@ void CSPExecGenerator::testFunctions()
             ss << ",";
         }
         ROS_DEBUG("nodes before a : {%s}", ss.str().c_str());
-    }
-
-    if(check_multiple_plan_generation) {
-        ROS_INFO("Generating execution alternatives test is computing now");
-
-        while(!is_esterel_plan_received_) {
-            ROS_INFO("waiting for plan to arrive");
-            ros::spinOnce();
-            ros::Duration(0.5).sleep();
-        }
-
-        // lower flag
-        is_esterel_plan_received_ = false;
-
-        // this function is put here for testing purposes
-        if(generatePlans())
-        {
-            // indicates that at least one valid execution was found
-            ROS_INFO("Found %ld valid execution(s)", ordered_plans_.size());
-
-            for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
-            printNodes("plan", *it);
-        }
-        else
-        {
-            // error while computing the multiple possible executions
-            ROS_INFO("No valid execution was found, replanning is needed");
-
-            // maybe some plans were able to compute during the search exploration...
-            ROS_INFO("An error happened, but anyway I will show you the plans I have found:");
-            for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
-            printNodes("plan", *it);
-        }
     }
 }
 
@@ -427,13 +390,18 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
     ROS_DEBUG("checking if goals are achieved...");
     if(action_simulator_.areGoalsAchieved()) {
         // we print all plans at the end, so only we print here in debug mode
-        ROS_DEBUG("goals achieved! valid plan found as follows:");
-        // printNodes("plan", ordered_nodes_);
+        ROS_INFO("found valid ordering:");
+        printNodes("plan", ordered_nodes_);
+
+        // convert list of orderes nodes into esterel plan (reuses the originally received esterel plan)
+        rosplan_dispatch_msgs::EsterelPlan esterel_plan_msg = convertListToEsterel(ordered_nodes_);
 
         // add new valid ordering to ordered plans (R)
-        ordered_plans_.push_back(ordered_nodes_);
+        exec_aternatives_msg_.esterel_plans.push_back(esterel_plan_msg);
 
-        // TODO: add probability based on map (action_prob_map_)
+        // probabilities missing, for now we fill same prob
+        double plan_success_probability = 1.0; // TODO: add probability based on map (action_prob_map_)
+        exec_aternatives_msg_.plan_success_prob.push_back(plan_success_probability);
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
         backtrack("goal was achieved");
@@ -568,37 +536,65 @@ bool CSPExecGenerator::generatePlans()
     // init set of ordered nodes (F)
     ordered_nodes_.clear();
 
-    // init set of totally ordered plans (R)
-    ordered_plans_.clear();
+    // NOTE: init set of totally ordered plans (R) is stored in exec_aternatives_msg_.esterel_plans
 
     // if true, it means at least one valid execution alternative was found
     return orderNodes(open_list);
 }
 
-rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(rosplan_dispatch_msgs::EsterelPlan &esterel_plan)
+rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
+        rosplan_dispatch_msgs::EsterelPlan &esterel_plan, std::vector<int> &ordered_nodes)
 {
     // remove all conditional edges in a esterel plan, plan is received and modified by reference
 
     rosplan_dispatch_msgs::EsterelPlan output_plan;
 
-    // iterate over originally reecived esterel_plan and copy all nodes
+    std::vector<int> skipped_nodes; // keep track of skipped nodes
+    // iterate over originally received esterel_plan and copy all nodes
     for(auto nit=esterel_plan.nodes.begin(); nit!=esterel_plan.nodes.end(); nit++) {
-        output_plan.nodes.push_back(*nit);
-    }
-
-    // iterate over the edges, copy all but leave the conditional ones out
-    for(auto eit=esterel_plan.edges.begin(); eit!=esterel_plan.edges.end(); eit++) {
-        if(eit->edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE) {
-            // add edge
-            output_plan.edges.push_back(*eit);
+        // check if node id belongs to ordered_nodes
+        if(std::find(ordered_nodes.begin(), ordered_nodes.end(), nit->node_id) != ordered_nodes.end()) {
+            // found node id in ordered_nodes, add to plan
+            output_plan.nodes.push_back(*nit);
+        }
+        else {
+            // skipped node, keep a list of them
+            skipped_nodes.push_back(nit->node_id);
         }
     }
 
-    // remove
-    for(auto eit=output_plan.edges.begin(); eit!=output_plan.edges.end(); eit++) {
-        if(eit->edge_type == rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE) {
-            // remove
-            ROS_INFO("did not worked!");
+    // iterate over the edges
+    for(auto eit=esterel_plan.edges.begin(); eit!=esterel_plan.edges.end(); eit++) {
+        // skip conditional edges
+        if(eit->edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE) {
+            // copy edge properties from original plan
+            rosplan_dispatch_msgs::EsterelPlanEdge edge;
+            edge.edge_type = eit->edge_type;
+            edge.edge_id = eit->edge_id;
+            edge.edge_name = eit->edge_name;
+            edge.signal_type = eit->signal_type;
+            edge.duration_lower_bound = eit->duration_lower_bound;
+            edge.duration_upper_bound = eit->duration_upper_bound;
+
+            // remove skipped nodes
+            for(auto sourceit=eit->source_ids.begin(); sourceit!=eit->source_ids.begin(); sourceit++) {
+                // check if node id belongs to ordered_nodes
+                if(!(std::find(skipped_nodes.begin(), skipped_nodes.end(), *sourceit) != skipped_nodes.end())) {
+                    // did not found node id in skipped_nodes
+                    edge.source_ids.push_back(*sourceit);
+                }
+            }
+
+            // remove skipped nodes
+            for(auto sinkit=eit->sink_ids.begin(); sinkit!=eit->sink_ids.begin(); sinkit++) {
+                // check if node id belongs to ordered_nodes
+                if(!(std::find(skipped_nodes.begin(), skipped_nodes.end(), *sinkit) != skipped_nodes.end())) {
+                    // did not found node id in skipped_nodes
+                    edge.sink_ids.push_back(*sinkit);
+                }
+            }
+
+            output_plan.edges.push_back(edge);
         }
     }
 
@@ -608,30 +604,48 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(rosp
 rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::vector<int> &ordered_nodes)
 {
     // add constrains to the partially ordered plan (esterel plan without conditional edges)
+    // remove nodes which are not in ordered_nodes (skipped nodes) from plan
 
-    rosplan_dispatch_msgs::EsterelPlan esterel_plan = partial_order_plan_;
+    // remove conditional edges from plan and skipped nodes
+    rosplan_dispatch_msgs::EsterelPlan esterel_plan = removeConditionalEdges(original_plan_, ordered_nodes);
 
     // NOTE: it is assumed that input plan already does not has conditional edges and is therefore a partial order plan
-    // add edges to partial_order_plan_ (aka esterel_plan), we will add them as conditional but it is a hack, they are not conditional edges
+    // add edges to esterel_plan, they are added as conditional (hack), they are not conditional edges
 
+    // keep memory of the last edge for naming future edges
     rosplan_dispatch_msgs::EsterelPlanEdge last_edge = esterel_plan.edges.back();
     int edge_id_count = last_edge.edge_id;
+
+    // TODO: update nodes edges_out and edges_in
 
     // iterate over the ordered nodes
     for(auto nit=ordered_nodes.begin(); nit!=(ordered_nodes.end() - 1); nit++) {
         // assume each pair of nodes is a constraint
+
+        // e.g. [1,3,2,4,5,6] -> edge(1,3), edge(3,2), edge(2,4), edge(4,5), edge(5,6)
+        // where edge(1,3) source id = 1, sink id = 3, node 1 -> edges_out = edge id, node 3 -> edges in = edge id
+
+        // create empty edge msg
         rosplan_dispatch_msgs::EsterelPlanEdge edge_msg;
 
         // fill edge msg
         edge_msg.edge_type = rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE;
         edge_msg.edge_id = ++edge_id_count;
-        std::string string = "edge_" + std::to_string(edge_id_count);
-        edge_msg.edge_name = string;
+        std::string new_edge_name = "edge_" + std::to_string(edge_id_count);
+        edge_msg.edge_name = new_edge_name;
         edge_msg.signal_type = 0;
         edge_msg.source_ids.push_back(*nit);
         edge_msg.sink_ids.push_back(*(nit + 1));
         edge_msg.duration_lower_bound = 0.0;
         edge_msg.duration_upper_bound = 0.0;
+
+        // iterate over the nodes in the plan, to add edges (needed by the dispatcher)
+        for(auto pnit=esterel_plan.nodes.begin(); pnit!=esterel_plan.nodes.end(); pnit++) {
+            if(pnit->node_id == *nit) {
+                pnit->edges_out.push_back(edge_id_count); // edge_id_count = edge id
+                pnit->edges_in.push_back(edge_id_count + 1);
+            }
+        }
 
         // add edge (as conditional edge -> workaround)
         esterel_plan.edges.push_back(edge_msg);
@@ -664,34 +678,21 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
     // save nodes which are being/done executing in member variable to be removed from open list (skipped)
     action_executing_ = req.actions_executing;
 
+    // delete old data if any
+    exec_aternatives_msg_.esterel_plans.clear();
+    exec_aternatives_msg_.plan_success_prob.clear();
+
     if(generatePlans()) // compute exec alternatives
     {
         // indicates that at least one valid execution was found
         res.replan_needed = false;
         res.exec_alternatives_generated = true;
-        ROS_INFO("Found %ld valid execution(s)", ordered_plans_.size());
+        ROS_INFO("Found %ld valid execution(s)", exec_aternatives_msg_.esterel_plans.size());
 
-        // print plans for debugging purposes
-        for(auto it=ordered_plans_.begin(); it!=ordered_plans_.end(); it++)
-            printNodes("plan", *it);
-
-        // transform ordered list into esterel plans
-        // iterate over valid plans convert to esterel plan and append to estereal array msg
-        rosplan_dispatch_msgs::EsterelPlan esterel_plan_msg;
-        rosplan_dispatch_msgs::EsterelPlanArray exec_aternatives_msg;
-        for(auto pit=ordered_plans_.begin(); pit!=ordered_plans_.end(); pit++) {
-            // convert list of orderes nodes into esterel plan (reuses the originally received esterel plan)
-            esterel_plan_msg = convertListToEsterel(*pit);
-
-            // append to esterel array
-            exec_aternatives_msg.esterel_plans.push_back(esterel_plan_msg);
-            // probabilities missing, for now we fill same prob
-            double plan_success_probability = 1.0;
-            exec_aternatives_msg.plan_success_prob.push_back(plan_success_probability);
-        }
+        // plans could be printed here for debugging purposes
 
         // publish esterel array msg
-        pub_valid_plans_.publish(exec_aternatives_msg);
+        pub_valid_plans_.publish(exec_aternatives_msg_);
     }
     else
     {

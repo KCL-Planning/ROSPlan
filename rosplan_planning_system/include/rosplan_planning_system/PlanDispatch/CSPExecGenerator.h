@@ -137,9 +137,11 @@ class CSPExecGenerator
         /**
          * @brief iterate over the edges of the received esterel plan and delete all conditional edges
          * @param esterel_plan the plan from which you want to remove its conditional edges
+         * @param ordered_nodes the list of nodes to be included in the plan, nodes which are not in here will be removed
          * @return esterel plan output, a modified version of the input plan, without conditional edges
          */
-        rosplan_dispatch_msgs::EsterelPlan removeConditionalEdges(rosplan_dispatch_msgs::EsterelPlan &esterel_plan);
+        rosplan_dispatch_msgs::EsterelPlan removeConditionalEdges(
+                rosplan_dispatch_msgs::EsterelPlan &esterel_plan, std::vector<int> &ordered_nodes);
 
         /**
          * @brief add constrains to the partially ordered plan (esterel plan without conditional edges)
@@ -174,7 +176,7 @@ class CSPExecGenerator
         bool is_esterel_plan_received_;
 
         /// stores the received msg in esterel plan callback
-        rosplan_dispatch_msgs::EsterelPlan original_plan_, partial_order_plan_;
+        rosplan_dispatch_msgs::EsterelPlan original_plan_;
 
         /// P: to simulate actions in a private (own) KB
         ActionSimulator action_simulator_;
@@ -185,14 +187,15 @@ class CSPExecGenerator
         // F: store the set of ordered nodes id's, empty at the beginning
         std::vector<int> ordered_nodes_;
 
-        /// R: plan execution alternatives, each one is a fully ordered esterel plan
-        std::vector<std::vector<int> > ordered_plans_;
-
         /// Information coming from the service call gets saved into member variable
         /// it tells which nodes are currently being/done executed
         std::vector<int> action_executing_;
 
         /// map of actions and associated probabilities of success
         std::map<int, double> action_prob_map_;
+
+        /// the msg that contains all the esterel plans to be published
+        /// R: is stored in exec_aternatives_msg_.esterel_plans
+        rosplan_dispatch_msgs::EsterelPlanArray exec_aternatives_msg_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H
