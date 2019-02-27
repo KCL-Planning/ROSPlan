@@ -532,9 +532,20 @@ bool CSPExecGenerator::generatePlans()
     std::vector<int> open_list;
     for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) { // nit=node iterator
         // do not add plan start node
-        if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START)
-            open_list.push_back(nit->node_id);
+        if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START) {
+            // remove nodes which are currently/done executing from open list, you receive
+            // this information from the dispatcher inside the service call request
+            if(std::find(action_executing_.begin(), action_executing_.end(), nit->node_id) != action_executing_.end()) {
+                // node found in (executing/done) list
+                ROS_INFO("ignoring node (%d) because is currently being/done executed", nit->node_id);
+            } else {
+                // node not found in (executing/done) list
+                open_list.push_back(nit->node_id);
+            }
+        }
     }
+
+    printNodes("open list", open_list);
 
     // init set of constraints (C)
     initConstraints(set_of_constraints_);
@@ -634,6 +645,9 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
 
     // lower flag to force the node to receive a new plan if a new request comes
     // is_esterel_plan_received_ = false;
+
+    // save nodes which are being/done executing in member variable to be removed from open list (skipped)
+    action_executing_ = req.actions_executing;
 
     if(generatePlans()) // compute exec alternatives
     {

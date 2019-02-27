@@ -187,5 +187,9 @@ class CSPExecGenerator
 
         /// R: plan execution alternatives, each one is a fully ordered esterel plan
         std::vector<std::vector<int> > ordered_plans_;
+
+        /// Information coming from the service call gets saved into member variable
+        /// it tells which nodes are currently being/done executed
+        std::vector<int> action_executing_;
 };
 #endif  // CSP_EXEC_GENERATOR_NODE_H
