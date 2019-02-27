@@ -292,47 +292,43 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
             // check if action start + overall preconditions are met
             ROS_DEBUG("check if action start (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
-            if(action_simulator_.isActionStartAplicable(action_name, params)) {
-                if(action_simulator_.isActionOverAllAplicable(action_name, params)) {
-                    ROS_DEBUG("(action start) node is valid (id: %d), add to valid list", *nit);
-                    // node is valid, add to list
-                    valid_nodes.push_back(*nit);
-                }
-                else
-                    ROS_DEBUG("(action start) node %d is NOT valid", *nit);
+            if(action_simulator_.isActionStartApplicable(action_name, params)) {
+                ROS_DEBUG("(action start) node is valid (id: %d), add to valid list", *nit);
+                // node is valid, add to list
+                valid_nodes.push_back(*nit);
             }
+            else
+                ROS_DEBUG("(action start) node %d is NOT valid", *nit);
         }
         else {
             // check if action end + overall preconditions are met
             ROS_DEBUG("check if action end (id: %d) is applicable : (%s)", *nit,
                          action_simulator_.convertPredToString(action_name, params).c_str());
-            if(action_simulator_.isActionEndAplicable(action_name, params)) {
-                if(action_simulator_.isActionOverAllAplicable(action_name, params)) {
-                    ROS_DEBUG("(action end) node is valid, check if correspondent action start is ordered");
+            if(action_simulator_.isActionEndApplicable(action_name, params)) {
+                ROS_DEBUG("(action end) node is valid, check if correspondent action start is ordered");
 
-                    // Ignore action ends in validNodes for actions that have not started
+                // Ignore action ends in validNodes for actions that have not started
 
-                    // get action id of start node
-                    int start_node_id;
-                    if(!getStartNodeID(*nit, start_node_id))
-                        return false;
+                // get action id of start node
+                int start_node_id;
+                if(!getStartNodeID(*nit, start_node_id))
+                    return false;
 
-                    // add only if start node is already ordered
-                    bool ordered = false;
-                    for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
-                        if(start_node_id == *onit) {
-                            ordered = true;
-                            // node is valid, add to list
-                            valid_nodes.push_back(*nit);
+                // add only if start node is already ordered
+                bool ordered = false;
+                for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
+                    if(start_node_id == *onit) {
+                        ordered = true;
+                        // node is valid, add to list
+                        valid_nodes.push_back(*nit);
 
-                            ROS_DEBUG("checked if correspondent action start is ordered : yes is ordered, add action (%d) to valid list", *nit);
-                        }
+                        ROS_DEBUG("checked if correspondent action start is ordered : yes is ordered, add action (%d) to valid list", *nit);
+                    }
 
-                    if(!ordered)
-                        ROS_DEBUG("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
+                if(!ordered)
+                    ROS_DEBUG("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
 
-                    // printNodes("ordered nodes F", ordered_nodes_);
-                }
+                // printNodes("ordered nodes F", ordered_nodes_);
             }
         }
     }
@@ -636,7 +632,7 @@ bool CSPExecGenerator::srvCB(rosplan_dispatch_msgs::ExecAlternatives::Request& r
         return true;
     }
 
-    // lower flag, prepare flag for next time
+    // lower flag to force the node to receive a new plan if a new request comes
     // is_esterel_plan_received_ = false;
 
     if(generatePlans()) // compute exec alternatives
