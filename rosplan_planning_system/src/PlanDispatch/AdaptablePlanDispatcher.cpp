@@ -32,6 +32,7 @@ namespace KCL_rosplan {
 
 	void AdaptablePlanDispatcher::reset() {
 		PlanDispatcher::reset();
+        actions_executing.clear();
 		finished_execution = true;
 	}
 
@@ -177,6 +178,7 @@ namespace KCL_rosplan {
 								node.action.duration);
 
 						action_dispatch_publisher.publish(node.action);
+                        actions_executing.push_back(node.action.action_id);
 						state_changed = true;
 
 						// deactivate incoming edges
@@ -203,6 +205,8 @@ namespace KCL_rosplan {
 
 					finished_execution = false;
 					state_changed = true;
+                    actions_executing.erase(std::remove(actions_executing.begin(), actions_executing.end(), node.action.action_id), actions_executing.end());
+
 
 					// deactivate incoming edges
 					std::vector<int>::const_iterator ci = node.edges_in.begin();
@@ -224,6 +228,7 @@ namespace KCL_rosplan {
 
 			if(state_changed) {
                 rosplan_dispatch_msgs::ExecAlternatives srv;
+                srv.request.actions_executing = actions_executing;
                 if(!gen_alternatives_client.call(srv)) {
                     ROS_ERROR("KCL: (%s) could not call the generate alternatives service.", ros::this_node::getName().c_str());
                     return false;
