@@ -64,6 +64,17 @@ namespace KCL_rosplan {
                     current_plan = plan.esterel_plans[i];
                 }
             }
+
+            for(int i=0; i<actions_executing.size(); i++) {
+                action_dispatched[actions_executing[i]] = true;
+                action_received[actions_executing[i]] = true;
+            }
+            initialise();
+            for(int i=0; i<actions_executing.size(); i++) {
+                action_dispatched[actions_executing[i]] = true;
+                action_received[actions_executing[i]] = true;
+            }
+
 			ROS_INFO("KCL: (%s) Plan selected with probability %f.", ros::this_node::getName().c_str(), bestProb);
 			plan_received = true;
 			printPlan();
@@ -110,11 +121,10 @@ namespace KCL_rosplan {
 				break;
 			}
 
-
 			finished_execution = true;
 			state_changed = false;
 
-			// for FIRST node check conditions, and dispatch
+			// for nodes check conditions, and dispatch
 			for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
 
 				rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
@@ -227,6 +237,7 @@ namespace KCL_rosplan {
 			loop_rate.sleep();
 
 			if(state_changed) {
+                ROS_INFO("KCL: (%s) Calling the alternatives generator.", ros::this_node::getName().c_str());
                 rosplan_dispatch_msgs::ExecAlternatives srv;
                 srv.request.actions_executing = actions_executing;
                 if(!gen_alternatives_client.call(srv)) {
@@ -239,6 +250,7 @@ namespace KCL_rosplan {
                     ros::spinOnce();
                     loop_rate.sleep();
                 }
+                ROS_INFO("KCL: (%s) Restarting the dispatch loop.", ros::this_node::getName().c_str());
                 printPlan();
             }
 
@@ -283,7 +295,6 @@ namespace KCL_rosplan {
 		// action enabled
 		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled"))) {
 			action_received[msg->action_id] = true;
-			state_changed = true;
 		}
 
 		// action completed (successfuly)
@@ -294,7 +305,6 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (%s) Action not yet dispatched, ignoring feedback", ros::this_node::getName().c_str());
 			}
 			action_completed[msg->action_id] = true;
-			state_changed = true;
 		}
 
 		// action completed (failed)
@@ -369,9 +379,9 @@ namespace KCL_rosplan {
 
 				dest << "\"" << eit->source_ids[i] << "\"" << " -> \"" << eit->sink_ids[j] << "\"";
 				if(eit->duration_upper_bound == std::numeric_limits<double>::max()) {
-					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << "inf]\"";
+					dest << " [ label=\"" << eit->edge_id << "[" << eit->duration_lower_bound << ", " << "inf]\"";
 				} else {
-					dest << " [ label=\"[" << eit->duration_lower_bound << ", " << eit->duration_upper_bound << "]\"";
+					dest << " [ label=\"" << eit->edge_id << "[" << eit->duration_lower_bound << ", " << eit->duration_upper_bound << "]\"";
 				}
 
 				// decide edge color

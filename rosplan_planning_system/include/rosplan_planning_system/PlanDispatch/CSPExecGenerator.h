@@ -85,8 +85,8 @@ class CSPExecGenerator
          * @param plan the plan from where to extract the actions name and params
          * @return true if node is action start, false if node is action end
          */
-        bool getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
-            rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start);
+        bool getAction(int node_id, std::string &action_name, std::vector<std::string> &params,
+            rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start, int &action_id);
 
         /**
          * @brief receive as input a node id from a end action node,

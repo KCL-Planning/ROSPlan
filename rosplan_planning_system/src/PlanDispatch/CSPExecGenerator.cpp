@@ -143,8 +143,8 @@ void CSPExecGenerator::testFunctions()
     }
 }
 
-bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::vector<std::string> &params,
-    rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start)
+bool CSPExecGenerator::getAction(int node_id, std::string &action_name, std::vector<std::string> &params,
+    rosplan_dispatch_msgs::EsterelPlan &plan, bool &action_start, int &action_id)
 {
     // input a node id and return the action name and params
 
@@ -155,10 +155,12 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
     for(auto nit=plan.nodes.begin(); nit!=plan.nodes.end(); nit++) {
 
         // check if node id matches with node
-        if(nit->node_id == action_id) {
+        if(nit->node_id == node_id) {
 
             // get name, write return value (1) by reference
             action_name = nit->action.name;
+            action_id = nit->action.action_id;
+
             // extract params
             for(auto pit=nit->action.parameters.begin(); pit!=nit->action.parameters.end(); pit++)
                 // write return value (2) by reference
@@ -176,13 +178,13 @@ bool CSPExecGenerator::getAction(int action_id, std::string &action_name, std::v
                 return true;
             }
             else {
-                ROS_ERROR("node should be either start or end, while getting action (id: %d)", action_id);
+                ROS_ERROR("node should be either start or end, while getting action (id: %d)", node_id);
                 return false;
             }
         }
     }
 
-    ROS_ERROR("get action: node id : %d, was not found in plan", action_id);
+    ROS_ERROR("get action: node id : %d, was not found in plan", node_id);
     return false;
 }
 
@@ -246,7 +248,8 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
         std::string action_name;
         std::vector<std::string> params;
         bool action_start;
-        if(!getAction(*nit, action_name, params, original_plan_, action_start)) {
+        int action_id;
+        if(!getAction(*nit, action_name, params, original_plan_, action_start, action_id)) {
             ROS_ERROR("failed to get action properties (while getting valid nodes)");
             return false;
         }
@@ -278,7 +281,6 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
                 ROS_DEBUG("(action end) node is valid, check if correspondent action start is ordered");
 
                 // Ignore action ends in validNodes for actions that have not started
-
                 // get action id of start node
                 int start_node_id;
                 if(!getStartNodeID(*nit, start_node_id))
@@ -286,14 +288,25 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
 
                 // add only if start node is already ordered
                 bool ordered = false;
-                for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++)
+                for(auto onit=ordered_nodes_.begin(); onit!=ordered_nodes_.end(); onit++) {
                     if(start_node_id == *onit) {
                         ordered = true;
                         // node is valid, add to list
                         valid_nodes.push_back(*nit);
-
                         ROS_DEBUG("checked if correspondent action start is ordered : yes is ordered, add action (%d) to valid list", *nit);
                     }
+                }
+
+                if(!ordered) {
+                    for(auto eait=action_executing_.begin(); eait!=action_executing_.end(); eait++) {
+                        if(action_id == *eait) {
+                            ordered = true;
+                            // node is valid, add to list
+                            valid_nodes.push_back(*nit);
+                            ROS_DEBUG("checked if correspondent action start is ordered : it is already executing, add action (%d) to valid list", *nit);
+                        }
+                    }
+                }
 
                 if(!ordered) {
                     ROS_DEBUG("skipping applicable action end (%d) because action start (%d) is not ordered yet", *nit, start_node_id);
@@ -303,7 +316,6 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
                     action_prob_map_[*nit] = action_probability;
                     // action_prob_map_.insert(std::pair<int, double>(*nit, action_probability));
                 }
-
                 // printNodes("ordered nodes F", ordered_nodes_);
             }
         }
@@ -357,7 +369,8 @@ void CSPExecGenerator::backtrack(std::string reason_for_backtrack)
         std::string action_name;
         std::vector<std::string> params;
         bool action_start;
-        if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start)) {
+        int action_id;
+        if(getAction(ordered_nodes_.back(), action_name, params, original_plan_, action_start, action_id)) {
             ROS_DEBUG("KB after reverting action %d", ordered_nodes_.back());
 
             ordered_nodes_.pop_back(); // eliminate last node from stack
@@ -428,6 +441,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 
         // backtrack: popf, remove last element from f, store in variable and revert that action
         backtrack("goal was achieved");
+
         return true;
     }
     else
@@ -493,7 +507,8 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
         std::string action_name;
         std::vector<std::string> params;
         bool action_start;
-        if(!getAction(*a, action_name, params, original_plan_, action_start)) {
+        int action_id;
+        if(!getAction(*a, action_name, params, original_plan_, action_start, action_id)) {
             ROS_ERROR("failed to get action properties (while applying action)");
             return false;
         }
@@ -538,16 +553,19 @@ bool CSPExecGenerator::generatePlans()
     std::vector<int> open_list;
     for(auto nit=original_plan_.nodes.begin(); nit!=original_plan_.nodes.end(); nit++) { // nit=node iterator
         // do not add plan start node
-        if(nit->node_type != rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START) {
+        switch(nit->node_type) {
+        case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
             // remove nodes which are currently/done executing from open list, you receive
             // this information from the dispatcher inside the service call request
-            if(std::find(action_executing_.begin(), action_executing_.end(), nit->node_id) != action_executing_.end()) {
-                // node found in (executing/done) list
-                ROS_INFO("ignoring node (%d) because is currently being/done executed", nit->node_id);
+            if(std::find(action_executing_.begin(), action_executing_.end(), nit->action.action_id) != action_executing_.end()) {
+                    ROS_DEBUG("ignoring node (%d) because is currently being/done executed", nit->node_id);
             } else {
-                // node not found in (executing/done) list
                 open_list.push_back(nit->node_id);
             }
+            break;
+        case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
+            open_list.push_back(nit->node_id);
+            break;
         }
     }
 
@@ -608,7 +626,7 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
             // node_msg.edges_in = nit->edges_in;
             // but without conditional edges
 
-            // iterate over nit->edges_out and ensure they are not conditional edges
+            /*/ iterate over nit->edges_out and ensure they are not conditional edges
             for(auto reit=nit->edges_out.begin(); reit!=nit->edges_out.end(); reit++) {
                 // get edge from edge id
                 rosplan_dispatch_msgs::EsterelPlanEdge is_conditional_edge_question;
@@ -616,9 +634,9 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
                     if(is_conditional_edge_question.edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE)
                         node_msg.edges_out.push_back(*reit);
                 }
-            }
+            }*/
 
-            // iterate over nit->edges_in and ensure they are not conditional edges
+            /*/ iterate over nit->edges_in and ensure they are not conditional edges
             for(auto reit=nit->edges_in.begin(); reit!=nit->edges_in.end(); reit++) {
                 // get edge from edge id
                 rosplan_dispatch_msgs::EsterelPlanEdge is_conditional_edge_question;
@@ -626,7 +644,7 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
                     if(is_conditional_edge_question.edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE)
                         node_msg.edges_in.push_back(*reit);
                 }
-            }
+            }*/
 
             output_plan.nodes.push_back(node_msg);
         }
@@ -636,7 +654,7 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
         }
     }
 
-    // iterate over the edges
+    /*/ iterate over the edges
     for(auto eit=esterel_plan.edges.begin(); eit!=esterel_plan.edges.end(); eit++) {
         // skip conditional edges
         if(eit->edge_type != rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE) {
@@ -649,16 +667,16 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
             edge.duration_lower_bound = eit->duration_lower_bound;
             edge.duration_upper_bound = eit->duration_upper_bound;
 
-            // remove skipped nodes
+            */ /*/ remove skipped nodes
             for(auto sourceit=eit->source_ids.begin(); sourceit!=eit->source_ids.begin(); sourceit++) {
                 // check if node id belongs to ordered_nodes
                 if(!(std::find(skipped_nodes.begin(), skipped_nodes.end(), *sourceit) != skipped_nodes.end())) {
                     // did not found node id in skipped_nodes
                     edge.source_ids.push_back(*sourceit);
                 }
-            }
+            }*/
 
-            // remove skipped nodes
+            /*/ remove skipped nodes
             for(auto sinkit=eit->sink_ids.begin(); sinkit!=eit->sink_ids.begin(); sinkit++) {
                 // check if node id belongs to ordered_nodes
                 if(!(std::find(skipped_nodes.begin(), skipped_nodes.end(), *sinkit) != skipped_nodes.end())) {
@@ -669,7 +687,7 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::removeConditionalEdges(
 
             output_plan.edges.push_back(edge);
         }
-    }
+    }*/
 
     return output_plan;
 }
@@ -686,11 +704,11 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::v
     // add edges to esterel_plan, they are added as conditional (hack), they are not conditional edges
 
     // keep memory of the last edge for naming future edges
-    rosplan_dispatch_msgs::EsterelPlanEdge last_edge = esterel_plan.edges.back();
+    rosplan_dispatch_msgs::EsterelPlanEdge last_edge = original_plan_.edges.back();
     int edge_id_count = last_edge.edge_id;
 
     // iterate over the ordered nodes
-    for(auto nit=ordered_nodes.begin(); nit!=(ordered_nodes.end() - 1); nit++) {
+    for(auto nit=ordered_nodes.begin(); nit<(ordered_nodes.end() - 1); nit++) {
         // assume each pair of nodes is a constraint
 
         // e.g. [1,3,2,4,5,6] -> edge(1,3), edge(3,2), edge(2,4), edge(4,5), edge(5,6)
@@ -712,10 +730,8 @@ rosplan_dispatch_msgs::EsterelPlan CSPExecGenerator::convertListToEsterel(std::v
 
         // iterate over the nodes in the plan, to add edges (needed by the dispatcher)
         for(auto pnit=esterel_plan.nodes.begin(); pnit!=esterel_plan.nodes.end(); pnit++) {
-            if(pnit->node_id == *nit) {
-                pnit->edges_out.push_back(edge_id_count); // edge_id_count = edge id
-                pnit->edges_in.push_back(edge_id_count + 1);
-            }
+            if(pnit->node_id == *nit) pnit->edges_out.push_back(edge_msg.edge_id);
+            if(pnit->node_id == *(nit+1)) pnit->edges_in.push_back(edge_msg.edge_id);
         }
 
         // add edge (as conditional edge -> workaround)
