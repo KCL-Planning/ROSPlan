@@ -321,17 +321,16 @@ class ActionSimulator
          * and return the probability of this action to succeed, based on the combined probability of all facts being true
          * @param action_name the name of the action to check if preconditions are met in KB
          * @param params action grounded parameters
-         * @param action_start if true then action start preconditions are checked, if false at end preconditions are checked
-         * @param check_both_start_and_end if true also action end preconditions are checked
-         * between action_start and overall_preconditions, overall_preconditions will be checked
+         * @param action_start if true, at start preconditions are checked
+         * @param action_overall if true, overall preconditions are checked
+         * @param action_end if true, at end preconditions are checked
          * @param ground_dictionary return value gets written here by reference
          * @param combined_probability return value gets written here by reference, a multiplication of all involved facts
          * probabilities of those facts being true
          * @return true if action start/end/overall is applicable, false otherwise
          */
-        bool isActionApplicable(std::string &action_name, std::vector<std::string> &params,
-                bool action_start, bool check_both_start_and_end, std::map<std::string, std::string> &ground_dictionary,
-                double &combined_probability);
+        bool isActionApplicable(std::string &action_name, std::vector<std::string> &params, bool action_start, bool action_overall,
+                bool action_end, std::map<std::string, std::string> &ground_dictionary, double &combined_probability);
 
         /**
          * @brief overloaded function that checks if all action preconditions (start, end, overall) are consistent with

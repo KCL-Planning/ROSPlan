@@ -757,10 +757,10 @@ double ActionSimulator::getFactProbability(std::string &fact_name, std::vector<s
 }
 
 bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<std::string> &params,
-    bool action_start, bool check_both_start_and_end, std::map<std::string, std::string> &ground_dictionary,
+    bool action_start, bool action_overall, bool action_end, std::map<std::string, std::string> &ground_dictionary,
     double &combined_probability)
 {
-    // check if action start/end/overall preconditions are consistent with internal KB information
+    // check if action start/end/overall preconditions are met
     // and return by reference the ground dictionary for simulation action purposes
     // and return the probability of this action to succeed, based on the combined probability of all facts being true
 
@@ -777,23 +777,8 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
     // initialize prob to 1.0
     combined_probability = 1.0;
 
-    // check overall conditions for both start and end actions
-    // iterate over ungrounded overall conditions, find in KB
-    for(auto it=op.over_all_simple_condition.begin(); it!=op.over_all_simple_condition.end(); it++) {
-        // if not found, action is not applicable
-        std::vector<std::string> gp = groundParams(*it, ground_dictionary);
-        if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
-            // inform which precondition were not met
-            ROS_DEBUG("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
-            return false;
-        }
-
-        // update action probability based on relevant fact probability (all start, end, overall preconditions)
-        combined_probability *= getFactProbability(it->name, gp);
-    } // overall preconditions are met, continue to check action start or action end preconditions
-
     // check at start preconditions, if needed
-    if(action_start || check_both_start_and_end) {
+    if(action_start) {
         // iterate over ungrounded positive preconditions, find in KB
         for(auto it=op.at_start_simple_condition.begin(); it!=op.at_start_simple_condition.end(); it++) {
             // if not found, action is not applicable
@@ -810,7 +795,24 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
         // at start preconditions are met
     }
 
-    if(!action_start || check_both_start_and_end) {
+    if(action_overall) {
+        // check overall conditions for both start and end actions
+        // iterate over ungrounded overall conditions, find in KB
+        for(auto it=op.over_all_simple_condition.begin(); it!=op.over_all_simple_condition.end(); it++) {
+            // if not found, action is not applicable
+            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+            if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
+                // inform which precondition were not met
+                ROS_DEBUG("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                return false;
+            }
+
+            // update action probability based on relevant fact probability (all start, end, overall preconditions)
+            combined_probability *= getFactProbability(it->name, gp);
+        } // overall preconditions are met, continue to check action start or action end preconditions
+    }
+
+    if(action_end) {
         // check at end preconditions, if needed: this part will not be executed unless overall_preconditions and action_start are false
         // iterate over ungrounded at_start_neg_condition, make sure they are not in KB
         for(auto it=op.at_start_neg_condition.begin(); it!=op.at_start_neg_condition.end(); it++) {
@@ -840,8 +842,8 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
 
     double combined_probability; // dummy unused value
 
-    // check overall, start and end preconditions
-    return isActionApplicable(action_name, params, true, true, ground_dictionary, combined_probability);
+    // check action start, overall and end preconditions
+    return isActionApplicable(action_name, params, true, true, true, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<std::string> &params)
@@ -850,58 +852,58 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
     // internal KB information
     std::map<std::string, std::string> ground_dictionary; // dummy unused value
     double combined_probability; // dummy unused value
-    return isActionApplicable(action_name, params, true, true, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, true, true, true, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionStartApplicable(std::string &action_name, std::vector<std::string> &params,
             std::map<std::string, std::string> &ground_dictionary)
 {
-    // overloaded function that checks if action start preconditions are consistent with internal KB information
+    // overloaded function that checks if action start and overall preconditions are met
     // and return by reference the ground dictionary for simulation action purposes
     double combined_probability; // dummy unused value
-    return isActionApplicable(action_name, params, true, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, true, true, false, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionStartApplicable(std::string &action_name, std::vector<std::string> &params)
 {
-    // overloaded function that checks if action start preconditions are consistent with internal KB information
+    // overloaded function that checks if action start preconditions are met
     std::map<std::string, std::string> ground_dictionary; // dummy unused value
     double combined_probability; // dummy unused value
-    return isActionApplicable(action_name, params, true, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, true, true, false, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionStartApplicable(std::string &action_name, std::vector<std::string> &params,
         double &combined_probability)
 {
-    // overloaded function that checks if action start preconditions are consistent with internal KB information
+    // overloaded function that checks if action start preconditions are met
     // we dont't care here about the ground dictionary but we do care about the combined probability
     std::map<std::string, std::string> ground_dictionary; // dummy unused value
-    return isActionApplicable(action_name, params, true, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, true, true, false, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionEndApplicable(std::string &action_name, std::vector<std::string> &params,
             std::map<std::string, std::string> &ground_dictionary)
 {
-    // overloaded function that checks if action end preconditions are consistent with internal KB information
+    // overloaded function that checks if action end preconditions are met
     // and return by reference the ground dictionary for simulation action purposes
     double combined_probability; // dummy unused value
-    return isActionApplicable(action_name, params, false, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, false, false, true, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionEndApplicable(std::string &action_name, std::vector<std::string> &params)
 {
-    // overloaded function that checks if action end preconditions are consistent with internal KB information
+    // overloaded function that checks if action end preconditions are met
     std::map<std::string, std::string> ground_dictionary;
     double combined_probability; // dummy unused value
-    return isActionApplicable(action_name, params, false, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, false, false, true, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::isActionEndApplicable(std::string &action_name, std::vector<std::string> &params,
         double &combined_probability)
 {
-    // overloaded function that checks if action end preconditions are consistent with internal KB information
+    // overloaded function that checks if action end preconditions are met
     std::map<std::string, std::string> ground_dictionary; // dummy unused value
-    return isActionApplicable(action_name, params, false, false, ground_dictionary, combined_probability);
+    return isActionApplicable(action_name, params, false, false, true, ground_dictionary, combined_probability);
 }
 
 bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
@@ -919,13 +921,13 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
     if(action_start) {
         // check action start preconditions
         if(!isActionStartApplicable(action_name, params, ground_dictionary)) {
-            ROS_ERROR("action start (%s) is not applicable, will not simulate", action_name.c_str());
+            ROS_ERROR("action start (%s) is not applicable, will not simulate", convertPredToString(action_name, params).c_str());
             return false;
         }
     }
     else {
         if(!isActionEndApplicable(action_name, params, ground_dictionary)) {
-            ROS_ERROR("action end (%s) is not applicable, will not simulate", action_name.c_str());
+            ROS_ERROR("action start (%s) is not applicable, will not simulate", convertPredToString(action_name, params).c_str());
             return false;
         }
     }
