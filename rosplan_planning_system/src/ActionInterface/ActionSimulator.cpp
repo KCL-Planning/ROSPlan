@@ -995,13 +995,12 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
     // get domain operator details corresponding to the action to simulate
     rosplan_knowledge_msgs::DomainOperator op = domain_operator_map_.find(action_name)->second;
 
-    // keep track of applied effects performed in KB so they can be reverted afterwards
-    std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_start_effective_effects;
-    std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_end_effective_effects;
-
     if(action_start)
     {
         // action start effects
+
+        // keep track of applied effects performed in KB so they can be reverted afterwards
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_start_effective_effects;
 
         // iterate over positive start action effects and apply to KB
         for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++) {
@@ -1021,10 +1020,16 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
                 a_start_effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
             }
         }
+
+        // update map store in member variable the simulated action to be able to revert it
+        start_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_start_effective_effects;
     }
     else
     {
         // action end effects
+
+        // keep track of applied effects performed in KB so they can be reverted afterwards
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_end_effective_effects;
 
         // iterate over positive start action effects and apply to KB
         for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++) {
@@ -1043,11 +1048,10 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
                 a_end_effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
             }
         }
-    }
 
-    // update map store in member variable the simulated action to be able to revert it
-    start_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_start_effective_effects;
-    end_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_end_effective_effects;
+        // update map store in member variable the simulated action to be able to revert it
+        end_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_end_effective_effects;
+    }
 
     return true;
 }
