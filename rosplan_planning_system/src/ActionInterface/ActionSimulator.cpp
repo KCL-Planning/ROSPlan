@@ -1075,7 +1075,7 @@ bool ActionSimulator::reverseEffectsFromKIA(std::vector<rosplan_knowledge_msgs::
 
     // make sure input is non empty
     if(!(effects.size() > 0)) {
-        ROS_ERROR("effects encoded as knowledge item array are empty, cannot apply empty effects");
+        ROS_DEBUG("effects encoded as knowledge item array are empty, cannot apply empty effects");
         return false;
     }
 

@@ -197,6 +197,9 @@ class CSPExecGenerator
         /// stores the received msg in esterel plan callback
         rosplan_dispatch_msgs::EsterelPlan original_plan_;
 
+        /// to cap the max depth search to a certain value
+        int max_search_depth_;
+
         /// P: to simulate actions in a private (own) KB
         ActionSimulator action_simulator_;
 

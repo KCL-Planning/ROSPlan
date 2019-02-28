@@ -12,7 +12,7 @@
 
 #include <rosplan_planning_system/PlanDispatch/CSPExecGenerator.h>
 
-CSPExecGenerator::CSPExecGenerator() : nh_("~"), is_esterel_plan_received_(false)
+CSPExecGenerator::CSPExecGenerator() : nh_("~"), is_esterel_plan_received_(false), max_search_depth_(0)
 {
     // subscriptions: subscribe to esterel plan, a fully ordered plan
     sub_esterel_plan_ = nh_.subscribe("/rosplan_parsing_interface/complete_plan", 1, &CSPExecGenerator::esterelPlanCB, this);
@@ -29,6 +29,9 @@ CSPExecGenerator::CSPExecGenerator() : nh_("~"), is_esterel_plan_received_(false
 
     // mirror KB (query real KB and get its data) but without facts and goals
     action_simulator_.init();
+
+    // to cap max search depth to a certain value, get from param server
+    nh_.param<int>("max_search_depth", max_search_depth_, 100);
 }
 
 CSPExecGenerator::~CSPExecGenerator()
@@ -417,7 +420,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
     ROS_DEBUG("order nodes (recurse)");
 
     if(!checkTemporalConstraints(ordered_nodes_, set_of_constraints_)) {
-        ROS_ERROR("temporal constraints not satisfied");
+        backtrack("temporal constraints not satisfied");
         return false;
     }
 
@@ -447,13 +450,13 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
     else
         ROS_DEBUG("goals not achieved yet");
 
-    if(exec_aternatives_msg_.esterel_plans.size()>0) {
-        ROS_INFO("valid ordering found, returning early");
+    // cap the maximum amount of plans to generate
+    if(exec_aternatives_msg_.esterel_plans.size() > max_search_depth_) {
+        ROS_DEBUG("returning early : max amount of plans reached (%ld)", exec_aternatives_msg_.esterel_plans.size());
+        backtrack("We do not want to search deeper");
         return true;
     }
 
-    // see which nodes preconditions are met and construct valid nodes list (V)
-    // printNodes("open list", open_list); // print open list for debuggin purposes
     ROS_DEBUG("finding valid nodes from open list now");
     std::vector<int> valid_nodes;
     validNodes(open_list, valid_nodes);
@@ -575,7 +578,7 @@ bool CSPExecGenerator::generatePlans()
         }
     }
 
-    printNodes("open list", open_list);
+    // printNodes("open list", open_list, verbose);
 
     // init set of constraints (C)
     initConstraints(set_of_constraints_);
