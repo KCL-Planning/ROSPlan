@@ -316,6 +316,20 @@ class ActionSimulator
         double getFactProbability(std::string &action_name, std::vector<std::string> &params);
 
         /**
+         * @brief generic helper function to avoid code repetition, it receives a domain formula.
+         * e.g. at_start_simple_condition or at_end_neg_condition, iterates over the conditions and
+         * returns if they are satisfied or not
+         * @param positive_conditions e.g. at_end_neg_condition -> pass a false, at_start_simple_condition -> pass true
+         * @param df typically you do e.g. op.at_end_neg_condition, from a domain operator
+         * @param ground_dictionary a map between ungrounded keys with its correspondent grounded values
+         * @param combined_probability return value gets written here by reference, if needed (optional) this
+         * function can calculate the probability of the action being applicable (by multiplying the probability of relevant facts being true)
+         * @return true if all conditions are met, false otherwise
+         */
+        bool checkConditions(bool positive_conditions, std::vector<rosplan_knowledge_msgs::DomainFormula> &df,
+        std::map<std::string, std::string> &ground_dictionary, double &combined_probability);
+
+        /**
          * @brief check if action start/end/overall preconditions are consistent with internal KB information
          * and return by reference the ground dictionary for simulation action purposes
          * and return the probability of this action to succeed, based on the combined probability of all facts being true

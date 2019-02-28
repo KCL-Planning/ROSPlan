@@ -756,6 +756,48 @@ double ActionSimulator::getFactProbability(std::string &fact_name, std::vector<s
     return 1.0;
 }
 
+bool ActionSimulator::checkConditions(bool positive_conditions, std::vector<rosplan_knowledge_msgs::DomainFormula> &df,
+        std::map<std::string, std::string> &ground_dictionary, double &combined_probability)
+{
+    if(positive_conditions) {
+        // positive preconditions
+
+        // iterate over ungrounded positive preconditions, make sure they are found in KB
+        for(auto it=df.begin(); it!=df.end(); it++) {
+            // if not found, action is not applicable
+            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+            if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format, gp = grounded parameters
+                // inform which precondition were not met
+                ROS_DEBUG("precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
+                return false;
+            }
+
+            // update action probability based on prob of this fact being true
+            combined_probability *= getFactProbability(it->name, gp);
+        }
+    }
+    else {
+        // negative preconditions
+
+        // iterate over ungrounded negative preconditions, make sure they are not in KB
+        for(auto it=df.begin(); it!=df.end(); it++) {
+            // if found, action is not applicable
+            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
+            if(findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
+                // inform which precondition was not met
+                ROS_DEBUG("precondition not met: (not (%s))", convertPredToString(it->name, gp).c_str());
+                return false;
+            }
+
+            // update action probability based on prob of this fact being true
+            combined_probability *= getFactProbability(it->name, gp);
+        }
+    }
+
+    // preconditions are met
+    return true;
+}
+
 bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<std::string> &params,
     bool action_start, bool action_overall, bool action_end, std::map<std::string, std::string> &ground_dictionary,
     double &combined_probability)
@@ -777,60 +819,52 @@ bool ActionSimulator::isActionApplicable(std::string &action_name, std::vector<s
     // initialize prob to 1.0
     combined_probability = 1.0;
 
-    // check at start preconditions, if needed
+    // check action start preconditions, if needed
     if(action_start) {
-        // iterate over ungrounded positive preconditions, find in KB
-        for(auto it=op.at_start_simple_condition.begin(); it!=op.at_start_simple_condition.end(); it++) {
-            // if not found, action is not applicable
-            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
-            if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format, gp = grounded parameters
-                // inform which precondition were not met
-                ROS_DEBUG("at start precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
-                return false;
-            }
+        ROS_DEBUG("checking action start preconditions");
 
-            // update action probability based on relevant fact probability (all start, end, overall preconditions)
-            combined_probability *= getFactProbability(it->name, gp);
-        }
-        // at start preconditions are met
+        // check action start positive preconditions
+        if(!checkConditions(true, op.at_start_simple_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // check action start negative preconditions
+        if(!checkConditions(false, op.at_start_neg_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // action start preconditions are met
     }
 
+    // check overall preconditions if needed
     if(action_overall) {
-        // check overall conditions for both start and end actions
-        // iterate over ungrounded overall conditions, find in KB
-        for(auto it=op.over_all_simple_condition.begin(); it!=op.over_all_simple_condition.end(); it++) {
-            // if not found, action is not applicable
-            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
-            if(!findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
-                // inform which precondition were not met
-                ROS_DEBUG("overall precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
-                return false;
-            }
+        ROS_DEBUG("checking action overall preconditions");
 
-            // update action probability based on relevant fact probability (all start, end, overall preconditions)
-            combined_probability *= getFactProbability(it->name, gp);
-        } // overall preconditions are met, continue to check action start or action end preconditions
+        // check action overall positive preconditions
+        if(!checkConditions(true, op.over_all_simple_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // check action overall negative preconditions
+        if(!checkConditions(false, op.over_all_neg_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // action overall preconditions are met
     }
 
+    // check action end preconditions if needed
     if(action_end) {
-        // check at end preconditions, if needed: this part will not be executed unless overall_preconditions and action_start are false
-        // iterate over ungrounded at_start_neg_condition, make sure they are not in KB
-        for(auto it=op.at_start_neg_condition.begin(); it!=op.at_start_neg_condition.end(); it++) {
-            // if found, action is not applicable
-            std::vector<std::string> gp = groundParams(*it, ground_dictionary);
-            if(findFactInternal(it->name, gp)) { // "it" is in DomainFormula format
-                // inform which precondition was not met
-                ROS_DEBUG("at end precondition not met: (%s)", convertPredToString(it->name, gp).c_str());
-                return false;
-            }
+        ROS_DEBUG("checking action end preconditions");
 
-            // update action probability based on relevant fact probability (all start, end, overall preconditions)
-            combined_probability *= getFactProbability(it->name, gp);
-        }
-        // at end preconditions are met
+        // check action end positive preconditions
+        if(!checkConditions(true, op.at_end_simple_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // check action end negative preconditions
+        if(!checkConditions(false, op.at_end_neg_condition, ground_dictionary, combined_probability))
+            return false;
+
+        // action end preconditions are met
     }
 
-    // preconditions were met
+    // all requested preconditions were met
     return true;
 }
 
