@@ -302,7 +302,7 @@ bool CSPExecGenerator::validNodes(std::vector<int> &open_list, std::vector<int> 
 
                 if(!ordered) {
                     for(auto eait=action_executing_.begin(); eait!=action_executing_.end(); eait++) {
-                        if(action_id == *eait) {
+                        if((*nit-1) == *eait) {
                             ordered = true;
                             // node is valid, add to list
                             valid_nodes.push_back(*nit);
@@ -564,16 +564,14 @@ bool CSPExecGenerator::generatePlans()
         // do not add plan start node
         switch(nit->node_type) {
         case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START:
+        case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
             // remove nodes which are currently/done executing from open list, you receive
             // this information from the dispatcher inside the service call request
-            if(std::find(action_executing_.begin(), action_executing_.end(), nit->action.action_id) != action_executing_.end()) {
-                    ROS_DEBUG("ignoring node (%d) because is currently being/done executed", nit->node_id);
+            if(std::find(action_executing_.begin(), action_executing_.end(), nit->node_id) != action_executing_.end()) {
+                ROS_DEBUG("ignoring node (%d) because is currently being/done executed", nit->node_id);
             } else {
                 open_list.push_back(nit->node_id);
             }
-            break;
-        case rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END:
-            open_list.push_back(nit->node_id);
             break;
         }
     }

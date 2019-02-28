@@ -1,3 +1,5 @@
+*.pddl
+
 # Compiled Object files
 *.slo
 *.lo

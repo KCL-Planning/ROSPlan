@@ -65,16 +65,23 @@ namespace KCL_rosplan {
                 }
             }
 
-            std::vector<int> ac;
+/*            std::vector<int> ac;
             for(int i=0; i<actions_executing.size(); i++) {
                 if(action_completed[actions_executing[i]]) ac.push_back(actions_executing[i]);
             }
             initialise();
             for(int i=0; i<actions_executing.size(); i++) {
+                
                 action_dispatched[actions_executing[i]] = true;
                 action_received[actions_executing[i]] = true;
                 action_completed[actions_executing[i]] = (std::find(ac.begin(), ac.end(), actions_executing[i]) != ac.end());
             }
+*/
+
+
+		    for(std::vector<rosplan_dispatch_msgs::EsterelPlanEdge>::const_iterator ci = current_plan.edges.begin(); ci != current_plan.edges.end(); ci++) {
+			    edge_active[ci->edge_id] = false;
+		    }
 
 			ROS_INFO("KCL: (%s) Plan selected with probability %f.", ros::this_node::getName().c_str(), bestProb);
 			plan_received = true;
@@ -189,7 +196,7 @@ namespace KCL_rosplan {
 								node.action.duration);
 
 						action_dispatch_publisher.publish(node.action);
-                        actions_executing.push_back(node.action.action_id);
+                        actions_executing.push_back(node.node_id);
 						state_changed = true;
 
 						// deactivate incoming edges
@@ -216,7 +223,8 @@ namespace KCL_rosplan {
 
 					finished_execution = false;
 					state_changed = true;
-                    actions_executing.erase(std::remove(actions_executing.begin(), actions_executing.end(), node.action.action_id), actions_executing.end());
+                    actions_executing.push_back(node.node_id);
+                    // actions_executing.erase(std::remove(actions_executing.begin(), actions_executing.end(), node.action.action_id), actions_executing.end());
 
 
 					// deactivate incoming edges
