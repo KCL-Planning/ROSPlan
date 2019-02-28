@@ -1084,12 +1084,12 @@ bool ActionSimulator::reverseEffectsFromKIA(std::vector<rosplan_knowledge_msgs::
 
         // query if positive or negative effect
         if(eit->is_negative) {
-            // remove relevant effective effect facts
-            removeFactInternal(name, params);
-        }
-        else {
             // add relevant effective effect facts
             addFactInternal(name, params);
+        }
+        else {
+            // remove relevant effective effect facts
+            removeFactInternal(name, params);
         }
     }
 
