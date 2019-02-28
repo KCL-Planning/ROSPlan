@@ -425,8 +425,8 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
     ROS_DEBUG("checking if goals are achieved...");
     if(action_simulator_.areGoalsAchieved()) {
         // we print all plans at the end, so only we print here in debug mode
-        ROS_INFO("found valid ordering:");
-        printNodes("plan", ordered_nodes_);
+        //ROS_INFO("found valid ordering:");
+        //printNodes("plan", ordered_nodes_);
 
         // convert list of orderes nodes into esterel plan (reuses the originally received esterel plan)
         rosplan_dispatch_msgs::EsterelPlan esterel_plan_msg = convertListToEsterel(ordered_nodes_);
@@ -446,6 +446,11 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
     }
     else
         ROS_DEBUG("goals not achieved yet");
+
+    if(exec_aternatives_msg_.esterel_plans.size()>0) {
+        ROS_INFO("valid ordering found, returning early");
+        return true;
+    }
 
     // see which nodes preconditions are met and construct valid nodes list (V)
     // printNodes("open list", open_list); // print open list for debuggin purposes
@@ -480,7 +485,8 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
 
         // remove a (action) and s (skipped nodes) from open list (O)
         std::vector<int> open_list_copy = open_list;
-        if(open_list_copy.size() > 0) { // make sure open list is not empty
+        open_list_copy.erase(std::remove(open_list_copy.begin(), open_list_copy.end(), *a), open_list_copy.end());
+        /*if(open_list_copy.size() > 0) { // make sure open list is not empty
             // printNodes("open list", open_list_copy);
             // find current action "a" in open list and get a pointer to it
             std::vector<int>::iterator ait = std::find(open_list_copy.begin(),open_list_copy.end(), *a);
@@ -497,7 +503,7 @@ bool CSPExecGenerator::orderNodes(std::vector<int> open_list)
             // put here to prevent seg fault error, but if code reaches here then it would be a bug
             ROS_ERROR("open list is empty, this means an implementation error");
             return false;
-        }
+        }*/
 
         ROS_DEBUG("apply action : (%d), to current state S", *a);
 
@@ -580,7 +586,8 @@ bool CSPExecGenerator::generatePlans()
     // NOTE: init set of totally ordered plans (R) is stored in exec_aternatives_msg_.esterel_plans
 
     // if true, it means at least one valid execution alternative was found
-    return orderNodes(open_list);
+    orderNodes(open_list);
+    return (exec_aternatives_msg_.esterel_plans.size()>0);
 }
 
 bool CSPExecGenerator::getEdgeFromEdgeID(int edge_id, rosplan_dispatch_msgs::EsterelPlan &esterel_plan,
