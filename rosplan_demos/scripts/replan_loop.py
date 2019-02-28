@@ -9,7 +9,7 @@ from rosplan_dispatch_msgs.srv import ExecAlternatives, ExecAlternativesResponse
 
 goal_achieved = False
 replans = 0
-while not goal_achieved and replans<20:
+while not goal_achieved and replans<1:
     rospy.wait_for_service('/rosplan_problem_interface/problem_generation_server')
     rospy.wait_for_service('/rosplan_planner_interface/planning_server')
     rospy.wait_for_service('/rosplan_parsing_interface/parse_plan')
@@ -26,8 +26,6 @@ while not goal_achieved and replans<20:
 
         ea = rospy.ServiceProxy('/csp_exec_generator/gen_exec_alternatives', ExecAlternatives)
         ear = ea()
-
-        print ear.exec_alternatives_generated
 
         dp = rospy.ServiceProxy('/rosplan_plan_dispatcher/dispatch_plan', DispatchService)
         dsr = dp()

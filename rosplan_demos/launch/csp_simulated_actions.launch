@@ -50,28 +50,28 @@
 		<param name="plan_topic"            value="/csp_exec_generator/valid_plans" />
 		<param name="action_dispatch_topic" value="action_dispatch" />
 		<param name="action_feedback_topic" value="action_feedback" />
-		<param name="display_edge_type"     value="true" />
+		<param name="display_edge_type"     value="false" />
 	</node>
 
 	<!-- sim actions -->
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
         <arg name="pddl_action_name" value="goto_waypoint" />
-        <arg name="action_duration" value="2" />
+        <arg name="action_duration" value="5" />
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
         <arg name="pddl_action_name" value="localise" />
-        <arg name="action_duration" value="2" />
+        <arg name="action_duration" value="5" />
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
         <arg name="pddl_action_name" value="dock" />
-        <arg name="action_duration" value="2" />
+        <arg name="action_duration" value="5" />
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
         <arg name="pddl_action_name" value="undock" />
-        <arg name="action_duration" value="2" />
+        <arg name="action_duration" value="5" />
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
@@ -80,8 +80,13 @@
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
-        <arg name="pddl_action_name" value="wait_load_at_printer" />
+        <arg name="pddl_action_name" value="wait_load_at_machine" />
         <arg name="action_duration" value="10" />
+    </include>
+
+    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+        <arg name="pddl_action_name" value="switch_machine_on" />
+        <arg name="action_duration" value="5" />
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
