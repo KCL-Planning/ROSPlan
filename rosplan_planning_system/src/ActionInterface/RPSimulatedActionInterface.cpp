@@ -16,18 +16,24 @@ namespace KCL_rosplan {
 	bool RPSimulatedActionInterface::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
 		// wait for some time
+        double duration = msg->duration;
+        if(action_duration > 0) {
+            duration = action_duration;
+        }
+
 		if(action_duration_stddev > 0) {
             std::default_random_engine generator(ros::Time::now().toSec());
-            std::normal_distribution<double> distribution(action_duration, action_duration_stddev);
+            std::normal_distribution<double> distribution(duration, action_duration_stddev);
             double d = distribution(generator);
+            if(d < duration) d = duration + (duration - d);
             if(d < 0) d = 0;
     		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, d);
-		} else if(action_duration > 0) {
-    		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, action_duration);
-			ros::Rate wait = 1.0 / action_duration;
-			wait.sleep();
+		    ros::Rate wait = 1.0 / d;
+		    wait.sleep();
         } else {
-    		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, action_duration);
+    		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, duration);
+		    ros::Rate wait = 1.0 / action_duration;
+		    wait.sleep();
         }
 
 		// complete the action
