@@ -65,14 +65,15 @@ namespace KCL_rosplan {
                 }
             }
 
+            std::vector<int> ac;
             for(int i=0; i<actions_executing.size(); i++) {
-                action_dispatched[actions_executing[i]] = true;
-                action_received[actions_executing[i]] = true;
+                if(action_completed[actions_executing[i]]) ac.push_back(actions_executing[i]);
             }
             initialise();
             for(int i=0; i<actions_executing.size(); i++) {
                 action_dispatched[actions_executing[i]] = true;
                 action_received[actions_executing[i]] = true;
+                action_completed[actions_executing[i]] = (std::find(ac.begin(), ac.end(), actions_executing[i]) != ac.end());
             }
 
 			ROS_INFO("KCL: (%s) Plan selected with probability %f.", ros::this_node::getName().c_str(), bestProb);
