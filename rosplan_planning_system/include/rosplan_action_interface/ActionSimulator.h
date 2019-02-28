@@ -284,8 +284,10 @@ class ActionSimulator
          * @brief add fact to internal KB, warning: does not fill keys on knowledge items, it leaves the keys empty
          * @param predicate_name the name of the predicate to be added to internal KB
          * @param params the parameters of the predicate to be added to internal KB
+         * @return true if fact was added and did not belonged already to KB, false if fact was already
+         * in KB and therefore it did not added
          */
-        void addFactInternal(std::string &predicate_name, std::vector<std::string> params);
+        bool addFactInternal(std::string &predicate_name, std::vector<std::string> params);
 
         /**
          * @brief receive an operator and a dictionary of key values, return grounded predicate parameters
@@ -428,6 +430,16 @@ class ActionSimulator
         bool isActionEndApplicable(std::string &action_name, std::vector<std::string> &params, double &combined_probability);
 
         /**
+         * @brief helper function to avoid repetition of code, used to facilitate the creation of knowledge items
+         * @param name the name of the fact
+         * @param params fact arguments or parameters, e.g. (robot_at location1), name:robot_at, params:[location1]
+         * @param is_negative if true then fact is not negated, e.g. (robot_at location1).
+         * If false then fact is negated, e.g. (not (location_clean kitchen))
+         * @return a fact encoded in the KnowledgeItem struct
+         */
+        rosplan_knowledge_msgs::KnowledgeItem createFactKnowledgeItem(std::string &name, std::vector<std::string> &params, bool is_negative);
+
+        /**
          * @brief apply delete and add list to KB current state (start or end action, depends on parameter action_start)
          * @param action_name the name of the action to be simulated
          * @param params action parameters as list of strings
@@ -453,6 +465,31 @@ class ActionSimulator
         bool simulateActionEnd(std::string &action_name, std::vector<std::string> &params);
 
         /**
+         * @brief apply effects from Knowledge item array,
+         * apply all of the effects in knowledge item array to a KB
+         * @param effects
+         * @return true if effects size is non 0, false otherwise
+         */
+        bool reverseEffectsFromKIA(std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects);
+
+        /**
+         * @brief get from memory relevant effects that need to be reverted to the state
+         * @param action_name fact name
+         * @param params args for the fact
+         * @param action_start true if action start, false if action end (temporal actions)
+         */
+        bool revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start);
+
+        /**
+         * @brief this method uses the memory of simulateAction to revert exactly the effects that were added/removed
+         * rather that checking from domain details
+         * @param action_name the name of the action to revert
+         * @param params the parameters of the action to revert
+         * @return true if action was reverted succesfully, false otherwise
+         */
+        bool revertAction(std::string &action_name, std::vector<std::string> &params);
+
+        /**
          * @brief inverse of apply action, used for backtracking purposes
          * revert means: check action effects and revert them (delete positive effects, add negative effects)
          * @param action_name the name of the action to revert
@@ -460,7 +497,7 @@ class ActionSimulator
          * @param action_start if true, action start effects are reverted, if false action end params are reverted
          * @return true if action was reverted succesfully, false otherwise
          */
-        bool revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start);
+        bool revertActionBlind(std::string &action_name, std::vector<std::string> &params, bool action_start);
 
         /**
          * @brief overloaded function to revert action start effects
@@ -477,14 +514,6 @@ class ActionSimulator
          * @return true if action was reverted succesfully, false otherwise
          */
         bool revertActionEnd(std::string &action_name, std::vector<std::string> &params);
-
-        /**
-         * @brief overloaded function to revert both action start and end effects
-         * @param action_name the name of the action to revert
-         * @param params the parameters of the action to revert
-         * @return true if action was reverted succesfully, false otherwise
-         */
-        bool revertAction(std::string &action_name, std::vector<std::string> &params);
 
         /**
          * @brief get all goals from real KB
@@ -548,4 +577,7 @@ class ActionSimulator
 
         /// store all goals in KB
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> kb_goals_;
+
+        /// to keep track of the simulated actions and be able to revert them accurately
+        std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > sim_actions_map_;
 };

@@ -640,7 +640,7 @@ bool ActionSimulator::removeGoalInternal(std::string &predicate_name, std::vecto
     return removePredicateInternal(predicate_name, args, kb_goals_);
 }
 
-void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> params)
+bool ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<std::string> params)
 {
     // add fact to internal KB
 
@@ -648,7 +648,7 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
     if(findFactInternal(predicate_name, params)) {
         // element exists
         ROS_DEBUG("Tried to add fact twice, doing nothing... (%s)", convertPredToString(predicate_name, params).c_str());
-        return;
+        return false; // false indicates that it did nothing because it was already there
     }
 
     // kb_facts_ is of type -> std::vector<rosplan_knowledge_msgs::KnowledgeItem>
@@ -682,6 +682,8 @@ void ActionSimulator::addFactInternal(std::string &predicate_name, std::vector<s
 
     // add knowledge item to internal KB
     kb_facts_.push_back(knowledge_item);
+
+    return true; // true indicates that it did added the fact and that is not repeated
 }
 
 std::vector<std::string> ActionSimulator::groundParams(rosplan_knowledge_msgs::DomainFormula ungrounded_precondition,
@@ -940,6 +942,28 @@ bool ActionSimulator::isActionEndApplicable(std::string &action_name, std::vecto
     return isActionApplicable(action_name, params, false, false, true, ground_dictionary, combined_probability);
 }
 
+rosplan_knowledge_msgs::KnowledgeItem ActionSimulator::createFactKnowledgeItem(std::string &name, std::vector<std::string> &params,
+        bool is_negative)
+{
+    // helper function to avoid repetition of code, used to facilitate the creation of knowledge items
+
+    rosplan_knowledge_msgs::KnowledgeItem knowledge_item;
+
+    knowledge_item.is_negative = is_negative;
+    knowledge_item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
+    knowledge_item.attribute_name = name;
+    // transform param from std::vector<std::string> to std::vector<diagnostic_msgs::KeyValue> (diagnostic_msgs/KeyValue[] values)
+    for(auto pit=params.begin(); pit!=params.end(); pit++) { // pit = parameter iterator
+        diagnostic_msgs::KeyValue value;
+        // key is lost! this is a weakness of storing facts as vector of strings...
+        value.key = std::string("LOST");
+        value.value = *pit;
+        knowledge_item.values.push_back(value);
+    }
+
+    return knowledge_item;
+}
+
 bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
 {
     // apply delete and add list to KB current state
@@ -971,30 +995,57 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
     // get domain operator details corresponding to the action to simulate
     rosplan_knowledge_msgs::DomainOperator op = domain_operator_map_.find(action_name)->second;
 
+    // keep track of applied effects performed in KB so they can be reverted afterwards
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> effective_effects;
+
     if(action_start)
     {
         // action start effects
 
         // iterate over positive start action effects and apply to KB
-        for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++)
-            addFactInternal(it->name, groundParams(*it, ground_dictionary));
+        for(auto it=op.at_start_add_effects.begin(); it!=op.at_start_add_effects.end(); it++) {
+            std::vector<std::string> params = groundParams(*it, ground_dictionary);
+            // try to add fact
+            if(addFactInternal(it->name, params)) {
+                // fact did not existed in KB, was effectively added, therefore add to effective effects list
+                effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
+            }
+        }
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++)
-            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
+        for(auto it=op.at_start_del_effects.begin(); it!=op.at_start_del_effects.end(); it++) {
+            std::vector<std::string> params = groundParams(*it, ground_dictionary);
+            if(removeFactInternal(it->name, params)) {
+                // predicate was found and removed, add to the effective effects list
+                effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
+            }
+        }
     }
     else
     {
         // action end effects
 
         // iterate over positive start action effects and apply to KB
-        for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++)
-            addFactInternal(it->name, groundParams(*it, ground_dictionary));
+        for(auto it=op.at_end_add_effects.begin(); it!=op.at_end_add_effects.end(); it++) {
+            std::vector<std::string> params = groundParams(*it, ground_dictionary);
+            if(addFactInternal(it->name, params)) {
+                // fact did not existed in KB, was effectively added, therefore add to effective effects list
+                effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
+            }
+        }
 
         // iterate over negative start action effects and apply to KB
-        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++)
-            removeFactInternal(it->name, groundParams(*it, ground_dictionary));
+        for(auto it=op.at_end_del_effects.begin(); it!=op.at_end_del_effects.end(); it++) {
+            std::vector<std::string> params = groundParams(*it, ground_dictionary);
+            if(removeFactInternal(it->name, params)) {
+                // predicate was found and removed, add to the effective effects list
+                effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
+            }
+        }
     }
+
+    // update map store in member variable the simulated action to be able to revert it
+    sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = effective_effects;
 
     return true;
 }
@@ -1011,7 +1062,60 @@ bool ActionSimulator::simulateActionEnd(std::string &action_name, std::vector<st
     return simulateAction(action_name, params, false);
 }
 
+bool ActionSimulator::reverseEffectsFromKIA(std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects)
+{
+    // apply effects from Knowledge item array
+    // apply all of the effects in knowledge item array to a KB
+
+    // make sure input is non empty
+    if(!(effects.size() > 0)) {
+        ROS_ERROR("effects encoded as knowledge item array are empty, cannot apply empty effects");
+        return false;
+    }
+
+    // iterate over effects
+    for(auto eit=effects.begin(); eit!=effects.end(); eit++) {
+        std::string name = eit->attribute_name;;
+        std::vector<std::string> params;
+        // iterate over diagnostic_msgs and get params
+        for(auto pit=eit->values.begin(); pit!=eit->values.end(); pit++) {
+            params.push_back(pit->value);
+        }
+
+        // query if positive or negative effect
+        if(eit->is_negative) {
+            // remove relevant effective effect facts
+            removeFactInternal(name, params);
+        }
+        else {
+            // add relevant effective effect facts
+            addFactInternal(name, params);
+        }
+    }
+
+    return true;
+}
+
 bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
+{
+    // get from memory relevant effects that need to be reverted to the state
+    std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> >::iterator it = sim_actions_map_.find(std::pair<std::string, std::vector<std::string> >(action_name, params));
+
+    if(it == sim_actions_map_.end()) {
+        // this method only allows to revert actions that you have applied in the previously, if you wish
+        // to revert actions based on effects the use the revertActionBlind() method
+        ROS_ERROR("failed to find action in map, have you applied the action before?");
+        return false;
+    } else {
+        std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects_to_revert = it->second;
+        return reverseEffectsFromKIA(effects_to_revert);
+    }
+
+    // should never reach here actually
+    return false;
+}
+
+bool ActionSimulator::revertActionBlind(std::string &action_name, std::vector<std::string> &params, bool action_start)
 {
     // inverse of apply action, used for backtracking purposes
     // revert means: check action effects and revert them (delete positive effects, add negative effects)
@@ -1066,19 +1170,6 @@ bool ActionSimulator::revertActionEnd(std::string &action_name, std::vector<std:
 {
     // overloaded function to revert action end effects
     return revertAction(action_name, params, false);
-}
-
-bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::string> &params)
-{
-    // overloaded function to revert both action start and end effects
-
-    // revert action start effects
-    if(revertAction(action_name, params, true))
-        // revert action end effects
-        return revertAction(action_name, params, false);
-    else
-        // something went wrong while reverting action start effects
-        return false;
 }
 
 bool ActionSimulator::getAllGoals(std::vector<rosplan_knowledge_msgs::KnowledgeItem> &kb_goals)
