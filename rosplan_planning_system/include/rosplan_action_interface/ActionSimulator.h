@@ -579,5 +579,6 @@ class ActionSimulator
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> kb_goals_;
 
         /// to keep track of the simulated actions and be able to revert them accurately
-        std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > sim_actions_map_;
+        std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > start_sim_actions_map_;
+        std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> > end_sim_actions_map_;
 };

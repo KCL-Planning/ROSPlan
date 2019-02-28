@@ -996,7 +996,8 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
     rosplan_knowledge_msgs::DomainOperator op = domain_operator_map_.find(action_name)->second;
 
     // keep track of applied effects performed in KB so they can be reverted afterwards
-    std::vector<rosplan_knowledge_msgs::KnowledgeItem> effective_effects;
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_start_effective_effects;
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> a_end_effective_effects;
 
     if(action_start)
     {
@@ -1008,7 +1009,7 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             // try to add fact
             if(addFactInternal(it->name, params)) {
                 // fact did not existed in KB, was effectively added, therefore add to effective effects list
-                effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
+                a_start_effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
             }
         }
 
@@ -1017,7 +1018,7 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             std::vector<std::string> params = groundParams(*it, ground_dictionary);
             if(removeFactInternal(it->name, params)) {
                 // predicate was found and removed, add to the effective effects list
-                effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
+                a_start_effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
             }
         }
     }
@@ -1030,7 +1031,7 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             std::vector<std::string> params = groundParams(*it, ground_dictionary);
             if(addFactInternal(it->name, params)) {
                 // fact did not existed in KB, was effectively added, therefore add to effective effects list
-                effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
+                a_end_effective_effects.push_back(createFactKnowledgeItem(it->name, params, false));
             }
         }
 
@@ -1039,13 +1040,14 @@ bool ActionSimulator::simulateAction(std::string &action_name, std::vector<std::
             std::vector<std::string> params = groundParams(*it, ground_dictionary);
             if(removeFactInternal(it->name, params)) {
                 // predicate was found and removed, add to the effective effects list
-                effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
+                a_end_effective_effects.push_back(createFactKnowledgeItem(it->name, params, true));
             }
         }
     }
 
     // update map store in member variable the simulated action to be able to revert it
-    sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = effective_effects;
+    start_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_start_effective_effects;
+    end_sim_actions_map_[std::pair<std::string, std::vector<std::string> >(action_name, params)] = a_end_effective_effects;
 
     return true;
 }
@@ -1099,16 +1101,37 @@ bool ActionSimulator::reverseEffectsFromKIA(std::vector<rosplan_knowledge_msgs::
 bool ActionSimulator::revertAction(std::string &action_name, std::vector<std::string> &params, bool action_start)
 {
     // get from memory relevant effects that need to be reverted to the state
-    std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> >::iterator it = sim_actions_map_.find(std::pair<std::string, std::vector<std::string> >(action_name, params));
+    // auto = std::map<std::pair<std::string, std::vector<std::string> >, std::vector<rosplan_knowledge_msgs::KnowledgeItem> >::iterator
 
-    if(it == sim_actions_map_.end()) {
-        // this method only allows to revert actions that you have applied in the previously, if you wish
-        // to revert actions based on effects the use the revertActionBlind() method
-        ROS_ERROR("failed to find action in map, have you applied the action before?");
-        return false;
-    } else {
-        std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects_to_revert = it->second;
-        return reverseEffectsFromKIA(effects_to_revert);
+    // NOTE: this method only allows to revert actions that you have applied in the previously, if you wish
+    // to revert actions based on effects the use the revertActionBlind() method
+
+    // select correct map
+    if(action_start) {
+        // revert action start
+
+        auto it = start_sim_actions_map_.find(std::pair<std::string, std::vector<std::string> >(action_name, params));
+        // check if key was found in map
+        if(it == start_sim_actions_map_.end()) {
+            ROS_ERROR("failed to find action start in map, have you applied the action before?");
+            return false;
+        } else {
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects_to_revert = it->second;
+            return reverseEffectsFromKIA(effects_to_revert);
+        }
+    }
+    else {
+        // revert action end
+
+        auto it = end_sim_actions_map_.find(std::pair<std::string, std::vector<std::string> >(action_name, params));
+        // check if key was found in map
+        if(it == end_sim_actions_map_.end()) {
+            ROS_ERROR("failed to find action end in map, have you applied the action before?");
+            return false;
+        } else {
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem> effects_to_revert = it->second;
+            return reverseEffectsFromKIA(effects_to_revert);
+        }
     }
 
     // should never reach here actually
