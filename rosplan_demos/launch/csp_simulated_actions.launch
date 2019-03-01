@@ -8,6 +8,9 @@
     <arg name="problem" default="problem_w5_m5_g3.pddl" />
     <arg name="category" default="iros_problems_free" /> <!-- iros_problems_free or iros_problems_deadlines -->
 
+    <!-- delect between normal or smart plan dispatcher -->
+    <arg name="adaptable_plan_dispatcher_required" default="true" />
+
     <!-- do not touch this params, but rather update args above -->
     <arg name="common_path" default="$(find rosplan_demos)/common/$(arg category)" />
     <arg name="domain_path" default="$(arg common_path)/$(arg domain)" />
@@ -48,17 +51,42 @@
         <arg name="plan_topic"       value="complete_plan" />
     </include>
 
-    <!-- CSP exec -->
-    <node name="csp_exec_generator" pkg="rosplan_planning_system" type="csp_exec_generator" respawn="false" output="screen" />
+    <!-- adaptable plan dispatcher is required -->
+    <group if="$(arg adaptable_plan_dispatcher_required)" >
+        <!-- CSP exec -->
+        <node name="csp_exec_generator" pkg="rosplan_planning_system" type="csp_exec_generator" respawn="false" output="screen" />
 
-    <!-- plan dispatching -->
-    <node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_adaptable_plan_dispatcher" respawn="false" output="screen" >
-        <param name="knowledge_base"        value="rosplan_knowledge_base" />
-        <param name="plan_topic"            value="/csp_exec_generator/valid_plans" />
-        <param name="action_dispatch_topic" value="action_dispatch" />
-        <param name="action_feedback_topic" value="action_feedback" />
-        <param name="display_edge_type"     value="false" />
-    </node>
+        <!-- adaptable plan dispatching -->
+        <node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_adaptable_plan_dispatcher" respawn="false" output="screen" >
+            <param name="knowledge_base"        value="rosplan_knowledge_base" />
+            <param name="plan_topic"            value="/csp_exec_generator/valid_plans" />
+            <param name="action_dispatch_topic" value="action_dispatch" />
+            <param name="action_feedback_topic" value="action_feedback" />
+            <param name="display_edge_type"     value="false" />
+        </node>
+
+        <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
+        <node name="coordinator_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="false" >
+            <param name="adaptable_plan_dispatcher_required" value="true" />
+        </node>
+    </group>
+
+    <!-- non adaptable plan dispatcher (normal one) is required -->
+    <group unless="$(arg adaptable_plan_dispatcher_required)">
+        <!-- non adaptable (normal) plan dispatching -->
+        <node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen" >
+            <param name="knowledge_base"        value="rosplan_knowledge_base" />
+            <param name="plan_topic"            value="/rosplan_plan_dispatcher/complete_plan" /> <!-- single esterel plan -->
+            <param name="action_dispatch_topic" value="action_dispatch" />
+            <param name="action_feedback_topic" value="action_feedback" />
+            <param name="display_edge_type"     value="false" />
+        </node>
+
+        <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
+        <node name="coordinator_non_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="false" >
+            <param name="adaptable_plan_dispatcher_required" value="false" />
+        </node>
+    </group>
 
     <!-- count the number of executed actions for benchmark purposes -->
     <node name="action_counter_node" pkg="rosplan_demos" type="action_counter.py" />
@@ -103,8 +131,5 @@
         <arg name="pddl_action_name" value="ditch" />
         <arg name="action_duration" value="1" />
     </include>
-
-    <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
-    <node name="coordinator" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="true" />
 
 </launch>

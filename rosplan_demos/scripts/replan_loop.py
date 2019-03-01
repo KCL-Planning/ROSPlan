@@ -55,6 +55,14 @@ def perturb():
 def run():
     goal_achieved = False
     replans = 0
+
+    # use or not adaptable plan dispatcher
+    adaptable_plan_dispatcher_required = rospy.get_param('~adaptable_plan_dispatcher_required', True)
+    if adaptable_plan_dispatcher_required:
+        print 'using adaptable plan dispatcher'
+    else:
+        print 'NOT using adaptable plan dispatcher'
+
     while not goal_achieved and replans<25:
         rospy.wait_for_service('/rosplan_problem_interface/problem_generation_server')
         rospy.wait_for_service('/rosplan_planner_interface/planning_server')
@@ -71,8 +79,9 @@ def run():
             pp = rospy.ServiceProxy('/rosplan_parsing_interface/parse_plan', Empty)
             pp()
 
-            ea = rospy.ServiceProxy('/csp_exec_generator/gen_exec_alternatives', ExecAlternatives)
-            ear = ea()
+            if(adaptable_plan_dispatcher_required):
+                ea = rospy.ServiceProxy('/csp_exec_generator/gen_exec_alternatives', ExecAlternatives)
+                ear = ea()
 
             perturb()
 
