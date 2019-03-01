@@ -128,8 +128,6 @@ namespace KCL_rosplan {
 				// dispatch new action
 				if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_START && !action_dispatched[node.action.action_id]) {
 
-					finished_execution = false;
-
 					// query KMS for condition edges
 					bool condition_activate_action = false;
 					if(edges_activate_action) {
@@ -137,6 +135,8 @@ namespace KCL_rosplan {
 					}
 
 					if(condition_activate_action) {
+
+    					finished_execution = false;
 
 						// activate action
 						action_dispatched[node.action.action_id] = true;
