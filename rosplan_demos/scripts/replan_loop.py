@@ -12,6 +12,8 @@ from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpd
 from rosplan_knowledge_msgs.msg import KnowledgeItem
 from diagnostic_msgs.msg import KeyValue
 
+import os
+
 def perturb():
     try:
         update = rospy.ServiceProxy('/rosplan_knowledge_base/update_array', KnowledgeUpdateServiceArray)
@@ -25,20 +27,20 @@ def perturb():
 
                 ki_remove = KnowledgeItem()
                 ki_remove.knowledge_type = 1
-                ki_remove.attribute_name = "machine_off"
+                ki_remove.attribute_name = 'machine_off'
                 kv = KeyValue()
-                kv.key = "m"
-                kv.value =  "machine"+str(i)
+                kv.key = 'm'
+                kv.value =  'machine'+str(i)
                 ki_remove.values.append(kv)
                 arr.knowledge.append(ki_remove)
                 update_type.append(2)
 
                 ki_remove = KnowledgeItem()
                 ki_remove.knowledge_type = 1
-                ki_remove.attribute_name = "machine_on"
+                ki_remove.attribute_name = 'machine_on'
                 kv = KeyValue()
-                kv.key = "m"
-                kv.value =  "machine"+str(i)
+                kv.key = 'm'
+                kv.value =  'machine'+str(i)
                 ki_remove.values.append(kv)
                 arr.knowledge.append(ki_remove)
                 update_type.append(0)
@@ -50,12 +52,10 @@ def perturb():
             update(arr)
 
     except rospy.ServiceException, e:
-        print "Unexpected perturbances not called"
+        print 'Unexpected perturbances not called'
 
 def run():
     rospy.init_node('coordinator', anonymous=False)
-    goal_achieved = False
-    replans = 0
 
     # use or not adaptable plan dispatcher
     adaptable_plan_dispatcher_required = rospy.get_param('~adaptable_plan_dispatcher_required', True)
@@ -63,6 +63,17 @@ def run():
         print 'using adaptable plan dispatcher'
     else:
         print 'NOT using adaptable plan dispatcher'
+
+    # for logging purposes, write results of the experiment to a file
+    ros_tcp_port = os.environ['ROS_MASTER_URI'].replace('http://localhost:', '')
+    if adaptable_plan_dispatcher_required:
+        log_file = open('exp_results_adaptable_' + ros_tcp_port + '.csv','w')
+    else:
+        log_file = open('exp_results_non_adaptable_' + ros_tcp_port + '.csv','w')
+    log_file.write('succeeded?, number of replans, number of executed actions\n')
+
+    goal_achieved = False
+    replans = 0
 
     while not goal_achieved and replans<25:
         rospy.wait_for_service('/rosplan_problem_interface/problem_generation_server')
@@ -96,17 +107,27 @@ def run():
         except rospy.ServiceException, e:
             replans += 1
 
-    if goal_achieved:
-        print "SUCCESS ", str(replans)
-    else:
-        print "FAILED ", str(replans)
-
+    # get number of executed actions
+    number_of_executed_actions = 0
     try:
         ac = rospy.ServiceProxy('/action_count', Trigger)
         acr = ac()
-        print "Actions: " + acr.message
+        print 'Actions: ' + acr.message
+        number_of_executed_actions = acr.message
     except rospy.ServiceException, e:
         print 0
+
+    # check if goal was achieved, write to log file
+    if goal_achieved:
+        print 'SUCCESS ', str(replans)
+        log_file.write('true, ' + str(replans) + ', ' + str(number_of_executed_actions) + '\n')
+    else:
+        print 'FAILED ', str(replans)
+        log_file.write('false' + str(replans) + ', ' + str(number_of_executed_actions) + '\n')
+
+    # for logging purposes, write experiment results to text file, closing the file since we are done
+    log_file.close()
+
 
 if __name__ == '__main__':
     run()
