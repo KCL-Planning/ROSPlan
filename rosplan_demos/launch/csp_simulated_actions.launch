@@ -75,11 +75,6 @@
     </include>
 
     <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
-        <arg name="pddl_action_name" value="ask_unload" />
-        <arg name="action_duration" value="1" />
-    </include>
-
-    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
         <arg name="pddl_action_name" value="wait_load_at_machine" />
         <arg name="action_duration" value="1" />
     </include>
