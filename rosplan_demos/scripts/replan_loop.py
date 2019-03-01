@@ -53,6 +53,7 @@ def perturb():
         print "Unexpected perturbances not called"
 
 def run():
+    rospy.init_node('coordinator', anonymous=False)
     goal_achieved = False
     replans = 0
 

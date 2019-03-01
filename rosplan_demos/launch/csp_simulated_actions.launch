@@ -66,7 +66,7 @@
         </node>
 
         <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
-        <node name="coordinator_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="false" >
+        <node name="coordinator_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="true" >
             <param name="adaptable_plan_dispatcher_required" value="true" />
         </node>
     </group>
@@ -76,14 +76,14 @@
         <!-- non adaptable (normal) plan dispatching -->
         <node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen" >
             <param name="knowledge_base"        value="rosplan_knowledge_base" />
-            <param name="plan_topic"            value="/rosplan_plan_dispatcher/complete_plan" /> <!-- single esterel plan -->
+            <param name="plan_topic"            value="/rosplan_parsing_interface/complete_plan" /> <!-- single esterel plan -->
             <param name="action_dispatch_topic" value="action_dispatch" />
             <param name="action_feedback_topic" value="action_feedback" />
             <param name="display_edge_type"     value="false" />
         </node>
 
         <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
-        <node name="coordinator_non_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="false" >
+        <node name="coordinator_non_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="true" >
             <param name="adaptable_plan_dispatcher_required" value="false" />
         </node>
     </group>
