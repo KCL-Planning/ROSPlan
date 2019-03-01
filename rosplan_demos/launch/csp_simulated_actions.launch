@@ -5,7 +5,7 @@
 
     <!-- set pddl domain, problem and category -->
     <arg name="domain" default="domain_robot_delivery.pddl" />
-    <arg name="problem" default="problem_w5_m5_g3.pddl" />
+    <arg name="problem" default="problem_w5_m5_g3" />
     <arg name="category" default="iros_problems_free" /> <!-- iros_problems_free or iros_problems_deadlines -->
 
     <!-- delect between normal or smart plan dispatcher -->
@@ -14,7 +14,7 @@
     <!-- do not touch this params, but rather update args above -->
     <arg name="common_path" default="$(find rosplan_demos)/common/$(arg category)" />
     <arg name="domain_path" default="$(arg common_path)/$(arg domain)" />
-    <arg name="problem_path" default="$(arg common_path)/$(arg problem)" />
+    <arg name="problem_path" default="$(arg common_path)/$(arg problem).pddl" />
 
     <!-- knowledge base -->
     <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
@@ -68,6 +68,8 @@
         <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
         <node name="coordinator_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="true" >
             <param name="adaptable_plan_dispatcher_required" value="true" />
+            <param name="execution_type" type="str" value="$(arg category)" /> <!-- iros_problems_free or iros_problems_deadlines, debug purposes -->
+            <param name="problem_name" type="str" value="$(arg problem)" /> <!-- problem name given for debugging purposes -->
         </node>
     </group>
 
@@ -85,6 +87,8 @@
         <!-- coordinator that calls services, replans if failure and outputs the number of executed actions -->
         <node name="coordinator_non_adaptable" pkg="rosplan_demos" type="replan_loop.py" output="screen" required="true" >
             <param name="adaptable_plan_dispatcher_required" value="false" />
+            <param name="execution_type" type="str" value="$(arg category)" /> <!-- iros_problems_free or iros_problems_deadlines -->
+            <param name="problem_name" type="str" value="$(arg problem)" /> <!-- problem name given for debugging purposes -->
         </node>
     </group>
 

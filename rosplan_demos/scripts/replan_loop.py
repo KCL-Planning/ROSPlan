@@ -64,12 +64,23 @@ def run():
     else:
         print 'NOT using adaptable plan dispatcher'
 
+    # get execution type from param server
+    execution_type = rospy.get_param('~execution_type', 'exec_type_not_set_')
+    free_or_non_free = None
+    if execution_type == 'iros_problems_free':
+        free_or_non_free = 'free_'
+    elif execution_type == 'iros_problems_free':
+        free_or_non_free = 'non_free_'
+
+    # get execution type from param server
+    problem_name = rospy.get_param('~problem_name', 'problem_name_not_set_')
+
     # for logging purposes, write results of the experiment to a file
     ros_tcp_port = os.environ['ROS_MASTER_URI'].replace('http://localhost:', '')
     if adaptable_plan_dispatcher_required:
-        log_file = open('exp_results_adaptable_' + ros_tcp_port + '.csv','w')
+        log_file = open('exp_adaptable_' + free_or_non_free + problem_name + '_' + ros_tcp_port + '_n' + '.csv','w')
     else:
-        log_file = open('exp_results_non_adaptable_' + ros_tcp_port + '.csv','w')
+        log_file = open('exp_non_adaptable_' + free_or_non_free + problem_name + '_' + ros_tcp_port + '_n' + '.csv','w')
     log_file.write('succeeded?, number of replans, number of executed actions\n')
 
     goal_achieved = False
