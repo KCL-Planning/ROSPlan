@@ -1,4 +1,8 @@
+# ignore pddl files
 *.pddl
+# with exception of the ones required for the unit tests
+!test_domain_robot_delivery.pddl
+!test_problem_w5_m5_g3.pddl
 
 # Compiled Object files
 *.slo

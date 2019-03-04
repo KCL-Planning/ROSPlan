@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- unit test launch file for ActionSimulator.h -->
+
+    <!-- NOTE: this is an iros_problems_free domain/problem -->
+    <arg name="domain" default="test_domain_robot_delivery" />
+    <arg name="problem" default="test_problem_w5_m5_g3" />
+
+    <!-- do not touch this params, but rather update args above -->
+    <arg name="common_path" default="$(find rosplan_planning_system)/test/pddl" />
+    <arg name="domain_path" default="$(arg common_path)/$(arg domain).pddl" />
+    <arg name="problem_path" default="$(arg common_path)/$(arg problem).pddl" />
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+    <!-- unit test, used for continuous integration purposes -->
+    <test pkg="rosplan_planning_system" type="action_simulator_test" test-name="action_simulator_test" />
+
+</launch>
