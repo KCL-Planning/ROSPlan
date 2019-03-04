@@ -66,10 +66,11 @@ def run():
 
     # get execution type from param server
     execution_type = rospy.get_param('~execution_type', 'exec_type_not_set_')
+
     free_or_non_free = None
     if execution_type == 'iros_problems_free':
         free_or_non_free = 'free_'
-    elif execution_type == 'iros_problems_free':
+    elif execution_type == 'iros_problems_deadlines':
         free_or_non_free = 'non_free_'
 
     # get execution type from param server
