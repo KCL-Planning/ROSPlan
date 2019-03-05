@@ -78,8 +78,9 @@
 
 
 
-    void utestCallback(const std_msgs::String::ConstPtr& msg){
-        ASSERT_EQ(1, msg.response.plan_found);
+    void utestCallback(const std_msgs::String::ConstPtr& plan){
+        std::cout << "here" << std::endl;
+        ROS_INFO("I heard: [%s]", plan->data.c_str());
         plan_received = true;
     }
 
@@ -105,16 +106,19 @@
             ss << t.rdbuf();
 
             msg.data = ss.str();
-
-            // std::cout << ss.str() << std::endl;
+            std::cout << ss.str() << std::endl;
             pub.publish(msg);
 
-
+            /*
             ros::Rate loop_rate = 10;
             while (!plan_received && ros::ok()) {
                 loop_rate.sleep();
+                std::cout << "here!" << std::endl;
                 ros::spinOnce();
             }
+*/
+
+            ros::spinOnce();
 
 
             return RUN_ALL_TESTS();
