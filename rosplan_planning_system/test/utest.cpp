@@ -54,6 +54,7 @@
 
     GTEST_TEST(PlannerInterfaceTests, Test3_problem_topic) {
         ros::NodeHandle n("~");
+        std::cout << n.getNamespace() << std::endl;
 
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
         rosplan_dispatch_msgs::PlanningService srv;
@@ -72,9 +73,16 @@
 
 
 
+
+    bool plan_received = false;
+
+
+
     void utestCallback(const std_msgs::String::ConstPtr& msg){
-        ROS_INFO("I heard: [%s]", msg->data.c_str());
+        ASSERT_EQ(1, msg.response.plan_found);
+        plan_received = true;
     }
+
 
     int main(int argc, char **argv) {
 
@@ -82,17 +90,32 @@
             ros::init(argc, argv, "utest");
 
             ros::NodeHandle n("~");
+
+            ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 1, utestCallback);
+
             ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_planner_interface/problem_instance", 1000);
 
-            /*
+            std_msgs::String msg;
+
+            std::string rosplan_demos_path = ros::package::getPath("rosplan_demos");
+            std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
+
+            std::ifstream t(rosplan_demos_path + "/common/utest_problem.pddl");
+            std::stringstream ss;
+            ss << t.rdbuf();
+
+            msg.data = ss.str();
+
+            // std::cout << ss.str() << std::endl;
+            pub.publish(msg);
+
+
             ros::Rate loop_rate = 10;
-            while (!plan_recieved && ros::ok()) {
+            while (!plan_received && ros::ok()) {
                 loop_rate.sleep();
                 ros::spinOnce();
             }
-            */
 
-            // ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 1, utestCallback);
 
             return RUN_ALL_TESTS();
 
