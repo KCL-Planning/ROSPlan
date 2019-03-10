@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
   rosplan_dependencies
+  rostest
+  rosunit
 )
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -123,6 +125,21 @@ add_dependencies(rosplan_action_interface ${catkin_EXPORTED_TARGETS})
 
 add_library(action_simulator src/ActionInterface/ActionSimulator.cpp)
 add_dependencies(action_simulator ${catkin_EXPORTED_TARGETS})
+
+###########
+## Tests ##
+###########
+
+# to build the test do: "catkin build --no-deps rosplan_planning_system --make-args run_tests"
+# to run the test do e.g.: "rostest rosplan_planning_system ActionSimulator.test --text"
+# where "--text" is optional, if you want to see the console output of your test
+if(CATKIN_ENABLE_TESTING)
+    add_rostest_gtest(action_simulator_test
+            test/ActionSimulator.test
+            test/ActionSimulatorTest.cpp
+        )
+    target_link_libraries(action_simulator_test ${catkin_LIBRARIES} action_simulator)
+endif()
 
 #############
 ## Install ##
