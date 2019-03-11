@@ -1,0 +1,6 @@
+(defie (problem utest_problem)
+(:domain utest_domain)
+(:objects ball)
+(:init (inrooma ball))
+(:goal (inroomb ball))
+)
