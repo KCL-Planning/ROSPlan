@@ -44,7 +44,6 @@ namespace KCL_rosplan {
 
     
         void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::EsterelPlan plan) {
-        //void EsterelPlanDispatcher::planCallback(const rosplan_dispatch_msgs::RobustPlan plan) {
                 if(finished_execution) {
                         ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
                         plan_received = true;
@@ -98,10 +97,8 @@ namespace KCL_rosplan {
 
             // for each node check completion, conditions, and dispatch
             for(std::vector<rosplan_dispatch_msgs::EsterelPlanNode>::const_iterator ci = current_plan.nodes.begin(); ci != current_plan.nodes.end(); ci++) {
-                //the main loop
                 rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
                 // activate plan start edges
-                //parisa: compare the dispatch time with the lower bound
                 if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START && !plan_started) {
 
                         // record the time for the PLAN_START node
@@ -184,10 +181,6 @@ namespace KCL_rosplan {
                         // check the current time with the lower bound
                          double NOW = ros::Time::now().toSec();
                          if (NOW - planStartTime < minimum_dispatch_time) { 
-                            /*if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::ACTION_END && action_completed[node.action.action_id]) {
-                                ROS_INFO("KCL: (%s) Action completed too early, %s: %f < %f.", ros::this_node::getName().c_str(), node.name.c_str(), NOW-planStartTime, minimum_dispatch_time);
-                                replan_requested = true;
-                            }*/
                             times_activate_action = false;
                             finished_execution = false;
                             break;
