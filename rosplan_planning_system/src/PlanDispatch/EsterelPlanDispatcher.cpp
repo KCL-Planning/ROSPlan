@@ -13,7 +13,7 @@ namespace KCL_rosplan {
         node_handle = &nh;
 
         // robust experiment parameters
-        timeout_actions = true;
+        timeout_actions = false;
         action_timeout_fraction = 0;
         nh.getParam("timeout_actions", timeout_actions);
         nh.getParam("action_timeout_fraction", action_timeout_fraction);
