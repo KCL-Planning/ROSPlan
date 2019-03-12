@@ -213,7 +213,7 @@ namespace KCL_rosplan {
                     }
 
                     // the state is unexpected
-                    if(!condition_activate_action) {
+                    if(!condition_activate_action && timeout_actions) {
                         replan_requested = true;
                     }
 
