@@ -18,4 +18,6 @@
 		<param name="planning_language"  value="$(arg planning_language)" />
 	</node>
 
+	<test test-name="ProblemGeneratorTests" pkg="rosplan_planning_system" type="ProblemGeneratorTests" />
+
 </launch>

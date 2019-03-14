@@ -161,7 +161,11 @@ install(DIRECTORY common/bin
 if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     find_package(roslib REQUIRED)
-    add_rostest_gtest(utest launch/includes/planner_interface.launch test/utest.cpp  src/PlannerInterface/PlannerInterface.cpp) #add more src files
-    target_link_libraries(utest ${catkin_LIBRARIES})
-    add_dependencies(utest ${catkin_EXPORTED_TARGETS}) #not needed?
+    # Planner Interface
+    add_rostest_gtest(PlannerInterfaceTests launch/includes/planner_interface.launch test/PlannerInterfaceTests.cpp)
+    target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
+    # Problem Generator
+    add_rostest_gtest(ProblemGeneratorTests launch/includes/problem_interface.launch test/ProblemGeneratorTests.cpp)
+    target_link_libraries(ProblemGeneratorTests ${catkin_LIBRARIES})
+
 endif()

@@ -1,4 +1,4 @@
-(define (domain utest_domain)
+(define (domain test_domain)
  (:predicates (inrooma ?x) (inroomb ?x))
  (:action movetob
    :parameters (?x)
