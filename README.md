@@ -8,43 +8,31 @@ http://kcl-planning.github.io/ROSPlan/
 The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. It possesses a simple interface, and already includes interfaces to common ROS libraries.
 
 ### Installation
+The following instructions work for ```ROS kinetic``` and ```ROS melodic```
 
 Install dependencies:
-(for both Kinetic and Melodic)
 ```sh
 sudo apt install flex bison freeglut3-dev libbdd-dev python-catkin-tools
 ```
-(for Kinetic)
+NOTE: In the following command, replace $DISTRO with one of the following values: ```kinetic, melodic```
 ```sh
-sudo apt install ros-kinetic-mongodb-store ros-kinetic-tf2-bullet
-```
-(for Melodic)
-```sh
-sudo apt install libmongo-client-dev libmongoclient-dev libmongoc-dev ros-melodic-mongodb-store ros-melodic-mongodb-store-msgs ros-melodic-tf2-bullet
+sudo apt install ros-$DISTRO-tf2-bullet
 ```
 Select or create a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace):
-(for both Kinetic and Melodic)
 ```sh
-mkdir -p ROSPlan/src
-cd ROSPlan/
+mkdir -p ros_ws/src
+cd ros_ws
 ```
 Get the code:
-(for both Kinetic and Melodic)
 ```sh
-cd src/
+cd src
 git clone https://github.com/KCL-Planning/rosplan
 ```
-Clone mongodb from source:
-(melodic only)
-```
-git clone -b melodic-devel git@github.com:strands-project/mongodb_store.git 
-```
-
 Compile everything:
 ```sh
 catkin build
 ```
-
+Next step: test the code with a demo.
 ### Running a demo with the turtlebot 2, using Gazebo simulator (kinetic only)
 
 This demo has been migrated to a separate repo, please follow up this link: [rosplan_demos](https://github.com/KCL-Planning/rosplan_demos)
