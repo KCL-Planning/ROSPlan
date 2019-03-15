@@ -32,7 +32,6 @@ Get the code:
 (for both Kinetic and Melodic)
 ```sh
 cd src/
-git clone https://github.com/clearpathrobotics/occupancy_grid_utils
 git clone https://github.com/KCL-Planning/rosplan
 ```
 Clone mongodb from source:
