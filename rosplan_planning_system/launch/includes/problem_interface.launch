@@ -4,8 +4,8 @@
 	<!-- arguments -->
 	<arg name="node_name" 	     default="rosplan_problem_interface" />
 	<arg name="knowledge_base"   default="rosplan_knowledge_base" />
-	<arg name="domain_path"      default="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
-	<arg name="problem_path"     default="$(find rosplan_demos)/common/problem.pddl" />
+	<arg name="domain_path"      default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl" />
+	<arg name="problem_path"     default="$(find rosplan_planning_system)/test/turtlebot_demo/problem.pddl" />
 	<arg name="problem_topic"    default="problem_instance" />
 	<arg name="planning_language" default="PDDL" /> <!-- Can be RDDL, PPDDL or PDDL -->
 
