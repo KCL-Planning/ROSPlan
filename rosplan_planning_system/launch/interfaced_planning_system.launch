@@ -1,9 +1,21 @@
 <?xml version="1.0"?>
 <launch>
 
-  <!-- arguments -->
+  <!-- :::arguments::: -->
+
+  <!-- pddl domain path -->
   <arg name="domain_path"  default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl" />
-  <arg name="problem_path" default="" /> <!-- load a particular initial state into KB at startup if needed -->
+
+  <!-- load a particular initial state into KB at startup (optional) -->
+  <arg name="problem_path" default="" />
+
+  <!-- automatically generated pddl problem will be created here -->
+  <arg name="autom_gen_problem_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/problem.pddl" />
+
+  <!-- planner will produce output plan and write to this location -->
+  <arg name="data_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/" />
+
+  <!-- :::end of arguments::: -->
 
   <!-- scene database (MongoDB) -->
   <include file="$(find mongodb_store)/launch/mongodb_store.launch">
@@ -24,7 +36,7 @@
     <arg name="knowledge_base"   value="rosplan_knowledge_base" />
     <arg name="domain_path"      value="$(arg domain_path)" />
     <!-- problem_path: pddl problem will be automatically generated and placed in this location -->
-    <arg name="problem_path"     value="$(find rosplan_planning_system)/test/problem.pddl" />
+    <arg name="problem_path"     value="$(arg autom_gen_problem_path)" />
     <arg name="problem_topic"    value="problem_instance" />
   </include>
 
@@ -34,8 +46,8 @@
     <arg name="problem_topic"        value="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        value="planner_output" />
     <arg name="domain_path"          value="$(arg domain_path)" />
-    <arg name="problem_path"         value="$(find rosplan_planning_system)/test/problem.pddl" />
-    <arg name="data_path"            value="$(find rosplan_planning_system)/test/" />
+    <arg name="problem_path"         value="$(arg autom_gen_problem_path)" />
+    <arg name="data_path"            value="$(arg data_path)" />
     <arg name="planner_command"      value="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
   </include>
 
