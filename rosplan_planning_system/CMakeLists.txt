@@ -145,7 +145,7 @@ endif()
 ## Install ##
 #############
 
-install(TARGETS rosplan_action_interface simulatedAction
+install(TARGETS rosplan_action_interface simulatedAction action_simulator
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
