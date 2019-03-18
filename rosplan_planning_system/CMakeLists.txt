@@ -164,8 +164,8 @@ if (CATKIN_ENABLE_TESTING)
     # Planner Interface
     add_rostest_gtest(PlannerInterfaceTests launch/includes/planner_interface.launch test/PlannerInterfaceTests.cpp)
     target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
-    # Problem Generator
-    add_rostest_gtest(ProblemGeneratorTests launch/includes/problem_interface.launch test/ProblemGeneratorTests.cpp)
-    target_link_libraries(ProblemGeneratorTests ${catkin_LIBRARIES})
+    # Problem Interface
+    add_rostest_gtest(ProblemInterfaceTests launch/includes/problem_interface.launch test/ProblemInterfaceTests.cpp)
+    target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
 
 endif()
