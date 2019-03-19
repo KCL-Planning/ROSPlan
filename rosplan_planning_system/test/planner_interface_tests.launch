@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- arguments -->
+    <arg name="node_name"            default="rosplan_planner_interface" />
+    <arg name="use_problem_topic"    default="false" />
+    <arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
+    <arg name="planner_topic"        default="/rosplan_problem_interface/planner_output" />
+    <arg name="domain_path"          default="test_domain.pddl" />
+    <arg name="problem_path"         default="test_problem.pddl" />
+    <arg name="data_path"            default="$(find rosplan_demos)/common/"/>
+    <arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
+    <arg name="planner_interface"    default="popf_planner_interface" />
+    <arg name="test_path"         	 default="PlannerInterfaceTests.cpp" />
+
+
+    <!-- planner interface -->
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" respawn="false" output="screen">
+
+        <!-- general options -->
+        <param name="use_problem_topic" value="$(arg use_problem_topic)" />
+
+        <!-- ros topics -->
+        <param name="problem_topic" value="$(arg problem_topic)" />
+        <param name="planner_topic" value="$(arg planner_topic)" />
+
+        <!-- directory for files -->
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="data_path" value="$(arg data_path)" />
+
+        <!-- to run the planner -->
+        <param name="planner_command" value="$(arg planner_command)" />
+    </node>
+
+    <test test-name="PlannerInterfaceTests" pkg="rosplan_planning_system" type="PlannerInterfaceTests" />
+
+</launch>
