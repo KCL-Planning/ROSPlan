@@ -162,10 +162,10 @@ if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     find_package(roslib REQUIRED)
     # Planner Interface
-    add_rostest_gtest(PlannerInterfaceTests launch/includes/planner_interface.launch test/PlannerInterfaceTests.cpp)
+    add_rostest_gtest(PlannerInterfaceTests test/planner_interface_tests.launch test/PlannerInterfaceTests.cpp)
     target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
     # Problem Interface
-    add_rostest_gtest(ProblemInterfaceTests launch/includes/problem_interface.launch test/ProblemInterfaceTests.cpp)
+    add_rostest_gtest(ProblemInterfaceTests test/problem_interface_tests.launch test/ProblemInterfaceTests.cpp)
     target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
 
 endif()
