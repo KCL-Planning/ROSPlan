@@ -10,7 +10,7 @@
  * This file defines the RPMoveBase class.
  * RPMoveBase is used to connect ROSPlan to the MoveBase library.
  * PDDL "goto_waypoint" actions become "move_base_msgs::MoveBase" actions.
- * Waypoint goals are fetched by name from the SceneDB (implemented by mongoDB).
+ * Waypoint goals are fetched from parameter server.
  */
 namespace KCL_rosplan {
 
