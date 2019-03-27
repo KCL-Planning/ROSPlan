@@ -12,7 +12,6 @@
 #include "rosplan_dispatch_msgs/PlanningService.h"
 #include <cstdlib>
 
-
     bool plan_received;
     std::string last_plan;
 
