@@ -101,7 +101,8 @@ namespace KCL_rosplan {
 			std::ifstream problemIn(req.problem_path.c_str());
 			if(problemIn) res.problem_string = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
 		}
-		return success;
+		res.problem_generated = success;
+		return true;
 	}
 	
 	/**

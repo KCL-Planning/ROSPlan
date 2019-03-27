@@ -17,7 +17,6 @@
     std::string last_plan;
 
     void testCallback(const std_msgs::String::ConstPtr &plan) {
-        std::cout << "here" << std::endl;
         ROS_INFO("I heard: [%s]", plan->data.c_str());
         last_plan = plan->data;
         plan_received = true;
@@ -44,13 +43,14 @@
         ASSERT_EQ(1, srv.response.plan_found);
 
     }
-/*
+
 
     GTEST_TEST(PlannerInterfaceTests, Test2_planner_output_against_known_plan) {
+
         ros::NodeHandle n("~");
 
-        ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 1, testCallback);
-        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_planner_interface/problem_instance", 1000);
+        ros::Subscriber sub = n.subscribe<std_msgs::String>("/rosplan_planner_interface/planner_output", 1000, &testCallback);
+        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_problem_interface/problem_instance", 1000);
 
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
         rosplan_dispatch_msgs::PlanningService srv;
@@ -63,6 +63,7 @@
         srv.request.domain_path = rosplan_demos_path + "/common/test_domain.pddl";
         srv.request.problem_path = rosplan_demos_path + "/common/test_problem.pddl";
         srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
+
 
         std::ifstream t(rosplan_demos_path + "/common/test_problem.pddl");
         std::stringstream ss;
@@ -83,8 +84,8 @@
         while (!plan_received && ros::ok()) {
             loop_rate.sleep();
             ros::spinOnce();
-        }
 
+        }
         std::string known_plan = "0.000: (movetob ball)  [0.001]\n";
 
         // checking the plan
@@ -92,13 +93,13 @@
         ASSERT_EQ(last_plan, known_plan);
 
     }
-*/
+
 
     GTEST_TEST(PlannerInterfaceTests, Test3_problem_without_solution) {
         ros::NodeHandle n("~");
 
-        ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 10, testCallback);
-        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_planner_interface/problem_instance", 1000);
+        ros::Subscriber sub = n.subscribe<std_msgs::String>("/rosplan_planner_interface/planner_output", 1000, &testCallback);
+        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_problem_interface/problem_instance", 1000);
 
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
         rosplan_dispatch_msgs::PlanningService srv;
@@ -126,19 +127,17 @@
         bool call_answer = client1.call(srv);
 
         ASSERT_EQ(1, call_answer);
-
-
-        // checking the plan
         ASSERT_EQ(0, srv.response.plan_found);
 
     }
 
 
     GTEST_TEST(PlannerInterfaceTests, Test4_invalid_pddl_syntax) {
+
         ros::NodeHandle n("~");
 
-        ros::Subscriber sub = n.subscribe("/rosplan_planner_interface/planner_output", 10, testCallback);
-        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_planner_interface/problem_instance", 1000);
+        ros::Subscriber sub = n.subscribe<std_msgs::String>("/rosplan_planner_interface/planner_output", 1000, &testCallback);
+        ros::Publisher pub = n.advertise<std_msgs::String>("/rosplan_problem_interface/problem_instance", 1000);
 
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::PlanningService>("/rosplan_planner_interface/planning_server_params");
         rosplan_dispatch_msgs::PlanningService srv;
@@ -166,9 +165,6 @@
         bool call_answer = client1.call(srv);
 
         ASSERT_EQ(1, call_answer);
-
-
-        // checking the plan
         ASSERT_EQ(0, srv.response.plan_found);
 
     }
