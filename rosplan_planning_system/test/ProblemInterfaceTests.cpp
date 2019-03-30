@@ -31,31 +31,26 @@ GTEST_TEST(ProblemInterfaceTests, Test1_problem_generated) {
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::ProblemService>("/rosplan_problem_interface/problem_generation_server_params");
         rosplan_dispatch_msgs::ProblemService srv;
 
-        std::string rosplan_demos_path = ros::package::getPath("rosplan_demos");
+        std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
-        srv.request.problem_path = rosplan_demos_path + "/common/generated_test_problem.pddl";
+        srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/generated_test_problem.pddl";
         srv.request.problem_string_response = true;
 
-        bool callResponse = client1.call(srv);
-
-        ASSERT_EQ(1, callResponse);
-        //std::cout << srv.response.problem_string << std::endl;
+        ASSERT_EQ(1, client1.call(srv));
         ASSERT_EQ(1, srv.response.problem_generated);
-        //false, check generated problem file
+
 }
 
 GTEST_TEST(ProblemInterfaceTests, Test2_problem_string_against_known_problem) {
 
         ros::NodeHandle n("~");
 
-        ros::Subscriber sub = n.subscribe("/rosplan_problem_interface/problem_instance", 1000, &testCallback);
-
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::ProblemService>("/rosplan_problem_interface/problem_generation_server_params");
         rosplan_dispatch_msgs::ProblemService srv;
 
-        std::string rosplan_demos_path = ros::package::getPath("rosplan_demos");
+        std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
-        srv.request.problem_path = rosplan_demos_path + "/common/generated_test_problem.pddl";
+        srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/generated_test_problem.pddl";
         srv.request.problem_string_response = true;
 
         client1.call(srv);
@@ -63,8 +58,6 @@ GTEST_TEST(ProblemInterfaceTests, Test2_problem_string_against_known_problem) {
         std::string known_problem = "(define (problem task)\n(:domain driverlog-simple)\n(:objects\n    home amazon london myhouse - place\n    driver - driver\n    truck - truck\n    mydvd - item\n)\n(:init\n    (at driver home)\n    (at truck amazon)\n    (at mydvd amazon)\n\n\n    (link amazon london)\n    (link london amazon)\n    (link london myhouse)\n    (link myhouse london)\n\n    (path home amazon)\n    (path amazon home)\n\n)\n(:goal (and\n    (at mydvd myhouse)\n))\n)\n";
 
         ASSERT_EQ(1, srv.response.problem_generated);
-
-        std::cout << "HERE" + srv.response.problem_string << std::endl;
 
         ASSERT_EQ(known_problem, srv.response.problem_string);
 
@@ -80,9 +73,9 @@ GTEST_TEST(ProblemInterfaceTests, Test3_problem_instance_against_known_problem) 
         ros::ServiceClient client1 = n.serviceClient<rosplan_dispatch_msgs::ProblemService>("/rosplan_problem_interface/problem_generation_server_params");
         rosplan_dispatch_msgs::ProblemService srv;
 
-        std::string rosplan_demos_path = ros::package::getPath("rosplan_demos");
+        std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
-        srv.request.problem_path = rosplan_demos_path + "/common/generated_test_problem.pddl";
+        srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/generated_test_problem.pddl";
         srv.request.problem_string_response = true;
 
         client1.call(srv);
@@ -101,7 +94,6 @@ GTEST_TEST(ProblemInterfaceTests, Test3_problem_instance_against_known_problem) 
 
 }
 
-// TIL
 
 int main(int argc, char **argv) {
 

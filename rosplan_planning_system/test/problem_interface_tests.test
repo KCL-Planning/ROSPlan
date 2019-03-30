@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- arguments -->
+
+    <arg name="domain" default="amazon-domain" />
+    <arg name="problem" default="amazon-problem" />
+
+    <!-- do not edit the two params below, but rather update args above -->
+    <arg name="common_path" default="$(find rosplan_planning_system)/test/pddl"/>
+    <arg name="domain_path" default="$(arg common_path)/$(arg domain).pddl" />
+    <arg name="problem_path" default="$(arg common_path)/$(arg problem).pddl" />
+
+    <arg name="node_name" 	     default="rosplan_problem_interface" />
+    <arg name="knowledge_base"   default="rosplan_knowledge_base" />
+    <arg name="problem_topic"    default="problem_instance" />
+    <arg name="planning_language" default="PDDL" /> <!-- Can be RDDL, PPDDL or PDDL -->
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+    <!-- problem generation -->
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="problemInterface" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="domain_path"    value="$(arg domain_path)" />
+        <param name="problem_path"   value="$(arg problem_path)" />
+        <param name="problem_topic"  value="$(arg problem_topic)" />
+        <param name="planning_language"  value="$(arg planning_language)" />
+    </node>
+
+    <test test-name="ProblemInterfaceTests" pkg="rosplan_planning_system" type="ProblemInterfaceTests" />
+
+</launch>
