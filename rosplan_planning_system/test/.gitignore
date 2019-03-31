@@ -1,1 +1,4 @@
-*.idea
+.idea
+
+/rosplan_planning_system/test/pddl/generated_test_problem.pddl
+/rosplan_planning_system/test/pddl/plan.pddl
