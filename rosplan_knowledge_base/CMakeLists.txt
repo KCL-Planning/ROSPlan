@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf
   rosplan_dependencies
+  roslib
 )
 
 find_package(FLEX REQUIRED)
@@ -96,3 +97,17 @@ install(TARGETS knowledgeBase
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+#############
+##  Tests  ##
+#############
+
+
+if (CATKIN_ENABLE_TESTING)
+	find_package(rostest REQUIRED)
+	find_package(roslib REQUIRED)
+	# Knowledge Base
+	add_rostest_gtest(KnowledgeBaseTests test/knowledge_base_tests.test test/KnowledgeBaseTests.cpp)
+	target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
+
+endif()

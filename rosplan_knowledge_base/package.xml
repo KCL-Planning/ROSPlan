@@ -22,6 +22,8 @@
   <build_depend>rosplan_knowledge_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>rosplan_dependencies</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>roslib</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
@@ -35,6 +37,8 @@
   <run_depend>mongodb_store</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>tf</run_depend>
+  <run_depend>rostest</run_depend>
+  <build_depend>roslib</build_depend>
 
   <export></export>
 </package>
