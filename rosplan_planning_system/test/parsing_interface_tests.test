@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- arguments -->
+    <arg name="node_name"        default="rosplan_parsing_interface" />
+    <arg name="knowledge_base"   default="rosplan_knowledge_base" />
+    <arg name="planner_topic"    default="/rosplan_planner_interface/planner_output" />
+    <arg name="plan_topic"       default="complete_plan" />
+
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(find rosplan_knowledge_base)/test/pddl/amazon-domain.pddl" />
+        <param name="problem_path" value="$(find rosplan_knowledge_base)/test/pddl/amazon-problem.pddl" />
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+    <!-- plan parsing -->
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="planner_topic"  value="$(arg planner_topic)" />
+        <param name="plan_topic"     value="$(arg plan_topic)" />
+    </node>
+
+    <test test-name="ParsingInterfaceTests" pkg="rosplan_planning_system" type="ParsingInterfaceTests" />
+
+</launch>

@@ -165,5 +165,8 @@ if (CATKIN_ENABLE_TESTING)
     # Problem Interface
     add_rostest_gtest(ProblemInterfaceTests test/problem_interface_tests.test test/ProblemInterfaceTests.cpp)
     target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
+    # Parsing Interface
+    add_rostest_gtest(ParsingInterfaceTests test/parsing_interface_tests.test test/ParsingInterfaceTests.cpp)
+    target_link_libraries(ParsingInterfaceTests ${catkin_LIBRARIES})
 
 endif()
