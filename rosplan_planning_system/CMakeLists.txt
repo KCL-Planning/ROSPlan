@@ -168,5 +168,9 @@ if (CATKIN_ENABLE_TESTING)
     # Parsing Interface
     add_rostest_gtest(ParsingInterfaceTests test/parsing_interface_tests.test test/ParsingInterfaceTests.cpp)
     target_link_libraries(ParsingInterfaceTests ${catkin_LIBRARIES})
+    # Plan Dispatch Interface
+    add_rostest_gtest(PlanDispatchTests test/plan_dispatch_tests.test test/PlanDispatchTests.cpp)
+    target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
+
 
 endif()
