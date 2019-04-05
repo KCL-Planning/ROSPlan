@@ -17,8 +17,15 @@
         <param name="use_unknowns" value="false" />
     </node>
 
-    <!-- plan parsing -->
-    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+    <!-- plan parsing where plan representations: simple plan. -->
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="planner_topic"  value="$(arg planner_topic)" />
+        <param name="plan_topic"     value="$(arg plan_topic)" />
+    </node>
+
+    <!-- plan parsing where plan representation: esterel_plan-->
+    <node name="rosplan_parsing_interface_esterel" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
         <param name="knowledge_base" value="$(arg knowledge_base)" />
         <param name="planner_topic"  value="$(arg planner_topic)" />
         <param name="plan_topic"     value="$(arg plan_topic)" />
