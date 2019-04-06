@@ -7,6 +7,32 @@
     <arg name="action_dispatch_topic"    default="action_dispatch" />
     <arg name="action_feedback_topic"    default="action_feedback" />
 
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(find rosplan_knowledge_base)/test/pddl/domain_turtlebot.pddl" />
+        <param name="problem_path" value="$(find rosplan_knowledge_base)/test/pddl/problem_turtlebot.pddl" />
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+
+    <!-- plan parsing where plan representations: simple plan. -->
+    <node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="rosplan_knowledge_base" />
+        <param name="planner_topic"  value="/rosplan_planner_interface/planner_output" />
+        <param name="plan_topic"     value="complete_plan" />
+    </node>
+
+    <!-- plan parsing where plan representation: esterel_plan-->
+    <node name="rosplan_parsing_interface_esterel" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="planner_topic"  value="/rosplan_planner_interface/planner_output" />
+        <param name="plan_topic"     value="complete_plan" />
+    </node>
+
+
     <!-- plan dispatching simple plan type -->
     <node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_simple_plan_dispatcher" respawn="false" output="screen">
         <param name="knowledge_base"        value="$(arg knowledge_base)" />
@@ -23,30 +49,9 @@
         <param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
     </node>
 
-    <!-- add KB and parsing interface -->
+    <!-- add parsing interface -->
 
-    <!-- knowledge base -->
-    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
-        <param name="domain_path" value="$(find rosplan_knowledge_base)/test/pddl/amazon-domain.pddl" />
-        <param name="problem_path" value="$(find rosplan_knowledge_base)/test/pddl/amazon-problem.pddl" />
-        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
-        <!-- conditional planning flags -->
-        <param name="use_unknowns" value="false" />
-    </node>
 
-    <!-- plan parsing where plan representations: simple plan. -->
-    <node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
-        <param name="knowledge_base" value="$(arg knowledge_base)" />
-        <param name="planner_topic"  value="/rosplan_planner_interface/planner_output" />
-        <param name="plan_topic"     value="complete_plan" />
-    </node>
-
-    <!-- plan parsing where plan representation: esterel_plan-->
-    <node name="rosplan_parsing_interface_esterel" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
-        <param name="knowledge_base" value="$(arg knowledge_base)" />
-        <param name="planner_topic"  value="/rosplan_planner_interface/planner_output" />
-        <param name="plan_topic"     value="complete_plan" />
-    </node>
 
     <test test-name="PlanDispatchTests" pkg="rosplan_planning_system" type="PlanDispatchTests" />
 

@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
 <launch>
 
-	<!-- scene database (MongoDB) -->
+
+	<!-- scene database (MongoDB)
 	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
 		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
-	</include>
+	</include> -->
 
 	<!-- knowledge base -->
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
