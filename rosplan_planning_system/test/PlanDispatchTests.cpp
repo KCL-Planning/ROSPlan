@@ -16,7 +16,7 @@
 #include "rosplan_dispatch_msgs/DispatchService.h"
 
 
-// Documentation incorrectly states tgat dispatch_plan service is of type std_srvs/Empty
+// Documentation incorrectly states that dispatch_plan service is of type std_srvs/Empty
 
 GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch) {
 
@@ -33,8 +33,6 @@ GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch) {
 
     ASSERT_EQ(1, srv.response.plan_parsed);
 
-    /*
-
     ros::ServiceClient client2 = n.serviceClient<rosplan_dispatch_msgs::DispatchService>("/rosplan_plan_dispatcher_esterel/dispatch_plan");
     rosplan_dispatch_msgs::DispatchService dispatchSrv;
 
@@ -42,9 +40,9 @@ GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch) {
 
     ASSERT_EQ(true, dispatchSrv.response.success);
 
-    ASSERT_EQ(true, dispatchSrv.response.goal_achieved);
+    //ASSERT_EQ(true, dispatchSrv.response.goal_achieved);
 
-     */
+
 }
 
 
