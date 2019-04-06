@@ -18,7 +18,7 @@
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
 #include "rosplan_dispatch_msgs/DispatchService.h"
 
-
+// test
 bool actions_received;
 rosplan_dispatch_msgs::ActionDispatch retrieved_action;
 
