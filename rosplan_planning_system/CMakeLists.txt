@@ -160,16 +160,16 @@ if (CATKIN_ENABLE_TESTING)
     find_package(rostest REQUIRED)
     find_package(roslib REQUIRED)
     # Planner Interface
-    add_rostest_gtest(PlannerInterfaceTests test/planner_interface_tests.test test/PlannerInterfaceTests.cpp)
+    add_rostest_gtest(PlannerInterfaceTests test/launch/planner_interface_tests.test test/src/PlannerInterfaceTests.cpp)
     target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
     # Problem Interface
-    add_rostest_gtest(ProblemInterfaceTests test/problem_interface_tests.test test/ProblemInterfaceTests.cpp)
+    add_rostest_gtest(ProblemInterfaceTests test/launch/problem_interface_tests.test test/src/ProblemInterfaceTests.cpp)
     target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
     # Parsing Interface
-    add_rostest_gtest(ParsingInterfaceTests test/parsing_interface_tests.test test/ParsingInterfaceTests.cpp)
+    add_rostest_gtest(ParsingInterfaceTests test/launch/parsing_interface_tests.test test/src/ParsingInterfaceTests.cpp)
     target_link_libraries(ParsingInterfaceTests ${catkin_LIBRARIES})
     # Plan Dispatch Interface
-    add_rostest_gtest(PlanDispatchTests test/all_nodes.test test/PlanDispatchTests.cpp)
+    add_rostest_gtest(PlanDispatchTests test/launch/plan_dispatch_tests.test test/src/PlanDispatchTests.cpp)
     target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
 
 

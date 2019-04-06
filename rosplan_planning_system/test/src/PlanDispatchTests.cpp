@@ -18,26 +18,20 @@
 #include "rosplan_dispatch_msgs/ActionFeedback.h"
 #include "rosplan_dispatch_msgs/DispatchService.h"
 
-// test
 bool actions_received;
 rosplan_dispatch_msgs::ActionDispatch retrieved_action;
 
 void testCallback(const rosplan_dispatch_msgs::ActionDispatch action) {
-    std::cout << "In callbaack" << std::endl;
-
 
     retrieved_action = action;
 
     actions_received = true;
 }
 
-
 bool graph_received;
 std::string retrieved_graph;
 
 void graphTestCallback(const std_msgs::String::ConstPtr &graph) {
-    std::cout << "In callbaack" << std::endl;
-
 
     retrieved_graph = graph->data;
 
@@ -45,19 +39,15 @@ void graphTestCallback(const std_msgs::String::ConstPtr &graph) {
 }
 
 bool feedback_received;
-rosplan_dispatch_msgs::ActionFeedback retrieved_feedback;
+std::vector<rosplan_dispatch_msgs::ActionFeedback> feedback_vector;
+
 
 void feedbackTestCallback(const rosplan_dispatch_msgs::ActionFeedback feedback) {
 
-    std::cout << "aight" << std::endl;
-
-    retrieved_feedback = feedback;
+    feedback_vector.push_back(feedback);
 
     feedback_received = true;
 }
-
-
-// Documentation incorrectly states that dispatch_plan service is of type std_srvs/Empty
 
 GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch_simple) {
 
@@ -82,7 +72,7 @@ GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch_simple) {
 
     ASSERT_EQ(true, srv4.response.success);
 
-    std::this_thread::sleep_for (std::chrono::seconds(1));
+    std::this_thread::sleep_for (std::chrono::seconds(3));
 
     ASSERT_EQ(true, srv4.response.goal_achieved);
 
@@ -121,7 +111,6 @@ GTEST_TEST(PlanDispatchTests, Test2_published_action_dispatch) {
     ros::Rate loop_rate = 10;
     actions_received = false;
     while (!actions_received && ros::ok()) {
-        std::cout << "In while" << std::endl;
 
         loop_rate.sleep();
         ros::spinOnce();
@@ -179,27 +168,13 @@ GTEST_TEST(PlanDispatchTests, Test3_published_action_feedback) {
     ros::Rate loop_rate = 10;
     feedback_received = false;
     while (!feedback_received && ros::ok()) {
-        std::cout << "In while" << std::endl;
 
         loop_rate.sleep();
         ros::spinOnce();
     }
-    std::cout << retrieved_feedback.action_id << std::endl;
+    std::cout << feedback_vector.size() << std::endl;
 
-    int actual_action_id = retrieved_feedback.action_id;
-    std::string actual_status = retrieved_feedback.status;
-    int actual_information_size = retrieved_feedback.information.size();
-
-
-    int expected_action_id = 10;
-    std::string expected_status = "action achieved";
-    int expected_information_size = 0;
-
-
-
-    ASSERT_EQ(expected_action_id, actual_action_id);
-    ASSERT_EQ(expected_status, actual_status);
-    ASSERT_EQ(expected_information_size, actual_information_size);
+    ASSERT_EQ(4, feedback_vector.size());
 
 }
 
@@ -235,22 +210,16 @@ GTEST_TEST(PlanDispatchTests, Test4_published_plan_graph) {
     ros::Rate loop_rate = 10;
     graph_received = false;
     while (!graph_received && ros::ok()) {
-        std::cout << "In while" << std::endl;
 
         loop_rate.sleep();
         ros::spinOnce();
     }
 
-std::string expected_graph = "digraph plan {\n0[ label=\"plan_start\",style=filled,fillcolor=black,fontcolor=white];\n}\n";
+    std::string expected_graph = "digraph plan {\n0[ label=\"plan_start\",style=filled,fillcolor=black,fontcolor=white];\n}\n";
 
-ASSERT_EQ(expected_graph, retrieved_graph);
+    ASSERT_EQ(expected_graph, retrieved_graph);
 
 }
-
-
-
-
-
 
 
 int main(int argc, char **argv) {
