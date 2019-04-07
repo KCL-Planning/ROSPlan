@@ -25,7 +25,6 @@ void testCallback(const rosplan_dispatch_msgs::CompletePlan completePlan) {
     plan_messages_received = true;
 }
 
-
 bool esterel_plan_messages_received;
 rosplan_dispatch_msgs::EsterelPlan retrieved_esterelPlan;
 
@@ -115,7 +114,9 @@ GTEST_TEST(ParsingInterfaceTests, Test4_action_id_unique) {
             prevId = rit->action_id;
         }
     }
+
     ASSERT_EQ(true, unique);
+
 }
 
 GTEST_TEST(ParsingInterfaceTests, Test5_full_complete_plan) {
@@ -139,11 +140,11 @@ GTEST_TEST(ParsingInterfaceTests, Test5_full_complete_plan) {
     ASSERT_EQ(expected_parameter_size, actual_parameter_size);
     ASSERT_EQ(expected_durations, actual_durations);
     ASSERT_EQ(expected_dispatch_time, actual_dispatch_time);
+
 }
 
 
 GTEST_TEST(ParsingInterfaceTests, Test6_esterel_plan_messages_published_on_plan_topic) {
-
 
     ros::NodeHandle n("~");
 
@@ -193,7 +194,9 @@ GTEST_TEST(ParsingInterfaceTests, Test7_esterel_plan_node_id_unique) {
             prevId = rit->node_id;
         }
     }
+
     ASSERT_EQ(true, unique);
+
 }
 
 
@@ -215,7 +218,9 @@ GTEST_TEST(ParsingInterfaceTests, Test8_esterel_plan_edge_id_unique) {
             prevId = rit->edge_id;
         }
     }
+
     ASSERT_EQ(true, unique);
+
 }
 
 

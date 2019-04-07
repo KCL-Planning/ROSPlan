@@ -66,13 +66,19 @@ GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch_simple) {
     rosplan_dispatch_msgs::DispatchService srv4;
 
     client1.call(srv1);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client2.call(srv2);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client3.call(srv3);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client4.call(srv4);
 
     ASSERT_EQ(true, srv4.response.success);
 
-    std::this_thread::sleep_for (std::chrono::seconds(3));
+    std::this_thread::sleep_for (std::chrono::seconds(1));
 
     ASSERT_EQ(true, srv4.response.goal_achieved);
 
@@ -98,8 +104,14 @@ GTEST_TEST(PlanDispatchTests, Test2_published_action_dispatch) {
     rosplan_dispatch_msgs::DispatchService srv4;
 
     client1.call(srv1);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client2.call(srv2);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client3.call(srv3);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client4.call(srv4);
 
     ASSERT_EQ(true, srv4.response.success);
@@ -155,8 +167,14 @@ GTEST_TEST(PlanDispatchTests, Test3_published_action_feedback) {
     rosplan_dispatch_msgs::DispatchService srv4;
 
     client1.call(srv1);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client2.call(srv2);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client3.call(srv3);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client4.call(srv4);
 
     ASSERT_EQ(true, srv4.response.success);
@@ -172,7 +190,6 @@ GTEST_TEST(PlanDispatchTests, Test3_published_action_feedback) {
         loop_rate.sleep();
         ros::spinOnce();
     }
-    std::cout << feedback_vector.size() << std::endl;
 
     ASSERT_EQ(4, feedback_vector.size());
 
@@ -197,8 +214,14 @@ GTEST_TEST(PlanDispatchTests, Test4_published_plan_graph) {
     rosplan_dispatch_msgs::DispatchService srv4;
 
     client1.call(srv1);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client2.call(srv2);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client3.call(srv3);
+    std::this_thread::sleep_for (std::chrono::milliseconds(800));
+
     client4.call(srv4);
 
     ASSERT_EQ(true, srv4.response.success);

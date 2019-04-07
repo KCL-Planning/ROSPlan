@@ -12,5 +12,4 @@
 
     <test test-name="KnowledgeBaseTests" pkg="rosplan_knowledge_base" type="KnowledgeBaseTests" />
 
-
 </launch>

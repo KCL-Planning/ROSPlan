@@ -28,10 +28,6 @@
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 #include "rosplan_knowledge_msgs/KnowledgeQueryService.h"
 
-
-
-
-
 GTEST_TEST(KnowledgeBaseTests, Test1_domain_name) {
 
     ros::NodeHandle n("~");
@@ -83,9 +79,7 @@ GTEST_TEST(KnowledgeBaseTests, Test3_domain_predicates) {
 
 }
 
-
 GTEST_TEST(KnowledgeBaseTests, Test4_domain_operators) {
-
 
     ros::NodeHandle n("~");
 
@@ -297,8 +291,6 @@ GTEST_TEST(KnowledgeBaseTests, Test14_clear){
 
 }
 
-//write in report that after knowledge base is cleared fruther tests are affected
-
 GTEST_TEST(KnowledgeBaseTests, Test15_update){
 
     ros::NodeHandle n("~");
@@ -317,10 +309,9 @@ GTEST_TEST(KnowledgeBaseTests, Test15_update){
     knowledgeItem.instance_type = "driver";
     knowledgeItem.instance_name = "Martin";
 
-
     srv.request.update_type = 0;
     srv.request.knowledge = knowledgeItem;
-    // ADD new knowledge
+
     client1.call(srv);
 
     ASSERT_EQ(true, srv.response.success);
@@ -373,7 +364,6 @@ GTEST_TEST(KnowledgeBaseTests, Test16_update_array){
 
     ASSERT_EQ(true, srv.response.success);
 
-
 }
 
 GTEST_TEST(KnowledgeBaseTests, Test17_query){
@@ -418,8 +408,6 @@ GTEST_TEST(KnowledgeBaseTests, Test17_query){
     ASSERT_EQ("Jonas", srv.response.false_knowledge[0].instance_name);
 
 }
-
-// for report: test more thoroughly functions, predicates, operators. Deeper testing with operator_details and predicate_deatails. Update picture, missing service: predicate_details.
 
 int main(int argc, char **argv) {
 

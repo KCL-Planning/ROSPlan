@@ -7,7 +7,6 @@
     <arg name="planner_topic"    default="/rosplan_planner_interface/planner_output" />
     <arg name="plan_topic"       default="complete_plan" />
 
-
     <!-- knowledge base -->
     <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
         <param name="domain_path" value="$(find rosplan_knowledge_base)/test/pddl/amazon-domain.pddl" />

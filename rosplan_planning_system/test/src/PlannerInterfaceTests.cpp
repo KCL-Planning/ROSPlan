@@ -21,7 +21,6 @@
         plan_received = true;
     }
 
-
     GTEST_TEST(PlannerInterfaceTests, Test1_plan_found) {
 
         ros::NodeHandle n("~");
@@ -60,7 +59,6 @@
         srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_problem.pddl";
         srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
 
-
         std::ifstream t(rosplan_planning_system_path + "/test/pddl/test_problem.pddl");
         std::stringstream ss;
         ss << t.rdbuf();
@@ -71,10 +69,8 @@
 
         ros::spinOnce();
 
-        // call service to generate plan
         client1.call(srv);
 
-        // wait to receive the planner output
         ros::Rate loop_rate = 10;
         plan_received = false;
         while (!plan_received && ros::ok()) {
@@ -84,7 +80,6 @@
         }
         std::string known_plan = "0.000: (movetob ball)  [0.001]\n";
 
-        // checking the plan
         ASSERT_EQ(1, srv.response.plan_found);
         ASSERT_EQ(last_plan, known_plan);
 

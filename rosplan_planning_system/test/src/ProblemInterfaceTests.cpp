@@ -23,7 +23,6 @@ void testCallback(const std_msgs::String::ConstPtr &problem) {
     problem_received = true;
 }
 
-
 GTEST_TEST(ProblemInterfaceTests, Test1_problem_generated) {
 
         ros::NodeHandle n("~");
