@@ -1,7 +1,8 @@
-//
-// Created by martin on 02/04/19.
-//
-
+/*
+ *
+ * Author: Martin Koling (martin.koling@kcl.ac.uk)
+ *
+ */
 #include <iostream>
 #include <string>
 #include <vector>

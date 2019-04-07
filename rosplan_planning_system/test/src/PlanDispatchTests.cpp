@@ -1,7 +1,8 @@
-//
-// Created by martin on 05/04/19.
-//
-
+/*
+ *
+ * Author: Martin Koling (martin.koling@kcl.ac.uk)
+ *
+ */
 #include <iostream>
 #include <gtest/gtest.h>
 #include <ros/package.h>
@@ -49,7 +50,7 @@ void feedbackTestCallback(const rosplan_dispatch_msgs::ActionFeedback feedback) 
     feedback_received = true;
 }
 
-GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch_simple) {
+GTEST_TEST(PlanDispatchTests, Test1_plan_dispatch) {
 
     ros::NodeHandle n("~");
 

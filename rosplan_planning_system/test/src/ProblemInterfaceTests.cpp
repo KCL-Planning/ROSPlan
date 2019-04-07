@@ -1,7 +1,8 @@
-//
-// Created by martin on 14/03/19.
-//
-
+/*
+ *
+ * Author: Martin Koling (martin.koling@kcl.ac.uk)
+ *
+ */
 #include <iostream>
 #include <gtest/gtest.h>
 #include <ros/package.h>
