@@ -17,6 +17,8 @@ Website: [http://www.inf.kcl.ac.uk/staff/cashmore](http://www.inf.kcl.ac.uk/staf
 **Daniele Magazzeni**  
 Website: [http://www.inf.kcl.ac.uk/staff/danmag](http://www.inf.kcl.ac.uk/staff/danmag)
 
+**Senka Krivic**
+**Gerard Canal**
 **Dorian Buksz**  
 **Anna Collins**  
 **Benjamin Krarup**  
