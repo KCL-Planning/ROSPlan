@@ -126,7 +126,6 @@ namespace KCL_rosplan {
                 //the main loop
                 rosplan_dispatch_msgs::EsterelPlanNode node = *ci;
                 // activate plan start edges
-                //parisa: compare the dispatch time with the lower bound
                 if(node.node_type == rosplan_dispatch_msgs::EsterelPlanNode::PLAN_START && !plan_started) {
 
                         // record the time for the PLAN_START node
