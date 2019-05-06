@@ -64,7 +64,7 @@ namespace KCL_rosplan {
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
 		std::size_t pit = str.find("PROBLEM");
 		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-        std::string updatePlan = "cp "+data_path+"../../rosplan_planning_system/common/lpgplan.SOL"+" "+data_path+"plan.pddl";
+        std::string updatePlan = "cp "+data_path+"lpgplan.SOL"+" "+data_path+"plan.pddl";
 
 
         // call the planer
@@ -93,10 +93,13 @@ namespace KCL_rosplan {
                 // consume useless lines
             }
             planDuration = 0;
-			ss.str("");
+            if ((line.length()>1)){
+                ss.str("");
+            }
 			while (std::getline(planfile, line)) {
 				if (line.length()<2)
 					break;
+
 				ss << line << std::endl;
 			}
 			planner_output = ss.str();
