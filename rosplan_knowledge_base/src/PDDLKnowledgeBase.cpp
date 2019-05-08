@@ -161,7 +161,7 @@ namespace KCL_rosplan {
             for (VAL1_2::const_symbol_list::const_iterator symbolListIterator = c->begin();
                 symbolListIterator != c->end(); symbolListIterator++) {
                 const VAL1_2::const_symbol *object = *symbolListIterator;
-                domain_instances[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
+                domain_constants[object->type->getName()].push_back(object->pddl_typed_symbol::getName());
             }
         }
     }

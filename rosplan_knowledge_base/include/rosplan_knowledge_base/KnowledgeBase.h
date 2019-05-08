@@ -75,7 +75,7 @@ namespace KCL_rosplan {
 		void removeMissionMetric(rosplan_knowledge_msgs::KnowledgeItem &msg);
 
 		/* PDDL model (persistent state) */
-		std::map<std::string, std::vector<std::string> > domain_instances;
+		std::map<std::string, std::vector<std::string> > domain_constants;
 
 		/* PDDL model (current state) */
 		std::map<std::string, std::vector<std::string> > model_constants;

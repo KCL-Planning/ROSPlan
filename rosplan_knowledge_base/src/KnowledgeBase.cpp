@@ -59,8 +59,8 @@ namespace KCL_rosplan {
 
 					// check if instance exists as a constant
                     if(!present) {
-					    sit = find(domain_instances[iit->instance_type].begin(), domain_instances[iit->instance_type].end(), iit->instance_name);
-					    present = (sit!=domain_instances[iit->instance_type].end());
+					    sit = find(domain_constants[iit->instance_type].begin(), domain_constants[iit->instance_type].end(), iit->instance_name);
+					    present = (sit!=domain_constants[iit->instance_type].end());
                     }
 				}
 				break;
@@ -355,8 +355,8 @@ namespace KCL_rosplan {
 		{
 			// check if instance is already in knowledge base
 			std::vector<std::string>::iterator iit;
-			iit = find(domain_instances[msg.instance_type].begin(), domain_instances[msg.instance_type].end(), msg.instance_name);
-			if(iit==domain_instances[msg.instance_type].end()) {
+			iit = find(domain_constants[msg.instance_type].begin(), domain_constants[msg.instance_type].end(), msg.instance_name);
+			if(iit==domain_constants[msg.instance_type].end()) {
 
 			    iit = find(model_instances[msg.instance_type].begin(), model_instances[msg.instance_type].end(), msg.instance_name);
 
@@ -475,7 +475,7 @@ namespace KCL_rosplan {
 					res.instances.push_back(iit->second[j]);
 			}
             // constants
-			for(iit=domain_instances.begin(); iit != domain_instances.end(); iit++) {
+			for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
 				for(size_t j=0; j<iit->second.size(); j++)
 					res.instances.push_back(iit->second[j]);
 			}
@@ -488,8 +488,8 @@ namespace KCL_rosplan {
 					res.instances.push_back(iit->second[j]);
 			}
             // constants
-			iit = domain_instances.find(req.type_name);
-			if(iit != domain_instances.end()) {
+			iit = domain_constants.find(req.type_name);
+			if(iit != domain_constants.end()) {
 				for(size_t j=0; j<iit->second.size(); j++)
 					res.instances.push_back(iit->second[j]);
 			}
