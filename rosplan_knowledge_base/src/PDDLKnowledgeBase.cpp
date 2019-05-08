@@ -151,11 +151,9 @@ namespace KCL_rosplan {
     /* get constants from the domain file */
     void PDDLKnowledgeBase::addConstants() {
 
-        VAL1_2::domain* domain;
-        domain = domain_parser.parseDomain("");
-        if(!domain) return;
+        if(!domain_parser.domain_parsed) return;
 
-        VAL1_2::const_symbol_list *c = domain->constants;
+        VAL1_2::const_symbol_list *c = domain_parser.domain->constants;
         if (c)
         {
             for (VAL1_2::const_symbol_list::const_iterator symbolListIterator = c->begin();
