@@ -93,6 +93,8 @@ namespace KCL_rosplan {
                 // consume useless lines
             }
             planDuration = 0;
+
+            // extract second block of uninterrupted lines (the actual plan) from .SOL file content
             if ((line.length()>1)){
                 ss.str("");
             }
