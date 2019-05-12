@@ -41,11 +41,6 @@ find_package(FLEX REQUIRED)
 # Disable deprecated declarations warning (about std::auto_ptr)
 add_definitions(-Wno-deprecated-declarations)
 
-## visualisation
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
-
 ## Declare cpp executables
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGenerator.cpp
