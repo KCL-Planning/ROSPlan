@@ -64,8 +64,14 @@ namespace KCL_rosplan {
         if(dit!=std::string::npos) str.replace(dit,6,domain_path);
         std::size_t pit = str.find("PROBLEM");
         if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-        std::string updatePlan = "cp "+data_path+"lpgplan.SOL"+" "+data_path+"plan.pddl";
+        std::size_t oit = str.find("-out ");
 
+        //change output path of the planner to data_path/lpgplan
+        ROS_INFO("KCL: (%s) (%s) Changing '-out' to 'data_path/lpgplan'. !!! '-out' must be the last parameter in the planner_command !!!", ros::this_node::getName().c_str(), problem_name.c_str());
+        if(oit!=std::string::npos) str.replace(oit,500,"-out "+data_path+"lpgplan");
+
+        //copy the .SOL output plan to data_path/plan.pddl
+        std::string updatePlan = "cp "+data_path+"lpgplan.SOL"+" "+data_path+"plan.pddl";
 
         // call the planer
         ROS_INFO("KCL: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  str.c_str());
