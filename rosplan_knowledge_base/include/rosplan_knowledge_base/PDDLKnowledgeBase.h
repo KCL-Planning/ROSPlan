@@ -52,6 +52,7 @@ namespace KCL_rosplan {
 
         /* add the initial state to the knowledge base */
         void addInitialState() override;
+        void addConstants() override;
 
 		/* service methods for fetching the domain details */
 		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) override;

@@ -1,17 +1,23 @@
 <?xml version="1.0"?>
 <launch>
 
-	<!-- scene database (MongoDB) -->
-	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
-		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
-	</include>
+  <!-- NOTE: This is an example launch file, please do not modify! -->
 
-	<!-- knowledge base -->
-	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
-		<param name="domain_path" value="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
-		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
-		<!-- conditional planning flags -->
-		<param name="use_unknowns" value="false" />
-	</node>
+  <arg name="database_path" default="$(find rosplan_knowledge_base)/common/mongoDB/"/>
+  <arg name="domain_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl"/>
+  <arg name="use_unknowns" default="false"/>
+
+  <!-- scene database (MongoDB) -->
+  <include file="$(find mongodb_store)/launch/mongodb_store.launch">
+    <arg name="db_path" value="$(arg database_path)"/>
+  </include>
+
+  <!-- rosplan knowledge base -->
+  <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+    <param name="domain_path" value="$(arg domain_path)" />
+    <param name="database_path" value="$(arg database_path)" />
+    <!-- conditional planning flags -->
+    <param name="use_unknowns" value="$(arg use_unknowns)" />
+  </node>
 
 </launch>
