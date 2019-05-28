@@ -17,6 +17,9 @@ namespace KCL_rosplan {
         action_timeout_fraction = 0;
         nh.getParam("timeout_actions", timeout_actions);
         nh.getParam("action_timeout_fraction", action_timeout_fraction);
+        
+        std::string planTopic = "complete_plan";
+        nh.getParam("plan_topic", planTopic);
 
         std::string plan_graph_topic = "plan_graph";
         nh.getParam("plan_graph_topic", plan_graph_topic);
