@@ -9,7 +9,7 @@
 	<arg name="action_feedback_topic"    default="action_feedback" />
 	<!-- visualize edges with colors: interference edge, conditional edge, etc -->
 	<arg name="display_edge_type"        default="false" />
-    <arg name="timeout_actions"          default="true" />
+    <arg name="timeout_actions"          default="false" />
     <arg name="action_timeout_fraction"  default="0" />
 
 

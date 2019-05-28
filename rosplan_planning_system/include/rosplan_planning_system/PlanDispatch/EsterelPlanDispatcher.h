@@ -11,9 +11,8 @@
 #include "PlanDispatcher.h"
 
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
-#include "rosplan_dispatch_msgs/EsterelPlanEdge.h"
+#include "rosplan_dispatch_msgs/EsterelPlan.h"
 #include "rosplan_planning_system/PlanParsing/PDDLEsterelPlanParser.h"
-
 #include "std_msgs/String.h"
 
 
@@ -52,7 +51,6 @@ namespace KCL_rosplan
 
 		bool state_changed;
 		bool finished_execution;
-		bool bl_end;
 
 		//map real time dispatch for each node
 		std::map<int,double> node_real_dispatch_time;
@@ -66,7 +64,7 @@ namespace KCL_rosplan
 
 		bool display_edge_type_;
 
-        /* dispatch flags for robust experiment */
+        /* dispatch flags */
         bool timeout_actions;
         double action_timeout_fraction;
 
