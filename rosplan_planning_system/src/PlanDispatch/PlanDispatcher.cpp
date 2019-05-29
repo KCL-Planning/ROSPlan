@@ -82,7 +82,7 @@ namespace KCL_rosplan {
     bool PlanDispatcher::dispatchPlanService(rosplan_dispatch_msgs::DispatchService::Request &req, rosplan_dispatch_msgs::DispatchService::Response &res) {
         if (dispatching) return false;
         dispatching = true;
-        bool success = dispatchPlan(mission_start_time,ros::WallTime::now().toSec());
+        bool success = dispatchPlan(mission_start_time,ros::Time::now().toSec());
         dispatching = false;
         reset();
         res.success = success;
@@ -102,7 +102,7 @@ namespace KCL_rosplan {
         else {
             as_.acceptNewGoal();
             dispatching = true;
-            bool success = dispatchPlan(mission_start_time, ros::WallTime::now().toSec());
+            bool success = dispatchPlan(mission_start_time, ros::Time::now().toSec());
             dispatching = false;
             reset();
             rosplan_dispatch_msgs::NonBlockingDispatchResult res;
