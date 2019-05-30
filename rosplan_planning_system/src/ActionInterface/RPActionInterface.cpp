@@ -113,23 +113,23 @@ namespace KCL_rosplan {
 		// listen for action dispatch
 		std::string adt = "default_dispatch_topic";
 		nh.getParam("action_dispatch_topic", adt);
-		ros::Subscriber ds = nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
+
+        ros::SubscribeOptions ops;
+        ops.template init<rosplan_dispatch_msgs::ActionDispatch>(adt, 1000, boost::bind(&KCL_rosplan::RPActionInterface::dispatchCallback, this, _1));
+        ops.transport_hints = ros::TransportHints();
+        ops.allow_concurrent_callbacks = true;
+		ros::Subscriber ds = nh.subscribe(ops); // nh.subscribe(adt, 1000, &KCL_rosplan::RPActionInterface::dispatchCallback, this);
 
 		// loop
-		ros::Rate loopRate(50);
-		int counter = 0;
+		ros::Rate loopRate(1);
+		ros::AsyncSpinner spinner(4);
+        spinner.start();
+
 		ROS_INFO("KCL: (%s) Ready to receive", params.name.c_str());
 
 		while(ros::ok()) {
-
-			counter++;
-			if(counter==20) {
-				pddl_action_parameters_pub.publish(params);
-				counter = 0;
-			}
-
+			pddl_action_parameters_pub.publish(params);
 			loopRate.sleep();
-			ros::spinOnce();
 		}
 	}
 
@@ -137,8 +137,14 @@ namespace KCL_rosplan {
 	void RPActionInterface::dispatchCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
 		// check action name
+		if(0==msg->name.compare("cancel_action")) {
+            action_cancelled = true;
+            return;
+        }
 		if(0!=msg->name.compare(params.name)) return;
 		ROS_INFO("KCL: (%s) action received", params.name.c_str());
+
+        action_cancelled = false;
 
 		// check PDDL parameters
 		std::vector<bool> found(params.typed_parameters.size(), false);
@@ -205,8 +211,16 @@ namespace KCL_rosplan {
 
 		// call concrete implementation
 		action_success = concreteCallback(msg);
+        ros::spinOnce();
+        if(action_cancelled) {
+            action_success = false;
+			ROS_INFO("KCL: (%s) an old action that was cancelled is stopping now", params.name.c_str());
+            return;
+        }
 
 		if(action_success) {
+
+			ROS_INFO("KCL: (%s) action completed successfully", params.name.c_str());
 
 			// update knowledge base
 			rosplan_knowledge_msgs::KnowledgeUpdateServiceArray updatePredSrv;

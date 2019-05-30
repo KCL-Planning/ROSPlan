@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <vector>
+#include <random>
 
 #include "rosplan_action_interface/RPActionInterface.h"
 
@@ -20,6 +21,7 @@ namespace KCL_rosplan {
 	private:
 
 		double action_duration;
+		double action_duration_stddev;
 		double action_probability;
 
 	public:

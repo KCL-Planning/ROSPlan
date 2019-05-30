@@ -13,7 +13,6 @@
 	<run_depend>rosplan_dispatch_msgs</run_depend>
 	<run_depend>rosplan_planning_system</run_depend>
 	<run_depend>rosplan_knowledge_base</run_depend>
-	<run_depend>rosplan_demos</run_depend>
 
 	<export>
 		<metapackage/>

@@ -6,7 +6,6 @@ env:
   global:
     - ROS_DISTRO=kinetic
     - UPSTREAM-WORKSPACE=file
-    - ROSINSTALL_FILENAME=.travis.rosinstall
     - WRITABLE_SOURCE=true
 
 before_install:
@@ -18,9 +17,8 @@ before_install:
     - sudo apt-get update
     - sudo apt-get install libcurl3
     - sudo apt-get install -y mongodb-server mongodb
-    - sudo apt-get install flex bison ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev
+    - sudo apt-get install flex bison ros-kinetic-mongodb-store ros-kinetic-tf2-bullet
     - sudo apt-get install libbdd-dev
-    - git clone https://github.com/clearpathrobotics/occupancy_grid_utils
     - git submodule update --init --remote --recursive
 
 install:

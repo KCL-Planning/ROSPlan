@@ -274,7 +274,7 @@ install(TARGETS ippc_server
         )
 
 ## Mark cpp header files for installation
-install(DIRECTORY ippc_server/include/
+install(DIRECTORY ippc_server/include/ ippc_server/cpp-base64/
         DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
         PATTERN ".svn" EXCLUDE)

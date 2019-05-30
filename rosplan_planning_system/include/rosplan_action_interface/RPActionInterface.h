@@ -26,7 +26,6 @@ namespace KCL_rosplan {
 	{
 
 	private:
-
 	protected:
 
 		/* PDDL info and publisher */
@@ -43,6 +42,7 @@ namespace KCL_rosplan {
 
 		/* action status */
 		bool action_success;
+		bool action_cancelled;
 
 	public:
 

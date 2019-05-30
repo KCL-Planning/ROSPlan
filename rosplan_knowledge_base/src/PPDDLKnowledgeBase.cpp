@@ -176,6 +176,10 @@ namespace KCL_rosplan {
         return true;
     }
 
+    void PPDDLKnowledgeBase::addConstants() {
+        // FIXME model_constants?
+    }
+
     void PPDDLKnowledgeBase::addInitialState() {
         // Instances
         std::map<ppddl_parser::Term, string> var_decl;
@@ -249,9 +253,6 @@ namespace KCL_rosplan {
             }
         }
         model_metric.expr = PPDDLUtils::getExpression(*metric, domain_parser.domain, var_decl);
-
-        //model_constants; // Not used by the KB
-
 
     }
 }
