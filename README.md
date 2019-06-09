@@ -21,13 +21,13 @@ sudo apt install flex bison freeglut3-dev libbdd-dev python-catkin-tools ros-$RO
 
 Select or create a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace):
 ```sh
-mkdir -p ros_ws/src
-cd ros_ws
+mkdir -p ROSPlan/src
+cd ROSPlan/
 ```
 
 Get the code:
 ```sh
-cd src
+cd src/
 git clone https://github.com/KCL-Planning/rosplan
 ```
 
