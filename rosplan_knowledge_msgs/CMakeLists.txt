@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   diagnostic_msgs
   roscpp
-  rospy
   std_msgs
   geometry_msgs
   genmsg
@@ -37,12 +36,9 @@ add_service_files(
   GetDomainNameService.srv
   GetDomainTypeService.srv
   GetDomainAttributeService.srv
-  GetDomainOperatorService.srv  
-  GetDomainOperatorDetailsService.srv  
-  GetDomainPredicateDetailsService.srv  
-  CreatePRM.srv
-  AddWaypoint.srv
-  RemoveWaypoint.srv
+  GetDomainOperatorService.srv
+  GetDomainOperatorDetailsService.srv
+  GetDomainPredicateDetailsService.srv
   GenerateProblemService.srv
   SetFloat.srv
   SetInt.srv
@@ -62,7 +58,7 @@ generate_messages(
 
 ## Declare things to be passed to dependent projects
 catkin_package(
-  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs geometry_msgs roscpp rospy std_msgs genmsg
+  CATKIN_DEPENDS message_generation message_runtime diagnostic_msgs geometry_msgs roscpp std_msgs genmsg
 )
 
 ###########
