@@ -8,6 +8,10 @@ namespace KCL_rosplan {
 	{
 		node_handle = &nh;
 
+        // get epsilon time
+        epsilon_time = 0.1;
+		node_handle->getParam("epsilon_time", epsilon_time);
+
 		// fetching problem info for TILs
 		std::string kb = "knowledge_base";
 		node_handle->getParam("knowledge_base", kb);
@@ -20,6 +24,10 @@ namespace KCL_rosplan {
 
 		ss << "/" << kb << "/state/propositions";
 		get_propositions_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str().c_str());
+		ss.str("");
+
+		ss << "/" << kb << "/state/timed_knowledge";
+		get_tils_client = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(ss.str().c_str());
 		ss.str("");
 
 		ss << "/" << kb << "/state/functions";
@@ -230,7 +238,7 @@ namespace KCL_rosplan {
 
 			rosplan_knowledge_msgs::GetAttributeService attsrv;
 			attsrv.request.predicate_name = pit->name;
-			if(!get_propositions_client.call(attsrv)) {
+			if(!get_tils_client.call(attsrv)) {
 				ROS_ERROR("KCL: (%s) could not call Knowledge Base for (%s)", ros::this_node::getName().c_str(), pit->name.c_str());
 				continue;
 			}
@@ -357,14 +365,11 @@ namespace KCL_rosplan {
 			if(satisfiesPrecondition(condition, tit->second, !negative_condition)) {
 				if(overall_condition) {
 					// edge goes to end action node instead of start action
-					makeEdge(0, current_node->second + 1, 0, tit->first,
-						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
+					makeEdge(0, current_node->second + 1, 0, tit->first - epsilon_time, rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				} else {
-					makeEdge(0, current_node->second, 0, tit->first,
-						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
+					makeEdge(0, current_node->second, 0, tit->first - epsilon_time, rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				}
 			}
-
 			tit++;
 		}
 
@@ -376,16 +381,14 @@ namespace KCL_rosplan {
 
 				// check TIL support
 				if(satisfiesPrecondition(condition, tit->second, negative_condition)) {
-					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max(),
-						rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
+					makeEdge(0, current_node->second, tit->first, std::numeric_limits<double>::max(), rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 					return true;
 				}
 				tit++;
 			}
 			// check action support
 			if(satisfiesPrecondition(condition, last_plan.nodes[rit->second], negative_condition)) {
-				makeEdge(rit->second, current_node->second,
-						 rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
+				makeEdge(rit->second, current_node->second, rosplan_dispatch_msgs::EsterelPlanEdge::CONDITION_EDGE);
 				return true;
 			}
 		}
