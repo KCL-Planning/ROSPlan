@@ -1,6 +1,6 @@
 #include "rosplan_action_interface/RPSimulatedActionInterface.h"
 
-/* The implementation of RPMoveBase.h */
+/* The implementation of RPSimulatedActionInterface.h */
 namespace KCL_rosplan {
 
 	/* constructor */
