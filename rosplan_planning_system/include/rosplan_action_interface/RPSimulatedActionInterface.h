@@ -8,10 +8,9 @@
 #define KCL_simulatedaction
 
 /**
- * This file defines the RPMoveBase class.
- * RPMoveBase is used to connect ROSPlan to the MoveBase library.
- * PDDL "goto_waypoint" actions become "move_base_msgs::MoveBase" actions.
- * Waypoint goals are fetched by name from the SceneDB (implemented by mongoDB).
+ * This file defines the RPSimulatedActionInterface class.
+ * RPSimulatedActionInterface is used to simulate synthetic actions (non physics based simulator)
+ * 
  */
 namespace KCL_rosplan {
 

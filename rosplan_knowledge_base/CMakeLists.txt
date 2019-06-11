@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   rosplan_knowledge_msgs
   nav_msgs
-  mongodb_store
   geometry_msgs
   diagnostic_msgs
   visualization_msgs
@@ -33,7 +32,7 @@ find_package(Boost REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs mongodb_store geometry_msgs diagnostic_msgs visualization_msgs tf
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs geometry_msgs diagnostic_msgs visualization_msgs tf
   DEPENDS
 )
 

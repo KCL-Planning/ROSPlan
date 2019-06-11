@@ -636,11 +636,6 @@ int main(int argc, char **argv) {
     kb->parseDomain(domainPath, problemPath);
     kb->use_unknowns = useUnknowns;
 
-	// wait for and clear mongoDB
-	ROS_INFO("KCL: (%s) Waiting for MongoDB", ros::this_node::getName().c_str());
-	ros::service::waitForService("/message_store/delete",-1);
-	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
-
 	ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 	kb->runKnowledgeBase();
 

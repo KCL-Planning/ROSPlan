@@ -9,7 +9,7 @@
 	<arg name="plan_topic"       default="complete_plan" />
 
 
-	<!-- plan parsing -->
+	<!-- plan parsing (by default is set to esterel parser, NOTE: simple parser also available) -->
 	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
 		<param name="knowledge_base" value="$(arg knowledge_base)" />
     	<param name="epsilon_time"   value="$(arg epsilon_time)" />
