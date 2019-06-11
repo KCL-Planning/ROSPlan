@@ -9,7 +9,7 @@ namespace KCL_rosplan {
 	void PlanParser::plannerCallback(const std_msgs::String& plannerOutput) {
 		ROS_INFO("KCL: (%s) Planner output received.", ros::this_node::getName().c_str());
 		planner_output_received = true;
-		planner_output_time = ros::WallTime::now().toSec();
+		planner_output_time = ros::Time::now().toSec();
 		planner_output = plannerOutput.data;
 	}
 

@@ -52,6 +52,9 @@ namespace KCL_rosplan
 		bool state_changed;
 		bool finished_execution;
 
+		//map real time dispatch for each node
+		std::map<int,double> node_real_dispatch_time;
+
 		/* plan graph publisher */
 		bool printPlan();
 		ros::Publisher plan_graph_publisher;
@@ -60,6 +63,10 @@ namespace KCL_rosplan
 		ros::ServiceClient query_domain_client;
 
 		bool display_edge_type_;
+
+        /* dispatch flags */
+        bool timeout_actions;
+        double action_timeout_fraction;
 
 	public:
 

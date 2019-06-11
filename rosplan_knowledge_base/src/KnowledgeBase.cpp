@@ -56,6 +56,12 @@ namespace KCL_rosplan {
 					std::vector<std::string>::iterator sit;
 					sit = find(model_instances[iit->instance_type].begin(), model_instances[iit->instance_type].end(), iit->instance_name);
 					present = (sit!=model_instances[iit->instance_type].end());
+
+					// check if instance exists as a constant
+                    if(!present) {
+					    sit = find(domain_constants[iit->instance_type].begin(), domain_constants[iit->instance_type].end(), iit->instance_name);
+					    present = (sit!=domain_constants[iit->instance_type].end());
+                    }
 				}
 				break;
 				
@@ -349,13 +355,19 @@ namespace KCL_rosplan {
 		{
 			// check if instance is already in knowledge base
 			std::vector<std::string>::iterator iit;
-			iit = find(model_instances[msg.instance_type].begin(), model_instances[msg.instance_type].end(), msg.instance_name);
+			iit = find(domain_constants[msg.instance_type].begin(), domain_constants[msg.instance_type].end(), msg.instance_name);
+			if(iit==domain_constants[msg.instance_type].end()) {
 
-			// add instance
-			if(iit==model_instances[msg.instance_type].end()) {
-				ROS_INFO("KCL: (%s) Adding instance (%s, %s)", ros::this_node::getName().c_str(), msg.instance_type.c_str(), msg.instance_name.c_str());
-				model_instances[msg.instance_type].push_back(msg.instance_name);
-			}
+			    iit = find(model_instances[msg.instance_type].begin(), model_instances[msg.instance_type].end(), msg.instance_name);
+
+			    // add instance
+			    if(iit==model_instances[msg.instance_type].end()) {
+				    ROS_INFO("KCL: (%s) Adding instance (%s, %s)", ros::this_node::getName().c_str(), msg.instance_type.c_str(), msg.instance_name.c_str());
+				    model_instances[msg.instance_type].push_back(msg.instance_name);
+			    }
+            } else {
+    			ROS_WARN("KCL: (%s) instance (%s, %s) already exists as a constant.", ros::this_node::getName().c_str(), msg.instance_type.c_str(), msg.instance_name.c_str());
+            }
 		}
 		break;
 
@@ -457,14 +469,27 @@ namespace KCL_rosplan {
 		// fetch the instances of the correct type
 		if(""==req.type_name) {
 			std::map<std::string,std::vector<std::string> >::iterator iit;
+            // objects
 			for(iit=model_instances.begin(); iit != model_instances.end(); iit++) {
+				for(size_t j=0; j<iit->second.size(); j++)
+					res.instances.push_back(iit->second[j]);
+			}
+            // constants
+			for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
 				for(size_t j=0; j<iit->second.size(); j++)
 					res.instances.push_back(iit->second[j]);
 			}
 		} else {
 			std::map<std::string,std::vector<std::string> >::iterator iit;
+            // objects
 			iit = model_instances.find(req.type_name);
 			if(iit != model_instances.end()) {
+				for(size_t j=0; j<iit->second.size(); j++)
+					res.instances.push_back(iit->second[j]);
+			}
+            // constants
+			iit = domain_constants.find(req.type_name);
+			if(iit != domain_constants.end()) {
 				for(size_t j=0; j<iit->second.size(); j++)
 					res.instances.push_back(iit->second[j]);
 			}
@@ -587,37 +612,29 @@ int main(int argc, char **argv) {
 	KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
 	if (extension == ".pddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
-        ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
-    else if (extension == ".ppddl") {
-        kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
-        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
-        ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
+            ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
+        else if (extension == ".ppddl") {
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
+            VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+            ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
 	else if (extension == ".rddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
-        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
-        ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
-    else {
-        ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
-        ros::shutdown();
-    }
-
+            VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+            ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
+        else {
+            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
+            ros::shutdown();
+        }
 
 	KCL_rosplan::KnowledgeBasePtr kb = KCL_rosplan::KnowledgeBaseFactory::createKB(kb_type, n);
 
 	// parse domain
-    kb->parseDomain(domainPath, problemPath);
+        kb->parseDomain(domainPath, problemPath);
+        kb->use_unknowns = useUnknowns;
 
-
-	kb->use_unknowns = useUnknowns;
-/*
-	// wait for and clear mongoDB
-	ROS_INFO("KCL: (%s) Waiting for MongoDB", ros::this_node::getName().c_str());
-	ros::service::waitForService("/message_store/delete",-1);
-	system("mongo message_store --eval \"printjson(db.message_store.remove())\"");
-*/
 	ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 	kb->runKnowledgeBase();
 

@@ -147,17 +147,21 @@ namespace KCL_rosplan {
 				}
 			}
 			return true;
-		}
+		}        
 
 		/* plan description in Esterel */
 		rosplan_dispatch_msgs::EsterelPlan last_plan;
 		std::map<int,rosplan_knowledge_msgs::DomainOperator> action_details;
+        double epsilon_time;
 
-		/* TILs */
+		/* clients */
 		ros::ServiceClient get_predicate_client;
 		ros::ServiceClient get_propositions_client;
+		ros::ServiceClient get_tils_client;
 		ros::ServiceClient get_functions_client;
 		ros::ServiceClient get_operator_details_client;
+
+		/* TILs */
 		std::multimap<double, rosplan_knowledge_msgs::KnowledgeItem> til_list;
 
 	protected:
@@ -189,3 +193,4 @@ namespace KCL_rosplan {
 } // close namespace
 
 #endif
+

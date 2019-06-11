@@ -6,9 +6,9 @@
 	<arg name="use_problem_topic"    default="true" />
 	<arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
 	<arg name="planner_topic"        default="planner_output" />
-	<arg name="domain_path"          default="$(find rosplan_demos)/common/domain_turtlebot_demo.pddl" />
-	<arg name="problem_path"         default="$(find rosplan_demos)/common/problem.pddl" />
-	<arg name="data_path"            default="$(find rosplan_demos)/common/" />
+	<arg name="domain_path"          default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl" />
+	<arg name="problem_path"         default="$(find rosplan_planning_system)/test/turtlebot_demo/problem.pddl" />
+	<arg name="data_path"            default="$(find rosplan_planning_system)/test/turtlebot_demo/" />
 	<arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
 	<arg name="planner_interface"    default="popf_planner_interface" />
 
