@@ -39,6 +39,6 @@
     </include>
 
     <!-- Plan dispatch test node -->
-    <test test-name="PlanDispatchTests" pkg="rosplan_planning_system" type="PlanDispatchTests" />
+    <test test-name="PlanDispatchTests" pkg="rosplan_planning_system" type="PlanDispatchTests" time-limit="100.0" />
 
 </launch>
