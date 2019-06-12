@@ -12,7 +12,7 @@
     <arg name="use_problem_topic"    default="false" />
     <arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        default="/rosplan_planner_interface/planner_output" />
-    <arg name="data_path"            default="$(find rosplan_planning_system)/test/pddl/test_domain"/>
+    <arg name="data_path"            default="$(find rosplan_planning_system)/test/pddl/test_domain/"/>
     <arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
     <arg name="planner_interface"    default="popf_planner_interface" />
 
