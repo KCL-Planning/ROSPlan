@@ -1,6 +1,7 @@
-.idea
+# automatically generated pddl problem
+pddl/turtlebot/problem.pddl
+pddl/test_domain/generated_test_problem.pddl
 
-/rosplan_planning_system/test/pddl/generated_test_problem.pddl
-/rosplan_planning_system/test/pddl/plan.pddl
-
-/rosplan_planning_system/__init__.py
+# popf generated plan
+pddl/turtlebot/plan.pddl
+pddl/test_domain/plan.pddl

@@ -2,7 +2,11 @@
 <package>
   <name>rosplan_knowledge_base</name>
   <version>0.0.0</version>
-  <description>Sample Knowledge base for ROSPlan. Used to collect and store information used to build the planning model. The knowledge base is queried by the planning system to construct the model, and possibly by controllers to retrieve continuous information.</description>
+  <description>
+      Sample Knowledge base for ROSPlan. Used to collect and store information used to build the planning model.
+      The knowledge base is queried by the planning system to construct the model, and possibly by
+      controllers to retrieve continuous information.
+  </description>
   <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
   <license>BSD</license>
   <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
@@ -22,7 +26,6 @@
   <build_depend>tf</build_depend>
   <build_depend>rosplan_dependencies</build_depend>
   <build_depend>rostest</build_depend>
-  <build_depend>roslib</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
@@ -36,7 +39,6 @@
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>rostest</run_depend>
-  <build_depend>roslib</build_depend>
 
   <export></export>
 </package>

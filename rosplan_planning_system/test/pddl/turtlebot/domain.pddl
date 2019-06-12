@@ -1,4 +1,4 @@
-(define (domain turtlebot)
+(define (domain turtlebot) ;; speeded up version of turtlebot domain, note that action durations are short
 
 (:requirements :strips :typing :fluents :disjunctive-preconditions :durative-actions)
 
@@ -19,7 +19,7 @@
 ;; Move to any waypoint, avoiding terrain
 (:durative-action goto_waypoint
 	:parameters (?v - robot ?from ?to - waypoint)
-	:duration ( = ?duration 60)
+	:duration ( = ?duration 1)
 	:condition (and
 		(at start (robot_at ?v ?from))
 		(at start (localised ?v))
@@ -33,7 +33,7 @@
 ;; Localise
 (:durative-action localise
 	:parameters (?v - robot)
-	:duration ( = ?duration 60)
+	:duration ( = ?duration 1)
 	:condition (over all (undocked ?v))
 	:effect (at end (localised ?v))
 )
@@ -41,7 +41,7 @@
 ;; Dock to charge
 (:durative-action dock
 	:parameters (?v - robot ?wp - waypoint)
-	:duration ( = ?duration 30)
+	:duration ( = ?duration 3)
 	:condition (and
 		(over all (dock_at ?wp))
 		(at start (robot_at ?v ?wp))
@@ -53,7 +53,7 @@
 
 (:durative-action undock
 	:parameters (?v - robot ?wp - waypoint)
-	:duration ( = ?duration 10)
+	:duration ( = ?duration 2)
 	:condition (and
 		(over all (dock_at ?wp))
 		(at start (docked ?v)))

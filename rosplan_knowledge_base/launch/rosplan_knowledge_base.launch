@@ -3,7 +3,7 @@
 
   <!-- NOTE: This is an example launch file, please do not modify! -->
 
-  <arg name="domain_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl"/>
+  <arg name="domain_path" default="$(find rosplan_planning_system)/test/pddl/turtlebot/domain.pddl"/>
   <arg name="use_unknowns" default="false"/>
 
   <!-- rosplan knowledge base -->

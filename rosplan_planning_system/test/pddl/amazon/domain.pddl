@@ -1,19 +1,19 @@
 (define (domain driverlog-simple)
 (:requirements :typing) 
+
 (:types
     place locatable - object
     driver truck item - locatable
 )
+
 (:predicates 
     (at ?item - locatable ?loc - place)
     (in ?item - locatable ?t - truck)
-
     (link ?x ?y - place)
     (path ?x ?y - place)		
 )
 
-
-(:action LOAD-TRUCK
+(:action load-truck
   :parameters
     (?item - item ?truck - truck ?loc - place)
   :precondition
@@ -26,7 +26,7 @@
    )
 )
 
-(:action UNLOAD-TRUCK
+(:action unload-truck
   :parameters
    (?item - item ?truck - truck ?loc - place)
   :precondition
@@ -39,7 +39,7 @@
    )
 )
 
-(:action BOARD-TRUCK
+(:action board-truck
   :parameters
    (?driver - driver ?truck - truck ?loc - place)
   :precondition
@@ -52,7 +52,7 @@
    )
 )
 
-(:action GET-OUT
+(:action get-out
   :parameters
    (?driver - driver ?truck - truck ?loc - place)
   :precondition
@@ -65,7 +65,7 @@
    )
 )
 
-(:action DRIVE-TRUCK
+(:action drive-truck
   :parameters
    (?truck - truck ?loc-from - place ?loc-to - place ?driver - driver)
   :precondition
@@ -79,7 +79,7 @@
    )
 )
 
-(:action WALK
+(:action walk
   :parameters
    (?driver - driver  ?loc-from - place  ?loc-to - place)
   :precondition
@@ -91,6 +91,4 @@
         (at ?driver ?loc-to)
    )
 )
-
- 
 )

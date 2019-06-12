@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf
   rosplan_dependencies
-  roslib
+  rostest
 )
 
 find_package(FLEX REQUIRED)
@@ -49,30 +49,30 @@ include_directories(${catkin_INCLUDE_DIRS})
 ## val sources
 add_definitions(-Wno-deprecated-declarations) # Disable deprecated declarations warning (about std::auto_ptr)
 set(VAL_SOURCES
-		src/VALfiles/DebugWriteController.cpp
-		src/VALfiles/pddl+.cpp
-		src/VALfiles/ptree.cpp
+        src/VALfiles/DebugWriteController.cpp
+        src/VALfiles/pddl+.cpp
+        src/VALfiles/ptree.cpp
 )
 
 ## knowledge sources
 set(KNOWLEDGE_SOURCES
-	src/KnowledgeBaseFactory.cpp
-	src/KnowledgeBase.cpp
-	src/KnowledgeComparitor.cpp
+    src/KnowledgeBaseFactory.cpp
+    src/KnowledgeBase.cpp
+    src/KnowledgeComparitor.cpp
     src/PDDLDomainParser.cpp
-	src/PDDLProblemParser.cpp
+    src/PDDLProblemParser.cpp
     src/PDDLKnowledgeBase.cpp
     src/RDDLTaskParser.cpp
     src/RDDLKnowledgeBase.cpp
     src/RDDLExprUtils.cpp
     src/RDDLUtils.cpp
     src/VALVisitorOperator.cpp
-	src/VALVisitorPredicate.cpp
-	src/VALVisitorProblem.cpp
-	src/PPDDLKnowledgeBase.cpp
-	src/PPDDLParser.cpp
-	src/PPDDLUtils.cpp)
-
+    src/VALVisitorPredicate.cpp
+    src/VALVisitorProblem.cpp
+    src/PPDDLKnowledgeBase.cpp
+    src/PPDDLParser.cpp
+    src/PPDDLUtils.cpp
+)
 
 ## Declare cpp executables
 add_executable(knowledgeBase ${KNOWLEDGE_SOURCES} ${VAL_SOURCES})
@@ -101,12 +101,11 @@ install(TARGETS knowledgeBase
 ##  Tests  ##
 #############
 
-
+# to build the test do: "catkin build --no-deps rosplan_planning_system --make-args run_tests"
+# to run the test do e.g.: "rostest rosplan_planning_system foo.test --text"
+# where "--text" is optional, if you want to see the console output of your test
 if (CATKIN_ENABLE_TESTING)
-	find_package(rostest REQUIRED)
-	find_package(roslib REQUIRED)
-	# Knowledge Base
-	add_rostest_gtest(KnowledgeBaseTests test/knowledge_base_tests.test test/KnowledgeBaseTests.cpp)
-	target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
-
+    # Knowledge Base
+    add_rostest_gtest(KnowledgeBaseTests test/launch/knowledge_base.test test/src/KnowledgeBaseTests.cpp)
+    target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
 endif()
