@@ -35,6 +35,6 @@
         <param name="plan_topic"     value="$(arg plan_topic)" />
     </node>
 
-    <test test-name="ParsingInterfaceTests" pkg="rosplan_planning_system" type="ParsingInterfaceTests" />
+    <test test-name="ParsingInterfaceTests" pkg="rosplan_planning_system" type="ParsingInterfaceTests" time-limit="100.0" />
 
 </launch>
