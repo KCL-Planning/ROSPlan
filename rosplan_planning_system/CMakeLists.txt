@@ -142,9 +142,14 @@ install(DIRECTORY include/rosplan_action_interface
 # DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin
 #)
 install(DIRECTORY common/bin
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin/
-        FILE_PERMISSIONS OWNER_EXECUTE)
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/common/bin/
+  FILE_PERMISSIONS OWNER_EXECUTE
+)
 
+# install pddl files in
+install(DIRECTORY test/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
+)
 
 #############
 ##  Tests  ##
