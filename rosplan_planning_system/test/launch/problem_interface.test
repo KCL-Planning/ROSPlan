@@ -30,6 +30,6 @@
         <param name="planning_language"  value="$(arg planning_language)" />
     </node>
 
-    <test test-name="ProblemInterfaceTests" pkg="rosplan_planning_system" type="ProblemInterfaceTests" />
+    <test test-name="ProblemInterfaceTests" pkg="rosplan_planning_system" type="ProblemInterfaceTests" time-limit="100.0" />
 
 </launch>
