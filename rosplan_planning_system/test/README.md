@@ -2,11 +2,11 @@
 
 ## build tests manually
 
-build rosplan_planning_system tests:
+Build rosplan_planning_system tests:
 
         catkin build --no-deps rosplan_planning_system --make-args run_tests
 
-build all catkin ws tests:
+Build all catkin ws tests:
 
         catkin build --make-args run_tests
 
@@ -27,3 +27,8 @@ Parsing Interface tests:
 Plan Dispatch Interface tests:
 
         rostest rosplan_planning_system plan_dispatch.test --text
+
+Run all catkin ws tests:
+
+        catkin run_tests
+
