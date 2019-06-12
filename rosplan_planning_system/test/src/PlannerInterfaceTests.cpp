@@ -61,7 +61,7 @@ GTEST_TEST(PlannerInterfaceTests, Test2_format_published_on_planner_output) {
     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
     srv.request.use_problem_topic = false;
-    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/test_domain";
+    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/test_domain/";
     srv.request.domain_path = rosplan_planning_system_path + "/test/pddl/test_domain/domain.pddl";
     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/test_problem.pddl";
     srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
@@ -103,9 +103,9 @@ GTEST_TEST(PlannerInterfaceTests, Test3_problem_without_solution) {
     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
     srv.request.use_problem_topic = false;
-    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/";
-    srv.request.domain_path = rosplan_planning_system_path + "/test/pddl/domain.pddl";
-    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_problem_no_solutionh.pddl";
+    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/test_domain/";
+    srv.request.domain_path = rosplan_planning_system_path + "/test/pddl/test_domain/domain.pddl";
+    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/test_problem_no_solution.pddl";
     srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
 
     ros::service::waitForService(srv_name, ros::Duration(1));
@@ -124,9 +124,9 @@ GTEST_TEST(PlannerInterfaceTests, Test4_invalid_pddl_syntax) {
     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
     srv.request.use_problem_topic = false;
-    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/";
-    srv.request.domain_path = rosplan_planning_system_path + "/test/pddl/domain.pddl";
-    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_problem_invalid_syntax.pddl";
+    srv.request.data_path = rosplan_planning_system_path + "/test/pddl/test_domain/";
+    srv.request.domain_path = rosplan_planning_system_path + "/test/pddl/test_domain/domain.pddl";
+    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/test_problem_invalid_syntax.pddl";
     srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
 
     ros::service::waitForService(srv_name, ros::Duration(1));

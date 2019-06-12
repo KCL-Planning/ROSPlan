@@ -61,7 +61,7 @@ GTEST_TEST(ParsingInterfaceTests, Test2_parse_plan_from_file) {
 
     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
-    srv.request.plan_path = rosplan_planning_system_path + "/test/pddl/test_planh.pddl";
+    srv.request.plan_path = rosplan_planning_system_path + "/test/pddl/amaron/test_plan.pddl";
 
     ros::service::waitForService(srv_name, ros::Duration(1));
     client1.call(srv);
