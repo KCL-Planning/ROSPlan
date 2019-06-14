@@ -5,7 +5,6 @@ language: generic
 env:
   global:
     - ROS_DISTRO=kinetic
-    - UPSTREAM_WORKSPACE=file
     - WRITABLE_SOURCE=true
 
 before_install:
