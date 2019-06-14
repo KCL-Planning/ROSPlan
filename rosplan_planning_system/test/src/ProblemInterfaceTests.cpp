@@ -58,6 +58,9 @@ GTEST_TEST(ProblemInterfaceTests, Test2_problem_string_against_known_problem) {
     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/generated_test_problem.pddl";
     srv.request.problem_string_response = true;
 
+    // remove
+    ros::Duration(1.0).sleep();
+
     ros::service::waitForService(srv_name, ros::Duration(1));
     client.call(srv);
 
