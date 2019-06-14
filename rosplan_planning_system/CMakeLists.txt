@@ -177,10 +177,3 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest_gtest(PlanDispatchTests test/launch/plan_dispatch.test test/src/PlanDispatchTests.cpp)
     target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
 endif()
-
-# install test nodes
-install(TARGETS PlannerInterfaceTests ProblemInterfaceTests ParsingInterfaceTests PlanDispatchTests
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)

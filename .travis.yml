@@ -5,7 +5,8 @@ language: generic
 env:
   global:
     - ROS_DISTRO=kinetic
-    - WRITABLE_SOURCE=true
+    - WRITABLE_SOURCE=true # allow the creation of files inside src
+    - NOT_TEST_INSTALL=true # skip install space unit tests
 
 before_install:
     - bash ./.travis/wait_for_apt.sh

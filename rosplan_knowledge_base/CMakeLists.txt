@@ -109,10 +109,3 @@ if (CATKIN_ENABLE_TESTING)
     add_rostest_gtest(KnowledgeBaseTests test/launch/knowledge_base.test test/src/KnowledgeBaseTests.cpp)
     target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
 endif()
-
-# install test nodes
-install(TARGETS KnowledgeBaseTests
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
