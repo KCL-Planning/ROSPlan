@@ -37,7 +37,7 @@ void testCallback(const std_msgs::String::ConstPtr &problem) {
 // 
 //     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 // 
-//     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/generated_test_problem.pddl";
+//     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/amazon/generated_test_problem.pddl";
 //     srv.request.problem_string_response = true;
 // 
 //     ros::service::waitForService(srv_name, ros::Duration(1));
@@ -55,7 +55,7 @@ GTEST_TEST(ProblemInterfaceTests, Test2_problem_string_against_known_problem) {
 
     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 
-    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/generated_test_problem.pddl";
+    srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/amazon/generated_test_problem.pddl";
     srv.request.problem_string_response = true;
 
     // remove
@@ -88,7 +88,7 @@ GTEST_TEST(ProblemInterfaceTests, Test2_problem_string_against_known_problem) {
 // 
 //     std::string rosplan_planning_system_path = ros::package::getPath("rosplan_planning_system");
 // 
-//     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/test_domain/generated_test_problem.pddl";
+//     srv.request.problem_path = rosplan_planning_system_path + "/test/pddl/amazon/generated_test_problem.pddl";
 //     srv.request.problem_string_response = true;
 // 
 //     ros::service::waitForService(srv_name, ros::Duration(1));
