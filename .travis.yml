@@ -19,6 +19,6 @@ before_install:
     - git submodule update --init --remote --recursive
 
 install:
-  - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+  - git clone --depth=1 --branch legacy-writable https://github.com/oscar-lima/industrial_ci.git .industrial_ci
 script:
   - .industrial_ci/travis.sh
