@@ -106,6 +106,6 @@ install(TARGETS knowledgeBase
 # where "--text" is optional, if you want to see the console output of your test
 if (CATKIN_ENABLE_TESTING)
     # Knowledge Base
-#     add_rostest_gtest(KnowledgeBaseTests test/launch/knowledge_base.test test/src/KnowledgeBaseTests.cpp)
-#     target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
+    add_rostest_gtest(KnowledgeBaseTests test/launch/knowledge_base.test test/src/KnowledgeBaseTests.cpp)
+    target_link_libraries(KnowledgeBaseTests ${catkin_LIBRARIES})
 endif()

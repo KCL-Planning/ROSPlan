@@ -47,7 +47,7 @@ GTEST_TEST(PlannerInterfaceTests, Test1_plan_found) {
         is_srv_call_successful = true;
     
     EXPECT_TRUE(is_srv_call_successful);
-//     EXPECT_TRUE(srv.response.plan_found);
+    EXPECT_TRUE(srv.response.plan_found);
 }
 
 GTEST_TEST(PlannerInterfaceTests, Test2_format_published_on_planner_output) {
@@ -92,8 +92,8 @@ GTEST_TEST(PlannerInterfaceTests, Test2_format_published_on_planner_output) {
 
     std::string known_plan = "0.000: (movetob ball)  [0.001]\n";
 
-//     EXPECT_TRUE(srv.response.plan_found);
-//     ASSERT_EQ(last_plan, known_plan);
+    EXPECT_TRUE(srv.response.plan_found);
+    ASSERT_EQ(last_plan, known_plan);
 }
 
 GTEST_TEST(PlannerInterfaceTests, Test3_problem_without_solution) {
@@ -117,7 +117,7 @@ GTEST_TEST(PlannerInterfaceTests, Test3_problem_without_solution) {
     if(client.call(srv))
         is_srv_call_successful = true;
 
-//     EXPECT_TRUE(is_srv_call_successful);
+    EXPECT_TRUE(is_srv_call_successful);
     EXPECT_FALSE(srv.response.plan_found);
 }
 
@@ -138,7 +138,7 @@ GTEST_TEST(PlannerInterfaceTests, Test4_invalid_pddl_syntax) {
     srv.request.planner_command = "timeout 10 " + rosplan_planning_system_path + "/common/bin/popf -n DOMAIN PROBLEM";
 
     ros::service::waitForService(srv_name, ros::Duration(3));
-//     EXPECT_TRUE(client1.call(srv));
+    EXPECT_TRUE(client1.call(srv));
     EXPECT_FALSE(srv.response.plan_found);
 }
 

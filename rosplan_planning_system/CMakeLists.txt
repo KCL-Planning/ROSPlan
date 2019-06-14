@@ -165,15 +165,15 @@ install(DIRECTORY launch/
 # where "--text" is optional, if you want to see the console output of your test
 if (CATKIN_ENABLE_TESTING)
     # Planner Interface
-#     add_rostest_gtest(PlannerInterfaceTests test/launch/planner_interface.test test/src/PlannerInterfaceTests.cpp)
-#     target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
+    add_rostest_gtest(PlannerInterfaceTests test/launch/planner_interface.test test/src/PlannerInterfaceTests.cpp)
+    target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
     # Problem Interface
     add_rostest_gtest(ProblemInterfaceTests test/launch/problem_interface.test test/src/ProblemInterfaceTests.cpp)
     target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
     # Parsing Interface
-#     add_rostest_gtest(ParsingInterfaceTests test/launch/parsing_interface.test test/src/ParsingInterfaceTests.cpp)
-#     target_link_libraries(ParsingInterfaceTests ${catkin_LIBRARIES})
-#     # Plan Dispatch Interface
-#     add_rostest_gtest(PlanDispatchTests test/launch/plan_dispatch.test test/src/PlanDispatchTests.cpp)
-#     target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
+    add_rostest_gtest(ParsingInterfaceTests test/launch/parsing_interface.test test/src/ParsingInterfaceTests.cpp)
+    target_link_libraries(ParsingInterfaceTests ${catkin_LIBRARIES})
+    # Plan Dispatch Interface
+    add_rostest_gtest(PlanDispatchTests test/launch/plan_dispatch.test test/src/PlanDispatchTests.cpp)
+    target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
 endif()
