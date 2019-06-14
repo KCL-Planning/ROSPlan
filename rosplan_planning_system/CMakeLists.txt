@@ -146,9 +146,14 @@ install(DIRECTORY common/bin
   FILE_PERMISSIONS OWNER_EXECUTE
 )
 
-# install pddl files in
+# install pddl files in install space
 install(DIRECTORY test/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
+)
+
+# install launch files in install space
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
 #############
