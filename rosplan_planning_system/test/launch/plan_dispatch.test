@@ -12,6 +12,7 @@
         <arg name="domain_path" value="$(arg domain_path)" />
         <arg name="problem_path" value="$(arg common_path)/initial_state_problem.pddl" /> <!-- load initial state from pddl -->
         <arg name="autom_gen_problem_path" value="$(arg common_path)/problem.pddl" /> <!-- problem.pddl will be autom generated here -->
+        <arg name="use_problem_topic" value="true" />
     </include>
 
     <!-- simulate action undock -->

@@ -9,7 +9,7 @@
     <arg name="problem_path" default="$(arg common_path)/test_problem.pddl" />
 
     <arg name="node_name"            default="rosplan_planner_interface" />
-    <arg name="use_problem_topic"    default="false" />
+    <arg name="use_problem_topic"    default="true" />
     <arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        default="/rosplan_planner_interface/planner_output" />
     <arg name="data_path"            default="$(find rosplan_planning_system)/test/pddl/test_domain/"/>
@@ -17,7 +17,7 @@
     <arg name="planner_interface"    default="popf_planner_interface" />
 
     <!-- planner interface -->
-    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" respawn="false" output="screen">
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" output="screen">
 
         <!-- general options -->
         <param name="use_problem_topic" value="$(arg use_problem_topic)" />
