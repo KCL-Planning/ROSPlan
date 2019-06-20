@@ -14,7 +14,7 @@ namespace KCL_rosplan {
 
     /* get domain name */
     bool RDDLKnowledgeBase::getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request &req,
-                                                       rosplan_knowledge_msgs::GetDomainNameService::Response &res) {
+                                          rosplan_knowledge_msgs::GetDomainNameService::Response &res) {
         if (!domain_parser.domain_parsed) return false;
         res.domain_name = domain_parser.domain_name;
         return true;
@@ -28,7 +28,7 @@ namespace KCL_rosplan {
         // Iterate over types
         std::set<std::string> types;
         std::set<std::string> super_types;
-        for (auto it = domain_parser.rddlTask->types.begin() ; it != domain_parser.rddlTask->types.end(); ++it) {
+        for (auto it = domain_parser.rddlTask->types.begin(); it != domain_parser.rddlTask->types.end(); ++it) {
             // FIXME should check if a type is a already supertype so we have disjunct sets?
             // FIXME filter out basic types?
             if (it->first == "int" or it->first == "real" or it->first == "bool" or it->first == "object") continue;
@@ -41,17 +41,34 @@ namespace KCL_rosplan {
         return true;
     }
 
-	/* get domain predicates */
+
+    bool RDDLKnowledgeBase::getEnumTypes(rosplan_knowledge_msgs::GetEnumerableTypeService::Request &req,
+                      rosplan_knowledge_msgs::GetEnumerableTypeService::Response &res) {
+        for (auto it = domain_parser.rddlTask->types.begin(); it != domain_parser.rddlTask->types.end(); ++it) {
+            if (it->first == req.type_name) {
+                if (it->second->objects.size() > 0 and it->second->objects[0]->name[0] == '@') {
+                    for (auto oit = it->second->objects.begin(); oit != it->second->objects.end(); ++oit)
+                    res.values.push_back((*oit)->name);
+                }
+                else ROS_ERROR("KCL: (%s) Type \"%s\" is not an enumerable.", ros::this_node::getName().c_str(), req.type_name.c_str());
+                break;
+            }
+        }
+        return true;
+    }
+
+    /* get domain predicates */
     bool RDDLKnowledgeBase::getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request &req,
                                           rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
         // FIXME I consider a predicate any state-fluent or non-fluent with a bool type
         // FIXME what about interm fluents and observ-fluents? Not sure if supported by the parser yet
-        for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ;
-                  it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();
+             it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
 
             // Check if the parametrized variables (pVariables) are predicates
             if ((it->second->variableType != ParametrizedVariable::STATE_FLUENT and
-                it->second->variableType != ParametrizedVariable::NON_FLUENT) or it->second->valueType->name != "bool") {
+                 it->second->variableType != ParametrizedVariable::NON_FLUENT) or
+                it->second->valueType->name != "bool") {
                 continue; // Skip
             }
             // predicate name
@@ -70,15 +87,18 @@ namespace KCL_rosplan {
                                                   rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) {
         // FIXME I consider a function any state-fluent or non-fluent with a numeric type (real/int)
         // FIXME what about interm fluents and observ-fluents? Not sure if supported by the parser
-        for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ;
-             it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();
+             it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
 
             // Check if the parametrized variables (pVariables) are functions
             if ((it->second->variableType != ParametrizedVariable::STATE_FLUENT and
                  it->second->variableType != ParametrizedVariable::NON_FLUENT) or
-                 (it->second->valueType->name != "int" and  it->second->valueType->name != "real")) continue; // Skip
+                (it->second->valueType->name ==
+                 "bool") // Skip only boolean, as all the other fluents will be handled as functions
+                /*(it->second->valueType->name != "int" and  it->second->valueType->name != "real")*/)
+                continue; // Skip
 
-             // function name
+            // function name
             rosplan_knowledge_msgs::DomainFormula formula;
             formula.name = it->second->variableName;
 
@@ -92,7 +112,8 @@ namespace KCL_rosplan {
     /* get domain operators */
     bool RDDLKnowledgeBase::getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request &req,
                                          rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) {
-        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();  it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();
+             it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
             if (it->second->variableType != ParametrizedVariable::ACTION_FLUENT) continue;
 
             // Operator name
@@ -118,29 +139,33 @@ namespace KCL_rosplan {
     bool RDDLKnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request &req,
                                                rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
         // FIXME maybe could precompute them?
-        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();  it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
-            if ((it->second->variableType != ParametrizedVariable::ACTION_FLUENT ) or
-                (it->second->variableName != req.name)) continue;
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();
+             it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+            if ((it->second->variableType != ParametrizedVariable::ACTION_FLUENT) or
+                (it->second->variableName != req.name))
+                continue;
             // operator name
-            res.op.formula.name =  it->second->variableName;
+            res.op.formula.name = it->second->variableName;
 
             // operator parameters
             res.op.formula.typed_parameters = getTypedParams(it->second->params);
 
             // Compute preconditions
-            PosNegDomainFormula prec = RDDLUtils::getOperatorPreconditions(res.op.formula, domain_parser.uninstantiated_SACs);
+            PosNegDomainFormula prec = RDDLUtils::getOperatorPreconditions(res.op.formula,
+                                                                           domain_parser.uninstantiated_SACs);
             res.op.at_start_simple_condition = prec.pos;
             res.op.at_start_neg_condition = prec.neg;
 
             // Compute effects
-            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula,
+                                                                    domain_parser.rddlTask->CPFDefinitions);
             res.op.at_end_add_effects = eff.add;
             res.op.at_end_del_effects = eff.del;
             res.op.probabilistic_effects = eff.prob;
 
             // Compute assign effects
             res.op.at_end_assign_effects = RDDLUtils::getOperatorAssignEffects(res.op.formula,
-                                                                                       domain_parser.rddlTask->CPFDefinitions);
+                                                                               domain_parser.rddlTask->CPFDefinitions);
             return true;
         }
         if (req.name == "exogenous") {
@@ -148,7 +173,8 @@ namespace KCL_rosplan {
             res.op.formula.name = req.name;
 
             // Compute effects
-            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula, domain_parser.rddlTask->CPFDefinitions);
+            EffectDomainFormula eff = RDDLUtils::getOperatorEffects(res.op.formula,
+                                                                    domain_parser.rddlTask->CPFDefinitions);
             res.op.at_end_add_effects = eff.add;
             res.op.at_end_del_effects = eff.del;
             res.op.probabilistic_effects = eff.prob;
@@ -159,7 +185,7 @@ namespace KCL_rosplan {
 
     /* get domain predicate details */
     bool RDDLKnowledgeBase::getPredicateDetails(rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Request &req,
-                                                 rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
+                                                rosplan_knowledge_msgs::GetDomainPredicateDetailsService::Response &res) {
         auto it = domain_parser.rddlTask->variableDefinitions.find(req.name);
         if (it != domain_parser.rddlTask->variableDefinitions.end()) {
             res.predicate.name = it->second->variableName;
@@ -168,7 +194,7 @@ namespace KCL_rosplan {
             res.predicate.typed_parameters = getTypedParams(it->second->params);
 
             // predicate is sensed
-            if(sensed_predicates.find(it->second->variableName) == sensed_predicates.end()) {
+            if (sensed_predicates.find(it->second->variableName) == sensed_predicates.end()) {
                 sensed_predicates[it->second->variableName] = false;
             }
             res.is_sensed = sensed_predicates[it->second->variableName];
@@ -244,7 +270,8 @@ namespace KCL_rosplan {
     }
 
     /* Get object instances */
-    std::map<std::string, std::vector<std::string> > RDDLKnowledgeBase::getInstances(const std::map<std::string, Object*>& instance_objects) {
+    std::map<std::string, std::vector<std::string> >
+    RDDLKnowledgeBase::getInstances(const std::map<std::string, Object *> &instance_objects) {
         map<string, std::vector<string>> instances;
         for (auto it = instance_objects.begin(); it != instance_objects.end(); ++it) {
             if (it->first == "false" or it->first == "true") continue; // Skip the "true" and "false" objects
@@ -262,7 +289,8 @@ namespace KCL_rosplan {
 
         // FIXME is this right?
         // Add all the predicates/functions from pvariables whose initial value is true or are numeric and have default value
-        for (auto it = domain_parser.rddlTask->variableDefinitions.begin() ; it != domain_parser.rddlTask->variableDefinitions.end() ; ++it) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin();
+             it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
             // Check if the parametrized variables (pVariables) are predicates
             bool isBool = it->second->valueType->name == "bool";
             if ((it->second->variableType != ParametrizedVariable::STATE_FLUENT and
@@ -276,40 +304,48 @@ namespace KCL_rosplan {
         }
 
         // Get state fluents from the initial state
-        for (auto it = domain_parser.rddlTask->stateFluents.begin(); it != domain_parser.rddlTask->stateFluents.end(); ++it) {
-           factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params, (*it)->initialValue); // This will override any default variable set
+        for (auto it = domain_parser.rddlTask->stateFluents.begin();
+             it != domain_parser.rddlTask->stateFluents.end(); ++it) {
+            factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params,
+                                                 (*it)->initialValue); // This will override any default variable set
         }
 
         // Get non-fluents from the initial state
-        for (auto it = domain_parser.rddlTask->nonFluents.begin(); it != domain_parser.rddlTask->nonFluents.end(); ++it) {
-            factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params, (*it)->initialValue); // This will override any default variable set
+        for (auto it = domain_parser.rddlTask->nonFluents.begin();
+             it != domain_parser.rddlTask->nonFluents.end(); ++it) {
+            factsfuncs[(*it)->fullName] = fillKI(*it, (*it)->params,
+                                                 (*it)->initialValue); // This will override any default variable set
         }
 
         // Iterate map to fill the right structures
         for (auto it = factsfuncs.begin(); it != factsfuncs.end(); ++it) {
-            if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) model_facts.push_back(it->second);
-            else if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION) model_functions.push_back(it->second);
+            if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT)
+                model_facts.push_back(it->second);
+            else if (it->second.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FUNCTION)
+                model_functions.push_back(it->second);
         }
 
     }
 
-    rosplan_knowledge_msgs::KnowledgeItem RDDLKnowledgeBase::fillKI(const ParametrizedVariable* var, const std::vector<Parameter *> &params, double initialValue) {
+    rosplan_knowledge_msgs::KnowledgeItem
+    RDDLKnowledgeBase::fillKI(const ParametrizedVariable *var, const std::vector<Parameter *> &params,
+                              double initialValue) {
         rosplan_knowledge_msgs::KnowledgeItem item;
         item.initial_time = ros::Time::now();
 
         if (var->valueType->name == "bool") { // We have a fact
             item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
             item.is_negative = (initialValue == 0);
-        }
-        else {
+        } else {
             //assert(var->valueType->name == "real" or var->valueType->name == "int");
             item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
             item.is_negative = false;
             item.function_value = initialValue;
         }
         item.attribute_name = var->variableName;
+        item.instance_type = var->valueType->name; // Add type
 
-        for (size_t  i = 0; i < params.size(); ++i) {
+        for (size_t i = 0; i < params.size(); ++i) {
             diagnostic_msgs::KeyValue param;
             param.key = domain_parser.rddlTask->variableDefinitions[var->variableName]->params[i]->name; // Get the variable name/id from the variabledefinitions structure
             size_t pos = param.key.find('?');
@@ -332,8 +368,7 @@ namespace KCL_rosplan {
             if (var->valueType->name == "bool") { // We have a fact
                 item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
                 item.is_negative = (var->initialValue == 0);
-            }
-            else {
+            } else {
                 //assert(var->valueType->name == "real" or var->valueType->name == "int");
                 item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FUNCTION;
                 item.is_negative = false;
@@ -341,6 +376,7 @@ namespace KCL_rosplan {
             }
 
             item.attribute_name = var->variableName;
+            item.instance_type = var->valueType->name;
             item.values.resize(var->params.size());
         }
 
@@ -355,7 +391,8 @@ namespace KCL_rosplan {
             for (auto it = instance_names.begin(); it != instance_names.end(); ++it) {
                 item.values[param_index].value = *it;
 
-                std::string aux = (ground_params.size()) ? ground_params + ", " + *it : *it; // If it's first, don't add comma
+                std::string aux = (ground_params.size()) ? ground_params + ", " + *it
+                                                         : *it; // If it's first, don't add comma
                 if (param_index == var->params.size() - 1) {
                     factsfuncs[var->variableName + "(" + aux +
                                ")"] = item; // If grounded all params, save it (push_back copies the object)
@@ -363,8 +400,7 @@ namespace KCL_rosplan {
                     fillKIAddAllGroundedParameters(var, factsfuncs, item, aux,
                                                    param_index + 1); // If still params to ground ground them all
             }
-        }
-        else factsfuncs[var->variableName] = item; // Add the item without parameters
+        } else factsfuncs[var->variableName] = item; // Add the item without parameters
 
     }
 
@@ -376,9 +412,10 @@ namespace KCL_rosplan {
 
     void RDDLKnowledgeBase::parseDomain(const std::string &domain_file_path, const std::string &problem_file_path) {
         domain_path_ = domain_file_path;
-        RDDLTask* t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
+        RDDLTask *t = domain_parser.parseTask(domain_file_path, problem_file_path); // The parser stores the task
         if (t == nullptr) {
-            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.",
+                      ros::this_node::getName().c_str());
             ros::shutdown();
         }
         if (problem_file_path != "") addInitialState();
@@ -391,12 +428,22 @@ namespace KCL_rosplan {
         _nh.param("max_nondef_actions", _max_nondef_actions, 1);
 
 
-        _getParamsService = _nh.advertiseService("state/rddl_parameters",  &KCL_rosplan::RDDLKnowledgeBase::getRDDLParams, this);
-        _setRDDLDiscountFactorSrv = _nh.advertiseService("state/set_rddl_discount_factor",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLDiscountFactor, this);
-        _setRDDLHorizonSrv = _nh.advertiseService("state/set_rddl_horizon",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLHorizon, this);
-        _setRDDLMaxNonDefSrv = _nh.advertiseService("state/set_rddl_max_nondef_actions",  &KCL_rosplan::RDDLKnowledgeBase::setRDDLMAxNonDefActions, this);
-        _setImmediateRewardsSrv = _nh.advertiseService("state/get_immediate_reward",  &KCL_rosplan::RDDLKnowledgeBase::computeImmediateReward, this);
-        _reloadDomainStructureSrv = _nh.advertiseService("reload_rddl_domain",  &KCL_rosplan::RDDLKnowledgeBase::reloadDomain, this);
+        _getParamsService = _nh.advertiseService("state/rddl_parameters",
+                                                 &KCL_rosplan::RDDLKnowledgeBase::getRDDLParams, this);
+        _setRDDLDiscountFactorSrv = _nh.advertiseService("state/set_rddl_discount_factor",
+                                                         &KCL_rosplan::RDDLKnowledgeBase::setRDDLDiscountFactor, this);
+        _setRDDLHorizonSrv = _nh.advertiseService("state/set_rddl_horizon",
+                                                  &KCL_rosplan::RDDLKnowledgeBase::setRDDLHorizon, this);
+        _setRDDLMaxNonDefSrv = _nh.advertiseService("state/set_rddl_max_nondef_actions",
+                                                    &KCL_rosplan::RDDLKnowledgeBase::setRDDLMAxNonDefActions, this);
+        _setImmediateRewardsSrv = _nh.advertiseService("state/get_immediate_reward",
+                                                       &KCL_rosplan::RDDLKnowledgeBase::computeImmediateReward, this);
+        _reloadDomainStructureSrv = _nh.advertiseService("reload_rddl_domain",
+                                                         &KCL_rosplan::RDDLKnowledgeBase::reloadDomain, this);
+        _getEnumtypesSrv = _nh.advertiseService("domain/enumerable_type",
+                                                &KCL_rosplan::RDDLKnowledgeBase::getEnumTypes, this);
+        _getFluentTypeSrv = _nh.advertiseService("domain/fluent_type",
+                                                 &KCL_rosplan::RDDLKnowledgeBase::getFluentType, this);
     }
 
     bool RDDLKnowledgeBase::getRDDLParams(rosplan_knowledge_msgs::GetRDDLParams::Request &req,
@@ -428,15 +475,17 @@ namespace KCL_rosplan {
         return true;
     }
 
-    bool RDDLKnowledgeBase::reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req, rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res) {
-        RDDLTask* t = domain_parser.parseTask(domain_path_, req.problem_path, true); // The parser stores the task
+    bool RDDLKnowledgeBase::reloadDomain(rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Request &req,
+                                         rosplan_knowledge_msgs::ReloadRDDLDomainProblem::Response &res) {
+        RDDLTask *t = domain_parser.parseTask(domain_path_, req.problem_path, true); // The parser stores the task
         if (t == nullptr) {
-            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.", ros::this_node::getName().c_str());
+            ROS_ERROR("KCL: (%s) There were syntax errors in the domain or instance file.",
+                      ros::this_node::getName().c_str());
             res.success = false;
-        }
-        else res.success = true;
+        } else res.success = true;
         return true;
     }
+
 
     bool RDDLKnowledgeBase::computeImmediateReward(rosplan_knowledge_msgs::GetRDDLImmediateReward::Request &req, rosplan_knowledge_msgs::GetRDDLImmediateReward::Response &res) {
 
@@ -510,5 +559,17 @@ namespace KCL_rosplan {
                 break;
             }
         }
+    }
+
+    bool RDDLKnowledgeBase::getFluentType(rosplan_knowledge_msgs::GetRDDLFluentType::Request &req,
+                                          rosplan_knowledge_msgs::GetRDDLFluentType::Response &res) {
+        for (auto it = domain_parser.rddlTask->variableDefinitions.begin(); it != domain_parser.rddlTask->variableDefinitions.end(); ++it) {
+            if (it->first == req.fluent_name) {
+                res.type = it->second->valueType->name;
+                return true;
+            }
+        }
+        ROS_ERROR("KCL: (%s) getFluentType: Fluent %s was not found!", ros::this_node::getName().c_str(), req.fluent_name.c_str());
+        return true;
     }
 }

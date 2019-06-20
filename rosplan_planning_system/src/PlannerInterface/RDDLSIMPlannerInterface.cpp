@@ -104,7 +104,8 @@ namespace KCL_rosplan {
                         std::istringstream p(match[2].str()); // parameters
                         std::string param;
                         while (getline(p, param, ',')) {
-                            planner_output += " "+ param;
+                        	if (param[0] != ' ') planner_output += " ";
+                            planner_output += param;
                         }
                         planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
                     }
