@@ -69,9 +69,6 @@ class RosplanSensing:
             rospy.signal_shutdown('Config not found')
             return
 
-        # Prepare MessageStoreProxy
-        # Todo check if message_Store is present before creating it?
-        self.msproxy = MessageStoreProxy()
 
         ################################################################################################################
         # Load scripts
