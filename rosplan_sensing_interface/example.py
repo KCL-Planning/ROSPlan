@@ -12,7 +12,7 @@ def robot_at_test(msg, params): # Idea: Params are the instances of all the para
         closest_wp = 0
         for i, wp in enumerate(params[1]):
             ret_value.append((robot + ':' + wp, False))  # Init all the values
-            pose = mongodb(wp, PoseStamped._type)
+            pose = rospy.get_param("/rosplan_demo_waypoints/" + wp)
             assert(len(pose) > 0)
             x = pose[0].pose.position.x - msg.pose.pose.position.x
             y = pose[0].pose.position.y - msg.pose.pose.position.y
@@ -40,7 +40,7 @@ def robot_at(msg, params): # Idea: Params are the instances of all the parameter
         distance = float('inf')
         closest_wp = ''
         for wp in params[1]:
-            pose = mongodb(wp, PoseStamped._type)
+            pose = rospy.get_param("/rosplan_demo_waypoints/"+wp)
             assert(len(pose) > 0)
             x = pose[0].pose.position.x - msg.pose.pose.position.x
             y = pose[0].pose.position.y - msg.pose.pose.position.y

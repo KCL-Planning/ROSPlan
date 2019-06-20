@@ -6,7 +6,6 @@ import re
 import threading
 import numpy as np
 from threading import Lock
-from mongodb_store.message_store import MessageStoreProxy
 import imp
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
 from rosplan_knowledge_msgs.srv import GetDomainPredicateDetailsService, GetDomainPredicateDetailsServiceRequest
@@ -79,7 +78,6 @@ class RosplanSensing:
         if self.functions_path:
             self.scripts = imp.load_source('sensing_scripts', self.functions_path)
             # Declare tools in the scripts module:
-            self.scripts.mongodb = self.mongodb
             self.scripts.get_kb_attribute = self.get_kb_attribute
             self.scripts.rospy = rospy
 
@@ -406,10 +404,6 @@ class RosplanSensing:
                 self.update_kb_srv.call(kus)
             except Exception as e:
                 rospy.logerr("KCL (SensingInterface) Failed to update knowledge base: %s" % e.message)
-
-    # Returns the query to the mongodb messageproxy object
-    def mongodb(self, query, ret_type):
-        return self.msproxy.query_named(query, ret_type)
 
     def get_kb_attribute(self, attribute_name):
         request = GetAttributeServiceRequest(attribute_name)
