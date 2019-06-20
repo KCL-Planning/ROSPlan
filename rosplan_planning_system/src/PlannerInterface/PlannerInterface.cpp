@@ -76,6 +76,10 @@ namespace KCL_rosplan {
 		problem_path = problemPath;
 		planner_command = plannerCommand;
 		use_problem_topic = useProblemTopic;
+
+        // check if data_path ends in "/" and add "/" if not
+        const char *last_char = &data_path.back();
+        if (strcmp(last_char,"/") != 0)data_path = data_path + "/";
 		
 		// set problem name for ROS_INFO
 		std::size_t lastDivide = problem_path.find_last_of("/\\");

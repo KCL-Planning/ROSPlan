@@ -22,3 +22,6 @@ rosplan_knowledge_msgs/DomainFormula[] at_end_simple_condition
 rosplan_knowledge_msgs/DomainFormula[] at_start_neg_condition
 rosplan_knowledge_msgs/DomainFormula[] over_all_neg_condition
 rosplan_knowledge_msgs/DomainFormula[] at_end_neg_condition
+rosplan_knowledge_msgs/DomainInequality[] at_start_comparison
+rosplan_knowledge_msgs/DomainInequality[] at_end_comparison
+rosplan_knowledge_msgs/DomainInequality[] over_all_comparison

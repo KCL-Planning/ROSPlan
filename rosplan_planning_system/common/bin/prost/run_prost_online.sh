@@ -66,6 +66,7 @@ fi
 
 # Wait for the server to be online
 # The above command gets the PID of a process using the port $SERVER_PORT
+SERVER_PID=$(netstat -tulpn 2>&1 | grep $SERVER_PORT | sed -n 's_.*\s\([0-9]\+\)/.*_\1_p')
 while [[ -z $SERVER_PID ]]; do
 	SERVER_PID=$(netstat -tulpn 2>&1 | grep $SERVER_PORT | sed -n 's_.*\s\([0-9]\+\)/.*_\1_p') 
 	sleep $WAIT_SERVER_TIME # Give time for the server to die

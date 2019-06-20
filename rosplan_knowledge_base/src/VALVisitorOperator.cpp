@@ -42,6 +42,9 @@ namespace KCL_rosplan {
 		msg.at_start_neg_condition.clear();
 		msg.over_all_neg_condition.clear();
 		msg.at_end_neg_condition.clear();
+		msg.at_start_comparison.clear();
+		msg.at_end_comparison.clear();
+		msg.over_all_comparison.clear();
 
 		// effects
 		op->effects->visit(this);
@@ -91,7 +94,7 @@ namespace KCL_rosplan {
 
 	void VALVisitorOperator::visit_neg_goal(VAL1_2::neg_goal *c) {
 		cond_neg = !cond_neg;
-        c->getGoal()->visit(this);
+		c->getGoal()->visit(this);
 		cond_neg = !cond_neg;
 	}
 
@@ -114,7 +117,36 @@ namespace KCL_rosplan {
 		}
 	}
 
-	void VALVisitorOperator::visit_comparison(VAL1_2::comparison * c) {}
+	void VALVisitorOperator::visit_comparison(VAL1_2::comparison * c) {
+
+		rosplan_knowledge_msgs::DomainInequality ineq;
+		ineq.grounded = false;
+
+		// assignment left hand side
+		last_expr.tokens.clear();
+		c->getLHS()->visit(this);
+		ineq.LHS = last_expr;
+
+		// assignment right hand side
+		last_expr.tokens.clear();
+		c->getRHS()->visit(this);
+		ineq.RHS = last_expr;
+
+		// assignment operator
+		switch(c->getOp()) {
+			case VAL1_2::E_GREATER: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATER; break;
+			case VAL1_2::E_GREATEQ: ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::GREATEREQ; break;
+			case VAL1_2::E_LESS:    ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESS; break;
+			case VAL1_2::E_LESSEQ:  ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::LESSEQ; break;
+			case VAL1_2::E_EQUALS:  ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::EQUALS; break;
+		}
+
+		switch(cond_time) {
+			case VAL1_2::E_AT_START: msg.at_start_comparison.push_back(ineq); break;
+			case VAL1_2::E_AT_END: msg.at_end_comparison.push_back(ineq); break;
+			case VAL1_2::E_OVER_ALL: msg.over_all_comparison.push_back(ineq); break;
+		}
+	}
 
 	void VALVisitorOperator::visit_qfied_goal(VAL1_2::qfied_goal *) {}
 
@@ -202,43 +234,47 @@ namespace KCL_rosplan {
 	/*-------------*/
 
 	void VALVisitorOperator::visit_plus_expression(VAL1_2::plus_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::ADD;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_minus_expression(VAL1_2::minus_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::SUB;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_mul_expression(VAL1_2::mul_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::MUL;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_div_expression(VAL1_2::div_expression * s) {
-		s->getLHS()->visit(this);
-		s->getRHS()->visit(this);
 
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 		op.op = rosplan_knowledge_msgs::ExprBase::DIV;
 		last_expr.tokens.push_back(op);
+
+		s->getLHS()->visit(this);
+		s->getRHS()->visit(this);
 	}
 
 	void VALVisitorOperator::visit_uminus_expression(VAL1_2::uminus_expression * s) {
@@ -265,17 +301,11 @@ namespace KCL_rosplan {
 	void VALVisitorOperator::visit_special_val_expr(VAL1_2::special_val_expr * s) {
 		rosplan_knowledge_msgs::ExprBase op;
 		op.expr_type = rosplan_knowledge_msgs::ExprBase::SPECIAL;
-        switch(s->getKind()) {
-            case VAL1_2::E_HASHT:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::HASHT;
-                break;
-            case VAL1_2::E_DURATION_VAR:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::DURATION;
-                break;
-            case VAL1_2::E_TOTAL_TIME:
-				op.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME;
-				break;
-        }
+		switch(s->getKind()) {
+			case VAL1_2::E_HASHT: op.special_type = rosplan_knowledge_msgs::ExprBase::HASHT; break;
+			case VAL1_2::E_DURATION_VAR: op.special_type = rosplan_knowledge_msgs::ExprBase::DURATION; break;
+			case VAL1_2::E_TOTAL_TIME: op.special_type = rosplan_knowledge_msgs::ExprBase::TOTAL_TIME; break;
+        	}
 		last_expr.tokens.push_back(op);
 	}
 
@@ -287,6 +317,7 @@ namespace KCL_rosplan {
 		last_func.name = s->getFunction()->getName();
 
 		// func_term variables
+		last_func.typed_parameters.clear();
 		for (VAL1_2::parameter_symbol_list::const_iterator vi = s->getArgs()->begin(); vi != s->getArgs()->end(); vi++) {
 			diagnostic_msgs::KeyValue param;
 			param.key = (*vi)->pddl_typed_symbol::getName();

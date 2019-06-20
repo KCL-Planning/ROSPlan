@@ -10,6 +10,7 @@
 #include "VALfiles/VisitController.h"
 
 #include "rosplan_knowledge_msgs/DomainFormula.h"
+#include "rosplan_knowledge_msgs/DomainInequality.h"
 #include "rosplan_knowledge_msgs/DomainOperator.h"
 #include "rosplan_knowledge_msgs/ExprBase.h"
 #include "rosplan_knowledge_msgs/ExprComposite.h"

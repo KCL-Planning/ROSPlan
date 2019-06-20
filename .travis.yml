@@ -6,20 +6,16 @@ env:
   global:
     - ROS_DISTRO=kinetic
     - UPSTREAM-WORKSPACE=file
-    - ROSINSTALL_FILENAME=.travis.rosinstall
     - WRITABLE_SOURCE=true
 
 before_install:
     - bash ./.travis/wait_for_apt.sh
-    - sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
-    - echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.6.list
     - sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
     - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
     - sudo apt-get update
     - sudo apt-get install libcurl3
-    - sudo apt-get install -y mongodb-server mongodb
-    - sudo apt-get install flex bison ros-kinetic-mongodb-store ros-kinetic-tf2-bullet freeglut3-dev
-    - git clone https://github.com/clearpathrobotics/occupancy_grid_utils
+    - sudo apt-get install flex bison ros-kinetic-tf2-bullet freeglut3-dev
+    - sudo apt-get install libbdd-dev
     - git submodule update --init --remote --recursive
 
 install:
