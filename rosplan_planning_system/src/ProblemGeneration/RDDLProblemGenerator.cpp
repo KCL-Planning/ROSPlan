@@ -17,7 +17,8 @@ namespace KCL_rosplan {
         }
         _domain_name = nameSrv.response.domain_name;
         _non_fluents_name = "nf_" + _domain_name + "__generate_instance";
-        reload_domain_ = _nh.serviceClient<rosplan_knowledge_msgs::ReloadRDDLDomainProblem>(kb + "/reload_rddl_domain");
+        _reload_domain = _nh.serviceClient<rosplan_knowledge_msgs::ReloadRDDLDomainProblem>(kb + "/reload_rddl_domain");
+        _get_fluent_type = _nh.serviceClient<rosplan_knowledge_msgs::GetRDDLFluentType>(kb + "/domain/fluent_type");
     }
 
 
@@ -33,8 +34,8 @@ namespace KCL_rosplan {
         pFile.close();
         rosplan_knowledge_msgs::ReloadRDDLDomainProblem srv;
         srv.request.problem_path = problemPath;
-        if (not reload_domain_.call(srv) or not srv.response.success) {
-            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s.", reload_domain_.getService().c_str());
+        if (not _reload_domain.call(srv) or not srv.response.success) {
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s.", _reload_domain.getService().c_str());
         }
     }
 
@@ -54,17 +55,30 @@ namespace KCL_rosplan {
        // Print objects
         pFile << "\tobjects {" << std::endl;
 
+        std::string srv_name = "/" + knowledge_base + "/domain/enumerable_type";
+        ros::ServiceClient getEnumerableType = _nh.serviceClient<rosplan_knowledge_msgs::GetEnumerableTypeService>(srv_name);
+
         std::map<std::string, std::vector<std::string>> instances = getInstances();
         for (auto it = instances.begin(); it != instances.end(); ++it) {
             if (it->second.size() > 0) {
-                pFile << "\t\t" << it->first << ": " << "{";
-                bool comma = false;
-                for (auto inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
-                    if (comma) pFile << ", ";
-                    else comma = true;
-                    pFile << *inst_it;
+                if ((*it->second.begin())[0] == '@') { // If it starts with @ means it's an enumeration
+                    rosplan_knowledge_msgs::GetEnumerableTypeService params;
+                    params.request.type_name = it->first;
+                    if (!getEnumerableType.call(params)) {
+                        ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s", srv_name.c_str());
+                    }
+                    _enumeration_types[it->first] = params.response.values;
                 }
-                pFile << "};" << std::endl;
+                else {
+                    pFile << "\t\t" << it->first << ": " << "{";
+                    bool comma = false;
+                    for (auto inst_it = it->second.begin(); inst_it != it->second.end(); ++inst_it) {
+                        if (comma) pFile << ", ";
+                        else comma = true;
+                        pFile << *inst_it;
+                    }
+                    pFile << "};" << std::endl;
+                }
             }
         }
         pFile << "\t};" << std::endl;
@@ -241,7 +255,18 @@ namespace KCL_rosplan {
                 pFile << ((pfit->is_negative == 0)? "true" : "false");
             }
             else { // FUNCTION
-                pFile << pfit->function_value;
+                rosplan_knowledge_msgs::GetRDDLFluentType gft;
+                gft.request.fluent_name = pfit->attribute_name;
+                if (!_get_fluent_type.call(gft)) {
+                    ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                              _get_fluent_type.getService().c_str(), gft.request.fluent_name.c_str());
+                    return;
+                }
+                auto enum_type = _enumeration_types.find(gft.response.type);
+                if (enum_type != _enumeration_types.end()) {
+                    pFile << enum_type->second[pfit->function_value];
+                }
+                else pFile << pfit->function_value;
             }
             pFile << ";" << std::endl;
         }
@@ -254,14 +279,14 @@ namespace KCL_rosplan {
             rosplan_knowledge_msgs::GetAttributeService attrSrv;
             attrSrv.request.predicate_name = *it;
             if (!getPropsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
                           state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
                 continue;
             }
 
             // If it was not a proposition, try functions
             if (attrSrv.response.attributes.size() == 0 and !getFuncsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
+                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
                           state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
                 continue;
             }
