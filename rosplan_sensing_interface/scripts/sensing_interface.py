@@ -440,7 +440,8 @@ if __name__ == "__main__":
     t = threading.Thread(target=RosplanSensing.call_services, args=(rps,))
 
     # main loop
-    rate = rospy.Rate(10)  # 10hz
+    hz_rate = rospy.get_param('~main_rate', 10)
+    rate = rospy.Rate(hz_rate)  # 10hz
     t.start()
     while not rospy.is_shutdown():
         # Note: spin is not needed in python as the callback methods are run in a different thread
