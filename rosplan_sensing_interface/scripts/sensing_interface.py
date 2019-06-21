@@ -15,9 +15,6 @@ from rosplan_knowledge_msgs.srv import GetInstanceService, GetInstanceServiceReq
 from rosplan_knowledge_msgs.srv import SetNamedBool, SetNamedBoolRequest
 from rosplan_knowledge_msgs.msg import KnowledgeItem
 from diagnostic_msgs.msg import KeyValue
-# Todo extend for services? # https://answers.ros.org/question/263005/how-can-i-check-if-a-service-exists-from-python/
-# Todo parameters
-# FIXME how to define two predicates with the same name?
 
 
 class RosplanSensing:
@@ -409,7 +406,7 @@ class RosplanSensing:
                 ki.knowledge_type = ki.FUNCTION
                 ki.function_value = val
 
-            # TODO what to do if no parameters specified? iterate over all the instantiated parameters and add it?
+            # TODO what to do if no parameters specified? iterate over all the instantiated parameters and add them?
             for i, param in enumerate(predicate_info):
                 kv = KeyValue()
                 kv.key = 'p' + str(i)
