@@ -42,9 +42,10 @@ topics:
         - '[(msg.key, msg.value == "yes")]'
 
 services:
-    is_busy:
+    docked:
+        - params kenny # List of parameters (optional if no parameters!). must be completely instantiated
         - /test_service # Service
         - std_srvs/SetBool # Srv type
-        - xxx # Time between calls in seconds
-        - req code # Request creation
-        - 'res.lala < ee' # operation
+        - 10 # Time between calls in seconds
+        - req code # (Optional if in script) Request creation code. I.e.: "req SetBoolRequest(data=True)"
+        - 'res.lala < ee' # (Optional if in script) operation to get the result

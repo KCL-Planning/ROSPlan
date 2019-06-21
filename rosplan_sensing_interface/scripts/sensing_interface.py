@@ -140,10 +140,14 @@ class RosplanSensing:
 
             # Gets the request creation
             request_offset = 1
-            if predicate_info[offset+3].find('req ') == 0:
-                self.request_src.append(predicate_info[offset+3].replace('req ', '', 1))
-            elif predicate_info[offset+3].find('request ') == 0:
-                self.request_src.append(predicate_info[offset+3].replace('request ', '', 1))
+            if offset+3 < len(predicate_info):
+                if predicate_info[offset+3].find('req ') == 0:
+                    self.request_src.append(predicate_info[offset+3].replace('req ', '', 1))
+                elif predicate_info[offset+3].find('request ') == 0:
+                    self.request_src.append(predicate_info[offset+3].replace('request ', '', 1))
+                else:
+                    self.request_src.append(None)
+                    request_offset = 0
             else:
                 self.request_src.append(None)
                 request_offset = 0
@@ -270,6 +274,7 @@ class RosplanSensing:
         pkg_name = ros_msg_string[:i]
         msg_name = ros_msg_string[i+1:]
         exec('from ' + pkg_name + ".msg import " + msg_name, globals())
+        exec('self.scripts.' + msg_name + " = " + msg_name, globals(), locals())
 
     # Import a ros srv type of type pkg_name/MessageName
     def import_srv(self, ros_srv_string):
@@ -278,6 +283,8 @@ class RosplanSensing:
         pkg_name = ros_srv_string[:i]
         srv_name = ros_srv_string[i + 1:]
         exec ('from ' + pkg_name + ".srv import " + srv_name + ", " + srv_name + "Request", globals())
+        exec ('self.scripts.' + srv_name + " = " + srv_name, globals(), locals())
+        exec ('self.scripts.' + srv_name + "Request = " + srv_name + "Request", globals(), locals())
         return srv_name
 
     # To be run in its own thread

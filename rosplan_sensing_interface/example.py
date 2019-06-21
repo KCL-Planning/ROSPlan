@@ -52,3 +52,12 @@ def robot_at(msg, params): # Idea: Params are the instances of all the parameter
             ret_value.append((robot + ':' + curr_wp, False)) # Set current waypoint to false
             ret_value.append((robot + ':' + closest_wp, True))  # Set new wp to true
     return ret_value
+
+
+#from std_srvs.srv import SetBoolRequest
+def req_docked():
+    return SetBoolRequest(data=False)
+
+def docked(res, params):  # params is a list with all the parameters - fully instantiated for services!
+    print params
+    return int(res.message.split(' ')[3])%2 == 0
