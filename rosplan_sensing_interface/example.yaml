@@ -43,16 +43,8 @@ topics:
 
 services:
     is_busy:
-        - /testsrv
-        - std_srvs/SetBool
-        - xxx
-        - req code
-        - 'res.lala < ee'
-
-#import rospy
-#from std_srvs.srv import SetBool, SetBoolResponse
-#rospy.init_node('test')
-#def test_srv(msg):
-#    return SetBoolResponse(msg.data, 'Called service test!')
-#s = rospy.Service('testsrv', SetBool, test_srv)
-#rospy.spin()
+        - /test_service # Service
+        - std_srvs/SetBool # Srv type
+        - xxx # Time between calls in seconds
+        - req code # Request creation
+        - 'res.lala < ee' # operation

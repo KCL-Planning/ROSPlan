@@ -14,6 +14,7 @@ from rosplan_knowledge_msgs.srv import GetAttributeService, GetAttributeServiceR
 from rosplan_knowledge_msgs.srv import GetInstanceService, GetInstanceServiceRequest
 from rosplan_knowledge_msgs.srv import SetNamedBool, SetNamedBoolRequest
 from rosplan_knowledge_msgs.msg import KnowledgeItem
+from diagnostic_msgs.msg import KeyValue
 # Todo extend for services? # https://answers.ros.org/question/263005/how-can-i-check-if-a-service-exists-from-python/
 # Todo parameters
 # FIXME how to define two predicates with the same name?
@@ -113,6 +114,7 @@ class RosplanSensing:
         ############
         # Create clients for all the services
         self.service_clients = []
+        self.service_names = []
         self.service_type_names = []
         self.service_predicate_names = []
         self.last_called_time = []
@@ -131,6 +133,7 @@ class RosplanSensing:
             srv_typename = self.import_srv(srv_type)
             self.service_type_names.append(srv_typename)
             self.service_clients.append(rospy.ServiceProxy(predicate_info[offset+0], eval(srv_typename)))
+            self.service_names.append(predicate_info[offset+0])
             self.service_predicate_names.append(predicate_name)
             self.last_called_time.append(rospy.Time(0))
             self.time_between_calls.append(predicate_info[offset+2])
@@ -279,6 +282,11 @@ class RosplanSensing:
 
     # To be run in its own thread
     def call_services(self):
+        rospy.loginfo("Waiting for services to become available...")
+        for i in xrange(len(self.service_names)):
+            rospy.loginfo('   Waiting for %s', self.service_names[i])
+            rospy.wait_for_service(self.service_names[i], 20)
+        rospy.loginfo('All services are ready.')
         # TODO time handling and parameters and outer loop
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
@@ -308,8 +316,8 @@ class RosplanSensing:
                     continue
 
                 # Process response
-                if self.request_src[i]:
-                    python_string = self.request_src[i]
+                if self.response_process_src[i]:
+                    python_string = self.response_process_src[i]
                 else:  # Call the method from the scripts.py file
                     if not pred_name in dir(self.scripts):
                         rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' %
@@ -333,7 +341,7 @@ class RosplanSensing:
                         self.sensed_services[pred_name + ':' + params] = (val, changed)
                         self.srv_mutex.release()
                 else:
-                    params = reduce(lambda r, x: r + ':' + x, self.params[pred_name])
+                    params = reduce(lambda r, x: r + ':' + x, self.params[pred_name]) if self.params[pred_name] else ''
                     if type(params) == list:
                         rospy.logerr(
                             'KCL: (RosplanSensing) Predicate "%s" needs to have all the parameters defined and fully instantiated' % pred_name)
