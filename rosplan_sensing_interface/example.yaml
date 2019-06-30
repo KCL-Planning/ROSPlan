@@ -1,0 +1,57 @@
+functions:
+    - $(find rosplan_sensing_interface)/example.py
+topics:
+    test:
+        topic: /topic
+        msg_type: std_msgs/String # Not needed, but useful for topics not yet published!
+        #operation: msg.data == 'TRUE' # value computation
+
+    docked:
+        params:
+            - kenny
+        topic: /mobile_base/sensors/core
+        msg_type: kobuki_msgs/SensorState
+        operation: msg.charger != msg.DISCHARGING
+
+    undocked:
+        params:
+            - kenny
+        topic: /mobile_base/sensors/core
+        msg_type: kobuki_msgs/SensorState
+        operation: msg.charger == msg.DISCHARGING
+
+    robot_at:
+        params:
+            - kenny
+            - '*'
+        topic: /amcl_pose
+        msg_type: geometry_msgs/PoseWithCovarianceStamped
+
+    localised:
+        params:
+            - kenny
+        topic: /localised_mock
+        msg_type: std_msgs/Bool
+        operation: msg.data
+
+    somebody_at:
+        topic: /somebodyat_mock
+        msg_type: diagnostic_msgs/KeyValue
+        operation: '[(msg.key, msg.value == "yes")]'
+
+    is_busy:
+        params:
+            - '*'
+        topic: /isbusy_mock
+        msg_type: diagnostic_msgs/KeyValue
+        operation: '[(msg.key, msg.value == "yes")]'
+
+services:
+    docked:
+        params:
+            - kenny # List of parameters (optional if no parameters!). must be completely instantiated
+        service: /test_service # Service
+        srv_type: std_srvs/SetBool # Srv type
+        time_between_calls: 10 # Time between calls in seconds
+        request: code # (Optional if in script) Request creation code. I.e.: "req SetBoolRequest(data=True)"
+        operation: 'res.lala < ee' # (Optional if in script) operation to get the result
