@@ -7,14 +7,14 @@ description: > # this means to ignore newlines until "baseurl:"
 
 # online settings
 # baseurl: "/ROSPlan/"
-# url: "http://KCL-Planning.github.io/ROSPlan"
+# url: "https://KCL-Planning.github.io/ROSPlan"
 
 # offline settings
 # baseurl: ""
 # url: "http://localhost:4000"
 
 baseurl: "/ROSPlan/"
-url: "http://KCL-Planning.github.io/ROSPlan"
+url: "https://KCL-Planning.github.io/ROSPlan"
 
 include: ['_pages']
 
