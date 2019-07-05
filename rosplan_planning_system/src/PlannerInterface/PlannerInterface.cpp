@@ -38,8 +38,7 @@ namespace KCL_rosplan {
 		node_handle->getParam("planner_command", planner_command);
 
 		// call planning server
-		runPlanningServer(domain_path, problem_path, data_path, planner_command, use_problem_topic);
-		return true;
+		return runPlanningServer(domain_path, problem_path, data_path, planner_command, use_problem_topic);
 	}
 
 	/**
