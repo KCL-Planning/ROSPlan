@@ -37,7 +37,7 @@ class RosplanSensing:
         rospy.wait_for_service('/rosplan_knowledge_base/state/functions')
         self.get_state_functions_srv = rospy.ServiceProxy('/rosplan_knowledge_base/state/functions', GetAttributeService)
 
-        set_sensed_predicate_srv = rospy.ServiceProxy('/rosplan_knowledge_base/update_sensed_predicates', SetNamedBool)
+        self.set_sensed_predicate_srv = rospy.ServiceProxy('/rosplan_knowledge_base/update_sensed_predicates', SetNamedBool)
 
         ################################################################################################################
         # Get cfg
@@ -86,34 +86,18 @@ class RosplanSensing:
         # Subscribe to all the topics
         self.offset = {}  # Offset for reading cfg
         for predicate_name, predicate_info in self.cfg_topics.iteritems():
-            params_loaded = self.load_params(predicate_name, predicate_info)  # If parameters found, add 1 to the indexes
-            if not params_loaded[0]:
-                continue
-            if len(predicate_info) < 2+int(params_loaded[1]):
-                rospy.logerr("Error: Wrong configuration file for predicate %s" % predicate_name)
-                continue
-            try:
-                msg_type = predicate_info['msg_type']
-            except KeyError:
-                rospy.logerr("Error: msg_type was not specified for predicate %s" % predicate_name)
-                continue
-            self.import_msg(msg_type)
-            try:
-                rospy.Subscriber(predicate_info['topic'], eval(msg_type[msg_type.rfind('/')+1:]), self.subs_callback, predicate_name)
-            except KeyError:
-                rospy.logerr("Error: topic was not specified for predicate %s" % predicate_name)
-                continue
-            # self.sensed_topics[predicate_name] = (None, False)
-            try:  # Update KB to inform about the sensed predicates
-                sensed_srv_req = SetNamedBoolRequest()
-                sensed_srv_req.name = predicate_name
-                sensed_srv_req.value = True
-                set_sensed_predicate_srv.call(sensed_srv_req)
-            except Exception as e:
-                rospy.logerr('KCL: (RosplanSensing) Could not update sensing information in Knowledge Base for proposition %s',
-                             predicate_name)
-            rospy.loginfo('KCL: (RosplanSensing) Predicate %s: Subscribed to topic %s of type %s', predicate_name,
-                          predicate_info['topic'], msg_type)
+            if type(predicate_info) is list:  # We have nested elements in the predicate
+                for i, pi in enumerate(predicate_info):
+                    pi['sub_idx'] = i
+                    subscribed = self.subscribe_topic(predicate_name, pi)
+                    if not subscribed:
+                        rospy.loginfo('Could not subscribe for predicate ' + predicate_name + ' and config: ' + str(pi))
+                        continue
+            else:
+                predicate_info['sub_idx'] = 0  # As we don't have nested elements in this predicate
+                subscribed = self.subscribe_topic(predicate_name, predicate_info)
+                if not subscribed:
+                    rospy.loginfo('Could not subscribe for predicate ' + predicate_name + ' and config: ' + str(predicate_info))
 
         ############
         # Create clients for all the services
@@ -125,58 +109,21 @@ class RosplanSensing:
         self.time_between_calls = []
         self.request_src = []
         self.response_process_src = []
+        self.clients_sub_idx = []
         for predicate_name, predicate_info in self.cfg_service.iteritems():
-            params_loaded = self.load_params(predicate_name, predicate_info)  # If parameters found, add 1 to the indexes
-            if not params_loaded[0]:
-                continue
-            if len(predicate_info) < 2+int(params_loaded[1]):
-                rospy.logerr("Error: Wrong configuration file for predicate %s" % predicate_name)
-                continue
-            try:
-                srv_type = predicate_info['srv_type']
-            except KeyError:
-                rospy.logerr("Error: service was not specified for predicate %s" % predicate_name)
-                continue
-            srv_typename = self.import_srv(srv_type)
-            self.service_type_names.append(srv_typename)
-            try:
-                self.service_clients.append(rospy.ServiceProxy(predicate_info['service'], eval(srv_typename)))
-                self.service_names.append(predicate_info['service'])
-            except KeyError:
-                rospy.logerr("Error: service was not specified for predicate %s" % predicate_name)
-                continue
-            self.service_predicate_names.append(predicate_name)
-            self.last_called_time.append(rospy.Time(0))
-
-            try:
-                self.time_between_calls.append(predicate_info['time_between_calls'])
-            except:
-                rospy.logerr("Error: time_between_calls was not specified for predicate %s" % predicate_name)
-                continue
-
-            # Gets the request creation
-            if 'request' in predicate_info:
-                self.request_src.append(predicate_info['request'])
+            if type(predicate_info) is list:
+                for i, pi in enumerate(predicate_info):
+                    pi['sub_idx'] = i
+                    client_created = self.create_service_client(predicate_name, pi)
+                    if not client_created:
+                        rospy.loginfo('Could not create client for predicate ' + predicate_name + ' and config: ' + str(pi))
+                        continue
             else:
-                self.request_src.append(None)
-
-            # Gets the result processing
-            if 'operation' in predicate_info:
-                self.response_process_src.append(predicate_info['operation'])
-            else:
-                self.response_process_src.append(None)
-
-
-            try:  # Update KB to inform about the sensed predicates
-                sensed_srv_req = SetNamedBoolRequest()
-                sensed_srv_req.name = predicate_name
-                sensed_srv_req.value = True
-                set_sensed_predicate_srv.call(sensed_srv_req)
-            except Exception as e:
-                rospy.logerr('KCL: (RosplanSensing) Could not update sensing information in Knowledge Base for proposition %s',
-                             predicate_name)
-            rospy.loginfo('KCL: (RosplanSensing) Predicate %s: Client for service %s of type %s is ready', predicate_name,
-                          predicate_info['service'], srv_type)
+                predicate_info['sub_idx'] = 0  # As we don't have nested elements in this predicate
+                client_created = self.create_service_client(predicate_name, predicate_info)
+                if not client_created:
+                    rospy.loginfo('Could not create client for predicate ' + predicate_name + ' and config: ' + str(predicate_info))
+                    continue
 
     # Returns (bool, bool), first tells if the parameters could be loaded, second if parameters were loaded from config file and false if they were taken directly from the kb
     def load_params(self, predicate_name, predicate_info):
@@ -189,6 +136,9 @@ class RosplanSensing:
             if not kb_info:
                 rospy.logerr("KCL: (RosplanSensing) Could not find predicate or function %s" % predicate_name)
                 return (False, False)
+
+        if predicate_name not in self.params:  # Prepare dictionary
+            self.params[predicate_name] = {}
 
         # Obtain all the instances for each parameter
 
@@ -219,11 +169,99 @@ class RosplanSensing:
 
             # If the params are fully instantiated we store them as a list, else it will be a matrix with a list of
             #  instances per parameter
-            self.params[predicate_name] = kb_params if wildcard else params
+            self.params[predicate_name][predicate_info['sub_idx']] = kb_params if wildcard else params
             return (True, True)
         else:
-            self.params[predicate_name] = kb_params
+            self.params[predicate_name][predicate_info['sub_idx']] = kb_params
             return (True, False)
+
+    def subscribe_topic(self, predicate_name, predicate_info):
+        params_loaded = self.load_params(predicate_name, predicate_info)  # If parameters found, add 1 to the indexes
+        if not params_loaded[0]:
+            return False
+        if len(predicate_info) < 2 + int(params_loaded[1]):
+            rospy.logerr("Error: Wrong configuration file for predicate %s" % predicate_name)
+            return False
+        try:
+            msg_type = predicate_info['msg_type']
+        except KeyError:
+            rospy.logerr("Error: msg_type was not specified for predicate %s" % predicate_name)
+            return False
+        self.import_msg(msg_type)
+        try:
+            rospy.Subscriber(predicate_info['topic'], eval(msg_type[msg_type.rfind('/') + 1:]), self.subs_callback,
+                             (predicate_name, predicate_info))
+        except KeyError:
+            rospy.logerr("Error: topic was not specified for predicate %s" % predicate_name)
+            return False
+        # self.sensed_topics[predicate_name] = (None, False)
+        try:  # Update KB to inform about the sensed predicates
+            sensed_srv_req = SetNamedBoolRequest()
+            sensed_srv_req.name = predicate_name
+            sensed_srv_req.value = True
+            self.set_sensed_predicate_srv.call(sensed_srv_req)
+        except Exception as e:
+            rospy.logerr(
+                'KCL: (RosplanSensing) Could not update sensing information in Knowledge Base for proposition %s',
+                predicate_name)
+        rospy.loginfo('KCL: (RosplanSensing) Predicate %s: Subscribed to topic %s of type %s', predicate_name,
+                      predicate_info['topic'], msg_type)
+        return True
+
+    def create_service_client(self, predicate_name, predicate_info):
+        params_loaded = self.load_params(predicate_name, predicate_info)  # If parameters found, add 1 to the indexes
+        if not params_loaded[0]:
+            return False
+        if len(predicate_info) < 2 + int(params_loaded[1]):
+            rospy.logerr("Error: Wrong configuration file for predicate %s" % predicate_name)
+            return False
+        try:
+            srv_type = predicate_info['srv_type']
+        except KeyError:
+            rospy.logerr("Error: service was not specified for predicate %s" % predicate_name)
+            return False
+        srv_typename = self.import_srv(srv_type)
+        self.service_type_names.append(srv_typename)
+        self.clients_sub_idx.append(predicate_info['sub_idx'])
+        try:
+            self.service_clients.append(rospy.ServiceProxy(predicate_info['service'], eval(srv_typename)))
+            self.service_names.append(predicate_info['service'])
+        except KeyError:
+            rospy.logerr("Error: service was not specified for predicate %s" % predicate_name)
+            return False
+        self.service_predicate_names.append(predicate_name)
+        self.last_called_time.append(rospy.Time(0))
+
+        try:
+            self.time_between_calls.append(predicate_info['time_between_calls'])
+        except:
+            rospy.logerr("Error: time_between_calls was not specified for predicate %s" % predicate_name)
+            return False
+
+        # Gets the request creation
+        if 'request' in predicate_info:
+            self.request_src.append(predicate_info['request'])
+        else:
+            self.request_src.append(None)
+
+        # Gets the result processing
+        if 'operation' in predicate_info:
+            self.response_process_src.append(predicate_info['operation'])
+        else:
+            self.response_process_src.append(None)
+
+        try:  # Update KB to inform about the sensed predicates
+            sensed_srv_req = SetNamedBoolRequest()
+            sensed_srv_req.name = predicate_name
+            sensed_srv_req.value = True
+            self.set_sensed_predicate_srv.call(sensed_srv_req)
+        except Exception as e:
+            rospy.logerr(
+                'KCL: (RosplanSensing) Could not update sensing information in Knowledge Base for proposition %s',
+                predicate_name)
+        rospy.loginfo('KCL: (RosplanSensing) Predicate %s: Client for service %s of type %s is ready', predicate_name,
+                      predicate_info['service'], srv_type)
+        return True
 
     def get_function_params(self, func_name):
         functions = self.get_functions_srv.call()
@@ -232,14 +270,14 @@ class RosplanSensing:
                 return i
         return None
 
-    def subs_callback(self, msg, pred_name):
-        if 'operation' in self.cfg_topics[pred_name]:
-            python_string = self.cfg_topics[pred_name]['operation']
+    def subs_callback(self, msg, (pred_name, pred_info)):
+        if 'operation' in pred_info:  # pred_info is of type self.cfg_topics[pred_name]
+            python_string = pred_info['operation']
         else:  # Call the method from the scripts.py file
             if not pred_name in dir(self.scripts):
                 rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
                 return None
-            python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name])"
+            python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']])"
 
         result = eval(python_string, globals(), locals())
         changed = False
@@ -257,7 +295,7 @@ class RosplanSensing:
                 self.sensed_topics[pred_name + ':' + params] = (val, changed)
                 self.mutex.release()
         else:
-            params = reduce(lambda r, x: r + ':' + x, self.params[pred_name])
+            params = reduce(lambda r, x: r + ':' + x, self.params[pred_name][pred_info['sub_idx']])
             if type(params) == list:
                 rospy.logerr('KCL: (RosplanSensing) Predicate "%s" needs to have all the parameters defined and fully instantiated' % pred_name)
                 rospy.signal_shutdown('Wrong cfg params')
@@ -300,7 +338,7 @@ class RosplanSensing:
             rospy.loginfo('   Waiting for %s', self.service_names[i])
             rospy.wait_for_service(self.service_names[i], 20)
         rospy.loginfo('All services are ready.')
-        # TODO time handling and parameters and outer loop
+
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
             for i in xrange(len(self.service_clients)):
@@ -336,7 +374,7 @@ class RosplanSensing:
                         rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' %
                             pred_name)
                         continue
-                    python_string = "self.scripts." + pred_name + "(res, self.params[pred_name])"
+                    python_string = "self.scripts." + pred_name + "(res, self.params[pred_name][self.clients_sub_idx[i]])"
 
                 result = eval(python_string, globals(), locals())
                 changed = False
@@ -354,7 +392,7 @@ class RosplanSensing:
                         self.sensed_services[pred_name + ':' + params] = (val, changed)
                         self.srv_mutex.release()
                 else:
-                    params = reduce(lambda r, x: r + ':' + x, self.params[pred_name]) if self.params[pred_name] else ''
+                    params = reduce(lambda r, x: r + ':' + x, self.params[pred_name][self.clients_sub_idx[i]]) if self.params[pred_name][self.clients_sub_idx[i]] else ''
                     if type(params) == list:
                         rospy.logerr(
                             'KCL: (RosplanSensing) Predicate "%s" needs to have all the parameters defined and fully instantiated' % pred_name)
