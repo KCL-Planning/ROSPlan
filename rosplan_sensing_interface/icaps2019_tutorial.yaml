@@ -1,0 +1,31 @@
+functions:
+    - $(find rosplan_sensing_interface)/icaps2019_tutorial.py
+topics:
+
+    localised:
+        params:
+            - kenny
+        topic: /localised_mock
+        msg_type: std_msgs/Bool
+        operation: msg.data
+
+    docked:
+        params:
+            - kenny
+        topic: /mobile_base/sensors/core
+        msg_type: kobuki_msgs/SensorState
+        operation: msg.charger != msg.DISCHARGING
+
+    undocked:
+        params:
+            - kenny
+        topic: /mobile_base/sensors/core
+        msg_type: kobuki_msgs/SensorState
+        operation: msg.charger == msg.DISCHARGING
+
+    robot_at:
+        params:
+            - kenny
+            - '*'
+        topic: /amcl_pose
+        msg_type: geometry_msgs/PoseWithCovarianceStamped
