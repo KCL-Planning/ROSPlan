@@ -12,30 +12,30 @@ namespace KCL_rosplan {
 	void KnowledgeBase::runKnowledgeBase() {
 
         // loop
-        //ros::Rate loopRate(5);
-		while(ros::ok()) {
+        ros::Rate loopRate(_kb_rate);
+        while (ros::ok()) {
 
-			// update TILs
-			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
-			for(; tit != model_timed_initial_literals.end(); ) {
-				if(tit->initial_time <= ros::Time::now()) {
-					if(tit->is_negative) {
-						tit->is_negative = false;
-						removeKnowledge(*tit);
-					} else {
-						addKnowledge(*tit);
-					}
-					model_timed_initial_literals.erase(tit);
-				} else {
-					tit++;
-				}
-			}
+            // update TILs
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+            for (; tit != model_timed_initial_literals.end();) {
+                if (tit->initial_time <= ros::Time::now()) {
+                    if (tit->is_negative) {
+                        tit->is_negative = false;
+                        removeKnowledge(*tit);
+                    } else {
+                        addKnowledge(*tit);
+                    }
+                    model_timed_initial_literals.erase(tit);
+                } else {
+                    tit++;
+                }
+            }
 
-			// services
-            //loopRate.sleep();
+            // services
+            loopRate.sleep();
             ros::spinOnce();
-		}
-	}
+        }
+    }
 
 	/*-----------------*/
 	/* knowledge query */
@@ -586,6 +586,8 @@ namespace KCL_rosplan {
 
 		// set sensed predicates
 		senseServer = _nh.advertiseService("update_sensed_predicates", &KCL_rosplan::KnowledgeBase::setSensedPredicate, this);
+
+        _nh.param("kb_rate", _kb_rate, 100.0);
 
     }
 
