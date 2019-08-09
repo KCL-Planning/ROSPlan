@@ -63,7 +63,37 @@ namespace KCL_rosplan {
 			plan_server->setAborted();
 		}
 	}
-	
+
+	/**
+	 * extract planner path from planner command
+	 */
+	bool PlannerInterface::extract_planner_path(std::string &planner_command, std::string &planner_path) {
+		size_t pos = 0;
+
+		planner_path.clear();
+		planner_path = planner_command;
+
+		// remove timeout N
+		for(size_t i = 0; i < 2; i++) {
+			pos = planner_path.find(" ");
+			if(pos == std::string::npos) return false;
+			planner_path.erase(0, pos + 1);
+		}
+
+		pos = planner_path.find(" ");
+		if(pos == std::string::npos) return false;
+		planner_path.erase(pos, planner_path.size());
+
+		pos = planner_path.find_last_of("/");
+		if(pos == std::string::npos) return false;
+		planner_path.erase(pos, planner_path.size());
+
+		// add "/" at the end of the planner path
+		planner_path.insert(planner_path.size(), "/");
+
+		return true;
+	}
+
 	/**
 	 * planning system; prepares planning; calls planner; parses plan.
 	 */
@@ -93,7 +123,11 @@ namespace KCL_rosplan {
 			return false;
 		}
 
-		bool success = runPlanner();
+		// get planner path
+		std::string planner_path;
+		extract_planner_path(planner_command, planner_path);
+
+		bool success = runPlanner(planner_path);
 
 		// publish planner output
 		if(success) {

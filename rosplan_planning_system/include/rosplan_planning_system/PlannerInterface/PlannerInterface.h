@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 		double problem_instance_time;
 
 		/* planning */
-		virtual bool runPlanner() =0;
+		virtual bool runPlanner(std::string planner_path) =0;
 
 	public:
 
@@ -50,6 +50,7 @@ namespace KCL_rosplan {
 		bool runPlanningServerDefault(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 		bool runPlanningServerParams(rosplan_dispatch_msgs::PlanningService::Request &req, rosplan_dispatch_msgs::PlanningService::Response &res);
 		void runPlanningServerAction(const rosplan_dispatch_msgs::PlanGoalConstPtr& goal);
+        bool extract_planner_path(std::string &planner_command, std::string &planner_path);
 		bool runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand, bool useProblemTopic);
 
 		/* ROS interface */

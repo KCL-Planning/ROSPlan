@@ -24,7 +24,7 @@ namespace KCL_rosplan {
 
 	protected:
 
-		bool runPlanner();
+		bool runPlanner(std::string planner_path);
 
 	public:
 
