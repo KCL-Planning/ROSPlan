@@ -51,11 +51,11 @@ namespace KCL_rosplan {
         static PosNegDomainFormula getOperatorPrecondition(const rosplan_knowledge_msgs::DomainFormula &op_head, const Negation *SAC);
 
 
-        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign, bool& action_found);
-        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign, bool& action_found);
-        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp, const std::map<std::string, std::string>& assign, bool& action_found);
-        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp, const std::map<std::string, std::string>& assign, bool& action_found);
-        static void fillForAllEffect(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const UniversalQuantification *exp, EffectDomainFormula& out, size_t paramid, std::map<std::string, std::string> &assign, bool& action_found);
+        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous);
+        static EffectDomainFormula getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous);
+        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp, const std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous);
+        static EffectDomainFormula getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp, const std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous);
+        static void fillForAllEffect(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const UniversalQuantification *exp, EffectDomainFormula& out, size_t paramid, std::map<std::string, std::string> &assign, bool& action_found, bool& exogenous);
 
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const ParametrizedVariable *pVariable, const IfThenElseExpression *exp);

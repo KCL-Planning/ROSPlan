@@ -95,6 +95,8 @@ namespace KCL_rosplan {
 		std::map<std::string, bool> sensed_predicates;
 
         ros::NodeHandle _nh;
+
+        double _kb_rate;
     public:
 
 		KnowledgeBase(ros::NodeHandle& n);

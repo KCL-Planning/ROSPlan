@@ -12,30 +12,30 @@ namespace KCL_rosplan {
 	void KnowledgeBase::runKnowledgeBase() {
 
         // loop
-        //ros::Rate loopRate(5);
-		while(ros::ok()) {
+        ros::Rate loopRate(_kb_rate);
+        while (ros::ok()) {
 
-			// update TILs
-			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
-			for(; tit != model_timed_initial_literals.end(); ) {
-				if(tit->initial_time <= ros::Time::now()) {
-					if(tit->is_negative) {
-						tit->is_negative = false;
-						removeKnowledge(*tit);
-					} else {
-						addKnowledge(*tit);
-					}
-					model_timed_initial_literals.erase(tit);
-				} else {
-					tit++;
-				}
-			}
+            // update TILs
+            std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator tit = model_timed_initial_literals.begin();
+            for (; tit != model_timed_initial_literals.end();) {
+                if (tit->initial_time <= ros::Time::now()) {
+                    if (tit->is_negative) {
+                        tit->is_negative = false;
+                        removeKnowledge(*tit);
+                    } else {
+                        addKnowledge(*tit);
+                    }
+                    model_timed_initial_literals.erase(tit);
+                } else {
+                    tit++;
+                }
+            }
 
-			// services
-            //loopRate.sleep();
+            // services
+            loopRate.sleep();
             ros::spinOnce();
-		}
-	}
+        }
+    }
 
 	/*-----------------*/
 	/* knowledge query */
@@ -587,6 +587,8 @@ namespace KCL_rosplan {
 		// set sensed predicates
 		senseServer = _nh.advertiseService("update_sensed_predicates", &KCL_rosplan::KnowledgeBase::setSensedPredicate, this);
 
+        _nh.param("kb_rate", _kb_rate, 100.0);
+
     }
 
 
@@ -612,29 +614,28 @@ int main(int argc, char **argv) {
 	KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
 	if (extension == ".pddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
-        ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
-    else if (extension == ".ppddl") {
-        kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
-        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
-        ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
+            ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
+        else if (extension == ".ppddl") {
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::PPDDL;
+            VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+            ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
 	else if (extension == ".rddl") {
 	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
-        VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
-        ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
-    }
-    else {
-        ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
-        ros::shutdown();
-    }
-
+            VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
+            ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
+        else {
+            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
+            ros::shutdown();
+        }
 
 	KCL_rosplan::KnowledgeBasePtr kb = KCL_rosplan::KnowledgeBaseFactory::createKB(kb_type, n);
 
 	// parse domain
-    kb->parseDomain(domainPath, problemPath);
-    kb->use_unknowns = useUnknowns;
+        kb->parseDomain(domainPath, problemPath);
+        kb->use_unknowns = useUnknowns;
 
 	ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 	kb->runKnowledgeBase();

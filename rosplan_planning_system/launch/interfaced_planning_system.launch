@@ -4,16 +4,19 @@
   <!-- :::arguments::: -->
 
   <!-- pddl domain path -->
-  <arg name="domain_path"  default="$(find rosplan_planning_system)/test/turtlebot_demo/domain_turtlebot_demo.pddl" />
+  <arg name="domain_path"  default="$(find rosplan_planning_system)/test/pddl/turtlebot/domain.pddl" />
 
   <!-- load a particular initial state into KB at startup (optional) -->
   <arg name="problem_path" default="" />
 
   <!-- automatically generated pddl problem will be created here -->
-  <arg name="autom_gen_problem_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/problem.pddl" />
+  <arg name="autom_gen_problem_path" default="$(find rosplan_planning_system)/test/pddl/turtlebot/problem.pddl" />
 
   <!-- planner will produce output plan and write to this location -->
-  <arg name="data_path" default="$(find rosplan_planning_system)/test/turtlebot_demo/" />
+  <arg name="data_path" default="$(find rosplan_planning_system)/test/pddl/turtlebot/" />
+
+  <!-- use problem.pddl or receive problem from topic -->
+  <arg name="use_problem_topic" default="true" />
 
   <!-- :::end of arguments::: -->
 
@@ -36,7 +39,7 @@
 
   <!-- planner interface -->
   <include file="$(find rosplan_planning_system)/launch/includes/planner_interface.launch">
-    <arg name="use_problem_topic"    value="true" />
+    <arg name="use_problem_topic"    value="$(arg use_problem_topic)" />
     <arg name="problem_topic"        value="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        value="planner_output" />
     <arg name="domain_path"          value="$(arg domain_path)" />

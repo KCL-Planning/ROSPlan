@@ -94,11 +94,12 @@ namespace KCL_rosplan {
             }
             planDuration = 0;
             ss.str("");
-            while (std::getline(planfile, line)) {
+            do {
                 if (line.length()<2)
                     break;
                 ss << line << std::endl;
-            }
+            } while (std::getline(planfile, line));
+            
             planner_output = ss.str();
 
         }

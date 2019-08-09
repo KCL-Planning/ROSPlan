@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Unit tests launch file for ROSPlan parsing interface -->
+
+    <!-- arguments -->
+    <arg name="common_path" default="$(find rosplan_planning_system)/test/pddl/amazon"/>
+    <arg name="domain_path" default="$(arg common_path)/domain.pddl" />
+    <arg name="problem_path" default="$(arg common_path)/problem.pddl" />
+
+    <arg name="node_name"        default="rosplan_parsing_interface" />
+    <arg name="knowledge_base"   default="rosplan_knowledge_base" />
+    <arg name="planner_topic"    default="/rosplan_planner_interface/planner_output" />
+    <arg name="plan_topic"       default="complete_plan" />
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+    <!-- plan parsing where plan representations: simple plan. -->
+    <node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="planner_topic"  value="$(arg planner_topic)" />
+        <param name="plan_topic"     value="$(arg plan_topic)" />
+    </node>
+
+    <!-- plan parsing where plan representation: esterel_plan-->
+    <node name="rosplan_parsing_interface_esterel" pkg="rosplan_planning_system" type="pddl_esterel_plan_parser" respawn="false" output="screen">
+        <param name="knowledge_base" value="$(arg knowledge_base)" />
+        <param name="planner_topic"  value="$(arg planner_topic)" />
+        <param name="plan_topic"     value="$(arg plan_topic)" />
+    </node>
+
+    <test test-name="ParsingInterfaceTests" pkg="rosplan_planning_system" type="ParsingInterfaceTests" time-limit="100.0" />
+
+</launch>

@@ -181,10 +181,15 @@ namespace KCL_rosplan {
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
             if (it->first->valueType->name == "real" or it->first->valueType->name == "int") continue;
             std::map<std::string, std::string> assign; // Replacement for each parameter of the cpd to the parameter of the action as defined in the operator header op_head
-            bool action_found = false;
-            EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign, action_found);
-            if (not action_found and op_head.name != "exogenous") { // If an action fluent was found, it will return empty lists so it means it was an exogenous event.
-                continue;
+            bool action_found = false, exogenous = true;
+            EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign, action_found, exogenous);
+            if (not action_found) { // If an action fluent was found, it will return empty lists so it means it was an exogenous event.
+                if (op_head.name != "exogenous") continue;
+                else if (exogenous and eff_i.add.empty() and eff_i.del.empty() and eff_i.prob.empty()) { // Action name is exogenous and we found an fluent without any related action
+                    PosNegDomainFormula df = toDomainFormula(it->first, assign);
+                    eff_i.add = df.pos;
+                    eff_i.del = df.neg;
+                }
             }
             join(eff_ret, eff_i);
         }
@@ -207,49 +212,52 @@ namespace KCL_rosplan {
 
 
     EffectDomainFormula
-    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign, bool& action_found) {
+    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const LogicalExpression *exp, std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous) {
         auto ifte = dynamic_cast<const IfThenElseExpression*>(exp);
-        if (ifte != nullptr) return getOperatorEffects(op_head, pVariable, ifte, assign, action_found);
+        if (ifte != nullptr) return getOperatorEffects(op_head, pVariable, ifte, assign, action_found, exogenous);
 
         auto con = dynamic_cast<const Connective*>(exp);
         if (con != nullptr) {
             assert(con->exprs.size() == 2);
             EffectDomainFormula a, b;
-            a = getOperatorEffects(op_head, pVariable, con->exprs[0], assign, action_found);
-            b = getOperatorEffects(op_head, pVariable, con->exprs[1], assign, action_found);
+            a = getOperatorEffects(op_head, pVariable, con->exprs[0], assign, action_found, exogenous);
+            b = getOperatorEffects(op_head, pVariable, con->exprs[1], assign, action_found, exogenous);
             join(a, b);
             return a;
         }
 
         auto exist = dynamic_cast<const ExistentialQuantification*>(exp);
-        if (exist != nullptr) return getOperatorEffects(op_head, pVariable, exist->expr, assign, action_found);
+        if (exist != nullptr) return getOperatorEffects(op_head, pVariable, exist->expr, assign, action_found, exogenous);
 
         auto forall = dynamic_cast<const UniversalQuantification*>(exp);
         if (forall != nullptr) {
             EffectDomainFormula forall_formula;
-            fillForAllEffect(op_head, pVariable, forall, forall_formula, 0, assign, action_found);
+            fillForAllEffect(op_head, pVariable, forall, forall_formula, 0, assign, action_found, exogenous);
             return forall_formula;
         }
 
         auto neg = dynamic_cast<const Negation*>(exp);
         if (neg != nullptr) { // Swap add for del
-            EffectDomainFormula neg_expr = getOperatorEffects(op_head, pVariable, neg->expr, assign, action_found);
+            EffectDomainFormula neg_expr = getOperatorEffects(op_head, pVariable, neg->expr, assign, action_found, exogenous);
             negate(neg_expr);
             return neg_expr;
         }
 
         auto var = dynamic_cast<const ParametrizedVariable*>(exp);
         if (var != nullptr) {
-            if ((var->variableType == ParametrizedVariable::ACTION_FLUENT) and (var->variableName == op_head.name)) {
-                action_found = true;
-                assign = getParamReplacement(op_head, var);
-                PosNegDomainFormula df = toDomainFormula(pVariable, assign);
-                EffectDomainFormula eff;
-                eff.add = df.pos;
-                eff.del = df.neg;
-                return eff;
+            if (var->variableType == ParametrizedVariable::ACTION_FLUENT) {
+                exogenous = false;
+                if (var->variableName == op_head.name) {
+                    action_found = true;
+                    assign = getParamReplacement(op_head, var);
+                    PosNegDomainFormula df = toDomainFormula(pVariable, assign);
+                    EffectDomainFormula eff;
+                    eff.add = df.pos;
+                    eff.del = df.neg;
+                    return eff;
+                }
             }
-            else return EffectDomainFormula();
+            return EffectDomainFormula();
         }
 
         auto nexp = dynamic_cast<const NumericConstant*>(exp);
@@ -272,12 +280,12 @@ namespace KCL_rosplan {
         // Check if probabilistic effect
         auto bern = dynamic_cast<const BernoulliDistribution*>(exp);
         if (bern != nullptr) {
-            return getOperatorEffects(pVariable, bern, assign, action_found);
+            return getOperatorEffects(pVariable, bern, assign, action_found, exogenous);
         }
 
         auto disc = dynamic_cast<const DiscreteDistribution*>(exp);
         if (disc != nullptr) {
-            return getOperatorEffects(pVariable, disc, assign, action_found);
+            return getOperatorEffects(pVariable, disc, assign, action_found, exogenous);
         }
 
         NOT_IMPLEMENTED("Unknown or unsupported operand type for the action effects.");
@@ -285,33 +293,33 @@ namespace KCL_rosplan {
     }
 
     EffectDomainFormula
-    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign, bool& action_found) {
+    RDDLUtils::getOperatorEffects(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const IfThenElseExpression *exp, std::map<std::string, std::string>& assign, bool& action_found, bool& exogenous) {
         // Idea: - If condition is 1 -> add the predicate if then is 1, add ~predicate if then is 0, or join with the result
         //       - else -> add ~predicate if the condition is 1 (so if condition having the action fluent is false, then predicate is true means a negative effect)
 
-        EffectDomainFormula effects = getOperatorEffects(op_head, pVariable, exp->condition, assign, action_found); // Checks if the condition has some implications on the effects of the operator
+        EffectDomainFormula effects = getOperatorEffects(op_head, pVariable, exp->condition, assign, action_found, exogenous); // Checks if the condition has some implications on the effects of the operator
 
         EffectDomainFormula ret = effects;
 
         // Check if probabilistic effect
         auto bern = dynamic_cast<const BernoulliDistribution*>(exp->valueIfTrue);
         if (bern != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found);
+            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found, exogenous);
             join(ret, b_eff); // Assign will be filled when we find an action fluent
         }
         bern = dynamic_cast<const BernoulliDistribution*>(exp->valueIfFalse);
         if (bern != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found);
+            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found, exogenous);
             join(ret, b_eff); // Assign will be filled when we find an action fluent
         }
         auto disc = dynamic_cast<const DiscreteDistribution*>(exp->valueIfTrue);
         if (disc != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found);
+            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found, exogenous);
             join(ret, b_eff); // Assign will be filled when we find an action fluent
         }
         disc = dynamic_cast<const DiscreteDistribution*>(exp->valueIfFalse);
         if (disc != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found);
+            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found, exogenous);
             join(ret, b_eff); // Assign will be filled when we find an action fluent
         }
         // Check if numerical or nested if effect
@@ -323,7 +331,7 @@ namespace KCL_rosplan {
             // else value == 1 -> return effects
         }
         else {
-            EffectDomainFormula res_if = getOperatorEffects(op_head, pVariable, exp->valueIfTrue, assign, action_found);
+            EffectDomainFormula res_if = getOperatorEffects(op_head, pVariable, exp->valueIfTrue, assign, action_found, exogenous);
             join(ret, res_if);
         }
 
@@ -338,11 +346,11 @@ namespace KCL_rosplan {
 
         }
         else if (elseif != nullptr) { // Elseif is identical to an if
-            EffectDomainFormula elseif_result = getOperatorEffects(op_head, pVariable, elseif, assign, action_found);
+            EffectDomainFormula elseif_result = getOperatorEffects(op_head, pVariable, elseif, assign, action_found, exogenous);
             join(ret, elseif_result);
         }
         else {
-            EffectDomainFormula res_else = getOperatorEffects(op_head, pVariable, exp->valueIfFalse, assign, action_found);
+            EffectDomainFormula res_else = getOperatorEffects(op_head, pVariable, exp->valueIfFalse, assign, action_found, exogenous);
             join(ret, res_else);
         }
 
@@ -421,7 +429,7 @@ namespace KCL_rosplan {
 
     EffectDomainFormula
     RDDLUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const BernoulliDistribution *exp,
-                                          const std::map<std::string, std::string> &assign, bool& action_found) {
+                                          const std::map<std::string, std::string> &assign, bool& action_found, bool& exogenous) {
         EffectDomainFormula ret;
         rosplan_knowledge_msgs::ProbabilisticEffect eff;
         eff.probability = RDDLExprUtils::getExpression(exp->expr, assign);
@@ -434,7 +442,7 @@ namespace KCL_rosplan {
 
     EffectDomainFormula
     RDDLUtils::getOperatorEffects(const ParametrizedVariable *pVariable, const DiscreteDistribution *exp,
-                                          const std::map<std::string, std::string> &assign, bool& action_found) {
+                                          const std::map<std::string, std::string> &assign, bool& action_found, bool& exogenous) {
         // A discrete effect will be N probabilistic effects consisting of an assignment to the variable
         EffectDomainFormula ret;
         // Get Variable representation
@@ -454,17 +462,17 @@ namespace KCL_rosplan {
 
     void
     RDDLUtils::fillForAllEffect(const rosplan_knowledge_msgs::DomainFormula &op_head, const ParametrizedVariable *pVariable, const UniversalQuantification *exp, EffectDomainFormula& out, size_t paramid,
-                                        std::map<std::string, std::string> &assign, bool& action_found) {
+                                        std::map<std::string, std::string> &assign, bool& action_found, bool& exogenous) {
         // Instantiate all the objects.
         if (paramid == exp->paramList->params.size()) {
-            EffectDomainFormula inst = getOperatorEffects(op_head, pVariable, exp->expr, assign, action_found);
+            EffectDomainFormula inst = getOperatorEffects(op_head, pVariable, exp->expr, assign, action_found, exogenous);
             join(out, inst);
         }
         else {
             Parameter* param = exp->paramList->params[paramid];
             for (auto o = exp->paramList->types[paramid]->objects.begin(); o != exp->paramList->types[paramid]->objects.end(); ++o) {
                 assign[param->name] = (*o)->name;
-                fillForAllEffect(op_head, pVariable, exp, out, paramid+1, assign, action_found);
+                fillForAllEffect(op_head, pVariable, exp, out, paramid+1, assign, action_found, exogenous);
             }
             assign.erase(param->name);
         }

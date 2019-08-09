@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Unit tests launch file for ROSPlan plan dispatch -->
+
+    <!-- arguments -->
+    <arg name="common_path" default="$(find rosplan_planning_system)/test/pddl/turtlebot" />
+    <arg name="domain_path" default="$(arg common_path)/domain.pddl" />
+
+    <!-- ROSPlan -->
+    <include file="$(find rosplan_planning_system)/launch/interfaced_planning_system.launch" >
+        <arg name="domain_path" value="$(arg domain_path)" />
+        <arg name="problem_path" value="$(arg common_path)/initial_state_problem.pddl" /> <!-- load initial state from pddl -->
+        <arg name="autom_gen_problem_path" value="$(arg common_path)/problem.pddl" /> <!-- problem.pddl will be autom generated here -->
+        <arg name="use_problem_topic" value="true" />
+    </include>
+
+    <!-- simulate action undock -->
+    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+        <arg name="pddl_action_name" value="undock" />
+        <arg name="action_duration" default="2.0" />
+    </include>
+
+    <!-- simulate action dock -->
+    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+        <arg name="pddl_action_name" value="dock" />
+        <arg name="action_duration" default="3.0" />
+    </include>
+
+    <!-- simulate action localise -->
+    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+        <arg name="pddl_action_name" value="localise" />
+        <arg name="action_duration" default="1.0" />
+    </include>
+
+    <!-- simulate action go to waypoint -->
+    <include file="$(find rosplan_planning_system)/launch/includes/simulated_action.launch" >
+        <arg name="pddl_action_name" value="goto_waypoint" />
+        <arg name="action_duration" default="1.0" />
+    </include>
+
+    <!-- Plan dispatch test node -->
+    <test test-name="PlanDispatchTests" pkg="rosplan_planning_system" type="PlanDispatchTests" time-limit="100.0" />
+
+</launch>

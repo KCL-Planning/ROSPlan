@@ -189,7 +189,8 @@ namespace KCL_rosplan {
         VAL1_2::domain* domain;
         file_check.open(domain_file_path.c_str());
         if(!file_check.good()) {
-            ROS_ERROR("KCL: (%s) Domain file does not exist.", ros::this_node::getName().c_str());
+            ROS_ERROR("KCL: (%s) Domain file does not exist : (%s).",
+                      ros::this_node::getName().c_str(), domain_file_path.c_str());
             ros::shutdown();
         } else {
             file_check.close();
