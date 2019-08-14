@@ -307,4 +307,4 @@ If you use the Sensing Interface for any research project, please cite the follo
     doi = "10.1007/978-3-030-23807-0\_20"  
 }
 ```
-**Note:** The syntax of the Sensing Interface defined here differ a bit from the one of the paper, as it was modified afterwards to make it cleaner and more understandable.
+**Note:** The syntax of the Sensing Interface defined here differs a bit from the one of the paper, as it was modified afterwards to make it cleaner and more understandable.
