@@ -25,6 +25,10 @@ It has the following features:
   3. Simple Python-based YAML config file, also allowing for more powerful custom-method definitions.
 
 
+The following diagram shows the available options for updating the Knowledge Base with sensory data. The three methods are by using the action interface and updating the state based on the action outcome, to subscribe (automatically) to topics that give information with the Sensing Interface, or to build an active sensing node that processes the actions and sensor data to compute the new state and updates it to the Knoweldge Base. The Sensing  Interface elements are highlighted in blue.
+![Sensing Interface diagram](./sensing.png)
+
+
 ### When should you use the Sensing Interface:
 - When you have a topic that publishes data regularly and this data is used to update the Knowledge Base (usually after some processing).
 - When you have a service that gets called regularly and whose response is used to update the Knowledge Base (usually after some processing).
