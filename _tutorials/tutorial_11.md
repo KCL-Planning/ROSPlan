@@ -26,7 +26,7 @@ It has the following features:
 
 
 The following diagram shows the available options for updating the Knowledge Base with sensory data. The three methods are by using the action interface and updating the state based on the action outcome, to subscribe (automatically) to topics that give information with the Sensing Interface, or to build an active sensing node that processes the actions and sensor data to compute the new state and updates it to the Knoweldge Base. The Sensing  Interface elements are highlighted in blue.
-![Sensing Interface diagram](./sensing.png)
+![Sensing Interface diagram](./sensing.png){:width="675px"}
 
 
 ### When should you use the Sensing Interface:
