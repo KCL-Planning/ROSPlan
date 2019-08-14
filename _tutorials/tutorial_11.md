@@ -32,7 +32,7 @@ The following diagram shows the available options for updating the Knowledge Bas
 ### When should you use the Sensing Interface:
 - When you have a topic that publishes data regularly and this data is used to update the Knowledge Base (usually after some processing).
 - When you have a service that gets called regularly and whose response is used to update the Knowledge Base (usually after some processing).
-//
+
  And it is clear how should this information be used to update the KB without any other input. 
 
 ### When should you use a custom approach to update the KB:
