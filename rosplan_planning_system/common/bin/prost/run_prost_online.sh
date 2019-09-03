@@ -4,18 +4,18 @@
 # Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS <PLANNER_OUTPUT_FILE> (Both rddl files must be in the same folder!)
 
 ########################################################################################################################
+ARGC=$#
+if [[ $ARGC -lt 3 ]]; then
+	echo -e "Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS <PLANNER_OUTPUT_FILE>\n(Both rddl files must be in the same folder!)"
+	exit 1
+fi
+
 ## Get arguments
 RDDL_DOMAIN_FILE=$(realpath $1)
 RDDL_PROBLEM_FILE=$(realpath $2)
 SEARCH_OPTIONS=$3
 PLANNER_OUTPUT_FILE=$4
-ARGC=$#
 WAIT_SERVER_TIME=0.5  # Seconds
-
-if [[ $ARGC -lt 3 ]]; then
-	echo -e "Usage: ./run_prost_online.sh RDDL_DOMAIN_FILE RDDL_PROBLEM_FILE SEARCH_OPTIONS <PLANNER_OUTPUT_FILE>\n(Both rddl files must be in the same folder!)"
-	exit 1
-fi
 
 if [[ -z "$PLANNER_OUTPUT_FILE" ]]; then
 	PLANNER_OUTPUT_FILE=/dev/null
