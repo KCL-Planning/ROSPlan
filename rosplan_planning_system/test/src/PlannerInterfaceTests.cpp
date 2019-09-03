@@ -79,15 +79,16 @@ GTEST_TEST(PlannerInterfaceTests, Test2_format_published_on_planner_output) {
 
     ros::spinOnce();
 
+    ros::Rate loop_rate = 10;
+    loop_rate.sleep();
+
     ros::service::waitForService(srv_name, ros::Duration(3));
     client1.call(srv);
 
-    ros::Rate loop_rate = 10;
     plan_received = false;
     while (!plan_received && ros::ok()) {
         loop_rate.sleep();
         ros::spinOnce();
-
     }
 
     std::string known_plan = "0.000: (movetob ball)  [0.001]\n";
