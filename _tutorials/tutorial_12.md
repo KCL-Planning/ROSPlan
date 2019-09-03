@@ -40,6 +40,8 @@ The RDDL Knowledge Base provides some new services (apart from the usual ones). 
 - `/rosplan_knowledge_base/state/set_rddl_discount_factor`: Sets the discount_factor parameter.
 - `/rosplan_knowledge_base/state/set_rddl_horizon`: Sets the horizon parameter.
 - `/rosplan_knowledge_base/state/set_rddl_max_nondef_actions`: Sets the max_nondef_actions parameter.
+- `rosservice call /rosplan_knowledge_base/domain/fluent_type`: Returns the type of a fluent.
+- `/rosplan_knowledge_base/domain/enumerable_type`: Returns the values inside an enumerable type.
 
 ### Launching the KB
 The Knowledge Base to be executed is determined by the specified domain extension. Thus, if the `domain_path`paramter ends in `.rddl` the RDDL KB will be launched. If it has extension `.ppddl` the PPDDL one will be started. `.pddl` starts the standard PDDL one.
@@ -59,12 +61,12 @@ Therefore, there is **no need** of calling the `/parse_plan` service when using 
 Example of launch file running the online dispatcher:
 ```
 <node name="rosplan_plan_dispatcher" pkg="rosplan_planning_system" type="online_plan_dispatcher" output="screen">
-			<param name="knowledge_base"        value="$(arg knowledge_base)" />
-			<param name="plan_topic"            value="/rosplan_parsing_interface/$(arg plan_topic)" />
-			<param name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
-			<param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
-			<param name="ippc_server_port" 		value="$(arg ippc_server_port)" />
-            <param name="compute_rewards" 		value="$(arg compute_rewards)" />
+            <param name="knowledge_base"        value="$(arg knowledge_base)" />
+            <param name="plan_topic"            value="/rosplan_parsing_interface/$(arg plan_topic)" />
+            <param name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+            <param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
+            <param name="ippc_server_port"      value="$(arg ippc_server_port)" />
+            <param name="compute_rewards"       value="$(arg compute_rewards)" />
 </node>
 ```
 In it, the parameters are the following:
@@ -75,13 +77,82 @@ In it, the parameters are the following:
 - (**new**) ippc_server_port: Port to which the planner will connect. The IPPC server will be started in the specified port. It defaults to 3234.
 - (**new**) compute_rewards: If true, the current state reward will be compued and the server will send it back to the planner. It may slow down the process as the reward needs to be computed. Recommended use if the planner uses the immediate rewards computed at each time step.
 
-## 5. Testing the domains without ROSPlan
+### Running the planner with the online dispatcher
+The planner node is the same one as in the deterministic/PDDL version of ROSPlan. However, the planner command is a bit different:
 
-## 6. RDDL interpretation
+```
+<arg name="planner_command"         value="$(find rosplan_planning_system)/common/bin/prost/run_prost_online.sh instance.rddl &quot;[PROST -s 1 -se [IPPC2014]]&quot;" />
+```
 
+Where "[PROST -s 1 -se [IPPC2014]]" is PROST's search configuration (you can set your preferred one, see [PROST's help on search configurations](https://bitbucket.org/tkeller/prost/src/default/src/search/main.cc) for more information. Notice the `&quot;` which is used to escape the quote character.
+
+## 5. Plan generation with RDDLSim (to use the simple or Esterel dispatcher)
+Standard dispatchers (simple or Esterel) can also be used with RDDL and probabilistic planners. In that case, the plan must be generated beforehand. To do so, we rely on [RDDLSim](https://github.com/ssanner/rddlsim) to simulate the action outcomes. We then parse the plan and dispatch it as usual.
+
+### Running the planner with the standard dispatchers
+The planner_command changes a bit when using the standard dispatchers. In this case, instead of runnnig the `run_prost_online.sh` script, we will run the `run_prost.sh` one (Not a big change, huh?)
+
+Thus, similarly as done before, you set the command as:
+
+```
+<arg name="planner_command"         value="$(find rosplan_planning_system)/common/bin/prost/run_prost.sh instance.rddl &quot;[PROST -s 1 -se [IPPC2014]]&quot;" />
+```
+
+**IMPORTANT**:  If using the standard dispatchers, the planner_interface needs to be run (as the plan needs to be parsed). In this case, the `rddlsim_planner_interface` is the planner_interface to be used. 
+
+## 6. Testing the domains without ROSPlan
+As said above, we **strongly recommend** to test the domains without rosplan for RDDL first, as the parser may fail in some cases. To do so, you can use the `run_prost` script that can be found in `rosplan_planning_system/common/bin/prost`. You can run it as follows:
+
+```
+./run_prost.sh domain.rddl instance.rddl "[PROST -s 1 -se [IPPC2014]]"
+```
+If the script is able to produce a plan, then it means that the domain is correct. If you don't, you probably need to fix some issues in the domain (such as typos in fluent names or wrongly used fluents).
+
+## 7. RDDL interpretation
+As already said, we process the RDDL in  a concrete way. Thus, if the domain is written in such a way it will be easier to work with ROSPlan.
+
+#### Fluents
+Fluents are handled as follows:
+- RDDL's boolean fluents are converted to PDDL predicates.
+- Real or int fluents are converted to PDDL functions.
+- Enumerable types are also supported. They are returned by the `kb/domain/types` service. Their values are represented as a function inside ROSPlan. Thus, you can retrieve the value of an enumerable type by calling `kb/state/functions `, which will return a KnowledgeItem of type function, and its function value will be the enumerable value (which will be the index of the value in the enumerable type list). To recover the enumerable value name, you can call `/rosplan_knowledge_base/domain/enumerable_type` with the type name and it will return the list of values for this type. Thus, if you have an enumerable type defined as:  `t_mytype: { @low, @med, @high};`, getting a value of 0 will refer to `@low`, while a value of 2 will refer to `@high`.
+
+### Action preconditions
+Action preconditions are extracted from the action-preconditions block of the RDDL domain.
+We expect preconditions to have the form `action => formula`, for which we add `formula` as a precondition of the action. An example is:
+
+```
+forall_{?r: robot, ?wf: waypoint, ?wt: waypoint} [goto_waypoint(?r, ?wf, ?wt) => (robot_at(?r, ?wf) ^ localised(?r) ^ undocked(?r))];
+```
+That specifies that "robot_at and localised and undocked" are preconditions to the goto_waypoint action (with the apropriate parameters set).
+
+Any other rule inside the block with a different format will be ignored when accessing through ROSPlan, but the full domain **will be sent to the planner**, so it will plan with all the constraints (although they may not be accessible via ROSPlan yet).
+
+### Action effects
+Action effects are obtained from the cpfs block.
+
+#### Probabilistic effects
+#### Exogenous effects
+
+### Goals
+RDDL doesn't have a goal definition. 
+However, there are ways to define the domain such that it goes towards the completion of a goal which consists in defining a fluent which becomes true at the goal state, being the maximum reward only provided in such case.
+
+Although we can parse this as a goal state in ROSPlan, this is currently not handled and it is not active until further tests can be performed.
+
+
+## 8. Using other IPPC-enabled planners
+We dispatch rosplan with PROST, but using any other RDDL-based planner is easier than ever!
+As we use the IPPC protocol, any planner using it can be integrated into ROSPlan without the need of coding any interface.
+
+The only difference is the call to the planner, which we do in PROST using the `run_prost.sh` scripts. Those scripts provide an easy interface to PROST and RDDLSim, making it easier to call them. We suggest anyone interested in adding other planners to take a look at those scripts.
+
+More specifically, you would only need to modify the lines 78-84 of `run_prost_online.sh` to call your planner with the online dispatcher, or lines 97-101 of `run_prost.sh` to run it along with RDDLSim for offline dispatching of the actions.
 
 ## Acknowledgement
 We would like to thank Prof. Sanner and Dr. Keller for their support.
+
+Please, send any suggestion or encountered issues through the Github's issues page.
 
 If you use the the probabilistic extension or RDDL for ROSPlan for any research project, please cite the following paper:
 ```bibtex
