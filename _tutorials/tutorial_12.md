@@ -183,7 +183,7 @@ We would like to thank Prof. Sanner and Dr. Keller for their support.
 Please, send any suggestion or encountered issues through the Github's issues page.
 
 If you use the the probabilistic extension or RDDL for ROSPlan for any research project, please cite the following paper:
-```bibtex
+```latex
 @inproceedings{Canal_taros2019,  
     author = "Canal, Gerard and Cashmore, Michael and Krivi{\'c}, Senka and Aleny{\`a}, Guillem and Magazzeni, Daniele and Torras, Carme",  
     title = "{Probabilistic Planning for Robotics with ROSPlan}",  
