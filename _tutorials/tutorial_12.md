@@ -129,10 +129,38 @@ That specifies that "robot_at and localised and undocked" are preconditions to t
 Any other rule inside the block with a different format will be ignored when accessing through ROSPlan, but the full domain **will be sent to the planner**, so it will plan with all the constraints (although they may not be accessible via ROSPlan yet).
 
 ### Action effects
-Action effects are obtained from the cpfs block.
+Action effects are obtained from the cpfs block. 
+A fluent appearing in the left hand size of a cpfs formula is added to the effects of an action `a`.
+We add the effect when the action fluent `a` appears in the formula, alone, inside a quantified expression or along with other expressions (in which case we only keep the action fluent, and the other state fluents are ignored). 
+
+In the case of an If-then-else, we add an effect when the action fluent `a` appears the formula in the following cases:
+ - It appears in the condition of the if clause and the value is `true`.
+ - It appears in the condition of the if clause and the value is `false`, in which case we add the negated proposition as the effect.
+ - It appears in the else clause: we also add it negated.
+ - If the "then" part of the if is not the values `true`, `false`, `Bernoulli` or `Discrete` (probability distributions, see below), the effect will be ignored. Therefore, if writing an if-then-else with a state fluent as the result, we suggest to add the state-fluent in an conjunctive clause with the action fluent in the if part, which will lead to the same result.
+
+Similarly, assign effects will be added when the state-fluent of the LHS of the formula has real or integer type. In this case, we will consider also formulas of the type `fluent = fluent ± expression`, which will be translated to increas/decrease expressions of the fluent value. In the case of the if-then-else clauses, a constant value will be added as an effect, or when it has the form  `fluent ± expression`.
 
 #### Probabilistic effects
+This version of ROSPlan added probabilistic effects.
+Those were added to the default `rosplan_knowledge_msgs/DomainOperator` message, without changing the already available interface. The message now includes a list of called `probabilistic_effects`, besides the add, del and assign effects. This list has type `rosplan_knowledge_msgs/ProbabilisticEffect`, which is defined as:
+```
+rosplan_knowledge_msgs/ExprComposite   probability
+rosplan_knowledge_msgs/DomainFormula[] add_effects # Add effects
+rosplan_knowledge_msgs/DomainFormula[] del_effects # Del effects
+rosplan_knowledge_msgs/DomainAssignment[] assign_effects # Assign effects, mainly used for RDDL Discrete distribution
+```
+Thus, a probabilistic effect is just the typical list of effects but accompanied by a probability value, expressed as a `rosplan_knowledge_msgs/ExprComposite` message. 
+
+Probabilistic effects are processed in the same way as standard effects, with the difference that when the result of the cpfs formula is depending on the probability distibution, we add such effect to the probabilistic effects list. 
+
+**Note:** as per now, we only consider probabilistic effects of type Bernoulli and Discrete. 
+
 #### Exogenous effects
+Exogenous effects are those effects that happen in the domain without the robot's intervention. 
+ROSPlan is able to find exogenous effects in a RDDL domain and provides its information. To do so, it creates a new virtual operator called "exogenous", which can be queried through the `/rosplan_knowledge_base/domain/operator_details` service, providing a list of effects that happen in the domain without bein related to any action.
+
+Note that this action is not added in the domain and it doesn't exist for the planner as such (though the planner should probably take exogenous events into account). 
 
 ### Goals
 RDDL doesn't have a goal definition. 
