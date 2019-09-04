@@ -1,7 +1,7 @@
 ---
 title: Tutorial 12 RDDL and Probabilistic Planning
 layout: documentation
-permalink: /tutorials/tutorial_11
+permalink: /tutorials/tutorial_12
 ---
 ## 1.  Description
 This tutorial covers the use of probabilistic planning with ROSPlan. We will mainly cover thr RDDL extension, although PPDDL is also supported.
