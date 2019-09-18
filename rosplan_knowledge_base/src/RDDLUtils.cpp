@@ -185,10 +185,14 @@ namespace KCL_rosplan {
             EffectDomainFormula eff_i = getOperatorEffects(op_head, it->first, it->second, assign, action_found, exogenous);
             if (not action_found) { // If an action fluent was found, it will return empty lists so it means it was an exogenous event.
                 if (op_head.name != "exogenous") continue;
-                else if (exogenous and eff_i.add.empty() and eff_i.del.empty() and eff_i.prob.empty()) { // Action name is exogenous and we found an fluent without any related action
+                else if (exogenous and eff_i.add.empty() and eff_i.del.empty() and eff_i.prob.empty()) { // Action name is exogenous and we found a fluent without any related action
                     PosNegDomainFormula df = toDomainFormula(it->first, assign);
                     eff_i.add = df.pos;
                     eff_i.del = df.neg;
+                }
+                else if (not exogenous) { // eff_i will contain probabilistic effects if any, wrongly adding them if it
+                                          // was not in an exogenous effect. Thus, we empty the list.
+                    eff_i.add.clear(); eff_i.del.clear(); eff_i.prob.clear();
                 }
             }
             join(eff_ret, eff_i);
@@ -299,36 +303,22 @@ namespace KCL_rosplan {
 
         EffectDomainFormula effects = getOperatorEffects(op_head, pVariable, exp->condition, assign, action_found, exogenous); // Checks if the condition has some implications on the effects of the operator
 
-        EffectDomainFormula ret = effects;
+        EffectDomainFormula ret;
 
-        // Check if probabilistic effect
-        auto bern = dynamic_cast<const BernoulliDistribution*>(exp->valueIfTrue);
-        if (bern != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found, exogenous);
-            join(ret, b_eff); // Assign will be filled when we find an action fluent
-        }
-        bern = dynamic_cast<const BernoulliDistribution*>(exp->valueIfFalse);
-        if (bern != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, bern, assign, action_found, exogenous);
-            join(ret, b_eff); // Assign will be filled when we find an action fluent
-        }
-        auto disc = dynamic_cast<const DiscreteDistribution*>(exp->valueIfTrue);
-        if (disc != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found, exogenous);
-            join(ret, b_eff); // Assign will be filled when we find an action fluent
-        }
-        disc = dynamic_cast<const DiscreteDistribution*>(exp->valueIfFalse);
-        if (disc != nullptr) {
-            EffectDomainFormula b_eff = getOperatorEffects(pVariable, disc, assign, action_found, exogenous);
-            join(ret, b_eff); // Assign will be filled when we find an action fluent
-        }
         // Check if numerical or nested if effect
 
 
         auto iftrue = dynamic_cast<const NumericConstant*>(exp->valueIfTrue);
         if (iftrue != nullptr) {
-            if (iftrue->value == 0) negate(ret);
-            // else value == 1 -> return effects
+            if (iftrue->value == 0) {
+                // ret has only probabilistic effects here, which make no sens to negate. So we add effects here
+                EffectDomainFormula cpy = effects;
+                negate(cpy); // Negate the value
+                join(ret, cpy);
+            }
+            else { //value == 1 -> return effects
+                join(ret, effects);
+            }
         }
         else {
             EffectDomainFormula res_if = getOperatorEffects(op_head, pVariable, exp->valueIfTrue, assign, action_found, exogenous);
@@ -338,12 +328,15 @@ namespace KCL_rosplan {
         auto iffalse = dynamic_cast<const NumericConstant*>(exp->valueIfFalse);
         auto elseif = dynamic_cast<const IfThenElseExpression*>(exp->valueIfFalse);
         if (iffalse != nullptr) { // We have a true/False value
-            if (iffalse->value == 1)  {
+            /*if (iffalse->value == 1)  {
                 EffectDomainFormula cpy = effects;
                 negate(cpy); // Negate the value
                 join(ret, cpy);
-            }
-
+            }*/
+            // Note: if iffalse is a true/false value, it doesn't say anything relative to the action per se.
+            //       Therefore, the best thing is to ignore the else case in that situation, as the else case will
+            //       usually mean that the action was not executed, so the else clause will not provide information on
+            //       the action effects.
         }
         else if (elseif != nullptr) { // Elseif is identical to an if
             EffectDomainFormula elseif_result = getOperatorEffects(op_head, pVariable, elseif, assign, action_found, exogenous);
