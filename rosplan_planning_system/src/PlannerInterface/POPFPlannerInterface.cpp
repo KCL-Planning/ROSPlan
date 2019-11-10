@@ -20,7 +20,7 @@ namespace KCL_rosplan {
 		// start planning action server
 		plan_server->start();
 	}
-	
+
 	POPFPlannerInterface::~POPFPlannerInterface()
 	{
 		delete plan_server;
@@ -79,26 +79,40 @@ namespace KCL_rosplan {
 
 		int curr, next;
 		bool solved = false;
+		bool last = false;
 		double planDuration;
 
-		while (std::getline(planfile, line)) {
+        int line_count = 0;
+        int best_plan_start_line = 0;
+        while (std::getline(planfile, line)) {
+            line_count++;
 
-			if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
-				solved = true;
-			} else if (line.find("; Time", 0) == std::string::npos) {
-				// consume useless lines
-			} else {
-				// read a plan (might not be the last plan)
-				planDuration = 0;
-				ss.str("");
-				while (std::getline(planfile, line)) {
-					if (line.length()<2)
-						break;
-					ss << line << std::endl;
-				}
-				planner_output = ss.str();
-			}
-		}
+            if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
+                solved = true;
+                best_plan_start_line = line_count;
+
+            }
+        }
+        line_count = 0;
+        while (std::getline(planfile, line)) {
+            line_count++;
+            if (line_count >= best_plan_start_line){
+                if (line.find("; Time", 0) == std::string::npos) {
+                    // consume useless lines
+                }
+                else {
+                    // read best plan
+                    planDuration = 0;
+                    ss.str("");
+                    while (std::getline(planfile, line)) {
+                        if (line.length()<2)
+                            break;
+                        ss << line << std::endl;
+                    }
+                    planner_output = ss.str();
+                }
+            }
+        }
 		planfile.close();
 
 		if(!solved) ROS_INFO("KCL: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
@@ -121,7 +135,7 @@ namespace KCL_rosplan {
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::POPFPlannerInterface pi(nh);
-		
+
 		// subscribe to problem instance
 		std::string problemTopic = "problem_instance";
 		nh.getParam("problem_topic", problemTopic);
