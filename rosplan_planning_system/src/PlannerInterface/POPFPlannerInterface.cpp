@@ -72,8 +72,10 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
 
 		// check the planner solved the problem
-		std::ifstream planfile;
-		planfile.open((data_path + "plan.pddl").c_str());
+		std::ifstream planfile1;
+        std::ifstream planfile2;
+		planfile1.open((data_path + "plan.pddl").c_str());
+        planfile2.open((data_path + "plan.pddl").c_str());
 		std::string line;
 		std::stringstream ss;
 
@@ -84,7 +86,7 @@ namespace KCL_rosplan {
 
         int line_count = 0;
         int best_plan_start_line = 0;
-        while (std::getline(planfile, line)) {
+        while (std::getline(planfile1, line)) {
             line_count++;
 
             if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
@@ -94,7 +96,7 @@ namespace KCL_rosplan {
             }
         }
         line_count = 0;
-        while (std::getline(planfile, line)) {
+        while (std::getline(planfile2, line)) {
             line_count++;
             if (line_count >= best_plan_start_line){
                 if (line.find("; Time", 0) == std::string::npos) {
@@ -104,16 +106,19 @@ namespace KCL_rosplan {
                     // read best plan
                     planDuration = 0;
                     ss.str("");
-                    while (std::getline(planfile, line)) {
+                    while (std::getline(planfile2, line)) {
                         if (line.length()<2)
                             break;
                         ss << line << std::endl;
                     }
                     planner_output = ss.str();
+
+
                 }
             }
         }
-		planfile.close();
+        planfile1.close();
+        planfile2.close();
 
 		if(!solved) ROS_INFO("KCL: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
 		else ROS_INFO("KCL: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
