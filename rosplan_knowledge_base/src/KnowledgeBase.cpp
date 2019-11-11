@@ -575,6 +575,7 @@ namespace KCL_rosplan {
 		updateServer1 = _nh.advertiseService("update",						&KCL_rosplan::KnowledgeBase::updateKnowledge, this);
 		updateServer2 = _nh.advertiseService("update_array",				&KCL_rosplan::KnowledgeBase::updateKnowledgeArray, this);
 		updateServer3 = _nh.advertiseService("update_constraints_oneof",	&KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, this);
+        updateServer4 = _nh.advertiseService("import_state", &KCL_rosplan::KnowledgeBase::importState, this);
 
 		// fetch knowledge
 		stateServer1 = _nh.advertiseService("state/instances",			&KCL_rosplan::KnowledgeBase::getInstances, this);

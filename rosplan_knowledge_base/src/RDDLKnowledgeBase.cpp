@@ -572,4 +572,9 @@ namespace KCL_rosplan {
         ROS_ERROR("KCL: (%s) getFluentType: Fluent %s was not found!", ros::this_node::getName().c_str(), req.fluent_name.c_str());
         return true;
     }
+
+    /* import state from file - not implemented */
+    bool RDDLKnowledgeBase::importState(rosplan_knowledge_msgs::ImportStateFromFileService::Request &req, rosplan_knowledge_msgs::ImportStateFromFileService::Response &res) {
+        return false;
+    }
 }

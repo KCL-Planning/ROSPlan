@@ -148,6 +148,27 @@ namespace KCL_rosplan {
     /* add initial state to knowledge base */
     /*-------------------------------------*/
 
+    /* import state from file */
+    bool PDDLKnowledgeBase::importState(rosplan_knowledge_msgs::ImportStateFromFileService::Request &req, rosplan_knowledge_msgs::ImportStateFromFileService::Response &res) {
+
+        this->parseDomain(req.domain_path, req.problem_path);
+        res.state_imported = true;
+
+        if(req.domain_string_response) {
+
+            std::ifstream domainIn(req.domain_path.c_str());
+            if(domainIn) res.domain_string = std::string(std::istreambuf_iterator<char>(domainIn), std::istreambuf_iterator<char>());
+        }
+
+        if(req.problem_string_response) {
+
+            std::ifstream problemIn(req.problem_path.c_str());
+            if(problemIn) res.state_string = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
+        }
+
+        return true;
+    }
+
     /* get constants from the domain file */
     void PDDLKnowledgeBase::addConstants() {
 

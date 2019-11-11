@@ -48,6 +48,7 @@ add_service_files(
   ReloadRDDLDomainProblem.srv
   GetEnumerableTypeService.srv
   GetRDDLFluentType.srv
+  ImportStateFromFileService.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
