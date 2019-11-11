@@ -271,6 +271,15 @@ namespace KCL_rosplan {
 							pit++;
 						}
 					}
+					for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
+						if(KnowledgeComparitor::containsInstance(*pit, name)) {
+							ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), pit->attribute_name.c_str());
+							pit = model_functions.erase(pit);
+						} else {
+							pit++;
+						}
+					}
+
 				} else {
 					iit++;
 				}
