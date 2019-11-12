@@ -476,8 +476,11 @@ namespace KCL_rosplan {
 			}
             // constants
 			for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
-				for(size_t j=0; j<iit->second.size(); j++)
-					res.instances.push_back(iit->second[j]);
+				for(size_t j=0; j<iit->second.size(); j++){
+                    res.instances.push_back(iit->second[j]);
+                    res.constants.push_back(iit->second[j]);
+				}
+
 			}
 		} else {
 			std::map<std::string,std::vector<std::string> >::iterator iit;
@@ -490,8 +493,10 @@ namespace KCL_rosplan {
             // constants
 			iit = domain_constants.find(req.type_name);
 			if(iit != domain_constants.end()) {
-				for(size_t j=0; j<iit->second.size(); j++)
-					res.instances.push_back(iit->second[j]);
+				for(size_t j=0; j<iit->second.size(); j++){
+                    res.instances.push_back(iit->second[j]);
+                    res.constants.push_back(iit->second[j]);
+				}
 			}
 		}
 

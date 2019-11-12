@@ -3,3 +3,4 @@
 string type_name
 ---
 string[] instances
+string[] constants
