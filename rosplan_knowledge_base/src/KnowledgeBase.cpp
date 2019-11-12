@@ -272,7 +272,7 @@ namespace KCL_rosplan {
 						}
 					}
 
-                    // remove affected domain functions
+					// remove affected domain functions
                     std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator fit;
                     for(fit=model_functions.begin(); fit!=model_functions.end(); ) {
                         if(KnowledgeComparitor::containsInstance(*fit, name)) {
@@ -282,7 +282,16 @@ namespace KCL_rosplan {
                             fit++;
                         }
                     }
-				} else {
+                    for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
+                        if(KnowledgeComparitor::containsInstance(*pit, name)) {
+                            ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), pit->attribute_name.c_str());
+                            pit = model_functions.erase(pit);
+                        } else {
+                            pit++;
+                        }
+                    }
+
+                } else {
 					iit++;
 				}
 			}
