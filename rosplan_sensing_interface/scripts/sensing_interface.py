@@ -23,21 +23,25 @@ class RosplanSensing:
         self.srv_mutex = Lock()
 
         ################################################################################################################
-        # Init clients and publishers
-        rospy.wait_for_service('/rosplan_knowledge_base/update_array')
-        self.update_kb_srv = rospy.ServiceProxy('/rosplan_knowledge_base/update_array', KnowledgeUpdateServiceArray)
-        rospy.wait_for_service('/rosplan_knowledge_base/domain/predicate_details')
-        self.get_predicates_srv = rospy.ServiceProxy('/rosplan_knowledge_base/domain/predicate_details', GetDomainPredicateDetailsService)
-        rospy.wait_for_service('/rosplan_knowledge_base/domain/functions')
-        self.get_functions_srv = rospy.ServiceProxy('/rosplan_knowledge_base/domain/functions', GetDomainAttributeService)
-        rospy.wait_for_service('/rosplan_knowledge_base/state/instances')
-        self.get_instances_srv = rospy.ServiceProxy('/rosplan_knowledge_base/state/instances', GetInstanceService)
-        rospy.wait_for_service('/rosplan_knowledge_base/state/propositions')
-        self.get_state_propositions_srv = rospy.ServiceProxy('/rosplan_knowledge_base/state/propositions', GetAttributeService)
-        rospy.wait_for_service('/rosplan_knowledge_base/state/functions')
-        self.get_state_functions_srv = rospy.ServiceProxy('/rosplan_knowledge_base/state/functions', GetAttributeService)
+        self.knowledge_base = '/rosplan_knowledge_base'
+        if rospy.has_param('~knowledge_base'):
+            self.knowledge_base = rospy.get_param('~knowledge_base')
 
-        self.set_sensed_predicate_srv = rospy.ServiceProxy('/rosplan_knowledge_base/update_sensed_predicates', SetNamedBool)
+        # Init clients and publishers
+        rospy.wait_for_service(self.knowledge_base + '/update_array')
+        self.update_kb_srv = rospy.ServiceProxy(self.knowledge_base + '/update_array', KnowledgeUpdateServiceArray)
+        rospy.wait_for_service(self.knowledge_base + '/domain/predicate_details')
+        self.get_predicates_srv = rospy.ServiceProxy(self.knowledge_base + '/domain/predicate_details', GetDomainPredicateDetailsService)
+        rospy.wait_for_service(self.knowledge_base + '/domain/functions')
+        self.get_functions_srv = rospy.ServiceProxy(self.knowledge_base + '/domain/functions', GetDomainAttributeService)
+        rospy.wait_for_service(self.knowledge_base + '/state/instances')
+        self.get_instances_srv = rospy.ServiceProxy(self.knowledge_base + '/state/instances', GetInstanceService)
+        rospy.wait_for_service(self.knowledge_base + '/state/propositions')
+        self.get_state_propositions_srv = rospy.ServiceProxy(self.knowledge_base + '/state/propositions', GetAttributeService)
+        rospy.wait_for_service(self.knowledge_base + '/state/functions')
+        self.get_state_functions_srv = rospy.ServiceProxy(self.knowledge_base + '/state/functions', GetAttributeService)
+
+        self.set_sensed_predicate_srv = rospy.ServiceProxy(self.knowledge_base + '/update_sensed_predicates', SetNamedBool)
 
         ################################################################################################################
         # Get cfg
