@@ -193,8 +193,13 @@ class RosplanSensing:
             return False
         self.import_msg(msg_type)
         try:
-            rospy.Subscriber(predicate_info['topic'], eval(msg_type[msg_type.rfind('/') + 1:]), self.subs_callback,
-                             (predicate_name, predicate_info))
+            if isinstance(predicate_info['topic'], list):
+                for topic in predicate_info['topic']:
+                    pred_info = predicate_info.copy()
+                    pred_info['publisher'] = topic
+                    rospy.Subscriber(str(topic), eval(msg_type[msg_type.rfind('/') + 1:]), self.subs_callback, (predicate_name, pred_info))
+            else:
+                rospy.Subscriber(predicate_info['topic'], eval(msg_type[msg_type.rfind('/') + 1:]), self.subs_callback, (predicate_name, predicate_info))
         except KeyError:
             rospy.logerr("Error: topic was not specified for predicate %s" % predicate_name)
             return False
@@ -281,9 +286,14 @@ class RosplanSensing:
             if not pred_name in dir(self.scripts):
                 rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
                 return None
-            python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']])"
+            if 'publisher' in pred_info:
+                python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']], pred_info['publisher'])"
+            else:
+                python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']])"
 
+        self.mutex.acquire(True)
         result = eval(python_string, globals(), locals())
+        self.mutex.release()
         changed = False
 
         if type(result) is list:
@@ -296,8 +306,9 @@ class RosplanSensing:
                         changed = self.sensed_topics[pred_name + ':' + params][0] != val
                 except:  # If hasn't been added yet just ignore it
                     changed = True
-                self.sensed_topics[pred_name + ':' + params] = (val, changed)
-                self.mutex.release()
+                if changed:
+                    self.sensed_topics[pred_name + ':' + params] = (val, changed, False)
+                self.mutex.release() 
         else:
             params = reduce(lambda r, x: r + ':' + x, self.params[pred_name][pred_info['sub_idx']])
             if type(params) == list:
@@ -312,7 +323,8 @@ class RosplanSensing:
                     changed = self.sensed_topics[pred_name + ':' + params][0] != result
             except:  # If hasn't been added yet just ignore it
                 changed = True
-            self.sensed_topics[pred_name + ':' + params] = (result, changed)
+            if changed:
+                self.sensed_topics[pred_name + ':' + params] = (result, changed, False)
             self.mutex.release()
 
     # Import a ros msg type of type pkg_name/MessageName
@@ -426,13 +438,13 @@ class RosplanSensing:
         self.srv_mutex.acquire(True)
         sensed_predicates.update(self.sensed_services.copy())
         self.srv_mutex.release()
-        for predicate, (val, changed) in sensed_predicates.iteritems():
-            if not changed:
+        for predicate, (val, changed, updated) in sensed_predicates.iteritems():
+            if updated:
                 continue
 
             if predicate in self.sensed_topics:
                 self.mutex.acquire(True)
-                self.sensed_topics[predicate] = (self.sensed_topics[predicate][0], False)  # Set to not changed
+                self.sensed_topics[predicate] = (self.sensed_topics[predicate][0], False, True)  # Set to not changed and updated KB
                 self.mutex.release()
             else:
                 self.srv_mutex.acquire(True)
@@ -455,6 +467,7 @@ class RosplanSensing:
                 kv.value = param
                 ki.values.append(kv)
 
+
             kus.update_type += np.array(kus.ADD_KNOWLEDGE).tostring()
             kus.knowledge.append(ki)
 
@@ -466,11 +479,15 @@ class RosplanSensing:
                 rospy.logerr("KCL (SensingInterface) Failed to update knowledge base: %s" % e.message)
 
     def get_kb_attribute(self, attribute_name):
-        request = GetAttributeServiceRequest(attribute_name)
-        ret = self.get_state_propositions_srv.call(request)
-        if len(ret.attributes) > 0:
-            return ret.attributes
-        return self.get_state_functions_srv.call(request).attributes
+        try:
+            request = GetAttributeServiceRequest(attribute_name)
+            ret = self.get_state_propositions_srv.call(request)
+            if len(ret.attributes) > 0:
+                return ret.attributes
+            return self.get_state_functions_srv.call(request).attributes
+        except Exception as e:
+            rospy.logwarn("KCL (SensingInterface) Failed to call knowledge base for details: %s" % e.message)
+            return []
 
 
 if __name__ == "__main__":
