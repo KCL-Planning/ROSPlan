@@ -26,10 +26,13 @@ namespace KCL_rosplan {
 	{
 
 	private:
+
+		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> predicates;
+		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> sensed_predicates;
+		
 	protected:
 
 		/* PDDL info and publisher */
-		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> predicates;
 		rosplan_knowledge_msgs::DomainFormula params;
 		rosplan_knowledge_msgs::DomainOperator op;
 		ros::Publisher pddl_action_parameters_pub;

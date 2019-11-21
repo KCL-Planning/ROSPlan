@@ -88,7 +88,11 @@ namespace KCL_rosplan {
 			rosplan_knowledge_msgs::GetDomainPredicateDetailsService predSrv;
 			predSrv.request.name = *nit;
 			if(predClient.call(predSrv)) {
-				predicates.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainFormula>(*nit, predSrv.response.predicate));
+				if (predSrv.response.is_sensed){
+					sensed_predicates.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainFormula>(*nit, predSrv.response.predicate));	
+				} else {
+					predicates.insert(std::pair<std::string, rosplan_knowledge_msgs::DomainFormula>(*nit, predSrv.response.predicate));	
+				}
 			} else {
 				ROS_ERROR("KCL: (RPActionInterface) could not call Knowledge Base for predicate details, %s", params.name.c_str());
 				return;
@@ -175,6 +179,10 @@ namespace KCL_rosplan {
 			
 			// simple START del effects
 			for(int i=0; i<op.at_start_del_effects.size(); i++) {
+
+				std::map<std::string, rosplan_knowledge_msgs::DomainFormula>::iterator it = sensed_predicates.find(op.at_start_del_effects[i].name);
+				if(it != sensed_predicates.end()) continue; // sensed predicate
+
 				rosplan_knowledge_msgs::KnowledgeItem item;
 				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 				item.attribute_name = op.at_start_del_effects[i].name;
@@ -191,6 +199,10 @@ namespace KCL_rosplan {
 
 			// simple START add effects
 			for(int i=0; i<op.at_start_add_effects.size(); i++) {
+
+				std::map<std::string, rosplan_knowledge_msgs::DomainFormula>::iterator it = sensed_predicates.find(op.at_start_add_effects[i].name);
+				if(it != sensed_predicates.end()) continue; // sensed predicate
+
 				rosplan_knowledge_msgs::KnowledgeItem item;
 				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 				item.attribute_name = op.at_start_add_effects[i].name;
@@ -227,6 +239,10 @@ namespace KCL_rosplan {
 
 			// simple END del effects
 			for(int i=0; i<op.at_end_del_effects.size(); i++) {
+
+				std::map<std::string, rosplan_knowledge_msgs::DomainFormula>::iterator it = sensed_predicates.find(op.at_end_del_effects[i].name);
+				if(it != sensed_predicates.end()) continue; // sensed predicate
+
 				rosplan_knowledge_msgs::KnowledgeItem item;
 				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 				item.attribute_name = op.at_end_del_effects[i].name;
@@ -243,6 +259,10 @@ namespace KCL_rosplan {
 
 			// simple END add effects
 			for(int i=0; i<op.at_end_add_effects.size(); i++) {
+
+				std::map<std::string, rosplan_knowledge_msgs::DomainFormula>::iterator it = sensed_predicates.find(op.at_end_add_effects[i].name);
+				if(it != sensed_predicates.end()) continue; // sensed predicate
+
 				rosplan_knowledge_msgs::KnowledgeItem item;
 				item.knowledge_type = rosplan_knowledge_msgs::KnowledgeItem::FACT;
 				item.attribute_name = op.at_end_add_effects[i].name;
