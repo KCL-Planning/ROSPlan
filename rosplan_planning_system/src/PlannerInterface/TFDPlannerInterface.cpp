@@ -48,6 +48,9 @@ namespace KCL_rosplan {
      * passes the problem to the Planner; the plan to post-processing.
      */
     bool TFDPlannerInterface::runPlanner() {
+        // path is based on the default installation of the Temporal Fast Downward
+        std::string plannerPlanPath = data_path + "../../rosplan_planning_system/common/bin/tfd-src-0.4/downward/";
+        std::string tfdOutputName = "tfdplan";
 
         // save problem to file for TFD
         if(use_problem_topic && problem_instance_received) {
@@ -65,17 +68,27 @@ namespace KCL_rosplan {
         std::size_t pit = str.find("PROBLEM");
         if(pit!=std::string::npos) str.replace(pit,7,problem_path);
 
-        // path is based on the default installation of the Temporal Fast Downward
-        std::string updatePlan = "cp "+data_path+"../../rosplan_planning_system/common/bin/tfd-src-0.4/downward/tfdplan.1"+" "+data_path+"plan.pddl";
-
+        // delete old plans before running the planner
+        ROS_INFO("KCL: (%s) Removing old TFD plans with (%s) name.", ros::this_node::getName().c_str(), tfdOutputName.c_str());
+        std::string removeOldPlans = "cd " + plannerPlanPath + " && rm " + tfdOutputName + ".*";
+        runCommand(removeOldPlans);
 
         // call the planer
         ROS_INFO("KCL: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  str.c_str());
         std::string plan = runCommand(str.c_str());
         ROS_INFO("KCL: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
 
-        // move plan to correct path
-        runCommand(updatePlan.c_str());
+        // get the most optimal plan in case there are many (tfdplan.[the highest number])
+        std::string bestPlanCommand = "cd " + plannerPlanPath + " && ls | grep " + tfdOutputName + " | tail -1";
+        std::string bestPlan = runCommand(bestPlanCommand.c_str());
+        // get rid of carriage return
+        if (bestPlan[bestPlan.size() - 1] == '\n') {
+            bestPlan.erase(bestPlan.size() - 1);
+        }
+
+        // prepare command to copy plan
+        std::string updatePlanCommand = "cp " + plannerPlanPath + bestPlan + " " + data_path + "plan.pddl";
+        runCommand(updatePlanCommand.c_str());
 
         // check the planner solved the problem
         std::ifstream planfile;
