@@ -20,7 +20,7 @@ namespace KCL_rosplan {
 		// start planning action server
 		plan_server->start();
 	}
-	
+
 	FFPlannerInterface::~FFPlannerInterface()
 	{
 		delete plan_server;
@@ -79,36 +79,27 @@ namespace KCL_rosplan {
 		bool solved = false;
 		while (not solved and std::getline(planfile, line)) {
 			// skip lines until there is a plan
-			if (line.compare("ff: found legal plan as follows") == 0) {
+			if (line.find("ff: found legal plan") != line.npos) {
 				solved = true;
 			}
 		}
 
 		// Parse the solved plan
 		if (solved) {
-			// actions look like this:
-			// step    0: got_place C1
-			//         1: find_object V1 C1
-			// plan cost: XX
-			while (std::getline(planfile, line)) { // Move to the beginning of the plan
-				if (line.substr(0, 4) == "step") {
-					line = line.substr(4); // Remove the step
-					break;
-				}
-			}
-
+			std::getline(planfile, line); //go to first action line
 			// First iteration line will be like   0: got_place C1
-			while (line.find("plan cost") == line.npos and line.find("time spend") == line.npos and line.size() > 0) {
+			while (line.find("cost of plan") == line.npos and line.find("time spend") == line.npos and line.size() > 0) {
+				ROS_INFO(line.c_str());
 				std::stringstream ss(line); // To trim whitespaces
 				std::string aux;
 				// Read the action number X:
 				ss >> aux;
-				planner_output += aux + " ("; // Add parenthesis before the action
+				planner_output += aux + " "; // Add parenthesis before the action
 				while (ss >> aux) { // Read the rest
 					planner_output += aux;
 					if (ss.good()) planner_output += " "; // Add a whitespace unless we have processed all the line
 				}
-				planner_output += ")  [0.001]\n"; // Close parenthesis and add duration
+				planner_output += "  [0.001]\n"; // Close parenthesis and add duration
 				std::getline(planfile, line);
 			}
 			// Convert to lowercase as FF prints all the actions and parameters in uppercase
