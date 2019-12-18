@@ -43,6 +43,8 @@ class RosplanSensing:
 
         self.set_sensed_predicate_srv = rospy.ServiceProxy(self.knowledge_base + '/update_sensed_predicates', SetNamedBool)
 
+        self.kb_update_status_subs = rospy.Subscriber(self.knowledge_base + '/status/update', self.kb_update_status)
+
         ################################################################################################################
         # Get cfg
         self.cfg_topics = self.cfg_service = {}
@@ -488,6 +490,18 @@ class RosplanSensing:
         except Exception as e:
             rospy.logwarn("KCL (SensingInterface) Failed to call knowledge base for details: %s" % e.message)
             return []
+
+    def kb_update_status(self, msg):
+        if msg.last_update_client is not rospy.get_name():  # if I did not update the KB....
+            self.mutex.acquire(True)
+            self.srv_mutex.acquire(True)
+
+            # Dump cache, it will be reloaded in the next update
+            self.sensed_topics.clear()
+            self.sensed_services.clear()
+
+            self.mutex.release()
+            self.srv_mutex.release()
 
 
 if __name__ == "__main__":
