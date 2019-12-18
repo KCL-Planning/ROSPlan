@@ -187,7 +187,7 @@ namespace KCL_rosplan {
 
 		std::string feedbackTopic = "action_feedback";
 		nh.getParam("action_feedback_topic", feedbackTopic);
-		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1, &KCL_rosplan::SimplePlanDispatcher::feedbackCallback, &spd);
+		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1000, &KCL_rosplan::SimplePlanDispatcher::feedbackCallback, &spd);
 
 		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
 		ros::spin();
