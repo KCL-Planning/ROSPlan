@@ -13,7 +13,7 @@ from rosplan_knowledge_msgs.srv import GetDomainAttributeService
 from rosplan_knowledge_msgs.srv import GetAttributeService, GetAttributeServiceRequest
 from rosplan_knowledge_msgs.srv import GetInstanceService, GetInstanceServiceRequest
 from rosplan_knowledge_msgs.srv import SetNamedBool, SetNamedBoolRequest
-from rosplan_knowledge_msgs.msg import KnowledgeItem
+from rosplan_knowledge_msgs.msg import KnowledgeItem, StatusUpdate
 from diagnostic_msgs.msg import KeyValue
 
 
@@ -21,6 +21,7 @@ class RosplanSensing:
     def __init__(self):
         self.mutex = Lock()
         self.srv_mutex = Lock()
+        self.dump_cache_mutex = Lock()
 
         ################################################################################################################
         self.knowledge_base = '/rosplan_knowledge_base'
@@ -43,7 +44,7 @@ class RosplanSensing:
 
         self.set_sensed_predicate_srv = rospy.ServiceProxy(self.knowledge_base + '/update_sensed_predicates', SetNamedBool)
 
-        self.kb_update_status_subs = rospy.Subscriber(self.knowledge_base + '/status/update', self.kb_update_status)
+        self.kb_update_status_subs = rospy.Subscriber(self.knowledge_base + '/status/update', StatusUpdate, self.kb_update_status)
 
         ################################################################################################################
         # Get cfg
@@ -407,7 +408,8 @@ class RosplanSensing:
                                 changed = self.sensed_services[pred_name + ':' + params][0] != val
                         except:  # If hasn't been added yet just ignore it
                             changed = True
-                        self.sensed_services[pred_name + ':' + params] = (val, changed)
+                        if changed:
+                            self.sensed_services[pred_name + ':' + params] = (val, changed, False)
                         self.srv_mutex.release()
                 else:
                     params = reduce(lambda r, x: r + ':' + x, self.params[pred_name][self.clients_sub_idx[i]]) if self.params[pred_name][self.clients_sub_idx[i]] else ''
@@ -424,7 +426,8 @@ class RosplanSensing:
                             changed = self.sensed_services[pred_name + ':' + params][0] != result
                     except:  # If hasn't been added yet just ignore it
                         changed = True
-                    self.sensed_services[pred_name + ':' + params] = (result, changed)
+                    if changed:
+                        self.sensed_services[pred_name + ':' + params] = (val, changed, False)
                     self.srv_mutex.release()
 
             r.sleep()
@@ -434,12 +437,14 @@ class RosplanSensing:
         kus = KnowledgeUpdateServiceArrayRequest()
         # Get info from KB functions and propositions (to know type of variable)
         # Fill update
+        self.dump_cache_mutex.acquire(True)
         self.mutex.acquire(True)
         sensed_predicates = self.sensed_topics.copy()
         self.mutex.release()
         self.srv_mutex.acquire(True)
         sensed_predicates.update(self.sensed_services.copy())
         self.srv_mutex.release()
+
         for predicate, (val, changed, updated) in sensed_predicates.iteritems():
             if updated:
                 continue
@@ -450,7 +455,7 @@ class RosplanSensing:
                 self.mutex.release()
             else:
                 self.srv_mutex.acquire(True)
-                self.sensed_services[predicate] = (self.sensed_services[predicate][0], False)  # Set to not changed
+                self.sensed_services[predicate] = (self.sensed_services[predicate][0], False, True)  # Set to not changed and updated KB
                 self.srv_mutex.release()
             predicate_info = predicate.split(':')
             ki = KnowledgeItem()
@@ -472,6 +477,7 @@ class RosplanSensing:
 
             kus.update_type += np.array(kus.ADD_KNOWLEDGE).tostring()
             kus.knowledge.append(ki)
+        self.dump_cache_mutex.release()
 
         # Update the KB with the full array
         if len(kus.update_type) > 0:
@@ -492,7 +498,10 @@ class RosplanSensing:
             return []
 
     def kb_update_status(self, msg):
-        if msg.last_update_client is not rospy.get_name():  # if I did not update the KB....
+
+        if not msg.last_update_client == rospy.get_name():  # if I did not update the KB....
+
+            self.dump_cache_mutex.acquire(True)
             self.mutex.acquire(True)
             self.srv_mutex.acquire(True)
 
@@ -500,8 +509,9 @@ class RosplanSensing:
             self.sensed_topics.clear()
             self.sensed_services.clear()
 
-            self.mutex.release()
             self.srv_mutex.release()
+            self.mutex.release()
+            self.dump_cache_mutex.release()
 
 
 if __name__ == "__main__":
