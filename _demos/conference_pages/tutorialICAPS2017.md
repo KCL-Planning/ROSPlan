@@ -1,6 +1,6 @@
 ---
 layout: demos
-title: ICAPS 2017 Tutorial on AI Planning for Robotics and Human-Robot Interaction
+title: 2017 ICAPS Tutorial on AI Planning for Robotics and Human-Robot Interaction
 ---
 
 Planning for real robots is hard! Indeed, planning for interesting robotics problems requires rich models to capture complex dynamics as well as the uncertain and evolving environment, scalable planning techniques and robust methods of execution. There are many open problems, including the handling of temporal constraints, how to exploit opportunities, and how to handle failure and anticipate it in the future. At the same time, integration issues have been limiting factors for the actual use of PDDL planners for the control of ROS systems.

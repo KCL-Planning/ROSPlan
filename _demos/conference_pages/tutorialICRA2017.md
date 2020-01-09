@@ -1,6 +1,6 @@
 ---
 layout: demos
-title: ICRA 2017 Tutorial on Planning and Robotics
+title: 2017 ICRA Tutorial on Planning and Robotics
 ---
 			
 The main goal of this tutorial is to show how state-of-the-art formalisms in planning and scheduling (P&S) are used to model robotics domains; some of the challenges and solutions involved in dispatching plans on-board robotic platforms; and to provide an overview of the ROSPlan framework. By so doing, we hope to encourage the rapid development of P&S techniques for robotics. Moreover, the tutorial aims to use the ICRA forum as a means to discuss the main challenges related to planning for autonomous robots (deliberative, reactive, continuous planning and execution etc.).
