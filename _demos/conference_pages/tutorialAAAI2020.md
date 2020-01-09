@@ -11,13 +11,13 @@ As a result of the tutorial, attendees will be able to immediately experiment wi
 
 ## Tutorial Content
 
+<center><img alt="demo screenshot" src="images/stage_demo.png" width="50%"></center>
+
 The tutorial will be in three parts.
 
 - The first part will briefly introduce AI Planning, with a focus on modelling and solving AI Planning problems for robotic systems.
 - The second part of the tutorial will include a brief introduction to the Robot Operating System (ROS) and some examples of AI Planning solutions for robotic platforms, taken from different teams working on various domains. This part of the tutorial will also include some hands-on exercises that will cover the ROS essentials.
 - The final part of the tutorial will cover the integration of planners with ROS using ROSPlan. Topics include planning strategies, plan execution, linking actions to robot skills, and the sensing interface. This part will cover some case studies in ROSPlan (recent research using mobile bases and AUVs) and present hands-on exercises involving robots in simulation.
-
-<center><img alt="demo screenshot" src="images/stage_demo.png" width="50%"></center>
 
 ## Resources
 			
