@@ -181,7 +181,11 @@ namespace KCL_rosplan {
 		return true;
 	}
 
-	bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+	//bool KnowledgeBase::updateKnowledgeArray(rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request &req, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response &res) {
+    bool KnowledgeBase::updateKnowledgeArray(ros::ServiceEvent<rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response> &event) {
+
+        rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request req = event.getRequest();
+        rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response res = event.getResponse();
 
 		res.success = true;
 
@@ -193,7 +197,12 @@ namespace KCL_rosplan {
 
 			updateKnowledge(srv.request, srv.response);
 			res.success = res.success && srv.response.success;
-		}
+		}       
+
+        rosplan_knowledge_msgs::StatusUpdate update_msg;
+        update_msg.last_update_time = ros::Time::now();
+        update_msg.last_update_client = event.getConnectionHeader()["callerid"];
+        status_pub.publish(update_msg);
 
 		return true;
 	}
@@ -595,6 +604,9 @@ namespace KCL_rosplan {
 
 		// set sensed predicates
 		senseServer = _nh.advertiseService("update_sensed_predicates", &KCL_rosplan::KnowledgeBase::setSensedPredicate, this);
+
+        // status publishers
+        status_pub = _nh.advertise<rosplan_knowledge_msgs::StatusUpdate>("status/update", 100);
 
         _nh.param("kb_rate", _kb_rate, 100.0);
 
