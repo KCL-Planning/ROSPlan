@@ -21,8 +21,8 @@ The tutorial will be in three parts.
 
 ## Resources
 			
-- Tutorial slides (https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/slides/aaai2020tutorial.pdf)
-- Tutorial materials (launch files, scripts, and demo instructions) (https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/aaai2020rosplan.zip)
+- Tutorial slides [link to download](https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/slides/aaai2020tutorial.pdf)
+- Tutorial materials (launch files, scripts, and demo instructions) [link to download](https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/aaai2020rosplan.zip)
 - ROS Melodic [http://wiki.ros.org/melodic](http://wiki.ros.org/melodic)
 - ROSPlan [http://kcl-planning.github.io/ROSPlan](http://kcl-planning.github.io/ROSPlan)
 - ROSPlan Demos [http://kcl-planning.github.io/ROSPlan_demos](http://kcl-planning.github.io/ROSPlan_demos)
