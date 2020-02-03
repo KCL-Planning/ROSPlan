@@ -21,10 +21,11 @@ The tutorial will be in three parts.
 
 ## Resources
 			
-- Tutorial slides (*to be uploaded soon*)
-- Tutorial materials (launch files, scripts, and demo instructions) (*to be uploaded soon*)
+- Tutorial slides (https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/slides/aaai2020tutorial.pdf)
+- Tutorial materials (launch files, scripts, and demo instructions) (https://github.com/KCL-Planning/ROSPlan/blob/gh-pages/_demos/conference_pages/aaai2020rosplan.zip)
 - ROS Melodic [http://wiki.ros.org/melodic](http://wiki.ros.org/melodic)
 - ROSPlan [http://kcl-planning.github.io/ROSPlan](http://kcl-planning.github.io/ROSPlan)
+- ROSPlan Demos [http://kcl-planning.github.io/ROSPlan_demos](http://kcl-planning.github.io/ROSPlan_demos)
 
 In order to take part in the hands-on portion of the tutorial, the attendees will need a laptop with ROS and ROSPlan installed. The required ROS versions are either indigo, kinetic, and melodic (preferred). The hands-on part of the tutorial will also be presented on the main screen for those who do not have their own laptop.
 			
