@@ -24,13 +24,11 @@ namespace KCL_rosplan {
 
 	class RPActionInterface
 	{
-
-	private:
-
+	
+	protected:
+		
 		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> predicates;
 		std::map<std::string, rosplan_knowledge_msgs::DomainFormula> sensed_predicates;
-		
-	protected:
 
 		/* PDDL info and publisher */
 		rosplan_knowledge_msgs::DomainFormula params;
