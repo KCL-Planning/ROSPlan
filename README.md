@@ -1,7 +1,7 @@
 # ROSPlan Framework
 
-![Build status](https://github.com/gerardcanal/ROSPlan/workflows/build/badge.svg)
-![Test status](https://github.com/gerardcanal/ROSPlan/workflows/test/badge.svg)
+![Build status](https://github.com/KCL-Planning/ROSPlan/workflows/build/badge.svg)
+![Test status](https://github.com/KCL-Planning/ROSPlan/workflows/test/badge.svg)
 
 The main ROSPlan website and documentation is available [here](http://kcl-planning.github.io/ROSPlan).
 
