@@ -185,7 +185,7 @@ namespace KCL_rosplan {
     bool KnowledgeBase::updateKnowledgeArray(ros::ServiceEvent<rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request, rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response> &event) {
 
         rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Request req = event.getRequest();
-        rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response res = event.getResponse();
+        rosplan_knowledge_msgs::KnowledgeUpdateServiceArray::Response& res = event.getResponse(); // Note this is a reference! It acts as in a normal service method, where the response is passed as a reference
 
 		res.success = true;
 
