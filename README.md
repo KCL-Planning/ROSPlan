@@ -7,9 +7,11 @@ The main ROSPlan website and documentation is available [here](http://kcl-planni
 
 The ROSPlan framework provides a generic method for task planning in a ROS system. ROSPlan encapsulates both planning and dispatch. It provides with a simple interface, and already includes interfaces to common ROS libraries.
 
-## Important note:
+## ROSPlan Demos:
 
-rosplan_demos are moved now to a separate [repository](https://github.com/KCL-Planning/rosplan_demos), check the following [pinned issue](https://github.com/KCL-Planning/ROSPlan/issues/189) for details.
+Several demos are available in the [rosplan_demos repository](https://github.com/KCL-Planning/rosplan_demos). More will be added over time.
+
+<p align="center"><img src="https://github.com/KCL-Planning/rosplan_demos/blob/master/rosplan_stage_demo/stage_demo.png" width="50%"><img src="https://github.com/KCL-Planning/rosplan_demos/blob/master/rosplan_stage_exploration_demo/rosplan_exploration_demo.png" width="50%"></p>
 
 ## Installation
 
