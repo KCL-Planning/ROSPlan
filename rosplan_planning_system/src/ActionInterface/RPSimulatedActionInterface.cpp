@@ -5,7 +5,8 @@ namespace KCL_rosplan {
 
 	/* constructor */
 	RPSimulatedActionInterface::RPSimulatedActionInterface(ros::NodeHandle &nh) {
-		action_duration = 0.0;
+		action_duration = -1.0;        // use duration calculated on plan by default
+		action_duration_stddev = 0.0;  // wait exactly action duration by default
 		action_probability = 1.0;
 		nh.getParam("action_duration", action_duration);
 		nh.getParam("action_duration_stddev", action_duration_stddev);
@@ -15,29 +16,23 @@ namespace KCL_rosplan {
 	/* action dispatch callback */
 	bool RPSimulatedActionInterface::concreteCallback(const rosplan_dispatch_msgs::ActionDispatch::ConstPtr& msg) {
 
-		// wait for some time
-        double duration = msg->duration - 1;
-        if(action_duration > 0) {
-            duration = action_duration - 1;
+		// wait for some time, plan-calculated by default
+        double duration = msg->duration;
+        if(action_duration >= 0) {
+            // use time provided for the simulated action
+            duration = action_duration;
         }
 
         if(action_duration_stddev > 0) {
             std::default_random_engine generator(ros::WallTime::now().toSec());
             std::normal_distribution<double> distribution(duration, action_duration_stddev);
-            double d = distribution(generator);
-            if(d < duration) d = duration + (duration - d);
-            if(d < 0) d = 0;
-    		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, d);
-            if(d>0) {
-		        ros::Rate wait = 1.0 / d;
-		        wait.sleep();
-            }
-        } else {
-    		ROS_INFO("KCL: (%s) Action completing with probability %f and duration %f", params.name.c_str(), action_probability, duration);
-            if(duration>0) {
-		        ros::Rate wait = 1.0 / duration;
-		        wait.sleep();
-            }
+            duration = std::max(distribution(generator), 0.0);
+        }
+
+        ROS_INFO("KCL: (%s) Action completing with probability %g and duration %g", params.name.c_str(), action_probability, duration);
+        if(duration > 0) {
+            ros::Rate wait = 1.0 / duration;
+            wait.sleep();
         }
 
 		// complete the action
