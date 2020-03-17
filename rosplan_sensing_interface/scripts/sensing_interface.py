@@ -427,7 +427,7 @@ class RosplanSensing:
                     except:  # If hasn't been added yet just ignore it
                         changed = True
                     if changed:
-                        self.sensed_services[pred_name + ':' + params] = (val, changed, False)
+                        self.sensed_services[pred_name + ':' + params] = (result, changed, False)
                     self.srv_mutex.release()
 
             r.sleep()
