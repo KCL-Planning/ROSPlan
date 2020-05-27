@@ -17,20 +17,18 @@ RUN source /opt/ros/$ROS_DISTRO/setup.bash &&\
 # Copy source files. 
 COPY . ./src/rosplan
 
-# ROSPlan demos are cloned from the related repository
-RUN git clone --depth 1 https://github.com/clearpathrobotics/occupancy_grid_utils.git src/occupancy_grid_utils &&\
-    git clone --depth 1 https://github.com/KCL-Planning/rosplan_demos.git src/rosplan_demos
-
 # Get ROSPlan from repo
-#RUN git clone --recurse-submodules --shallow-submodules --depth 1 https://github.com/KCL-Planning/ROSPlan.git src/rosplan &&\
-#   git clone --depth 1 https://github.com/clearpathrobotics/occupancy_grid_utils.git src/occupancy_grid_utils &&\
-#   git clone --depth 1 https://github.com/KCL-Planning/rosplan_demos.git src/rosplan_demos
+#RUN git clone --recurse-submodules --shallow-submodules --depth 1 https://github.com/KCL-Planning/ROSPlan.git src/rosplan
+
+# Get related repos. ROSPlan demos are moved to kclplanning/rosplan:demos
+#RUN git clone --depth 1 https://github.com/clearpathrobotics/occupancy_grid_utils.git src/occupancy_grid_utils &&\
+#    git clone --depth 1 https://github.com/KCL-Planning/rosplan_demos.git src/rosplan_demos
 
 
 # Further dependencies
 RUN source devel/setup.bash &&\
     rosdep update &&\
-    rosdep install --from-paths src/ --ignore-src -q -r -y
+    rosdep install --from-paths src/rosplan --ignore-src -q -r -y
 
 # Build workspace
 RUN catkin build --summarize --no-status
