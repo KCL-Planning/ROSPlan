@@ -72,6 +72,7 @@ class EsterelPlanViewerWidget(QWidget):
             self.xdot_widget.zoom_to_fit()
             # only zoom to fit for the first graph
             self.first_time_graph_received = False
+        self.xdot_widget.update()
         rospy.loginfo('Rendering graph ended !')
 
     def _handle_refresh_clicked(self, checked):
