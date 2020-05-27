@@ -43,6 +43,19 @@ catkin build
 
 This demo has been migrated to a separate repo, please follow up this link: [rosplan_demos](https://github.com/KCL-Planning/rosplan_demos)
 
+## Using ROSPlan's docker image
+Get your docker image from the [Docker Hub](https://hub.docker.com/r/kclplanning/rosplan):
+
+```
+docker pull kclplanning/rosplan
+```
+
+Run an interactive bash shell inside the docker, ready to run ROSPlan:
+```
+docker run -it --rm kclplanning/rosplan bash
+```
+
+
 ## Related repositories:
 
 - Automatic localisation and docking action interfaces with the Turtlebot 2 (Kobuki base) 
