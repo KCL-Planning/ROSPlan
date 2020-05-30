@@ -11,11 +11,11 @@
 
 	<run_depend>rosplan_knowledge_msgs</run_depend>
 	<run_depend>rosplan_dispatch_msgs</run_depend>
+	<run_depend>rosplan_dependencies</run_depend>
 	<run_depend>rosplan_planning_system</run_depend>
 	<run_depend>rosplan_knowledge_base</run_depend>
+	<run_depend>rosplan_sensing_interface</run_depend>
+	<run_depend>rosplan_action_interface</run_depend>
 
-	<export>
-		<metapackage/>
-	</export>
-
+	<export><metapackage/></export>
 </package>
