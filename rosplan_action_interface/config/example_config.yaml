@@ -1,0 +1,42 @@
+#============================================================#
+# This file contains example action interface configurations #
+# that can be used with the rosplan_stage_exploration_demo.  #
+#============================================================#
+
+# special terms:
+# ($pddlparam [parameter name]) to use the parameter value directly in an assignment, e.g.
+#     default_actionlib_topic: /($pddlparam robot)/move_base/goal
+# ($rosparam [parameter name]) to load the value from parameter server, e.g.
+#     target_pose.pose.position.x = ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[0]
+#     target_pose.pose.position.y = ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[1]
+
+# interface types: [actionlib, service, fsm] 
+
+# Each element of actions defines one interface between
+# a PDDL action and the implementation of its execution.
+actions:
+
+    # EXAMPLE actionlib interface
+    - pddl_name: goto_waypoint
+      interface_type: actionlib
+      # Default actionlib goal arguments for this action.
+      default_actionlib_topic: /move_base
+      default_actionlib_msg_type: move_base_msgs/MoveBase
+      default_actionlib_goal:
+          target_pose.header.frame_id: "map"
+          target_pose.pose.position.x: ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[0]
+          target_pose.pose.position.y: ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[1]
+          target_pose.pose.orientation.w: 1
+
+# EXAMPLE override defaults
+#      pddl_parameters: [to]
+#      parameter_values:
+#      - values: [wp0]
+#        actionlib_goal:
+#          target_pose.header.frame_id: "map"
+#          target_pose.pose.position.x: 0
+#          target_pose.pose.position.y: 0
+#          target_pose.pose.orientation.w: 1
+
+# TODO graceful error handling for missing goals etc.
+# TODO link external functions
