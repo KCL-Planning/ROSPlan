@@ -17,7 +17,7 @@
 actions:
 
     # EXAMPLE actionlib interface
-    - pddl_name: goto_waypoint
+    - name: goto_waypoint
       interface_type: actionlib
       # Default actionlib goal arguments for this action.
       default_actionlib_topic: /move_base
@@ -38,5 +38,15 @@ actions:
 #          target_pose.pose.position.y: 0
 #          target_pose.pose.orientation.w: 1
 
+    # EXAMPLE service interface
+    - name: clear_costmap
+      interface_type: service
+      # Default service arguments for this action.
+      default_service_topic: /move_base/clear_costmaps
+      default_service_msg_type: std_srvs/Empty
+      # default_service_request (none)
+          
 # TODO graceful error handling for missing goals etc.
 # TODO link external functions
+
+

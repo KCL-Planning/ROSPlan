@@ -10,18 +10,26 @@ class BaseActionInterface:
 
     _status = actionlib.GoalStatus
     _action_status = {}
-    _pddl_action_name = None
+    _action_name = None
     _action_config = None
 
     def __init__(self, action_config):
-        self._pddl_action_name = action_config["pddl_name"]
+        self._action_name = action_config["name"]
         self._action_config = action_config
 
     def get_action_name(self):
-        return self._pddl_action_name
+        return self._action_name
 
     def get_plan_id(self,dispatch_msg):
         pass
+
+    @staticmethod
+    def params_match(config, pddl_params, dispatch_msg):
+        for p in dispatch_msg.parameters:
+            for i in range(len(pddl_params)):
+                if p.key == pddl_params[i] and p.value != config["values"][i]:
+                    return False
+        return True
 
     @abstractmethod
     def run(self, dispatch_msg):
@@ -36,10 +44,10 @@ class BaseActionInterface:
         param_string = self.parse_config_string(param, dispatch_msg)[0]
         value_string = self.parse_config_string(value, dispatch_msg)[0]
         p = eval("goal_msg." + param_string)
-        if isinstance(p,str):
-            exec("goal_msg." + param_string + " = \'" + value_string +"\'", {}, {'goal_msg':goal_msg})
+        if isinstance(p, str):
+            exec("goal_msg." + param_string + " = \'" + value_string + "\'", {}, {'goal_msg': goal_msg})
         else:
-            exec("goal_msg." + param_string + " = " + value_string, {}, {'goal_msg':goal_msg})
+            exec("goal_msg." + param_string + " = " + value_string, {}, {'goal_msg': goal_msg})
 
     # parse a string from the config and return the parsed
     # string. Inserts ROS and PDDL parameters where necessary.

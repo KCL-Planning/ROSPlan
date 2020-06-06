@@ -8,6 +8,8 @@ from actionlib_msgs.msg import GoalStatus
 
 from BaseActionInterface import BaseActionInterface
 from ActionlibActionInterface import ActionlibActionInterface
+from ServiceActionInterface import ServiceActionInterface
+from FSMActionInterface import FSMActionInterface
 
 # This class defines the action interface manager node. The node:
 # - initialises a set of action interfaces according to config file;
@@ -112,21 +114,17 @@ class ActionInterfaceManager(object):
 
     # base case: parse service interface
     def parse_service(self, action_config):
-        # TODO implementation
-        pass
+        ai = ServiceActionInterface(action_config)
+        self._action_interfaces[ai.get_action_name()] = ai
 
     # parse fsm interface
     def parse_state_machine(self, action_config):
-        # TODO implementation
-        # create FSM object fsm
-        # for each child:
-            # interface = parse_config(child)
-            # fsm.add_child(interface) with links/edges
-        pass
+        ai = FSMActionInterface(action_config)
+        self._action_interfaces[ai.get_action_name()] = ai
 
 
 if __name__ == '__main__':
     rospy.init_node('RPStateMachine')
-    smm = ActionInterfaceManager()
+    aim = ActionInterfaceManager()
     #smm.run()
     rospy.spin()
