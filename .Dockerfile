@@ -6,7 +6,7 @@ WORKDIR /root/ws
 
 
 # install dependencies
-RUN apt update -qq && apt install python-catkin-tools git -y -qq
+RUN apt update -qq && apt install python-catkin-tools git vim bash-completion -y -qq
 
 # Create WS
 RUN source /opt/ros/$ROS_DISTRO/setup.bash &&\
