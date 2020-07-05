@@ -23,7 +23,6 @@ namespace KCL_rosplan {
 
 	PDDLSimplePlanParser::~PDDLSimplePlanParser()
 	{
-
 	}
 
 	void PDDLSimplePlanParser::reset() {
@@ -31,6 +30,10 @@ namespace KCL_rosplan {
 	}
 
 	void PDDLSimplePlanParser::publishPlan() {
+        ROS_INFO("KCL: (%s) Plan published.", ros::this_node::getName().c_str());    
+        ROS_INFO("KCL: (%s) Is plan empty?: %d", ros::this_node::getName().c_str(), action_list.size() == 0);
+ 		ROS_INFO("KCL: (%s) Num actions: %d", ros::this_node::getName().c_str(), action_list.size());
+        
 		rosplan_dispatch_msgs::CompletePlan msg;
 		msg.plan = action_list;
 		plan_publisher.publish(msg);

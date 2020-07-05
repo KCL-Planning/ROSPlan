@@ -132,6 +132,7 @@ namespace KCL_rosplan {
 		// publish problem
 		std::ifstream problemIn(problem_path.c_str());
 		if(problemIn) {
+            ROS_INFO("KCL: (%s) (%s) Publish problem.", ros::this_node::getName().c_str(), problem_name.c_str());
 			std_msgs::String problemMsg;
 			problemMsg.data = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
 			problem_publisher.publish(problemMsg);

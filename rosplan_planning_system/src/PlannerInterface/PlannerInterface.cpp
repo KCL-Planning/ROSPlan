@@ -8,6 +8,7 @@ namespace KCL_rosplan {
 
 	void PlannerInterface::problemCallback(const std_msgs::String& problemInstance) {
 		ROS_INFO("KCL: (%s) Problem received.", ros::this_node::getName().c_str());
+        ROS_INFO("KCL: (%s) Is problem empty? %d", ros::this_node::getName().c_str(), problemInstance.data.size() == 0);
 		problem_instance_received = true;
 		problem_instance_time = ros::WallTime::now().toSec();
 		problem_instance = problemInstance.data;
@@ -68,8 +69,8 @@ namespace KCL_rosplan {
 	 * planning system; prepares planning; calls planner; parses plan.
 	 */
 	bool PlannerInterface::runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand, bool useProblemTopic) {
-
-		// save parameters
+        
+        // save parameters
 		data_path = dataPath;
 		domain_path = domainPath;
 		problem_path = problemPath;
@@ -97,6 +98,7 @@ namespace KCL_rosplan {
 
 		// publish planner output
 		if(success) {
+            ROS_INFO("KCL: (%s) Plan published.", ros::this_node::getName().c_str());
 			std_msgs::String planMsg;
 			planMsg.data = planner_output;
 			plan_publisher.publish(planMsg);
