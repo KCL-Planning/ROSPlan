@@ -14,14 +14,13 @@ namespace KCL_rosplan {
     {
     private:
 
-        bool use_ffha;
-
         void clearPreviousPlan();
         void saveProblemToFileIfNeeded();        
         void callExternalPlanner();
         std::string runCommand(std::string cmd);        
         bool isPlanSolved(std::ifstream &plan_file);
         void convertPlanToPopfFormat(std::ifstream &plan_file);
+        void savePlanInPopfFormatToFile();
         bool parsePlan();
 
     protected:
