@@ -41,7 +41,7 @@ namespace KCL_rosplan {
 		ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
 		ROS_INFO("KCL: (%s) Is plan empty?: %d", ros::this_node::getName().c_str(), plan.plan.size() == 0);
         
-        plan_received = true;
+		plan_received = true;
 		mission_start_time = ros::WallTime::now().toSec();
 		current_plan = plan;
 	}
@@ -56,7 +56,7 @@ namespace KCL_rosplan {
 	bool SimplePlanDispatcher::dispatchPlan(double missionStartTime, double planStartTime) {
 
 		ROS_INFO("KCL: (%s) Dispatching plan", ros::this_node::getName().c_str());
-		ROS_DEBUG("KCL: (%s) Num actions: %d", ros::this_node::getName().c_str(), current_plan.plan.size());
+		ROS_DEBUG("KCL: (%s) Num actions: %zu", ros::this_node::getName().c_str(), current_plan.plan.size());
 		ROS_DEBUG("KCL: (%s) Current action: %d", ros::this_node::getName().c_str(), current_action);
 
 		ros::Rate loop_rate(10);
