@@ -13,23 +13,23 @@ namespace {
 
     typedef std::vector<std::string> OperatorParams;
     
-    unsigned int split_string(const std::string &txt, std::vector<std::string> &strs, char separator) {
-        size_t pos = txt.find(separator);
+    unsigned int split_string(const std::string &text, std::vector<std::string> &tokens, char separator) {
+        size_t pos = text.find(separator);
         unsigned int initialPos = 0;
-        strs.clear();
+        tokens.clear();
                 
-        while(pos != std::string::npos && pos < txt.length()) {
-            if(txt.substr(initialPos, pos - initialPos + 1) !=" ") {
-                std::string s = txt.substr(initialPos, pos - initialPos + 1);
+        while(pos != std::string::npos && pos < text.length()) {
+            if(text.substr(initialPos, pos - initialPos + 1) !=" ") {
+                std::string s = text.substr(initialPos, pos - initialPos + 1);
                 s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-                strs.push_back(s);
+                tokens.push_back(s);
             }
             initialPos = pos + 1;
-            pos = txt.find(separator, initialPos);
+            pos = text.find(separator, initialPos);
         }
         
-        strs.push_back(txt.substr(initialPos, txt.size() - initialPos));
-        return strs.size();
+        tokens.push_back(text.substr(initialPos, text.size() - initialPos));
+        return tokens.size();
     }
 
     void extractElementsFromLine(const std::string &line, std::string &action_id, std::string &operator_name, OperatorParams &operator_params) {
@@ -46,7 +46,7 @@ namespace {
             idx++;
         }
         
-        ROS_INFO("KCL: (%s) Elements in line: { %s, %s, etc. }", ros::this_node::getName().c_str(), action_id.c_str(), operator_name.c_str());  
+        ROS_DEBUG("KCL: (%s) Elements in line: { %s, %s, etc. }", ros::this_node::getName().c_str(), action_id.c_str(), operator_name.c_str());  
     }
     
     void createAction(const std::string &action_id, const std::string &operator_name, const OperatorParams &operator_params, std::string &action) {
@@ -61,7 +61,7 @@ namespace {
         }
         
         action = action_id + ": "  + "(" + operator_name + " " + operator_parameters + ") [0.001]\n";
-        ROS_INFO("KCL: (%s) Action: %s", ros::this_node::getName().c_str(), action.c_str());  
+        ROS_DEBUG("KCL: (%s) Action: %s", ros::this_node::getName().c_str(), action.c_str());  
     }
 }
 
@@ -172,9 +172,9 @@ void CFFPlannerInterface::savePlanInPopfFormatToFile() {
 void CFFPlannerInterface::convertPlanToPopfFormat(std::ifstream &plan_file) {              
     
     ROS_INFO("KCL: (%s) cff plan to popf format", ros::this_node::getName().c_str());   
-                
-    std::string line;
-    bool isPlanParsed = false;        
+    
+    bool isPlanParsed = false;   
+    std::string line;     
     
     while(!plan_file.eof() && !isPlanParsed) {
         
@@ -215,7 +215,7 @@ void CFFPlannerInterface::convertPlanToPopfFormat(std::ifstream &plan_file) {
         std::transform(planner_output.begin(), planner_output.end(), planner_output.begin(), ::tolower);   
     }
     
-    ROS_INFO("KCL: (%s) Plan converted to popf format: %d", ros::this_node::getName().c_str(), isPlanParsed);       
+    ROS_INFO("KCL: (%s) Plan converted to popf format: %d", ros::this_node::getName().c_str(), isPlanParsed);  
 }
 
 bool CFFPlannerInterface::parsePlan() {       
@@ -230,7 +230,7 @@ bool CFFPlannerInterface::parsePlan() {
         
     solved = isPlanSolved(plan_file);
     if (solved) {        
-        convertPlanToPopfFormat(plan_file);
+        (void) convertPlanToPopfFormat(plan_file);
         savePlanInPopfFormatToFile();
     }    
     plan_file.close();        
