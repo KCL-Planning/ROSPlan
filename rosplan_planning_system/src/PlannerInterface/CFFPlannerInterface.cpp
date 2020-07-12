@@ -11,23 +11,57 @@ using namespace KCL_rosplan;
 
 namespace {
 
-    unsigned int split_string(const std::string &txt, std::vector<std::string> &strs, char ch) {
-        size_t pos = txt.find( ch );
+    typedef std::vector<std::string> OperatorParams;
+    
+    unsigned int split_string(const std::string &txt, std::vector<std::string> &strs, char separator) {
+        size_t pos = txt.find(separator);
         unsigned int initialPos = 0;
         strs.clear();
                 
-        while( pos != std::string::npos && pos < txt.length()) {
-            if(txt.substr( initialPos, pos - initialPos + 1 ) !=" ") {
-                std::string s = txt.substr( initialPos, pos - initialPos + 1 );
+        while(pos != std::string::npos && pos < txt.length()) {
+            if(txt.substr(initialPos, pos - initialPos + 1) !=" ") {
+                std::string s = txt.substr(initialPos, pos - initialPos + 1);
                 s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
                 strs.push_back(s);
             }
             initialPos = pos + 1;
-            pos = txt.find( ch, initialPos );
+            pos = txt.find(separator, initialPos);
         }
         
-        strs.push_back( txt.substr( initialPos, txt.size() - initialPos ) );
+        strs.push_back(txt.substr(initialPos, txt.size() - initialPos));
         return strs.size();
+    }
+
+    void extractElementsFromLine(const std::string &line, std::string &action_id, std::string &operator_name, OperatorParams &operator_params) {
+        
+        std::vector<std::string> tokens;                
+        
+        split_string(line, tokens, ' ');        
+        action_id = tokens[0].substr(0, tokens[0].find("||"));
+        operator_name = tokens[2];                    
+
+        int idx = 3;
+        while (idx < tokens.size() && tokens[idx] != "---") {
+            operator_params.push_back(tokens[idx]);
+            idx++;
+        }
+        
+        ROS_INFO("KCL: (%s) Elements in line: { %s, %s, etc. }", ros::this_node::getName().c_str(), action_id.c_str(), operator_name.c_str());  
+    }
+    
+    void createAction(const std::string &action_id, const std::string &operator_name, const OperatorParams &operator_params, std::string &action) {
+        
+        std::string operator_parameters;
+        for (OperatorParams::const_iterator it = operator_params.begin(); it != operator_params.end(); ++it) {                        
+            if(std::next(it) != operator_params.end()) {
+                operator_parameters = operator_parameters + (*it) + " ";
+            } else {
+                operator_parameters = operator_parameters + (*it);
+            }
+        }
+        
+        action = action_id + ": "  + "(" + operator_name + " " + operator_parameters + ") [0.001]\n";
+        ROS_INFO("KCL: (%s) Action: %s", ros::this_node::getName().c_str(), action.c_str());  
     }
 }
 
@@ -47,7 +81,7 @@ CFFPlannerInterface::CFFPlannerInterface(ros::NodeHandle& nh) {
     plan_server->start();
 }
 
-CFFPlannerInterface::~CFFPlannerInterface() {
+CFFPlannerInterface::~CFFPlannerInterface() {    
     delete plan_server;
 }
 
@@ -61,7 +95,7 @@ void CFFPlannerInterface::saveProblemToFileIfNeeded() {
              use_problem_topic && problem_instance_received);
     
     if(use_problem_topic && problem_instance_received) {        
-        ROS_INFO("KCL: (%s) Writing problem to file: %s", ros::this_node::getName().c_str(), problem_name.c_str());
+        ROS_DEBUG("KCL: (%s) Writing problem to file: %s", ros::this_node::getName().c_str(), problem_name.c_str());
     
         std::ofstream dest;
         dest.open((problem_path).c_str());
@@ -89,17 +123,22 @@ std::string CFFPlannerInterface::runCommand(std::string cmd) {
 
 void CFFPlannerInterface::callExternalPlanner() {      
     
-    // prepare the planner command line
-    std::string str = planner_command;
-    std::size_t dit = str.find("DOMAIN");
-    if(dit!=std::string::npos) str.replace(dit,6,domain_path);
-    std::size_t pit = str.find("PROBLEM");
-    if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-    std::string commandString = str + " > " + data_path + "plan.cff";
+    std::string command_template = planner_command;
+    
+    std::size_t dit = command_template.find("DOMAIN");
+    if(dit != std::string::npos) {
+        command_template.replace(dit, 6, domain_path);
+    }    
+    
+    std::size_t pit = command_template.find("PROBLEM");
+    if(pit != std::string::npos) {
+        command_template.replace(pit, 7, problem_path);
+    }    
+    
+    std::string command = command_template + " > " + data_path + "plan.cff";
 
-    // call the planer
-    ROS_INFO("KCL: (%s) (%s) Running planner: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  commandString.c_str());
-    std::string plan = runCommand(commandString.c_str());
+    ROS_INFO("KCL: (%s) (%s) Running planner: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  command.c_str());
+    std::string plan = runCommand(command.c_str());
     ROS_INFO("KCL: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
 }
 
@@ -118,7 +157,6 @@ bool CFFPlannerInterface::isPlanSolved(std::ifstream &plan_file) {
     ROS_INFO("KCL: (%s) Is plan solved? %d", ros::this_node::getName().c_str(), solved);    
     return solved;
 }
-
 
 void CFFPlannerInterface::savePlanInPopfFormatToFile() {
     
@@ -147,37 +185,22 @@ void CFFPlannerInterface::convertPlanToPopfFormat(std::ifstream &plan_file) {
             // actions look like this:            
             //   17||0 --- FIND_OBJECT C1 ITEM_0 --- SON: 18||0
             //   18||0 --- PICKUP_OBJECT C1 ITEM_0 --- SON: 19||0
-                        
+            //
+            
             if (!(line.compare("-------------------------------------------------") == 0)) {
     
                 // extract elements from line                
                 std::vector<std::string> tokens;                
                 split_string(line, tokens, ' ');
-                
-                std::string action_id = tokens[0].substr(0, tokens[0].find("||"));
-                std::string operator_name = tokens[2];                    
 
-                typedef std::vector<std::string> OperatorParams;
-                OperatorParams params;
+                std::string action_id;
+                std::string operator_name;                    
+                OperatorParams operator_params;                
+                extractElementsFromLine(line, action_id, operator_name, operator_params);
                 
-                int idx = 3;
-                while (idx < tokens.size() && tokens[idx] != "---") {
-                    params.push_back(tokens[idx]);
-                    idx++;
-                }
-                
-                // add action based on elements of the line
-                std::string operator_parameters;
-                for (OperatorParams::iterator it = params.begin(); it != params.end(); ++it) {                        
-                    if(std::next(it) != params.end()) {
-                        operator_parameters = operator_parameters + (*it) + " ";
-                    } else {
-                        operator_parameters = operator_parameters + (*it);
-                    }
-                }
-                std::string action = action_id + ": " 
-                    + "(" + operator_name + " " + operator_parameters + ") [0.001]\n";               
-
+                std::string action; 
+                createAction(action_id, operator_name, operator_params, action);
+        
                 planner_output += action;                
                 ROS_INFO("KCL: (%s) Action: { %s }", ros::this_node::getName().c_str(), action.c_str());   
             }
@@ -216,6 +239,7 @@ bool CFFPlannerInterface::parsePlan() {
 }
 
 bool CFFPlannerInterface::runPlanner() {        
+    
     bool success = false;
     
     clearPreviousPlan();        
@@ -224,13 +248,7 @@ bool CFFPlannerInterface::runPlanner() {
     callExternalPlanner();        
     success = parsePlan();            
     
-    if(!success) { 
-        ROS_INFO("KCL: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
-    }
-    else {
-        ROS_INFO("KCL: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
-    }
-
+    ROS_INFO("KCL: (%s) (%s) Was plan solved? %d", ros::this_node::getName().c_str(), problem_name.c_str(), success);
     return success;
 }
 

@@ -33,6 +33,6 @@ namespace KCL_rosplan {
         virtual ~CFFPlannerInterface();
     };
 
-} // close namespace
+}
 
 #endif
