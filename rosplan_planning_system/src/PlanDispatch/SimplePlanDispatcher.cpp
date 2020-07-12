@@ -37,8 +37,9 @@ namespace KCL_rosplan {
 	/*-------------------*/
 
 	void SimplePlanDispatcher::planCallback(const rosplan_dispatch_msgs::CompletePlan plan) {
+        
 		ROS_INFO("KCL: (%s) Plan received.", ros::this_node::getName().c_str());
-        ROS_INFO("KCL: (%s) Is plan empty?: %d", ros::this_node::getName().c_str(), plan.plan.size() == 0);
+		ROS_INFO("KCL: (%s) Is plan empty?: %d", ros::this_node::getName().c_str(), plan.plan.size() == 0);
         
         plan_received = true;
 		mission_start_time = ros::WallTime::now().toSec();
@@ -55,8 +56,8 @@ namespace KCL_rosplan {
 	bool SimplePlanDispatcher::dispatchPlan(double missionStartTime, double planStartTime) {
 
 		ROS_INFO("KCL: (%s) Dispatching plan", ros::this_node::getName().c_str());
-        ROS_INFO("KCL: (%s) Num actions: %d", ros::this_node::getName().c_str(), current_plan.plan.size());
-        ROS_INFO("KCL: (%s) Current action: %d", ros::this_node::getName().c_str(), current_action);
+		ROS_DEBUG("KCL: (%s) Num actions: %d", ros::this_node::getName().c_str(), current_plan.plan.size());
+		ROS_DEBUG("KCL: (%s) Current action: %d", ros::this_node::getName().c_str(), current_action);
 
 		ros::Rate loop_rate(10);
 		replan_requested = false;
@@ -135,7 +136,7 @@ namespace KCL_rosplan {
 			if(replan_requested) return false;
 		}
 
-        ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
+		ROS_INFO("KCL: (%s) Dispatch complete.", ros::this_node::getName().c_str());
 		return true;
 	}
 
@@ -173,28 +174,28 @@ namespace KCL_rosplan {
 
 } // close namespace
 
-	/*-------------*/
-	/* Main method */
-	/*-------------*/
+/*-------------*/
+/* Main method */
+/*-------------*/
 
-	int main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
-		ros::init(argc,argv,"rosplan_simple_plan_dispatcher");
-		ros::NodeHandle nh("~");
+    ros::init(argc,argv,"rosplan_simple_plan_dispatcher");
+    ros::NodeHandle nh("~");
 
-		KCL_rosplan::SimplePlanDispatcher spd(nh);
+    KCL_rosplan::SimplePlanDispatcher spd(nh);
 
-		// subscribe to planner output
-		std::string planTopic = "complete_plan";
-		nh.getParam("plan_topic", planTopic);
-		ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::SimplePlanDispatcher::planCallback, &spd);
+    // subscribe to planner output
+    std::string planTopic = "complete_plan";
+    nh.getParam("plan_topic", planTopic);
+    ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::SimplePlanDispatcher::planCallback, &spd);
 
-		std::string feedbackTopic = "action_feedback";
-		nh.getParam("action_feedback_topic", feedbackTopic);
-		ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1000, &KCL_rosplan::SimplePlanDispatcher::feedbackCallback, &spd);
+    std::string feedbackTopic = "action_feedback";
+    nh.getParam("action_feedback_topic", feedbackTopic);
+    ros::Subscriber feedback_sub = nh.subscribe(feedbackTopic, 1000, &KCL_rosplan::SimplePlanDispatcher::feedbackCallback, &spd);
 
-		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
-		ros::spin();
+    ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
+    ros::spin();
 
-		return 0;
-	}
+    return 0;
+}
