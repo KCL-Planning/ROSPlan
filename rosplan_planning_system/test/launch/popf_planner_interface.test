@@ -35,6 +35,6 @@
         <param name="planner_command" value="$(arg planner_command)" />
     </node>
 
-    <test test-name="PlannerInterfaceTests" pkg="rosplan_planning_system" type="PlannerInterfaceTests" time-limit="100.0" />
+    <test test-name="PopfPlannerInterfaceTests" pkg="rosplan_planning_system" type="PopfPlannerInterfaceTests" time-limit="100.0" />
 
 </launch>

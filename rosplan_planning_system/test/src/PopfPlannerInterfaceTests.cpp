@@ -8,6 +8,7 @@
  * Unit tests for ROSPlan planner interface
  */
 
+#include <fstream>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <gtest/gtest.h>
@@ -146,7 +147,7 @@ GTEST_TEST(PlannerInterfaceTests, Test4_invalid_pddl_syntax) {
 int main(int argc, char **argv) {
 
     testing::InitGoogleTest(&argc, argv);
-    ros::init(argc, argv, "PlannerInterfaceTests");
+    ros::init(argc, argv, "PopfPlannerInterfaceTests");
 
     return RUN_ALL_TESTS();
 }

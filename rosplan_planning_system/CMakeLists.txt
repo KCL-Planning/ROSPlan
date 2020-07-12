@@ -167,9 +167,12 @@ install(DIRECTORY launch/
 # to run the test do e.g.: "rostest rosplan_planning_system foo.test --text"
 # where "--text" is optional, if you want to see the console output of your test
 if (CATKIN_ENABLE_TESTING)
-    # Planner Interface
-    add_rostest_gtest(PlannerInterfaceTests test/launch/planner_interface.test test/src/PlannerInterfaceTests.cpp)
-    target_link_libraries(PlannerInterfaceTests ${catkin_LIBRARIES})
+    # POPF Planner Interface
+    add_rostest_gtest(PopfPlannerInterfaceTests test/launch/popf_planner_interface.test test/src/PopfPlannerInterfaceTests.cpp)
+    target_link_libraries(PopfPlannerInterfaceTests ${catkin_LIBRARIES})
+    # Contingent-FF Planner Interface
+    add_rostest_gtest(CffPlannerInterfaceTests test/launch/cff_planner_interface.test test/src/CffPlannerInterfaceTests.cpp)
+    target_link_libraries(CffPlannerInterfaceTests ${catkin_LIBRARIES})    
     # Problem Interface
     add_rostest_gtest(ProblemInterfaceTests test/launch/problem_interface.test test/src/ProblemInterfaceTests.cpp)
     target_link_libraries(ProblemInterfaceTests ${catkin_LIBRARIES})
