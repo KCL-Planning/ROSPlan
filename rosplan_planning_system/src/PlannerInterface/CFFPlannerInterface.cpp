@@ -65,7 +65,7 @@ namespace {
             }
         }
         
-        action = action_id + ": "  + "(" + operator_name + " " + operator_parameters + ") [0.001]\n";
+        action = action_id + ": "  + "(" + operator_name + " " + operator_parameters + ")  [0.001]\n";
         ROS_DEBUG("KCL: (%s) Action: %s", ros::this_node::getName().c_str(), action.c_str());  
     }
 }
@@ -185,24 +185,24 @@ void CFFPlannerInterface::convertPlanToPopfFormat(std::ifstream &plan_file) {
         
         std::getline(plan_file, line);                    
         
-        if(!line.empty() && 
-           !(line.compare("-------------------------------------------------") == 0)) {
-    
-            std::vector<std::string> tokens;                
-            split_string(line, tokens, ' ');
+        if (!line.empty()) {  
+           if (!(line.compare("-------------------------------------------------") == 0)) {
+        
+                std::vector<std::string> tokens;                
+                split_string(line, tokens, ' ');
 
-            std::string action_id;
-            std::string operator_name;                    
-            OperatorParams operator_params;                
-            extractElementsFromLine(line, action_id, operator_name, operator_params);
-            
-            std::string action; 
-            createAction(action_id, operator_name, operator_params, action);
-    
-            planner_output += action;                
-            ROS_INFO("KCL: (%s) Action: { %s }", ros::this_node::getName().c_str(), action.c_str());   
-        }
-        else {
+                std::string action_id;
+                std::string operator_name;                    
+                OperatorParams operator_params;                
+                extractElementsFromLine(line, action_id, operator_name, operator_params);
+                
+                std::string action; 
+                createAction(action_id, operator_name, operator_params, action);
+        
+                planner_output += action;                
+                ROS_INFO("KCL: (%s) Action: { %s }", ros::this_node::getName().c_str(), action.c_str());   
+           }
+        } else {
             isParseCompleted = true;
         }
     }    
