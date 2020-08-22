@@ -245,7 +245,7 @@ namespace KCL_rosplan {
             // publish feedback (action dispatched)
             rosplan_dispatch_msgs::ActionFeedback fb;
             fb.action_id = current_action_msg.action_id;
-            fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_DISPATCHED;
+            fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_DISPATCHED_TO_GOAL_STATE;
             publishFeedback(fb);
 
             double late_print = (ros::WallTime::now().toSec() - (current_action_msg.dispatch_time + planStartTime));
