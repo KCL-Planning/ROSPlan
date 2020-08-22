@@ -81,7 +81,7 @@ namespace KCL_rosplan {
 				// publish feedback (precondition false)
 				rosplan_dispatch_msgs::ActionFeedback fb;
 				fb.action_id = currentMessage.action_id;
-				fb.status = "precondition false";
+				fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_PRECONDITION_FALSE;
 				publishFeedback(fb);
 
 				replan_requested = true;
@@ -107,7 +107,7 @@ namespace KCL_rosplan {
                 // publish feedback (action dispatched)
                 rosplan_dispatch_msgs::ActionFeedback fb;
                 fb.action_id = currentMessage.action_id;
-                fb.status = "action dispatched";
+                fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_DISPATCHED_TO_GOAL_STATE;
                 publishFeedback(fb);
 
 				double late_print = (ros::WallTime::now().toSec() - (currentMessage.dispatch_time+planStartTime));
@@ -152,15 +152,15 @@ namespace KCL_rosplan {
 			ROS_ERROR("KCL: (%s) Unexpected action ID: %d; current action: %d", ros::this_node::getName().c_str(), msg->action_id, current_action);
 
 		// action enabled
-		if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled")))
+		if(!action_received[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_ENABLED)
 			action_received[msg->action_id] = true;
 
 		// action completed (successfuly)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved"))
+		if(!action_completed[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_SUCCEEDED_TO_GOAL_STATE)
 			action_completed[msg->action_id] = true;
 
 		// action completed (failed)
-		if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+		if(!action_completed[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_FAILED) {
 			replan_requested = true;
 			action_completed[msg->action_id] = true;
 		}
