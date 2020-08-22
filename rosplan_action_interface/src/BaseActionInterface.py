@@ -3,24 +3,32 @@
 import rospy
 import actionlib
 from abc import abstractmethod
+from RPKnowledgeBaseLink import RPKnowledgeBaseLink
+from rosplan_dispatch_msgs.msg import ActionFeedback
+
 
 # Base action interface to be exended into actionlib, service, FSM, etc.
 # Uses actionlib states to describe status of actions.
 class BaseActionInterface:
 
     _status = actionlib.GoalStatus
-    _action_status = {}
-    _action_name = None
-    _action_config = None
+    _kb_link = RPKnowledgeBaseLink()
 
-    def __init__(self, action_config):
+    def __init__(self, action_config, parent_ai, action_feedback_pub):
+
         self._action_name = action_config["name"]
+        self._interface_type = action_config["interface_type"]
         self._action_config = action_config
+        self._action_feedback_pub = action_feedback_pub
+        self._parent_ai = parent_ai
 
     def get_action_name(self):
         return self._action_name
 
-    def get_plan_id(self,dispatch_msg):
+    def get_interface_type(self):
+        return self._interface_type
+
+    def get_plan_id(self):
         pass
 
     @staticmethod
@@ -49,13 +57,25 @@ class BaseActionInterface:
         else:
             exec("goal_msg." + param_string + " = " + value_string, {}, {'goal_msg': goal_msg})
 
+    # ToDo
+    def check_result_msg(self, result_msg, param, value, dispatch_msg):
+        param_string = self.parse_config_string(param, dispatch_msg)[0]
+        value_string = self.parse_config_string(value, dispatch_msg)[0]
+        p = eval("result_msg." + param_string)
+        truth_value = None
+        if isinstance(p, str):
+            truth_value = eval("result_msg." + param_string + " == \'" + value_string + "\'", {}, {'result_msg': result_msg})
+        else:
+            truth_value = eval("result_msg." + param_string + " == " + value_string, {}, {'result_msg': result_msg})
+        return truth_value
+
     # parse a string from the config and return the parsed
     # string. Inserts ROS and PDDL parameters where necessary.
     def parse_config_string(self, config_string, action_msg):
 
         # Bool and numeric values can be returned without parsing.
         if not isinstance(config_string, str):
-            return str(config_string)
+            return str(config_string), None
 
         depth = 0   
         return_string = ""
@@ -79,4 +99,3 @@ class BaseActionInterface:
                 return_string = return_string + config_string[i]
             i = i + 1
         return return_string, len(config_string)
-
