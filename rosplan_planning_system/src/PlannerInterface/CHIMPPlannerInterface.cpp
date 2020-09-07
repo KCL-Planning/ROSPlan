@@ -51,15 +51,16 @@ namespace KCL_rosplan {
 	/**
 	 * Creates command line string by setting domain and problem path and output.
 	 */ 
-	std::string CHIMPPlannerInterface::prepareCommand() {
+	std::string CHIMPPlannerInterface::prepareCommand(const std::string& planFilePath) {
 		std::string str = planner_command;
 		std::size_t dit = str.find("DOMAIN");
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
 		std::size_t pit = str.find("PROBLEM");
 		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
-
-		std::string planFilePath = data_path + "plan.txt";
-		return str + " > " + planFilePath;
+		std::size_t oit = str.find("OUTPUT");
+		if(oit!=std::string::npos) str.replace(oit,6,planFilePath);
+				
+		return str;
 	}
 
 	/*------------------*/
@@ -77,7 +78,8 @@ namespace KCL_rosplan {
 			writeProblemToFile();
 		}
 
-		std::string commandString = prepareCommand();
+		std::string planFilePath = data_path + "plan.txt";
+		std::string commandString = prepareCommand(planFilePath);
 		
 		// call the planer
 		ROS_INFO("ROSPlan: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  commandString.c_str());
@@ -85,40 +87,38 @@ namespace KCL_rosplan {
 		ROS_INFO("ROSPlan: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
 
 		// check if the planner solved the problem
-		// std::ifstream planfile;
-		// planfile.open(planFilePath.c_str());
-		// std::string line;
-		// std::stringstream ss;
+		std::ifstream planfile;
+		planfile.open(planFilePath.c_str());
+		std::string line;
+		std::stringstream ss;
 
-		// int curr, next;
-		// bool solved = false;
+		int curr, next;
+		bool solved = false;
 		// double planDuration;
 
-		// while (std::getline(planfile, line)) {
+		while (std::getline(planfile, line)) {
 
-		// 	if (line.find("; Plan found", 0) != std::string::npos || line.find(";;;; Solution Found", 0) != std::string::npos) {
-		// 		solved = true;
-		// 	} else if (line.find("; Time", 0) == std::string::npos) {
-		// 		// consume useless lines
-		// 	} else {
-		// 		// read a plan (might not be the last plan)
-		// 		planDuration = 0;
-		// 		ss.str("");
-		// 		while (std::getline(planfile, line)) {
-		// 			if (line.length()<2)
-		// 				break;
-		// 			ss << line << std::endl;
-		// 		}
-		// 		planner_output = ss.str();
-		// 	}
-		// }
-		// planfile.close();
+			if (line.find("; Solution found", 0) != std::string::npos) {
+				solved = true;
+			} else if (line.find("; Actions:", 0) == std::string::npos) {
+				// consume useless lines
+			} else {
+				ss.str("");
+				while (std::getline(planfile, line)) {
+					if (line.length()<2)
+						break;
+					ss << line << std::endl;
+				}
+				planner_output = ss.str();
+				// ROS_INFO("ROSPlan: PlannerOutput: (%s)", planner_output.c_str());
+			}
+		}
+		planfile.close();
 
-		// if(!solved) ROS_INFO("KCL: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
-		// else ROS_INFO("KCL: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
+		if(!solved) ROS_INFO("ROSPlan: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
+		else ROS_INFO("ROSPlan: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
 
-		// return solved;
-		return true;
+		return solved;
 	}
 
 } // close namespace

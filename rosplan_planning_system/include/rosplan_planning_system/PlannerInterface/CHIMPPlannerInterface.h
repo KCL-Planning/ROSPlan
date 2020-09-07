@@ -24,7 +24,7 @@ namespace KCL_rosplan {
 		std::string runCommand(std::string cmd);
 
 		/* create command line for the planner */
-		std::string prepareCommand();
+		std::string prepareCommand(const std::string& planFilePath);
 		/* write the problem instance to problem_path file */
 		void writeProblemToFile();
 

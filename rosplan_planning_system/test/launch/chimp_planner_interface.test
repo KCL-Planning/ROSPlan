@@ -13,7 +13,7 @@
     <arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        default="/rosplan_planner_interface/planner_output" />
     <arg name="data_path"            default="$(find rosplan_planning_system)/test/hierarchical_domains/chimp/restaurant/" />
-    <arg name="planner_command"      default="timeout 10 $(find rosplan_dependencies)/chimp/gradlew run -p $(find rosplan_dependencies)/chimp -Dexec.args=&quot;DOMAIN PROBLEM&quot;" />
+    <arg name="planner_command"      default="timeout 10 $(find rosplan_dependencies)/chimp/gradlew run -p $(find rosplan_dependencies)/chimp -Dexec.args=&quot;DOMAIN PROBLEM -o=OUTPUT&quot;" />
     <arg name="planner_interface"    default="chimp_planner_interface" />
 
     <!-- planner interface -->
@@ -35,6 +35,6 @@
         <param name="planner_command" value="$(arg planner_command)" />
     </node>
 
-    <test test-name="ChimpPlannerInterfaceTests" pkg="rosplan_planning_system" type="ChimpPlannerInterfaceTests" time-limit="100.0" />
+    <test test-name="ChimpPlannerInterfaceTests" pkg="rosplan_planning_system" type="ChimpPlannerInterfaceTests" time-limit="30.0" />
 
 </launch>
