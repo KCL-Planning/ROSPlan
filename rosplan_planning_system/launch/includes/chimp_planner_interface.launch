@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="node_name"            default="rosplan_planner_interface" />
+	<arg name="use_problem_topic"    default="true" />
+	<arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
+	<arg name="planner_topic"        default="planner_output" />
+	
+	<arg name="common_path" default="$(find rosplan_planning_system)/test/hierarchical_domains/chimp/restaurant"/>
+    <arg name="domain_path" default="$(arg common_path)/race_waiter_domain.ddl" />
+    <arg name="problem_path" default="$(arg common_path)/generated_problem.pdl" />
+	<arg name="data_path"            default="$(find rosplan_planning_system)/test/hierarchical_domains/chimp/restaurant/" />
+    <arg name="planner_command"      default="timeout 10 $(find rosplan_dependencies)/chimp/gradlew run -p $(find rosplan_dependencies)/chimp -Dexec.args=&quot;DOMAIN PROBLEM -o=OUTPUT&quot;" />
+    <arg name="planner_interface"    default="chimp_planner_interface" />
+	<!-- planner interface -->
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" respawn="false" output="screen">
+
+		<!-- general options -->
+		<param name="use_problem_topic" value="$(arg use_problem_topic)" />
+
+		<!-- ros topics -->
+		<param name="problem_topic" value="$(arg problem_topic)" />
+		<param name="planner_topic" value="$(arg planner_topic)" />
+
+		<!-- directory for files -->
+		<param name="domain_path" value="$(arg domain_path)" />
+		<param name="problem_path" value="$(arg problem_path)" />
+		<param name="data_path" value="$(arg data_path)" />
+
+		<!-- to run the planner -->
+		<param name="planner_command" value="$(arg planner_command)" />
+		
+	</node>
+
+</launch>
