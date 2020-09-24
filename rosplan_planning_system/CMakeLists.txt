@@ -48,6 +48,9 @@ add_definitions(-Wno-deprecated-declarations)
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGenerator.cpp
                                                                            src/ProblemGeneration/RDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/CHIMPFluent.cpp
+                                                                           src/ProblemGeneration/CHIMPProblem.cpp
+                                                                           src/ProblemGeneration/CHIMPProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGeneratorFactory.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(ff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
@@ -182,4 +185,8 @@ if (CATKIN_ENABLE_TESTING)
     # Planner Interface
     add_rostest_gtest(ChimpPlannerInterfaceTests test/launch/chimp_planner_interface.test test/src/ChimpPlannerInterfaceTests.cpp)
     target_link_libraries(ChimpPlannerInterfaceTests ${catkin_LIBRARIES})
+    # CHIMP Problem
+    catkin_add_gtest(CHIMPProblemUTest test/src/CHIMPProblemTests.cpp src/ProblemGeneration/CHIMPFluent.cpp
+                                                                      src/ProblemGeneration/CHIMPProblem.cpp)
+    target_link_libraries(CHIMPProblemUTest ${catkin_LIBRARIES})
 endif()
