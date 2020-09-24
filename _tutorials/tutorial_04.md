@@ -171,7 +171,7 @@ KCL: (/rosplan_plan_dispatcher) Dispatching plan.
 KCL: (/rosplan_plan_dispatcher) Dispatching action [0, undock, 3.099019, 10.000000]
 KCL: (undock) action recieved
 KCL: (KB) Removing domain attribute (docked)
-KCL: (undock) Action completing with probability 1.000000 and duration 0.000000
+KCL: (undock) Action completing with probability 1.000000 and duration 10.000000
 KCL: (KB) Adding fact (undocked kenny)
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action enabled]
 KCL: (/rosplan_plan_dispatcher) Feedback received [0, action achieved]
@@ -208,7 +208,7 @@ KCL: (/rosplan_plan_dispatcher) Feedback received [0, action achieved]
 KCL: (/rosplan_plan_dispatcher) 0: action undock completed
 ```
 
-Since the duration of the action was 0, the output from the dispatcher arrives all at once. The three lines correspond to:
+Since the duration of the action was 0, the simulated action will take the duration specified by the plan. The three lines from the dispatcher correspond to:
 
 1. The action enabled feedback has been published on the action feedback topic.
 2. The action achieved feedback has been published on the action feedback topic.

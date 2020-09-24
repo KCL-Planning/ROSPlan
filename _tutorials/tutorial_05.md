@@ -38,7 +38,13 @@ Copy the launch file from Tutorial 04 as *tutorial_05.launch*, and add the `acti
 	</include>
 ```
 
-Then take another look at the *interface_planning_system.launch* in the *rosplan_planning_system* package.
+Then take another look at the *interfaced_planning_system.launch* in the *rosplan_planning_system* package.
+
+You can open the file using:
+```
+rosed rosplan_planning_system interfaced_planning_system.launch 
+```
+
 
 ```xml
 	<!-- plan parsing -->
@@ -73,7 +79,7 @@ Switch to a second terminal and source the workspace. Using the script written f
 ./tutorial.bash
 ```
 
-This time, the plan will be dispatching more slowly, since the actions take some time to complete.
+This time, the plan will be dispatching in the time specified by the parameters in the simulated actions instead of taking it from the plan.
 
 ## 3.3 Viewing the Esterel Plan
 
@@ -160,7 +166,7 @@ The plan begins with a node representing the plan start. The next node correspon
 There is a lot of text describing the plan, and it is not easy to see the structure. Instead, there is a graphical representation. Using `rosnode info` again, notice that the *pddl_esterel_plan_dispatcher* is publishing on a topic */rosplan_plan_dispatcher/plan_graph*. Use `rostopic echo` to view the contents of this topic:
 
 ```
-rostopic echo /rosplan_plan_dispatcher/plan_graph -n 1
+rostopic echo /rosplan_plan_dispatcher/plan_graph -n 1 -p
 ```
 
 The contents of the message is a DOT graph, visualising the plan.

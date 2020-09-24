@@ -220,7 +220,7 @@ metric:
 The timed-initial-literals (TILs) and numeric fluents are fetched in the same way as the propositions and functions.
 
 ```
-rosservice call /rosplan_knowledge_base/state/timed_knowledge "predicate_name: 'robot_at'" 
+rosservice call /rosplan_knowledge_base/state/timed_knowledge "predicate_name: ''" 
 ```
 
 The *initial_time* field of the propositions and functions in the response will be some time in the future.
@@ -251,7 +251,13 @@ Wait for some time. After 10 seconds you will see the first TIL trigger. After 4
 [ INFO] [...62.990843924]: KCL: (KB) Removing domain attribute (dock_at)
 ```
 
-Try to restart the launch file and call the `state/timed_knowledge` service before all of the TILs trigger.
+Try to restart the launch file and call the `state/timed_knowledge` service before all of the TILs trigger:
+
+```
+rosservice call /rosplan_knowledge_base/state/timed_knowledge "predicate_name: ''" 
+```
+
+Which should show something like:
 
 ```
 attributes: 

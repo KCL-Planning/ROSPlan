@@ -33,16 +33,10 @@ Create a new launch file, *tutorial_03.launch*, in the current directory and pas
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 		<param name="domain_path" value="$(arg domain_path)" />
 		<param name="problem_path" value="$(arg problem_path)" />
-		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
 		<!-- conditional planning flags -->
 		<param name="use_unknowns" value="false" />
 	</node>
 	
-	<!-- scene database (MongoDB) -->
-	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
-		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
-	</include>
-
 	<!-- plan parsing -->
 	<node name="rosplan_parsing_interface" pkg="rosplan_planning_system" type="pddl_simple_plan_parser" respawn="false" output="screen">
 		<param name="knowledge_base" value="rosplan_knowledge_base" />
@@ -128,9 +122,9 @@ To view the nodes, open a second terminal and launch **rqt**, and select the *In
 Create a new file in the workspace, *plan_tutorial_03.pddl* and paste in the following lines:
 
 ```
- 0.000: (undock kenny wp1)  [10.000]
-10.001: (localise kenny)  [60.000]
-70.002: (goto_waypoint kenny wp0 wp0)  [60.000]
+  0.000: (undock kenny wp1)             [10.000]
+ 10.001: (localise kenny)                [60.000]
+ 70.002: (goto_waypoint kenny wp0 wp0)  [60.000]
 130.003: (goto_waypoint kenny wp0 wp1)  [60.000]
 190.004: (goto_waypoint kenny wp1 wp2)  [60.000]
 250.005: (goto_waypoint kenny wp2 wp3)  [60.000]

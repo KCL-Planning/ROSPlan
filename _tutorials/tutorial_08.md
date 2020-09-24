@@ -59,7 +59,7 @@ Try generating a new problem file, and then view it:
 
 ```
 rosservice call /rosplan_problem_interface/problem_generation_server
-rostopic echo /rosplan_problem_interface/problem_instance -n 1
+rostopic echo /rosplan_problem_interface/problem_instance -n 1 -p
 ```
 
 It should be completely empty now.
@@ -127,7 +127,7 @@ Try generating a new problem file, and then view it:
 
 ```
 rosservice call /rosplan_problem_interface/problem_generation_server
-rostopic echo /rosplan_problem_interface/problem_instance -n 1
+rostopic echo /rosplan_problem_interface/problem_instance -n 1 -p
 ```
 
 There is now one robot.
@@ -202,7 +202,7 @@ Try generating a new problem file, and then view it:
 
 ```
 rosservice call /rosplan_problem_interface/problem_generation_server
-rostopic echo /rosplan_problem_interface/problem_instance -n 1
+rostopic echo /rosplan_problem_interface/problem_instance -n 1 -p
 ```
 
 You should see the new information in the initial state of the problem file.
