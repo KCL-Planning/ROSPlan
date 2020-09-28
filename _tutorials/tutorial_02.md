@@ -19,9 +19,9 @@ Also that you have already followed [Tutorial 01: Problem Generation](tutorial_0
 
 ## 3.1 Launching the Planner Interface
 
-Change directory to the  ROSPlan workspace.
+Change directory to the ROSPlan workspace.
 
-Copy the launch file *tutorial_01.launch* from the previous tutorial to create *tutorial_02.launch*, and then paste the following lines under the scene database:
+Copy the launch file *tutorial_01.launch* from the previous tutorial to create *tutorial_02.launch*, and then paste the following lines under the problem generation `</include>`:
 
 ```xml
 	<!-- planner interface -->
@@ -44,7 +44,7 @@ The node is launched from the included launch file. In that file you can see the
 	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
 ```
 
-There are a number of possible node types that can be launched as a Planner Interface, depending upon the planner that you wich to use:
+There are a number of possible node types that can be launched as a Planner Interface, depending upon the planner that you wich to use. Some of them are:
 
 - `fd_planner_interface`
 - `ff_planner_interface`
@@ -123,15 +123,15 @@ KCL: (/rosplan_planner_interface) (problem.pddl) Plan was solved.
 The plan has been written to a file *plan.pddl*, the path to which you can see in the output. You can also view the plan by echoing the topic:
 
 ```
-rostopic echo /rosplan_planner_interface/planner_output 
+rostopic echo /rosplan_planner_interface/planner_output -p
 ```
 
 The Planner Interface publishes a plan like this:
 
 ```
- 0.000: (undock kenny wp1)  [10.000]
-10.001: (localise kenny)  [60.000]
-70.002: (goto_waypoint kenny wp0 wp0)  [60.000]
+  0.000: (undock kenny wp1)             [10.000]
+ 10.001: (localise kenny)               [60.000]
+ 70.002: (goto_waypoint kenny wp0 wp0)  [60.000]
 130.003: (goto_waypoint kenny wp0 wp1)  [60.000]
 190.004: (goto_waypoint kenny wp1 wp2)  [60.000]
 250.005: (goto_waypoint kenny wp2 wp3)  [60.000]

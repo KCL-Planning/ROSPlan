@@ -297,11 +297,10 @@ If you use the Sensing Interface for any research project, please cite the follo
 ```latex
 @inproceedings{Canal_taros2019,  
     author = "Canal, Gerard and Cashmore, Michael and Krivi{\'c}, Senka and Aleny{\`a}, Guillem and Magazzeni, Daniele and Torras, Carme",  
-    title = "Probabilistic Planning for Robotics with ROSPlan",  
+    title = "{Probabilistic Planning for Robotics with ROSPlan}",  
     booktitle = "Towards Autonomous Robotic Systems",  
     year = "2019",  
     publisher = "Springer International Publishing",  
-    address = "Cham",  
     pages = "236--250",  
     isbn = "978-3-030-23807-0",  
     doi = "10.1007/978-3-030-23807-0\_20"  

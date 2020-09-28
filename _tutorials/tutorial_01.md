@@ -34,7 +34,6 @@ Create a new launch file, *tutorial_01.launch*, in the current directory and pas
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 		<param name="domain_path" value="$(arg domain_path)" />
 		<param name="problem_path" value="$(arg problem_path)" />
-		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
 		<!-- conditional planning flags -->
 		<param name="use_unknowns" value="false" />
 	</node>
@@ -46,18 +45,12 @@ Create a new launch file, *tutorial_01.launch*, in the current directory and pas
 		<arg name="problem_path"     value="$(find rosplan_demos)/common/problem.pddl" />
 		<arg name="problem_topic"    value="problem_instance" />
 	</include>
-	
-	<!-- scene database (MongoDB) -->
-	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
-		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
-	</include>
-
 </launch>
 ```
 
 ## 3.2 The Launch File Explained
 
-The launch file will start 2 ROSPlan nodes, and a ROS interface to MongoDB.
+The launch file will start 2 ROSPlan nodes.
 
 ```xml
 	<!-- arguments -->
@@ -68,7 +61,6 @@ The launch file will start 2 ROSPlan nodes, and a ROS interface to MongoDB.
 	<node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
 		<param name="domain_path" value="$(arg domain_path)" />
 		<param name="problem_path" value="$(arg problem_path)" />
-		<param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB/" />
 		<!-- conditional planning flags -->
 		<param name="use_unknowns" value="false" />
 	</node>
@@ -79,8 +71,7 @@ The first ROSPlan node started is the **Knowledge Base**. This node stores the P
 The Knowledge Base node takes 4 parameters:
 1. `domain_path` is required and specifies a PDDL domain file. You can follow the path to view the domain file.
 2. `problem_path` is an optional parameter to load an initial state. If this parameter is not set, then the state will contain no objects, any propositions will be false, and all functions will be initialised to zero.
-3. `database_path` defines the path within which the mongoDB database is saved.
-4. `use_unknowns` is used for conditional planning. If false, then a proposition not added to the Knowledge Base is assumed to be false in the initial state. If true, then it is assumed to be unknown; false propositions have to be explicitly stated.
+3. `use_unknowns` is used for conditional planning. If false, then a proposition not added to the Knowledge Base is assumed to be false in the initial state. If true, then it is assumed to be unknown; false propositions have to be explicitly stated.
 
 
 ```xml
@@ -101,15 +92,6 @@ The Problem Interface also has 4 parameters:
 3. `problem_path` specifies the path into which the new problem file will be written.
 4. `problem_topic` specifies the topic name on which the problem will be published. In our launch file we've made it relative to the node name: *rosplan_problem_interface/problem_instance*.
 
-```xml
-	<!-- scene database (MongoDB) -->
-	<include file="$(find mongodb_store)/launch/mongodb_store.launch">
-		<arg name="db_path" value="$(find rosplan_knowledge_base)/common/mongoDB/"/>
-	</include>
-</launch>
-```
-
-The final node launches the ROS interface to MongoDB. The Knowledge Base currently depends upon a MongoDB instance to store data that is not part of the PDDL model.
 
 ## 3.3 Launching
 
@@ -127,7 +109,6 @@ KCL: (KB) Parsing domain: /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan
 KCL: (KB) Parsing initial state
 KCL: (KB) Parsing Problem File: /home/michael/ros_indigo/turtlebot/src/rosplan/rosplan_demos/common/problem_turtlebot.pddl.
 KCL: (/rosplan_problem_interface) Ready to receive
-KCL: (KB) Waiting for MongoDB
 KCL: (KB) Ready to receive
 ```
 
@@ -172,13 +153,13 @@ You can find the newly generated problem file in two places:
 **A.** The file saved in the `problem_path` parameter of the problem_interface node. If you are looking for a file, this is where it is saved.
 
 ```
-cat src/rosplan/rosplan_demos/common/problem.pddl
+cat src/rosplan_demos/rosplan_demos/common/problem.pddl
 ```
 
-**B.** Published on the topic specified by the `poblem_topic` parameter. Use this command to *echo* the contents of that topic. The flag *-n 1* means that only one message will be printed.
+**B.** Published on the topic specified by the `problem_topic` parameter. Use this command to *echo* the contents of that topic. The flag *-n 1* means that only one message will be printed.
 
 ```
-rostopic echo /rosplan_problem_interface/problem_instance -n 1
+rostopic echo /rosplan_problem_interface/problem_instance -n 1 -p
 ```
 
 ## 4. What's Next?
