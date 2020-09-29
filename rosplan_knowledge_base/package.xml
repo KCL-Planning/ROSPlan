@@ -38,6 +38,7 @@
   <run_depend>visualization_msgs</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>tf</run_depend>
+  <run_depend>rosplan_dependencies</run_depend>
   <run_depend>rostest</run_depend>
 
   <export></export>

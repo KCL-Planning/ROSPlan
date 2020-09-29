@@ -10,6 +10,7 @@ namespace KCL_rosplan {
         if (kb_type == KB::PDDL) return KnowledgeBasePtr(new PDDLKnowledgeBase(n));
         else if (kb_type == KB::PPDDL) return KnowledgeBasePtr(new PPDDLKnowledgeBase(n));
         else if (kb_type == KB::RDDL) return KnowledgeBasePtr(new RDDLKnowledgeBase(n));
+        else if (kb_type == KB::HDDL) return KnowledgeBasePtr(new HDDLKnowledgeBase(n));
         else {
             ROS_ERROR("KCL: (%s) Unknown Knowledge Base type.", ros::this_node::getName().c_str());
             ros::shutdown();
