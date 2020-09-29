@@ -632,9 +632,9 @@ int main(int argc, char **argv) {
 	n.param("problem_path", problemPath, problemPath);
 
 	std::string extension = (domainPath.size() > 5)? domainPath.substr(domainPath.find_last_of('.')) : "";
-	KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
-	if (extension == ".pddl") {
-	    kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
+    KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
+    if (extension == ".pddl") {
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
             ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
         }
         else if (extension == ".ppddl") {
@@ -642,13 +642,17 @@ int main(int argc, char **argv) {
             VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
             ROS_INFO("KCL: (%s) Starting a PPDDL Knowledge Base", ros::this_node::getName().c_str());
         }
-	else if (extension == ".rddl") {
-	    kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
+    else if (extension == ".rddl") {
+        kb_type = KCL_rosplan::KnowledgeBaseFactory::RDDL;
             VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
             ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
         }
+        else if (extension == ".hddl") {
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::HDDL;
+            ROS_INFO("KCL: (%s) Starting a HDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
         else {
-            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
+            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL/HDDL)", ros::this_node::getName().c_str(), extension.c_str());
             ros::shutdown();
         }
 
