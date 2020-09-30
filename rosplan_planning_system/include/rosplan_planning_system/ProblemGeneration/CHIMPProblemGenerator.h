@@ -20,8 +20,8 @@ private:
   void addInstances(CHIMPProblem& problem);
   std::vector<std::string> queryAllInstances();
 
-  void makeInitialState(CHIMPProblem& problem);
-  void makeGoals(CHIMPProblem& problem);
+  void addInitialState(CHIMPProblem& problem);
+  void addGoals(CHIMPProblem& problem);
 
   void makeProblem(std::ofstream &pFile);
 

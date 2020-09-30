@@ -22,6 +22,7 @@ class CHIMPProblem
     void addFluents(const std::vector<CHIMPFluent>& add_fluents);
     void addTask(const CHIMPFluent& task);
     void addArgumentSymbol(const std::string& symbol);
+    void addArgumentSymbols(const std::vector<std::string>& symbols);
     void generateProblem(std::ostream& os);
     std::vector<CHIMPFluent> getFluents();
 

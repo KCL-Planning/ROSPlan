@@ -31,3 +31,6 @@
 
 # temporary plan files
 rosplan_planning_system/common/plan*
+
+# build directory for vscode
+build

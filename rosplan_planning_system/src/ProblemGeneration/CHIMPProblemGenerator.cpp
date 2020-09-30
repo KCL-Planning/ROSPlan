@@ -32,11 +32,33 @@ namespace KCL_rosplan {
 	}
 
 
+	std::vector<std::string> extractArgs(rosplan_knowledge_msgs::KnowledgeItem item) {
+		std::vector<std::string> args;
+		for (auto v : item.values) {
+			args.push_back(v.value);
+		}
+		return args;
+	}
+
+	std::vector<CHIMPFluent> knowledgeItemsToFluents(std::vector<rosplan_knowledge_msgs::KnowledgeItem> items, CHIMPFluent::FluentType type) {
+		std::vector<CHIMPFluent> fluents;
+		for (auto item : items) {
+			if (item.is_negative) {
+				ROS_ERROR("KCL: (CHIMPProblemGenerator) CHIMP does not support negative predicates: %s", item.attribute_name.c_str());
+			} else {
+				CHIMPFluent fl {type, item.attribute_name, extractArgs(item)};
+				fluents.push_back(fl);
+			}
+		}
+		return fluents;
+	}
+
+
 	/*---------------*/
 	/* initial state */
 	/*---------------*/
 
-	void CHIMPProblemGenerator::makeInitialState(CHIMPProblem& problem) {
+	void CHIMPProblemGenerator::addInitialState(CHIMPProblem& problem) {
 
 		ros::NodeHandle nh;
 		ros::ServiceClient getDomainPropsClient = nh.serviceClient<rosplan_knowledge_msgs::GetDomainAttributeService>(domain_predicate_service);
@@ -45,8 +67,9 @@ namespace KCL_rosplan {
 		ros::ServiceClient getFuncsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(state_function_service);
 		ros::ServiceClient getTILsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(state_timed_knowledge_service);
 
-		// note the time now for TILs
-		ros::Time time = ros::Time::now() + ros::Duration(1);
+		// This is required when we add time to the fluents
+		// // note the time now for TILs
+		// ros::Time time = ros::Time::now() + ros::Duration(1);
 
 		// get propositions
 		rosplan_knowledge_msgs::GetDomainAttributeService domainAttrSrv;
@@ -63,22 +86,7 @@ namespace KCL_rosplan {
 			if (!getPropsClient.call(attrSrv)) {
 				ROS_ERROR("KCL: (CHIMPProblemGenerator) Failed to call service %s: %s", state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
 			} else {
-
-				for(auto attr : attrSrv.response.attributes) {
-					
-					//Check if the attribute is negated
-					if(attr.is_negative) {
-						ROS_ERROR("KCL: (CHIMPProblemGenerator) CHIMP does not support negative propositions: %s", attr.attribute_name.c_str());
-					} else {
-						std::vector<std::string> args;
-						for (auto v : attr.values) {
-							args.push_back(v.value);
-						}
-						CHIMPFluent fl {CHIMPFluent::FluentType::STATE, attr.attribute_name, args};
-						problem.addFluent(fl);
-
-					}
-				}
+				problem.addFluents(knowledgeItemsToFluents(attrSrv.response.attributes, CHIMPFluent::FluentType::STATE));
 			}
 
 			attrSrv.request.predicate_name = ait->name;
@@ -86,23 +94,9 @@ namespace KCL_rosplan {
 			if (!getTILsClient.call(attrSrv)) {
 				ROS_ERROR("KCL: (CHIMPProblemGenerator) Failed to call service %s: %s", state_timed_knowledge_service.c_str(), attrSrv.request.predicate_name.c_str());
 			} else {
-				for(auto attr : attrSrv.response.attributes) {
-
-					// TODO add initial time to fluent
-					//pFile << "    (at " << (attr.initial_time - time).toSec() << " (";
-					
-					//Check if the attribute is negated
-					if(attr.is_negative) {
-						ROS_ERROR("KCL: (CHIMPProblemGenerator) CHIMP does not support negative propositions: %s", attr.attribute_name.c_str());
-					} else {
-						std::vector<std::string> args;
-						for (auto v : attr.values) {
-							args.push_back(v.value);
-						}
-						CHIMPFluent fl {CHIMPFluent::FluentType::STATE, attr.attribute_name, args};
-						problem.addFluent(fl);
-					}
-				}
+				// TODO add initial time to fluent
+				//pFile << "    (at " << (attr.initial_time - time).toSec() << " (";
+				problem.addFluents(knowledgeItemsToFluents(attrSrv.response.attributes, CHIMPFluent::FluentType::STATE));
 			}
 		}
 		
@@ -112,7 +106,7 @@ namespace KCL_rosplan {
 	/* goal */
 	/*------*/
 
-	void CHIMPProblemGenerator::makeGoals(CHIMPProblem& problem) {
+	void CHIMPProblemGenerator::addGoals(CHIMPProblem& problem) {
 			
 		ros::NodeHandle nh;
 		ros::ServiceClient getCurrentGoalsClient = nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(state_goal_service);
@@ -124,31 +118,17 @@ namespace KCL_rosplan {
 			return;
 		}
 
-		for(auto attr : currentGoalSrv.response.attributes) {
-			if(attr.knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-
-				if(attr.is_negative) {
-					ROS_ERROR("(CHIMPProblemGenerator) CHIMP does not support negative goals: %s", attr.attribute_name.c_str());
-					continue;
-				} else {
-					std::vector<std::string> args;
-					for (auto v : attr.values) {
-						args.push_back(v.value);
-					}
-					CHIMPFluent fl {CHIMPFluent::FluentType::TASK, attr.attribute_name, args};
-					problem.addTask(fl);
-				}
-			} else {
-				ROS_ERROR("(CHIMPProblemGenerator) cannot process goal that is not a fact");
-			}
+		auto fluents = knowledgeItemsToFluents(currentGoalSrv.response.attributes, CHIMPFluent::FluentType::TASK);
+		for (auto fl : fluents) {
+			problem.addTask(fl);
 		}
 	}
 
 	void CHIMPProblemGenerator::makeProblem(std::ofstream &pFile) {
 		CHIMPProblem problem;
 		addInstances(problem);
-		makeInitialState(problem);
-		makeGoals(problem);
+		addInitialState(problem);
+		addGoals(problem);
 		problem.generateProblem(pFile);
 	};
 

@@ -22,7 +22,7 @@ void CHIMPProblem::addFluent(const CHIMPFluent& fluent)
     fluents_.push_back(fluent);
 }
 
-void CHIMPProblem::addFluents(const std::vector<CHIMPFluent> &add_fluents)
+void CHIMPProblem::addFluents(const std::vector<CHIMPFluent>& add_fluents)
 {
     fluents_.insert(fluents_.end(), add_fluents.begin(), add_fluents.end());
 }
@@ -35,6 +35,11 @@ void CHIMPProblem::addTask(const CHIMPFluent& task)
 void CHIMPProblem::addArgumentSymbol(const std::string& symbol)
 {
     symbols_.insert(symbol);
+}
+
+void CHIMPProblem::addArgumentSymbols(const std::vector<std::string>& add_symbols)
+{
+    symbols_.insert(add_symbols.begin(), add_symbols.end());
 }
 
 void CHIMPProblem::generateProblem(std::ostream &os)
