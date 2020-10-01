@@ -100,12 +100,93 @@ namespace KCL_rosplan {
     }
 
     bool HDDLKnowledgeBase::getOperators(rosplan_knowledge_msgs::GetDomainOperatorService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorService::Response &res) {
-        ROS_WARN("Not implemented yet (getOperators)");
-        return false;
+
+        for(auto it=hddl_parser_.domain_.domain_actions_.begin(); it!=hddl_parser_.domain_.domain_actions_.end(); it++) {
+            rosplan_knowledge_msgs::DomainFormula df;
+            df.name = it->name;
+
+            for(auto pit=it->action_params.params.begin(); pit!=it->action_params.params.end(); pit++) {
+                diagnostic_msgs::KeyValue kv;
+                kv.key = *pit;
+                kv.value = it->action_params.params_map[*pit];
+                df.typed_parameters.push_back(kv);
+            }
+
+            res.operators.push_back(df);
+        }
+
+        return true;
     }
 
     bool HDDLKnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
-        ROS_WARN("Not implemented yet! (getOperatorDetails)");
+        for(auto it=hddl_parser_.domain_.domain_actions_.begin(); it!=hddl_parser_.domain_.domain_actions_.end(); it++) {
+
+            if (it->name != req.name) continue;
+
+            rosplan_knowledge_msgs::DomainOperator dop;
+
+            // name and params
+            rosplan_knowledge_msgs::DomainFormula df;
+            df.name = it->name;
+            for(auto pit=it->action_params.params.begin(); pit!=it->action_params.params.end(); pit++) {
+                diagnostic_msgs::KeyValue kv;
+                kv.key = *pit;
+                kv.value = it->action_params.params_map[*pit];
+                df.typed_parameters.push_back(kv);
+            }
+            dop.formula = df;
+
+            // preconditions
+            for(auto pit=it->preconditions.begin(); pit!=it->preconditions.end(); pit++) {
+                rosplan_knowledge_msgs::DomainFormula pdf;
+
+                pdf.name = pit->name;
+
+                for(auto pait=pit->pred_params.params.begin(); pait!=pit->pred_params.params.end(); pait++) {
+                    diagnostic_msgs::KeyValue kv;
+                    kv.key = *pait;
+                    kv.value = it->action_params.params_map[*pait];
+                    pdf.typed_parameters.push_back(kv);
+                }
+
+                if(pit->negated) {
+                    // negative preconditions
+                    dop.at_start_neg_condition.push_back(pdf);
+                }
+                else {
+                    // positive preconditions
+                    dop.at_start_simple_condition.push_back(pdf);
+                }
+            }
+
+            // effects
+            for(auto eit=it->effects.begin(); eit!=it->effects.end(); eit++) {
+                rosplan_knowledge_msgs::DomainFormula edf;
+
+                edf.name = eit->name;
+
+                for(auto pait=eit->pred_params.params.begin(); pait!=eit->pred_params.params.end(); pait++) {
+                    diagnostic_msgs::KeyValue kv;
+                    kv.key = *pait;
+                    kv.value = it->action_params.params_map[*pait];
+                    edf.typed_parameters.push_back(kv);
+                }
+
+                if(eit->negated) {
+                    // negative effects
+                    dop.at_end_del_effects.push_back(edf);
+                }
+                else {
+                    // positive effects
+                    dop.at_end_add_effects.push_back(edf);
+                }
+            }
+
+            res.op = dop;
+            return true;
+        }
+
+        ROS_ERROR("operator '%s' not found", req.name.c_str());
         return false;
     }
 }
