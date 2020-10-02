@@ -48,6 +48,9 @@ add_definitions(-Wno-deprecated-declarations)
 add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/ProblemGeneration/PDDLProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGenerator.cpp
                                                                            src/ProblemGeneration/RDDLProblemGenerator.cpp
+                                                                           src/ProblemGeneration/CHIMPFluent.cpp
+                                                                           src/ProblemGeneration/CHIMPProblem.cpp
+                                                                           src/ProblemGeneration/CHIMPProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGeneratorFactory.cpp)
 add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(panda_planner_interface src/PlannerInterface/PANDAPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
@@ -60,6 +63,7 @@ add_executable(tfd_planner_interface src/PlannerInterface/TFDPlannerInterface.cp
 add_executable(lpg_planner_interface src/PlannerInterface/LPGPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(upm_planner_interface src/PlannerInterface/UPMPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(pprp_planner_interface src/PlannerInterface/PPRPPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
+add_executable(chimp_planner_interface src/PlannerInterface/CHIMPPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(online_planner_interface src/PlannerInterface/OnlinePlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
 add_executable(pddl_simple_plan_parser src/PlanParsing/PDDLSimplePlanParser.cpp src/PlanParsing/PlanParser.cpp)
 add_executable(pddl_esterel_plan_parser src/PlanParsing/PDDLEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
@@ -82,6 +86,7 @@ add_dependencies(lpg_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(upm_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(pprp_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(online_planner_interface ${catkin_EXPORTED_TARGETS})
+add_dependencies(chimp_planner_interface ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
@@ -103,6 +108,7 @@ target_link_libraries(lpg_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(upm_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pprp_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(online_planner_interface ${catkin_LIBRARIES})
+target_link_libraries(chimp_planner_interface ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})
@@ -179,4 +185,11 @@ if (CATKIN_ENABLE_TESTING)
     # Plan Dispatch Interface
     add_rostest_gtest(PlanDispatchTests test/launch/plan_dispatch.test test/src/PlanDispatchTests.cpp)
     target_link_libraries(PlanDispatchTests ${catkin_LIBRARIES})
+    # Planner Interface
+    add_rostest_gtest(ChimpPlannerInterfaceTests test/launch/chimp_planner_interface.test test/src/ChimpPlannerInterfaceTests.cpp)
+    target_link_libraries(ChimpPlannerInterfaceTests ${catkin_LIBRARIES})
+    # CHIMP Problem
+    catkin_add_gtest(CHIMPProblemUTest test/src/CHIMPProblemTests.cpp src/ProblemGeneration/CHIMPFluent.cpp
+                                                                      src/ProblemGeneration/CHIMPProblem.cpp)
+    target_link_libraries(CHIMPProblemUTest ${catkin_LIBRARIES})
 endif()
