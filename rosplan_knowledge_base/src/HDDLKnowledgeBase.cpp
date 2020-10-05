@@ -119,9 +119,15 @@ namespace KCL_rosplan {
     }
 
     bool HDDLKnowledgeBase::getOperatorDetails(rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Request  &req, rosplan_knowledge_msgs::GetDomainOperatorDetailsService::Response &res) {
+
+        std::string request = req.name;
+
+        // remove ! if we find at the beginning of operator name
+        if(request.front() == '!') request.replace(0, 1, "");
+
         for(auto it=hddl_parser_.domain_.domain_actions_.begin(); it!=hddl_parser_.domain_.domain_actions_.end(); it++) {
 
-            if (it->name != req.name) continue;
+            if (it->name != request) continue;
 
             rosplan_knowledge_msgs::DomainOperator dop;
 
@@ -186,7 +192,7 @@ namespace KCL_rosplan {
             return true;
         }
 
-        ROS_ERROR("operator '%s' not found", req.name.c_str());
+        ROS_ERROR("operator '%s' not found", request.c_str());
         return false;
     }
 }
