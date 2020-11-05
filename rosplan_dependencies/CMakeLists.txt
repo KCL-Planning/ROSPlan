@@ -50,7 +50,7 @@ if (LBITS EQUAL 64)
 else()
     SET (RDDL_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 endif(LBITS EQUAL 64)
-SET (RDDL_CMAKE_CXX_FLAGS "${RDDL_CMAKE_CXX_FLAGS} -g -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -std=c++11 -O3 -DNDEBUG -fomit-frame-pointer")
+SET (RDDL_CMAKE_CXX_FLAGS "${RDDL_CMAKE_CXX_FLAGS} -g -Wall -W -Wno-sign-compare -Wno-deprecated -ansi -pedantic -Werror -std=c++11 -O3 -DNDEBUG -fomit-frame-pointer -Wno-error=deprecated-copy")
 
 # Lexer and parser
 find_package(BISON 3.0.4 REQUIRED)
