@@ -19,7 +19,7 @@ ROSPlan supports kinetic and melodic ROS distributions and is developed under Ub
 
 Install dependencies:
 ```sh
-sudo apt install flex bison freeglut3-dev libbdd-dev python-catkin-tools ros-$ROS_DISTRO-tf2-bullet
+sudo apt install flex bison freeglut3-dev libbdd-dev python3-osrf-pycommon python3-catkin-tools ros-$ROS_DISTRO-tf2-bullet
 ```
 
 Select or create a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace):
