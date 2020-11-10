@@ -22,7 +22,8 @@ namespace KCL_rosplan {
 			const VAL1_2::var_symbol* var = *vi;
 			diagnostic_msgs::KeyValue param;
 			param.key = var->pddl_typed_symbol::getName();
-			param.value = var->type->getName();
+            if (var->type != nullptr) param.value = var->type->getName();
+            else param.value = "object";
 			msg.typed_parameters.push_back(param);
 		}
 
