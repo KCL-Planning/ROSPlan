@@ -51,16 +51,32 @@ namespace KCL_rosplan {
 	/**
 	 * Creates command line string by setting domain and problem path and output.
 	 */ 
-	std::string CHIMPPlannerInterface::prepareCommand(const std::string& planFilePath) {
+	std::string CHIMPPlannerInterface::prepareCommand() {
 		std::string str = planner_command;
 		std::size_t dit = str.find("DOMAIN");
 		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
 		std::size_t pit = str.find("PROBLEM");
 		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
 		std::size_t oit = str.find("OUTPUT");
-		if(oit!=std::string::npos) str.replace(oit,6,planFilePath);
+		if(oit!=std::string::npos) str.replace(oit,6,data_path + "plan.txt");
+		std::size_t eit = str.find("ESTEREL");
+		if(eit!=std::string::npos) str.replace(eit,7,data_path + "esterel.yaml");
 				
 		return str;
+	}
+
+	bool containsEsterel(const std::string& commandStr) {
+		std::size_t eit = commandStr.find("ESTEREL");
+		return eit!=std::string::npos;
+	}
+
+	std::string readEsterel(const std::string& esterelPath) {
+		std::ifstream esterelFile;
+		esterelFile.open(esterelPath.c_str());
+		std::stringstream ss;
+    	ss << esterelFile.rdbuf();
+		esterelFile.close();
+		return ss.str();
 	}
 
 	/*------------------*/
@@ -77,25 +93,22 @@ namespace KCL_rosplan {
 			ROS_INFO("ROSPlan: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
 			writeProblemToFile();
 		}
-
-		std::string planFilePath = data_path + "plan.txt";
-		std::string commandString = prepareCommand(planFilePath);
 		
 		// call the planer
+		std::string commandString = prepareCommand();
 		ROS_INFO("ROSPlan: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  commandString.c_str());
 		std::string plan = runCommand(commandString.c_str());
 		ROS_INFO("ROSPlan: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
 
 		// check if the planner solved the problem
 		std::ifstream planfile;
+		std::string planFilePath = data_path + "plan.txt";
 		planfile.open(planFilePath.c_str());
 		std::string line;
-		std::stringstream ss;
 
-		int curr, next;
+		// parse the plan file
 		bool solved = false;
-		// double planDuration;
-
+		std::string actions = "";
 		while (std::getline(planfile, line)) {
 
 			if (line.find("; Solution found", 0) != std::string::npos) {
@@ -103,17 +116,28 @@ namespace KCL_rosplan {
 			} else if (line.find("; Actions:", 0) == std::string::npos) {
 				// consume useless lines
 			} else {
+				std::stringstream ss;
 				ss.str("");
+				std::string line;
 				while (std::getline(planfile, line)) {
 					if (line.length()<2)
 						break;
 					ss << line << std::endl;
 				}
-				planner_output = ss.str();
+				actions = ss.str();
+
 				// ROS_INFO("ROSPlan: PlannerOutput: (%s)", planner_output.c_str());
 			}
 		}
 		planfile.close();
+
+		// if esterel is generated, parse it
+		if(containsEsterel(planner_command)) {
+			planner_output = readEsterel(data_path + "esterel.yaml");
+		} else {
+			planner_output = actions;
+		}
+
 
 		if(!solved) ROS_INFO("ROSPlan: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
 		else ROS_INFO("ROSPlan: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());
