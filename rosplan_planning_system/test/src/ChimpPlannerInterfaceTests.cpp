@@ -32,7 +32,7 @@ rosplan_dispatch_msgs::PlanningService createDefaultRequest() {
     srv.request.domain_path = srv.request.data_path + "/race_waiter_domain.ddl";
     srv.request.problem_path = srv.request.data_path + "/serve_coffee_problem.pdl";
     std::string chimp_path = ros::package::getPath("rosplan_dependencies") + "/chimp"; 
-    srv.request.planner_command = "timeout 10 " + chimp_path + "/gradlew run -p " + chimp_path + " -Dexec.args=\"DOMAIN PROBLEM -o=OUTPUT\"";
+    srv.request.planner_command = "timeout 50 " + chimp_path + "/gradlew run -p " + chimp_path + " -Dexec.args=\"DOMAIN PROBLEM -o=OUTPUT\"";
     return srv;
 }
 
@@ -101,6 +101,8 @@ GTEST_TEST(PlannerInterfaceTests, Test3_problem_without_solution) {
     ros::ServiceClient client = nh.serviceClient<rosplan_dispatch_msgs::PlanningService>(srv_name);
 
     rosplan_dispatch_msgs::PlanningService srv = createDefaultRequest();
+    std::string chimp_path = ros::package::getPath("rosplan_dependencies") + "/chimp"; 
+    srv.request.planner_command = "timeout 3 " + chimp_path + "/gradlew run -p " + chimp_path + " -Dexec.args=\"DOMAIN PROBLEM -o=OUTPUT\"";
     srv.request.problem_path = srv.request.data_path + "/test_problem_no_solution.pdl";
 
     ros::service::waitForService(srv_name, ros::Duration(3));
