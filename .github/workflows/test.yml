@@ -42,6 +42,10 @@ jobs:
         shell: bash
       - name: Build workspace
         run: catkin build --summarize --no-status
+      - name: Build CHIMP
+        run: |
+          cd src/rosplan/rosplan_dependencies/chimp
+          ./gradlew build
       - name: Run tests
         run: |
           source /opt/ros/$ROS_VERSION/setup.bash
