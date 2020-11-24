@@ -44,6 +44,7 @@ jobs:
         run: catkin build --summarize --no-status
       - name: Build CHIMP
         run: |
+          export JAVA_HOME=/usr/lib/jvm/default-java
           cd src/rosplan/rosplan_dependencies/chimp
           ./gradlew build
       - name: Run tests
