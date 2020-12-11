@@ -482,10 +482,12 @@ namespace KCL_rosplan {
         }
         for (auto it = SACs.begin(); it != SACs.end(); ++it) {
             auto exp_con = dynamic_cast<const Connective *>(*it);
-            auto aux = dynamic_cast<const Negation*>(exp_con->exprs[0])->expr;
-            if (dynamic_cast<const ParametrizedVariable*>(aux)->variableName == "goal") {
-                std::map<std::string, std::string> ass;
-                return getGoals(exp_con->exprs[1], false, ass);
+            if (exp_con != nullptr) {
+                auto aux = dynamic_cast<const Negation *>(exp_con->exprs[0])->expr;
+                if (dynamic_cast<const ParametrizedVariable *>(aux)->variableName == "goal") {
+                    std::map<std::string, std::string> ass;
+                    return getGoals(exp_con->exprs[1], false, ass);
+                }
             }
         }
         return ret;
