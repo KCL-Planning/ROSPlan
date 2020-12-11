@@ -135,12 +135,19 @@ namespace KCL_rosplan {
 
 
 			} else {
-
 				// name
 				next=line.find(")",curr);
 				std::string name = line.substr(curr,next-curr).c_str();
 				msg.name = name;
 
+                // Get operator details for this operator, as those are filled inside the processPDDLParameters
+                rosplan_knowledge_msgs::GetDomainOperatorDetailsService srv;
+                srv.request.name = msg.name;
+                if(!get_operator_details_client.call(srv)) {
+                    ROS_ERROR("KCL: (%s) could not call Knowledge Base for operator details, %s", ros::this_node::getName().c_str(), msg.name.c_str());
+                } else {
+                    action_details[msg.action_id] = srv.response.op;
+                }
 			}
 
 			// duration
@@ -245,7 +252,7 @@ namespace KCL_rosplan {
 
 			ros::Time time = ros::Time::now();
 			for(int i=0; i<attsrv.response.attributes.size(); i++) {
-				
+
 				// not a TIL
 				if(time > attsrv.response.attributes[i].initial_time) continue;
 
@@ -260,7 +267,7 @@ namespace KCL_rosplan {
 	/*--------------*/
 	/* Create graph */
 	/*--------------*/
-	
+
 	void PDDLEsterelPlanParser::createGraph() {
 
 		// map of absolute plan time to node ID
@@ -286,12 +293,12 @@ namespace KCL_rosplan {
 			}
 
 			nodes.insert(std::pair<double,int>(time,ait->node_id));
-		}		
+		}
 
 		// get the next node
 		std::multimap<double,int>::iterator nit = nodes.begin();
 		for(; nit!=nodes.end(); nit++) {
-			
+
 			rosplan_dispatch_msgs::EsterelPlanNode *node = &last_plan.nodes[nit->second];
 
 			switch(node->node_type) {
@@ -474,7 +481,7 @@ namespace KCL_rosplan {
 			lower_bound = 0.001;
 		if(upper_bound == 0)
 			upper_bound = 0.001;
-		
+
 		// see if there is already an existing edge
 		std::vector<int>::iterator eit = last_plan.nodes[source_node_id].edges_out.begin();
 		std::vector<int>::iterator nit = last_plan.nodes[source_node_id].edges_out.begin();
@@ -490,7 +497,7 @@ namespace KCL_rosplan {
 				if(upper_bound < last_plan.edges[edgeID].duration_upper_bound)
 					last_plan.edges[edgeID].duration_upper_bound = upper_bound;
 				return;
-				
+
 			}
 		}
 
@@ -523,16 +530,16 @@ namespace KCL_rosplan {
 
 	int main(int argc, char **argv) {
 
-		ros::init(argc,argv,"rosplan_plan_parser");
+		ros::init(argc,argv,"rosplan_parsing_interface");
 		ros::NodeHandle nh("~");
 
 		KCL_rosplan::PDDLEsterelPlanParser pp(nh);
-	
+
 		// subscribe to planner output
 		std::string planTopic = "planner_output";
 		nh.getParam("planner_topic", planTopic);
 		ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::PlanParser::plannerCallback, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
-	
+
 		// start the plan parsing services
 		ros::ServiceServer service1 = nh.advertiseService("parse_plan", &KCL_rosplan::PlanParser::parsePlan, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
 		ros::ServiceServer service2 = nh.advertiseService("parse_plan_from_file", &KCL_rosplan::PlanParser::parsePlanFromFile, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
