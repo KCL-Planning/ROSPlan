@@ -104,7 +104,10 @@ namespace KCL_rosplan {
         void addInitialState() override;
         void addConstants() override;
 
-		/* service methods for fetching the domain details */
+        /* import state from file*/
+        bool importState(rosplan_knowledge_msgs::ImportStateFromFileService::Request &req, rosplan_knowledge_msgs::ImportStateFromFileService::Response &res);
+
+        /* service methods for fetching the domain details */
 		bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) override;
 		bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) override;
 		bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) override;

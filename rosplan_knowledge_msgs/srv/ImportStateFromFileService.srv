@@ -1,0 +1,9 @@
+# request a pddl problem to be imported to the kb from the problem_path
+string domain_path
+string problem_path
+bool domain_string_response
+bool problem_string_response
+---
+bool state_imported
+string domain_string
+string state_string

@@ -27,6 +27,8 @@
 #include "rosplan_knowledge_msgs/GetMetricService.h"
 #include "rosplan_knowledge_msgs/KnowledgeItem.h"
 
+#include "rosplan_knowledge_msgs/ImportStateFromFileService.h"
+
 #include "KnowledgeComparitor.h"
 
 
@@ -52,6 +54,7 @@ namespace KCL_rosplan {
         ros::ServiceServer updateServer1; // updateKnowledge
         ros::ServiceServer updateServer2; // updateKnowledgeArray
         ros::ServiceServer updateServer3; // updateKnowledgeConstraintsOneOf
+        ros::ServiceServer updateServer4; // updateKnowledgeFromPDDLFile
 
         // fetch knowledge
         ros::ServiceServer stateServer1; // getInstances
@@ -113,8 +116,9 @@ namespace KCL_rosplan {
         /* add the initial state to the knowledge base */
         virtual void addInitialState() =0;
     	virtual void addConstants() =0;
+        virtual bool importState(rosplan_knowledge_msgs::ImportStateFromFileService::Request &req, rosplan_knowledge_msgs::ImportStateFromFileService::Response &res) =0;
 
-		/* service methods for querying the model */
+        /* service methods for querying the model */
 		bool queryKnowledge(rosplan_knowledge_msgs::KnowledgeQueryService::Request  &req, rosplan_knowledge_msgs::KnowledgeQueryService::Response &res);
 
 		/* service methods for fetching the current state */

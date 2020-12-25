@@ -280,16 +280,27 @@ namespace KCL_rosplan {
 							pit++;
 						}
 					}
-					for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
-						if(KnowledgeComparitor::containsInstance(*pit, name)) {
-							ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), pit->attribute_name.c_str());
-							pit = model_functions.erase(pit);
-						} else {
-							pit++;
-						}
-					}
 
-				} else {
+					// remove affected domain functions
+                    std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator fit;
+                    for(fit=model_functions.begin(); fit!=model_functions.end(); ) {
+                        if(KnowledgeComparitor::containsInstance(*fit, name)) {
+                            ROS_INFO("KCL: (%s) Removing domain function (%s)", ros::this_node::getName().c_str(), fit->attribute_name.c_str());
+                            fit = model_functions.erase(fit);
+                        } else {
+                            fit++;
+                        }
+                    }
+                    for(pit=model_functions.begin(); pit!=model_functions.end(); ) {
+                        if(KnowledgeComparitor::containsInstance(*pit, name)) {
+                            ROS_INFO("KCL: (%s) Removing domain attribute (%s)", ros::this_node::getName().c_str(), pit->attribute_name.c_str());
+                            pit = model_functions.erase(pit);
+                        } else {
+                            pit++;
+                        }
+                    }
+
+                } else {
 					iit++;
 				}
 			}
@@ -494,8 +505,11 @@ namespace KCL_rosplan {
 			}
             // constants
 			for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
-				for(size_t j=0; j<iit->second.size(); j++)
-					res.instances.push_back(iit->second[j]);
+				for(size_t j=0; j<iit->second.size(); j++){
+                    res.instances.push_back(iit->second[j]);
+                    res.constants.push_back(iit->second[j]);
+				}
+
 			}
 		} else {
 			std::map<std::string,std::vector<std::string> >::iterator iit;
@@ -508,8 +522,10 @@ namespace KCL_rosplan {
             // constants
 			iit = domain_constants.find(req.type_name);
 			if(iit != domain_constants.end()) {
-				for(size_t j=0; j<iit->second.size(); j++)
-					res.instances.push_back(iit->second[j]);
+				for(size_t j=0; j<iit->second.size(); j++){
+                    res.instances.push_back(iit->second[j]);
+                    res.constants.push_back(iit->second[j]);
+				}
 			}
 		}
 
@@ -593,6 +609,7 @@ namespace KCL_rosplan {
 		updateServer1 = _nh.advertiseService("update",						&KCL_rosplan::KnowledgeBase::updateKnowledge, this);
 		updateServer2 = _nh.advertiseService("update_array",				&KCL_rosplan::KnowledgeBase::updateKnowledgeArray, this);
 		updateServer3 = _nh.advertiseService("update_constraints_oneof",	&KCL_rosplan::KnowledgeBase::updateKnowledgeConstraintsOneOf, this);
+        updateServer4 = _nh.advertiseService("import_state", &KCL_rosplan::KnowledgeBase::importState, this);
 
 		// fetch knowledge
 		stateServer1 = _nh.advertiseService("state/instances",			&KCL_rosplan::KnowledgeBase::getInstances, this);

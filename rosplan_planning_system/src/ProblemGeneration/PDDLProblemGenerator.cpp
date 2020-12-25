@@ -47,10 +47,32 @@ namespace KCL_rosplan {
 			if (!getInstancesClient.call(instanceSrv)) {
 				ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", state_instance_service.c_str(), instanceSrv.request.type_name.c_str());
 			} else {
-				if(instanceSrv.response.instances.size() == 0) continue;
+                if(instanceSrv.response.instances.size() == 0) continue;
+
+                // check if instance is constant
+                std::vector<bool> constants;
+                bool isConstant = false;
+                for(size_t i=0;i<instanceSrv.response.instances.size();i++) {
+                    for (size_t j = 0; j < instanceSrv.response.constants.size(); j++) {
+                        if (instanceSrv.response.instances[i].compare(instanceSrv.response.constants[j]) == 0) {
+                            isConstant = true;
+                        }
+                    }
+                    constants.push_back(isConstant);
+                }
+
+                // skip if all instances are constants
+                bool isAnyNonConstant = false;
+                for(size_t i=0;i<constants.size();i++) {
+                    if(!constants[i])isAnyNonConstant = true;
+                }
+				if(!isAnyNonConstant) continue;
+
+
+				// write to file if at least one instance is not a constant
 				pFile << "    ";
-				for(size_t i=0;i<instanceSrv.response.instances.size();i++) {
-					pFile << instanceSrv.response.instances[i] << " ";
+				for(size_t i=0;i<constants.size();i++) {
+				    if (!constants[i])pFile << instanceSrv.response.instances[i] << " ";
 				}
 				pFile << "- " << typeSrv.response.types[t] << std::endl;
 			}
