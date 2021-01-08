@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
 import rospy
-import actionlib
 from rosplan_dispatch_msgs.msg import ActionDispatch, ActionFeedback
-from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceRequest, KnowledgeUpdateServiceArray
-from actionlib_msgs.msg import GoalStatus
 
 from BaseActionInterface import BaseActionInterface
 from ActionlibActionInterface import ActionlibActionInterface
 from ServiceActionInterface import ServiceActionInterface
 from FSMActionInterface import FSMActionInterface
+from RPKnowledgeBaseLink import RPKnowledgeBaseLink
 
 # This class defines the action interface manager node. The node:
 # - initialises a set of action interfaces according to config file;
@@ -24,10 +22,8 @@ class ActionInterfaceManager(object):
 
     def __init__(self):
 
-        # knowledge base
-        kb = rospy.get_param('~knowledge_base', 'knowledge_base')
-        ss = '/' + kb + '/update_array'
-        self.update_knowledge_client = rospy.ServiceProxy(ss, KnowledgeUpdateServiceArray)
+        # knowledge base link
+        self._kb_link = RPKnowledgeBaseLink()
 
         # load action interfaces from configuration file
         found_config = False
@@ -39,18 +35,22 @@ class ActionInterfaceManager(object):
             rospy.signal_shutdown('Config not found')
             return
 
-        self.parse_config()
-
-        # publish to action feedback
+        # feedback
         aft = rospy.get_param('~action_feedback_topic', 'default_feedback_topic')
-        self.action_feedback_pub = rospy.Publisher(aft, ActionFeedback, queue_size=10)
+        self._action_feedback_pub = rospy.Publisher(aft, ActionFeedback, queue_size=10)
 
         # subscribe to action dispatch
         adt = rospy.get_param('~action_dispatch_topic', 'default_dispatch_topic')
         rospy.Subscriber(adt, ActionDispatch, self.dispatch_callback, queue_size=10)
 
+        self.parse_config()
+
         rospy.loginfo('KCL: ({}) Ready to receive'.format(rospy.get_name()))
         self.run()
+
+    #======================#
+    # PDDL action messages #
+    #======================#
 
     # PDDL action dispatch callback
     def dispatch_callback(self, pddl_action_msg):
@@ -59,51 +59,47 @@ class ActionInterfaceManager(object):
             # manager does not handle this PDDL action
             return
 
+        # Publish feedback: action enabled
+        self.publish_feedback(pddl_action_msg.plan_id, pddl_action_msg.action_id, ActionFeedback.ACTION_DISPATCHED_TO_GOAL_STATE)
+        # Set the start effects
+        self._kb_link.kb_apply_action_effects(pddl_action_msg, RPKnowledgeBaseLink.AT_START)
         # find and run action interface
         current_interface = self._action_interfaces[pddl_action_msg.name]
         current_interface.run(pddl_action_msg)
 
-    def publish_feedback(self, action_id, msg):
+    # PDDL action feedback
+    def publish_feedback(self, plan_id, action_id, status):
         fb = ActionFeedback()
         fb.action_id = action_id
-        fb.status = msg
-        self.action_feedback_pub.publish(fb)
+        fb.plan_id = plan_id
+        fb.status = status
+        self._action_feedback_pub.publish(fb)
 
-    # main management loop
+    #==================#
+    # interface status #
+    #==================#
+
     def run(self):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
 
-            # iterate through interfaces
+            # iterate through interfaces and send feedback
             for interface in self._action_interfaces.values():
-                for action_id in interface._action_status.keys():
+                for act in interface._action_status.keys():
 
-                    # send enabled feedback for newly interfaced actions
-                    if interface._enable_flag[action_id]:
-                        self.publish_feedback(action_id, 'action enabled')
-                        interface._enable_flag[action_id] = False
+                    # action successful
+                    if interface._action_status[act] == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE:
+                        # Apply the end effects
+                        self._kb_link.kb_apply_action_effects(interface._action_dispatch_msg[act], RPKnowledgeBaseLink.AT_END)
 
-                    # send feedback or status
-                    if interface._action_status[action_id] == interface._status.SUCCEEDED:
-                        rospy.loginfo('KCL: ({}) Reporting action complete: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
-                        self.publish_feedback(action_id, 'action achieved')
-                        del interface._action_status[action_id]
-                    elif interface._action_status[action_id] == interface._status.PREEMPTED:
-                        rospy.loginfo('KCL: ({}) Reporting action cancelled: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
-                        self.publish_feedback(action_id, 'action cancelled')
-                        del interface._action_status[action_id]
-                    elif interface._action_status[action_id] == interface._status.ABORTED:
-                        rospy.loginfo('KCL: ({}) Reporting action failed: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
-                        self.publish_feedback(action_id, 'action failed')
-                        del interface._action_status[action_id]
-                    elif interface._action_status[action_id] == interface._status.REJECTED:
-                        rospy.loginfo('KCL: ({}) Reporting action rejected: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
-                        self.publish_feedback(action_id, 'action failed')
-                        del interface._action_status[action_id]
-                    else:
-                        # PENDING=0; ACTIVE=1; PREEMPTING=6;
-                        # RECALLING=7; RECALLED=8; LOST=9
-                        pass
+                    # action completed (achieved or failed)
+                    if interface._action_status[act] == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE or interface._action_status[act] == ActionFeedback.ACTION_FAILED:
+                        rospy.loginfo('KCL: ({}) Reporting action complete: {} {}'.format(rospy.get_name(), act, interface._action_name))
+                        # publish feedback msg
+                        self.publish_feedback(act[0], act[1], interface._action_status[act])
+                        # remove completed status from interface
+                        del interface._action_status[act]
+                        del interface._action_dispatch_msg[act]
             rate.sleep()
 
     #==============#
@@ -132,12 +128,11 @@ class ActionInterfaceManager(object):
 
     # parse fsm interface
     def parse_state_machine(self, action_config):
-        ai = FSMActionInterface(action_config)
+        ai = FSMActionInterface(action_config, None, self._action_feedback_pub)
         self._action_interfaces[ai.get_action_name()] = ai
 
 
 if __name__ == '__main__':
     rospy.init_node('RPStateMachine')
     aim = ActionInterfaceManager()
-    #smm.run()
     rospy.spin()
