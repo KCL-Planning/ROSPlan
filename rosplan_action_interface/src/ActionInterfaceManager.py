@@ -50,6 +50,7 @@ class ActionInterfaceManager(object):
         rospy.Subscriber(adt, ActionDispatch, self.dispatch_callback, queue_size=10)
 
         rospy.loginfo('KCL: ({}) Ready to receive'.format(rospy.get_name()))
+        self.run()
 
     # PDDL action dispatch callback
     def dispatch_callback(self, pddl_action_msg):
@@ -62,37 +63,49 @@ class ActionInterfaceManager(object):
         current_interface = self._action_interfaces[pddl_action_msg.name]
         current_interface.run(pddl_action_msg)
 
+    def publish_feedback(self, action_id, msg):
+        fb = ActionFeedback()
+        fb.action_id = action_id
+        fb.status = msg
+        self.action_feedback_pub.publish(fb)
 
     # main management loop
     def run(self):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
 
+            # iterate through interfaces
+            for interface in self._action_interfaces.values():
+                for action_id in interface._action_status.keys():
+
+                    # send enabled feedback for newly interfaced actions
+                    if interface._enable_flag[action_id]:
+                        self.publish_feedback(action_id, 'action enabled')
+                        interface._enable_flag[action_id] = False
+
+                    # send feedback or status
+                    if interface._action_status[action_id] == interface._status.SUCCEEDED:
+                        rospy.loginfo('KCL: ({}) Reporting action complete: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
+                        self.publish_feedback(action_id, 'action achieved')
+                        del interface._action_status[action_id]
+                    elif interface._action_status[action_id] == interface._status.PREEMPTED:
+                        rospy.loginfo('KCL: ({}) Reporting action cancelled: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
+                        self.publish_feedback(action_id, 'action cancelled')
+                        del interface._action_status[action_id]
+                    elif interface._action_status[action_id] == interface._status.ABORTED:
+                        rospy.loginfo('KCL: ({}) Reporting action failed: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
+                        self.publish_feedback(action_id, 'action failed')
+                        del interface._action_status[action_id]
+                    elif interface._action_status[action_id] == interface._status.REJECTED:
+                        rospy.loginfo('KCL: ({}) Reporting action rejected: ({}) {}'.format(rospy.get_name(), action_id, interface._action_name))
+                        self.publish_feedback(action_id, 'action failed')
+                        del interface._action_status[action_id]
+                    else:
+                        # PENDING=0; ACTIVE=1; PREEMPTING=6;
+                        # RECALLING=7; RECALLED=8; LOST=9
+                        pass
             rate.sleep()
-            """
-            for interface in self._action_interfaces:
-                # If state machine succeeded
-                if state_machine.get_state_machine_status() == RESULT_STATUS.SUCCEEDED_TO_GOAL:
-                #     pdb.set_trace()
-                #     # Send feedback to the Abstract Interface
-                #     self._action_lib_result.result = 2
-                #     self._state_machine_as.set_succeeded(self._action_lib_result)
-                #     # Remove state machine from list
-                    self._state_machines.remove(state_machine)
-                    fb = ActionFeedback()
-                    fb.action_id = state_machine._pddl_action_id
-                    fb.status = 'action achieved'
-                    self.action_feedback_pub.publish(fb)
-                # # If state machine failed
-                elif state_machine.get_state_machine_status() == RESULT_STATUS.SUCCEEDED_TO_START:
-                    fb = ActionFeedback()
-                    fb.action_id = state_machine._pddl_action_id
-                    fb.status = 'action achieved'
-                    self.action_feedback_pub.publish(fb)
-                #     # Send feedback to the Abstract Interface
-                #     _action_lib_result.result = 2
-                #     self._state_machine_as.set_aborted(self._action_lib_result)
-                """
+
     #==============#
     # YAML parsing #
     #==============#

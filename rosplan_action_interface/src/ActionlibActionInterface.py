@@ -8,11 +8,6 @@ from BaseActionInterface import BaseActionInterface
 
 class ActionlibActionInterface(BaseActionInterface):
 
-    # properties
-    _has_default_topic = False
-    _has_default_msg_type = False
-    _has_default_goal = False
-
     def __init__(self, action_config):
         BaseActionInterface.__init__(self, action_config)
 
@@ -79,7 +74,7 @@ class ActionlibActionInterface(BaseActionInterface):
                 self.populate_goal_msg(goal_msg, param, value, dispatch_msg)
 
         # call service
-        self._action_status[dispatch_msg.action_id] = self._status.ACTIVE
+        self._enable_flag[dispatch_msg.action_id] = True
         def callback_lambda(status, result): self.action_finished_cb(dispatch_msg, status, result)
         action_client.send_goal(goal_msg, done_cb=callback_lambda)
 

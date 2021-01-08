@@ -9,13 +9,16 @@ from abc import abstractmethod
 class BaseActionInterface:
 
     _status = actionlib.GoalStatus
-    _action_status = {}
-    _action_name = None
-    _action_config = None
 
     def __init__(self, action_config):
         self._action_name = action_config["name"]
         self._action_config = action_config
+        
+        # status per action ID
+        self._action_status = {}
+
+        # enabled flag per action ID
+        self._enable_flag = {}
 
     def get_action_name(self):
         return self._action_name
