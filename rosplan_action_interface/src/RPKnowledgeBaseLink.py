@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from collections import defaultdict
+
 import rospy
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
 from rosplan_knowledge_msgs.srv import GetDomainPredicateDetailsService, GetDomainPredicateDetailsServiceRequest
@@ -37,7 +39,8 @@ class RPKnowledgeBaseLink():
         rospy.wait_for_service('/rosplan_knowledge_base/state/functions')
         self.get_state_functions_srv = rospy.ServiceProxy('/rosplan_knowledge_base/state/functions', GetAttributeService)
 
-        self.sensed_predicates = []
+        # predicates are by default not sensed
+        self.sensed_predicates = defaultdict(bool)
 
     # ===================== #
     # action effect methods #
@@ -46,6 +49,26 @@ class RPKnowledgeBaseLink():
     # effect time variables
     AT_START = 0
     AT_END = 1
+
+    def pack_simple_effect(self, effect, bound_parameters, kus, add_effect):
+
+        # if predicate name is sensed predicate, return
+        if self.sensed_predicates[effect.name]:
+            return
+        
+        # check if predicate is now sensed
+        pred_details = self.get_kb_predicate_details(effect.name)
+        self.sensed_predicates[effect.name] = pred_details.is_sensed
+        if self.sensed_predicates[effect.name]:
+            return
+
+        # add effect to update
+        item = self.ground_simple_effect(effect, bound_parameters)
+        kus.knowledge.append(item)
+        if add_effect:
+            kus.update_type.append(kus.ADD_KNOWLEDGE)
+        else:
+            kus.update_type.append(kus.REMOVE_KNOWLEDGE)
 
     def kb_apply_action_effects(self, pddl_action_msg, effect_time):
 
@@ -77,52 +100,18 @@ class RPKnowledgeBaseLink():
         if effect_time == self.AT_START:
             # At start add effects
             for eff in operator_details.at_start_add_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.ADD_KNOWLEDGE)
-
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=True)
             # At start del effects
             for eff in operator_details.at_start_del_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.REMOVE_KNOWLEDGE)
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=False)
 
         if effect_time == self.AT_END:
             # At end add effects
             for eff in operator_details.at_end_add_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.ADD_KNOWLEDGE)
-
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=True)
             # At end del effects
             for eff in operator_details.at_end_del_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.REMOVE_KNOWLEDGE)
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=False)
 
         self.update_kb(kus)
 
@@ -156,52 +145,18 @@ class RPKnowledgeBaseLink():
         if effect_time == self.AT_START:
             # At start add effects
             for eff in operator_details.at_start_add_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.REMOVE_KNOWLEDGE)
-
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=False)
             # At start del effects
             for eff in operator_details.at_start_del_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.ADD_KNOWLEDGE)
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=True)
 
         if effect_time == self.AT_END:
             # At end add effects
             for eff in operator_details.at_end_add_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.REMOVE_KNOWLEDGE)
-
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=False)
             # At end del effects
             for eff in operator_details.at_end_del_effects:
-
-                # if predicate name is sensed predicate, continue
-                if eff.name in self.sensed_predicates:
-                    continue
-
-                # add effect to update
-                item = self.ground_simple_effect(eff, bound_parameters)
-                kus.knowledge.append(item)
-                kus.update_type.append(kus.ADD_KNOWLEDGE)
+                self.pack_simple_effect(eff, bound_parameters, kus, add_effect=True)
 
         self.update_kb(kus)
 
@@ -253,16 +208,16 @@ class RPKnowledgeBaseLink():
 
     def get_kb_predicate_details(self, predicate_name):
         # TODO error catching
-        request = GetDomainPredicateDetailsService(predicate_name)
+        request = GetDomainPredicateDetailsServiceRequest(predicate_name)
         ret = self.get_predicates_srv.call(request)
-        return ret.predicate
+        return ret
 
 
     def get_kb_function_details(self, predicate_name):
         # TODO error catching
-        request = GetDomainPredicateDetailsService(predicate_name)
+        request = GetDomainPredicateDetailsServiceRequest(predicate_name)
         ret = self.get_functions_srv.call(request)
-        return ret.predicate
+        return ret
 
     def get_kb_function_parameters(self, func_name):
         # TODO error catching
