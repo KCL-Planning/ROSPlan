@@ -41,6 +41,11 @@ class BaseActionInterface:
     def run(self, dispatch_msg):
         pass
 
+    def clean_action(self, plan_action_id):
+        print("parent")
+        del self._action_status[plan_action_id]
+        del self._action_dispatch_msg[plan_action_id]
+
     #=====================#
     # msg parsing methods #
     #=====================#

@@ -82,7 +82,7 @@ class ActionInterfaceManager(object):
     def run(self):
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
-
+                
             # iterate through interfaces and send feedback
             for interface in self._action_interfaces.values():
                 for act in interface._action_status.keys():
@@ -97,9 +97,9 @@ class ActionInterfaceManager(object):
                         rospy.loginfo('KCL: ({}) Reporting action complete: {} {}'.format(rospy.get_name(), act, interface._action_name))
                         # publish feedback msg
                         self.publish_feedback(act[0], act[1], interface._action_status[act])
-                        # remove completed status from interface
-                        del interface._action_status[act]
-                        del interface._action_dispatch_msg[act]
+                        # remove completed action data from interface
+                        interface.clean_action(act)
+
             rate.sleep()
 
     #==============#

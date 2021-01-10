@@ -16,6 +16,14 @@ class ActionlibActionInterface(BaseActionInterface):
         self._has_default_msg_type = ("default_actionlib_msg_type" in action_config)
         self._has_default_goal = ("default_actionlib_goal" in action_config)
 
+        self._action_client = {}
+
+
+    def clean_action(self, plan_action_id):
+        BaseActionInterface.clean_action(self, plan_action_id)
+        print("child")
+        del self._action_client[plan_action_id]
+
     def create_action_client(self, action_server, msg_action):
         action_client = actionlib.SimpleActionClient(action_server, msg_action)
         # Wait for server to be up
@@ -70,9 +78,9 @@ class ActionlibActionInterface(BaseActionInterface):
         msg_goal = getattr(pkg,msg_name+"Goal")
 
         # create client and goal msg
-        action_client = self.create_action_client(action_server, msg_action)
+        self._action_client[plan_action_id] = self.create_action_client(action_server, msg_action)
         goal_msg = msg_goal()
-        if action_client == None:
+        if self._action_client[plan_action_id] == None:
             self._action_status[plan_action_id] = ActionFeedback.ACTION_FAILED
             return
         
@@ -90,11 +98,10 @@ class ActionlibActionInterface(BaseActionInterface):
         # call siple action client
         rospy.loginfo('KCL: ({}) Plan {} Action {}: Calling action server {}'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, action_server))
         callback_lambda = lambda status, result: self.action_finished_cb(override_result, dispatch_msg, status, result)
-        action_client.send_goal(goal_msg, done_cb=callback_lambda)
+        self._action_client[plan_action_id].send_goal(goal_msg, done_cb=callback_lambda)
 
 
     def action_finished_cb(self, override_result, dispatch_msg, status, result):
-
         # Check results
         results_correct = True
         if override_result is not None:
