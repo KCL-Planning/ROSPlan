@@ -21,7 +21,6 @@ class ActionlibActionInterface(BaseActionInterface):
 
     def clean_action(self, plan_action_id):
         BaseActionInterface.clean_action(self, plan_action_id)
-        print("child")
         del self._action_client[plan_action_id]
 
     def create_action_client(self, action_server, msg_action):

@@ -58,7 +58,7 @@ class RPKnowledgeBaseLink():
         
         # check if predicate is now sensed
         pred_details = self.get_kb_predicate_details(effect.name)
-        if predicate_details != None:        
+        if pred_details != None:        
             self.sensed_predicates[effect.name] = pred_details.is_sensed
             if self.sensed_predicates[effect.name]:
                 return
