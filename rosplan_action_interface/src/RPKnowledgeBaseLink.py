@@ -58,9 +58,10 @@ class RPKnowledgeBaseLink():
         
         # check if predicate is now sensed
         pred_details = self.get_kb_predicate_details(effect.name)
-        self.sensed_predicates[effect.name] = pred_details.is_sensed
-        if self.sensed_predicates[effect.name]:
-            return
+        if predicate_details != None:        
+            self.sensed_predicates[effect.name] = pred_details.is_sensed
+            if self.sensed_predicates[effect.name]:
+                return
 
         # add effect to update
         item = self.ground_simple_effect(effect, bound_parameters)
@@ -207,9 +208,12 @@ class RPKnowledgeBaseLink():
         return ret.op
 
     def get_kb_predicate_details(self, predicate_name):
-        # TODO error catching
         request = GetDomainPredicateDetailsServiceRequest(predicate_name)
-        ret = self.get_predicates_srv.call(request)
+        try:
+            ret = self.get_predicates_srv.call(request)
+        except rospy.ServiceException as exc:
+            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching predicate details from KB: {}'.format(str(exc)))
+            return None
         return ret
 
 
