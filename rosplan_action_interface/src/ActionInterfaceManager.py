@@ -61,8 +61,10 @@ class ActionInterfaceManager(object):
 
         # Publish feedback: action enabled
         self.publish_feedback(pddl_action_msg.plan_id, pddl_action_msg.action_id, ActionFeedback.ACTION_DISPATCHED_TO_GOAL_STATE)
+
         # Set the start effects
         self._kb_link.kb_apply_action_effects(pddl_action_msg, RPKnowledgeBaseLink.AT_START)
+
         # find and run action interface
         current_interface = self._action_interfaces[pddl_action_msg.name]
         current_interface.run(pddl_action_msg)
@@ -110,27 +112,11 @@ class ActionInterfaceManager(object):
     def parse_config(self):
         for action in self.cfg_actions:
             if action["interface_type"] == "actionlib":
-                self.parse_actionlib(action)
+                self._action_interfaces[ai.get_action_name()] = ActionlibActionInterface(action_config)
             if action["interface_type"] == "service":
-                self.parse_service(action)
+                self._action_interfaces[ai.get_action_name()] = ServiceActionInterface(action_config)
             if action["interface_type"] == "fsm":
-                self.parse_state_machine(action)
-
-    # base case: parse actionlib interface
-    def parse_actionlib(self, action_config):
-        ai = ActionlibActionInterface(action_config)
-        self._action_interfaces[ai.get_action_name()] = ai
-
-    # base case: parse service interface
-    def parse_service(self, action_config):
-        ai = ServiceActionInterface(action_config)
-        self._action_interfaces[ai.get_action_name()] = ai
-
-    # parse fsm interface
-    def parse_state_machine(self, action_config):
-        ai = FSMActionInterface(action_config, None, self._action_feedback_pub)
-        self._action_interfaces[ai.get_action_name()] = ai
-
+                self._action_interfaces[ai.get_action_name()] = FSMActionInterface(action_config)
 
 if __name__ == '__main__':
     rospy.init_node('RPStateMachine')

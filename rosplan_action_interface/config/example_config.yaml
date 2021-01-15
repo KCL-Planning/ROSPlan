@@ -43,7 +43,7 @@ actions:
     - name: clear_costmap
       interface_type: service
       # Default service arguments for this action.
-      default_service_topic: /move_base/clear_costmaps
-      default_service_msg_type: std_srvs/Empty
+      default_service: /move_base/clear_costmaps
+      default_service_type: std_srvs/Empty
       # default_service_request (none)
 

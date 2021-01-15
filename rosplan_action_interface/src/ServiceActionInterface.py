@@ -12,9 +12,9 @@ class ServiceActionInterface(BaseActionInterface):
         BaseActionInterface.__init__(self, action_config)
 
         # load properties from configuration
-        self._has_default_topic = ("default_service_topic" in action_config)
-        self._has_default_msg_type = ("default_service_msg_type" in action_config)
-        self._has_default_goal = ("default_service_goal" in action_config)
+        self._has_default_topic = ("default_service" in action_config)
+        self._has_default_msg_type = ("default_service_type" in action_config)
+        self._has_default_request = ("default_service_request" in action_config)
 
     def run(self, dispatch_msg):
         # Run on a new thread
@@ -32,24 +32,24 @@ class ServiceActionInterface(BaseActionInterface):
 
         # load default configuration for request
         if self._has_default_topic:
-            action_server = self.parse_config_string(self._action_config["default_service_topic"], dispatch_msg)[0]
+            action_server = self.parse_config_string(self._action_config["default_service"], dispatch_msg)[0]
 
         if self._has_default_msg_type:
-            goal_msg_type = self.parse_config_string(self._action_config["default_service_msg_type"], dispatch_msg)[0]
+            goal_msg_type = self.parse_config_string(self._action_config["default_service_type"], dispatch_msg)[0]
 
-        override_goal = None
+        override_request = None
         override_result = None
         if "pddl_parameters" in self._action_config:
             pddl_params = self._action_config["pddl_parameters"]
             for config in self._action_config["parameter_values"]:
                 # Check parameter is correct
                 if self.params_match(config, pddl_params, dispatch_msg):
-                    if "service_topic" in config:
-                        action_server = self.parse_config_string(config["service_topic"], dispatch_msg)[0]
-                    if "service_msg_type" in config:
-                        goal_msg_type = self.parse_config_string(config["service_msg_type"], dispatch_msg)[0]
-                    if "service_goal" in config:
-                        override_goal = config["service_goal"]
+                    if "service" in config:
+                        action_server = self.parse_config_string(config["service"], dispatch_msg)[0]
+                    if "service_type" in config:
+                        goal_msg_type = self.parse_config_string(config["service_type"], dispatch_msg)[0]
+                    if "service_request" in config:
+                        override_request = config["service_request"]
                     if "service_result" in config:
                         override_result = config["service_result"]
 
@@ -68,14 +68,14 @@ class ServiceActionInterface(BaseActionInterface):
         request = req()
 
         # populate goal msg
-        if self._has_default_goal:
-            for param in self._action_config["default_service_goal"]:
-                value = self._action_config["default_service_goal"][param]
+        if self._has_default_request:
+            for param in self._action_config["default_service_request"]:
+                value = self._action_config["default_service_request"][param]
                 self.populate_goal_msg(request, param, value, dispatch_msg)
 
-        if override_goal is not None:
-            for param in override_goal:
-                value = override_goal[param]
+        if override_request:
+            for param in override_request:
+                value = override_request[param]
                 self.populate_goal_msg(request, param, value, dispatch_msg)
 
         try: 
@@ -86,11 +86,11 @@ class ServiceActionInterface(BaseActionInterface):
             self._action_status[plan_action_id] = ActionFeedback.ACTION_FAILED
             return
 
-        if result is not None:
+        if result:
 
             # Check results
             results_correct = True
-            if override_result is not None:
+            if override_result:
                 for param in override_result:
                     value = override_result[param]
                     if not self.check_result_msg(result, param, value, dispatch_msg):

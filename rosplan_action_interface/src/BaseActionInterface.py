@@ -59,7 +59,7 @@ class BaseActionInterface:
         else:
             exec("goal_msg." + param_string + " = " + value_string, {}, {'goal_msg': goal_msg})
 
-    # ToDo
+    # TODO (Ask Stefan) (operations)
     def check_result_msg(self, result_msg, param, value, dispatch_msg):
         param_string = self.parse_config_string(param, dispatch_msg)[0]
         value_string = self.parse_config_string(value, dispatch_msg)[0]
