@@ -319,5 +319,31 @@ install(DIRECTORY ippc_server/include/ ippc_server/cpp-base64/
         PATTERN ".svn" EXCLUDE)
 
 
+
+
 ########################################################################################################################
 ########################################################################################################################
+########################################################################################################################
+## CHIMP
+########################################################################################################################
+
+###########
+## Build ##
+###########
+
+if (ROSPLAN_COMPILE_CHIMP)
+    message(STATUS "[${PROJECT_NAME}] Preparing chimp dependency...")
+    message(STATUS "[${PROJECT_NAME}] Compiling CHIMP...")
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/chimp/gradlew build WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/chimp/)
+    message(STATUS "[${PROJECT_NAME}] Done!")
+else (ROSPLAN_COMPILE_CHIMP)
+    message(STATUS "[${PROJECT_NAME}] ROSPLAN_COMPILE_CHIMP is not set: CHIMP will not be compiled")
+endif(ROSPLAN_COMPILE_CHIMP)
+
+#############
+## Install ##
+#############
+
+########################################################################################################################
+########################################################################################################################
+
