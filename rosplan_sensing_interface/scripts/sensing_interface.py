@@ -506,8 +506,7 @@ class RosplanSensing:
             self.srv_mutex.acquire(True)
 
             # Dump cache, it will be reloaded in the next update
-            for predicate, (val, changed, updated) in self.sensed_topics.iteritems():
-                self.sensed_topics[predicate] = (val, changed, False)
+            self.sensed_topics.clear()
             self.sensed_services.clear()
 
             self.srv_mutex.release()
