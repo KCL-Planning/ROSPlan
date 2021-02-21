@@ -223,7 +223,9 @@ class ActionConfigWidget(QMainWindow):
         self.pushButton_export.clicked[bool].connect(self._handle_export_file)
         self.pushButton_print_fsm.clicked[bool].connect(self._handle_print_FSM)
 
-    #------------------------------ slots (callback functions) ---------------------------------------------
+    # -----------------------------------------------------------------------------------
+    # ------------ Handles: New, Save, Cancel Save --------------------------------------
+    # -----------------------------------------------------------------------------------
 
     #Display new action window
     def _handle_new_action_clicked(self):
@@ -234,7 +236,7 @@ class ActionConfigWidget(QMainWindow):
 
     #Display add state window
     def _handle_add_state_clicked(self):
-        self.clearAddStateInput() # clear all previous inputs
+        self.clear_add_state_input() # clear all previous inputs
         self.update_signal = False
         self.stackedWidget_newAction_addState.setCurrentIndex(0)
         self.stackedWidget_addState_setting.setCurrentIndex(2)
@@ -247,7 +249,6 @@ class ActionConfigWidget(QMainWindow):
             self.radioButton_newAction_service.setChecked(False)
             # Set the correct widget
             self.stackedWidget_newAction_setting.setCurrentIndex(2)
-
 
     #Display actionlib setting in new action window
     def _handle_new_action_setting_actionlib(self):
@@ -403,7 +404,34 @@ class ActionConfigWidget(QMainWindow):
     def _handle_add_state_cancel(self):
         self.stackedWidget_newAction_addState.setCurrentIndex(1)
         self.update_signal = False
-        self.clearAddStateInput()
+        self.clear_add_state_input()
+
+    # -----------------------------------------------------------------------------------
+    # ------------------ Handles: Actions Overview --------------------------------------
+    # -----------------------------------------------------------------------------------
+
+    #make push button add state clickable if selected action is fsm
+    def _handle_addState_pushButton_clickable(self):
+        #self.stackedWidget_newAction_addState.setCurrentIndex(1)
+        currentIndex = self.treeView_overview.selectedIndexes()[2]
+        item = self.model_overview.itemFromIndex(currentIndex).text()
+
+        if item == "fsm":
+            self.pushButton_add_state.setDisabled(False)
+            self.pushButton_add_state.setStyleSheet('color:rgb(0, 84, 149)')
+        else:
+            self.pushButton_add_state.setDisabled(True)
+            self.pushButton_add_state.setStyleSheet('color: rgb(48, 48, 48)')
+
+    #load selected action for update
+    def _handle_overview_doubleClicked(self):
+        self.update_signal = True
+        self.get_internal_data_entry_level()
+        rows_parents, main_parent = self.get_rows_to_main_parent_index(self.get_current_index())
+        if len(rows_parents) == 0:
+            self.set_gui_data_from_internal_data(origin="add_action")
+        if len(rows_parents) > 0:
+            self.set_gui_data_from_internal_data(origin="add_state")
 
     #delete selected entry of overview
     def _handle_delete_action_overview(self):
@@ -451,6 +479,195 @@ class ActionConfigWidget(QMainWindow):
                 else:
                     self.treeView_overview.setCurrentIndex(sibling_above_index)
 
+    # -----------------------------------------------------------------------------------
+    # ------------- Handles: Parameters Table View and Pop-ups --------------------------
+    # -----------------------------------------------------------------------------------
+
+    # callback function when parameter set in tableview actionlib is double clicked
+    def _handle_tableView_actionlib_doubleClicked(self):
+        internal_data_entry_level = self.get_internal_data_entry_level()
+        param_values = internal_data_entry_level['parameter_values']
+        indexes = self.tableView.selectionModel().selectedRows()
+        selectedIndex = 0
+        for index in sorted(indexes):
+            selectedIndex = index.row() #return the row number of selected item on tableview
+        refill_list = param_values[selectedIndex]
+        values = refill_list.get('values', '')
+        if values is None:
+            self.popup_actionlib.lineEdit_popup_actionlib_values.setText("")
+        else:
+            self.popup_actionlib.lineEdit_popup_actionlib_values.setText(yaml.dump(values)[1:-2])
+        self.popup_actionlib.lineEdit_popup_actionlib_msgType.setText(refill_list.get('actionlib_msg_type', ''))
+        self.popup_actionlib.lineEdit_popup_actionlib_topic.setText(refill_list.get('actionlib_topic', ''))
+        actionlib_goal = refill_list.get('actionlib_goal', '')
+        if actionlib_goal is None:
+            self.popup_actionlib.textEdit_popup_actionlib_goal.setText("")
+        else:
+            self.popup_actionlib.textEdit_popup_actionlib_goal.setText(yaml.dump(actionlib_goal,
+                                                                       default_flow_style=False))
+        self.popup_actionlib.show()
+
+    #same as above but for tableview service
+    def _handle_tableView_service_doubleClicked(self):
+        internal_data_entry_level = self.get_internal_data_entry_level()
+        param_values = internal_data_entry_level['parameter_values']
+        selectedIndex = 0
+        indexes = self.tableView.selectionModel().selectedRows()
+        for index in sorted(indexes):
+            selectedIndex = index.row()
+        refill_list = param_values[selectedIndex]
+        values = refill_list.get('values', '')
+        if values is None:
+            self.popup_service.lineEdit_popup_service_values.setText("")
+        else:
+            self.popup_service.lineEdit_popup_service_values.setText(yaml.dump(values)[1:-2])
+        self.popup_service.lineEdit_popup_service_type.setText(refill_list.get('service_type', ''))
+        self.popup_service.lineEdit_popup_service.setText(refill_list.get('service', ''))
+        service_request = refill_list.get('service_request', '')
+        if service_request is None:
+            self.popup_service.textEdit_popup_service_request.setText("")
+        else:
+            self.popup_service.textEdit_popup_service_request.setText(yaml.dump(service_request,
+                                                                   default_flow_style=False))
+
+        service_response = refill_list.get('service_response', '')
+        if service_response is None:
+            self.popup_service.textEdit_popup_service_response.setText("")
+        else:
+            self.popup_service.textEdit_popup_service_response.setText(yaml.dump(service_response,
+                                                                               default_flow_style=False))
+        self.popup_service.show()
+
+    #delete selected item in tableview
+    def _handle_tableView_delete(self):
+        internal_data_entry_level = self.get_internal_data_entry_level()
+        indexes = self.tableView.selectionModel().selectedRows()
+        selected_index = 0
+        for index in sorted(indexes):
+            selected_index = index.row()
+        internal_data_entry_level['parameter_values'].pop(selected_index)
+        self.tableView.selectionModel().reset()
+        self.view_model.removeRows(0, self.view_model.rowCount())
+        self.fill_params_tableView(internal_data_entry_level['parameter_values'])
+
+    #show actionlib popup window
+    def _handle_newAction_actionlib_popup(self):
+        self.popup_actionlib.clearInput()
+        self.tableView = self.tableView_newAction_actionlib_paramValues
+        self.popup_actionlib.show()
+
+    #show service popup window
+    def _handle_newAction_service_popup(self):
+        self.popup_service.clearInput()
+        self.tableView = self.tableView_newAction_service_paramValues
+        self.popup_service.show()
+
+    #show actionlib popup window
+    def _handle_addState_actionlib_popup(self):
+        self.popup_actionlib.clearInput()
+        self.tableView = self.tableView_addState_actionlib_paramValues
+        self.popup_actionlib.show()
+
+    #show service popup window
+    def _handle_addState_service_popup(self):
+        self.popup_service.clearInput()
+        self.tableView = self.tableView_addState_service_paramValues
+        self.popup_service.show()
+
+    #popup windows save button callback
+    def _handle_popup_save(self):
+        if self.tableView == self.tableView_newAction_actionlib_paramValues: #new action actionlib tableview
+            self.tableView.selectionModel().reset()
+            self.tableView_model_newAction_actionlib.removeRows(0, self.tableView_model_newAction_actionlib.rowCount())
+            self.view_model = self.tableView_model_newAction_actionlib
+            tableView_entry = self.popup_actionlib.param_values_data
+
+        elif self.tableView == self.tableView_newAction_service_paramValues: #new action service tableview
+            self.tableView.selectionModel().reset()
+            self.tableView_model_newAction_service.removeRows(0, self.tableView_model_newAction_service.rowCount())
+            self.view_model = self.tableView_model_newAction_service
+            tableView_entry = self.popup_service.param_values_data
+
+        elif self.tableView == self.tableView_addState_actionlib_paramValues: #add state actionlib tableview
+            self.tableView.selectionModel().reset()
+            self.tableView_model_addState_actionlib.removeRows(0, self.tableView_model_addState_actionlib.rowCount())
+            self.view_model = self.tableView_model_addState_actionlib
+            tableView_entry = self.popup_actionlib.param_values_data
+
+        elif self.tableView == self.tableView_addState_service_paramValues: #add state service tableview
+            self.tableView.selectionModel().reset()
+            self.tableView_model_addState_service.removeRows(0, self.tableView_model_addState_service.rowCount())
+            self.view_model = self.tableView_model_addState_service
+            tableView_entry = self.popup_service.param_values_data
+
+        self.fill_params_tableView(tableView_entry)
+
+    # -----------------------------------------------------------------------------------
+    # ----------------------- Handles: Utilities ----------------------------------------
+    # -----------------------------------------------------------------------------------
+
+    def _handle_export_file(self):
+        data = self.internal_data
+        self.strip_empties_from_list(data)
+        final_data = {'actions': self.new_data}
+        file = QFileDialog.getSaveFileName(self, "yaml file", expanduser("~"), "yaml (*.yaml)")
+        file = str(file[0])
+        if file.find('.yaml') == -1:
+            file = open(file + '.yaml', 'w+')
+        else:
+            file = open(file, 'w+')
+        yaml.safe_dump(final_data, file, encoding='utf-8', allow_unicode=True, default_flow_style=False)
+
+    def _handle_import_file(self):
+        config_file = QFileDialog.getOpenFileName(self, "yaml file", expanduser("~"), "yaml (*.yaml)")
+        if len(config_file[0]) > 0:
+            with open(config_file[0], 'r') as stream:
+                self.internal_data = yaml.safe_load(stream)["actions"]
+
+            self.treeView_overview.blockSignals(True)
+            self.treeView_overview.selectionModel().reset()
+            self.model_overview.removeRows(0, self.model_overview.rowCount())
+            self.treeView_overview.blockSignals(False)
+            self.fill_model_overview(self.model_overview.invisibleRootItem(), self.internal_data, 0)
+
+    def _handle_print_FSM(self):
+        graph = "digraph actions_configs { \n compound=true; \n"
+        graph += "subgraph cluster_no_name { \n"
+
+        internal_data_entry_level = self.get_internal_data_entry_level()
+        if internal_data_entry_level.has_key('states'):
+            # Continue only if a fsm child was selected
+            for state in internal_data_entry_level['states']:
+                # Create node
+                graph += state["name"] + "[label=\"" + state["name"] + "\"]; \n"
+
+                # Create transitions
+                if state.has_key("transitions"):
+                    for transition in state["transitions"]["succeeded"]:
+                        # Only if the to_state tag has an input
+                        if len(transition["to_state"]) > 0:
+                            graph += state["name"] + "->" + transition["to_state"] + \
+                                     "[label=\"succeeded\" ]; \n"
+                    for idx, transition in enumerate(state["transitions"]["failed"]):
+                        # Only if the to_state tag has an input
+                        if len(transition["to_state"]) > 0:
+                            graph += state["name"] + "->" + transition["to_state"] + \
+                                     "[label=\"failed_" + str(idx) + "\" ]; \n"
+
+        graph += "{rank=source start_state;} \n {rank=sink goal_state;} \n"
+        graph += "}\n}\n"
+
+        text_file = open(os.path.expanduser('~/fsm_printed_from_the_gui.dot'), "w")
+        text_file.write(graph)
+        text_file.close()
+
+        os.system('dot -Tpdf ~/fsm_printed_from_the_gui.dot > ~/fsm_printed_from_the_gui.pdf && '
+                  'evince ~/fsm_printed_from_the_gui.pdf')
+
+    # -----------------------------------------------------------------------------------
+    # ---- Indexes related to the selected action interface from the overview -----------
+    # -----------------------------------------------------------------------------------
+
     def get_current_index(self):
         if len(self.treeView_overview.selectedIndexes()) > 0:
             return self.treeView_overview.selectedIndexes()[0]
@@ -478,7 +695,10 @@ class ActionConfigWidget(QMainWindow):
         main_parent_index = index
         return rows, main_parent_index
 
-    # Get position of selected action in self.internal_data from index list
+    # -----------------------------------------------------------------------------------
+    # ---------------- Manipulate internal data on the entry level ----------------------
+    # -----------------------------------------------------------------------------------
+
     def get_internal_data_entry_level(self):
         current_index = self.get_current_index()
         rows_parents, main_parent = self.get_rows_to_main_parent_index(current_index)
@@ -515,79 +735,9 @@ class ActionConfigWidget(QMainWindow):
             internal_data_level['states'].pop(rows_parents[-1])
             return True
 
-    def reset_treeView_overview(self):
-        self.treeView_overview.blockSignals(True)
-        self.treeView_overview.selectionModel().reset()
-        self.model_overview.removeRows(0, self.model_overview.rowCount())
-        self.treeView_overview.blockSignals(False)
-        self.fill_model_overview(self.model_overview.invisibleRootItem(), self.internal_data, 0)
-
-    #clear all entries in new action window
-    def clear_new_action_input(self):
-        self.lineEdit_newAction_name.clear()
-        # fsm
-        self.radioButton_newAction_fsm.setChecked(False)
-
-        # actionlib
-        self.radioButton_newAction_actionlib.setChecked(False)
-        self.lineEdit_newAction_default_actionlib_msgType.clear()
-        self.lineEdit_newAction_default_actionlib_topic.clear()
-        self.textEdit_newAction_default_actionlib_goal.clear()
-        self.lineEdit_newAction_actionlib_pddlParam.clear()
-        self.tableView_newAction_actionlib_paramValues.selectionModel().reset()
-        self.tableView_model_newAction_actionlib.removeRows(0, self.tableView_model_newAction_actionlib.rowCount())
-
-        # service
-        self.radioButton_newAction_service.setChecked(False)
-        self.lineEdit_newAction_default_service_type.clear()
-        self.lineEdit_newAction_default_service.clear()
-        self.textEdit_newAction_default_service_request.clear()
-        self.textEdit_newAction_service_response.clear()
-        self.lineEdit_newAction_service_pddlParam.clear()
-        self.tableView_newAction_service_paramValues.selectionModel().reset()
-        self.tableView_model_newAction_service.removeRows(0, self.tableView_model_newAction_service.rowCount())
-
-    #clear all entries in add state window
-    def clearAddStateInput(self):
-        self.lineEdit_addState_name.clear()
-
-        # fsm
-        self.radioButton_addState_fsm.setChecked(False)
-
-        # actionlib
-        self.radioButton_addState_actionlib.setChecked(False)
-        self.lineEdit_addState_default_actionlib_msgType.clear()
-        self.lineEdit_addState_default_actionlib_topic.clear()
-        self.textEdit_addState_default_actionlib_goal.clear()
-        self.lineEdit_addState_actionlib_pddlParam.clear()
-        self.lineEdit_addState_actionlib_transition_suceeded_toState.clear()
-        self.lineEdit_addState_actionlib_transition_suceeded_effect.clear()
-        self.lineEdit_addState_actionlib_transition_failed1_toState.clear()
-        self.lineEdit_addState_actionlib_transition_failed1_effect.clear()
-        self.lineEdit_addState_actionlib_transition_failed2_toState.clear()
-        self.lineEdit_addState_actionlib_transition_failed2_effect.clear()
-        self.tableView_addState_actionlib_paramValues.selectionModel().reset()
-        self.tableView_model_addState_actionlib.removeRows(0, self.tableView_model_addState_actionlib.rowCount())
-
-        # service
-        self.radioButton_addState_service.setChecked(False)
-        self.lineEdit_addState_default_service_type.clear()
-        self.lineEdit_addState_default_service.clear()
-        self.textEdit_addState_default_service_request.clear()
-        self.textEdit_addState_default_service_response.clear()
-        self.lineEdit_addState_service_pddlParam.clear()
-        self.lineEdit_addState_service_transition_suceeded_toState.clear()
-        self.lineEdit_addState_service_transition_suceeded_effect.clear()
-        self.lineEdit_addState_service_transition_failed1_toState.clear()
-        self.lineEdit_addState_service_transition_failed1_effect.clear()
-        self.lineEdit_addState_service_transition_failed2_toState.clear()
-        self.lineEdit_addState_service_transition_failed2_effect.clear()
-        self.tableView_addState_service_paramValues.selectionModel().reset()
-        self.tableView_model_addState_service.removeRows(0, self.tableView_model_addState_service.rowCount())
-
-        # Popups
-        self.popup_actionlib.param_values_data = []
-        self.popup_service.param_values_data = []
+    # -----------------------------------------------------------------------------------
+    # ---------- Mappings of the entered data and the internal data ---------------------
+    # -----------------------------------------------------------------------------------
 
     # Set internal data from GUI data
     def set_internal_data_from_gui_data(self, origin):
@@ -627,15 +777,15 @@ class ActionConfigWidget(QMainWindow):
                 interfaceType_value = 'service'
                 default_type_value = self.lineEdit_newAction_default_service_type.text()
                 default_service = self.lineEdit_newAction_default_service.text()
-                default_goal_value = yaml.load(self.textEdit_newAction_default_service_request.toPlainText())
-                default_result_value = yaml.load(self.textEdit_newAction_default_service_response.toPlainText())
+                default_service_request = yaml.load(self.textEdit_newAction_default_service_request.toPlainText())
+                default_service_response = yaml.load(self.textEdit_newAction_default_service_response.toPlainText())
                 pddl_param_value = yaml.load('[' + self.lineEdit_newAction_service_pddlParam.text() + ']')
                 fill = {'name': newAction_name_value,
                         'interface_type': interfaceType_value,
                         'default_service_type': default_type_value,
                         'default_service': default_service,
-                        'default_service_request': default_goal_value,
-                        'default_service_response': default_result_value,
+                        'default_service_request': default_service_request,
+                        'default_service_response': default_service_response,
                         'pddl_parameters': pddl_param_value,
                         'parameter_values': self.popup_service.param_values_data
                         }
@@ -700,8 +850,8 @@ class ActionConfigWidget(QMainWindow):
                 interfaceType_value = 'service'
                 default_type_value = self.lineEdit_addState_default_service_type.text()
                 default_service = self.lineEdit_addState_default_service.text()
-                default_goal_value = yaml.load(self.textEdit_addState_default_service_request.toPlainText())
-                default_result_value = yaml.load(self.textEdit_addState_default_service_response.toPlainText())
+                default_service_request = yaml.load(self.textEdit_addState_default_service_request.toPlainText())
+                default_service_response = yaml.load(self.textEdit_addState_default_service_response.toPlainText())
                 pddl_param_value = yaml.load('[' + self.lineEdit_addState_service_pddlParam.text() + ']')
                 succeeded_tostate = self.lineEdit_addState_service_transition_suceeded_toState.text()
                 succeeded_effects = self.lineEdit_addState_service_transition_suceeded_effect.text()
@@ -713,8 +863,8 @@ class ActionConfigWidget(QMainWindow):
                         'interface_type': interfaceType_value,
                         'default_service_type': default_type_value,
                         'default_service': default_service,
-                        'default_service_request': default_goal_value,
-                        'default_service_response': default_result_value,
+                        'default_service_request': default_service_request,
+                        'default_service_response': default_service_response,
                         'pddl_parameters': pddl_param_value,
                         'parameter_values': self.popup_service.param_values_data,
                         'transitions':
@@ -873,7 +1023,7 @@ class ActionConfigWidget(QMainWindow):
                 self.lineEdit_newAction_default_service_type.setText(internal_data_entry_level.get('default_service_type', ''))
                 self.lineEdit_newAction_default_service.setText(internal_data_entry_level.get('default_service', ''))
                 default_service_request = internal_data_entry_level.get('default_service_request', None)
-                default_service_response = internal_data_entry_level.get('default_service_resonse', None)
+                default_service_response = internal_data_entry_level.get('default_service_response', None)
                 if default_service_request is None:
                     self.textEdit_newAction_default_service_request.setText("")
                 else:
@@ -1015,22 +1165,18 @@ class ActionConfigWidget(QMainWindow):
                             internal_data_entry_level['transitions']['failed'][1]['effects'])
                 self.stackedWidget_addState_setting.setCurrentIndex(1)
 
-    #make push button add state clickable if selected action is fsm
-    def _handle_addState_pushButton_clickable(self):
-        #self.stackedWidget_newAction_addState.setCurrentIndex(1)
-        currentIndex = self.treeView_overview.selectedIndexes()[2]
-        item = self.model_overview.itemFromIndex(currentIndex).text()
+    # -----------------------------------------------------------------------------------
+    # -------------------- Windows resets and clears ------------------------------------
+    # -----------------------------------------------------------------------------------
 
-        if item == "fsm":
-            self.pushButton_add_state.setDisabled(False)
-            self.pushButton_add_state.setStyleSheet('color:rgb(0, 84, 149)')
-        else:
-            self.pushButton_add_state.setDisabled(True)
-            self.pushButton_add_state.setStyleSheet('color: rgb(48, 48, 48)')
+    def reset_treeView_overview(self):
+        self.treeView_overview.blockSignals(True)
+        self.treeView_overview.selectionModel().reset()
+        self.model_overview.removeRows(0, self.model_overview.rowCount())
+        self.treeView_overview.blockSignals(False)
+        self.fill_model_overview(self.model_overview.invisibleRootItem(), self.internal_data, 0)
 
-    # --------------------overview data----------------------------------
-
-    #fill overview recursively with self.internal_data
+    # Fill overview recursively with self.internal_data
     def fill_model_overview(self, parent, entry, counter):
         if isinstance(entry, list):
             for i in range(len(entry)):
@@ -1055,15 +1201,82 @@ class ActionConfigWidget(QMainWindow):
 
                     counter += 1
 
-    #load selected action for update
-    def _handle_overview_doubleClicked(self):
-        self.update_signal = True
-        self.get_internal_data_entry_level()
-        rows_parents, main_parent = self.get_rows_to_main_parent_index(self.get_current_index())
-        if len(rows_parents) == 0:
-            self.set_gui_data_from_internal_data(origin="add_action")
-        if len(rows_parents) > 0:
-            self.set_gui_data_from_internal_data(origin="add_state")
+    def clear_new_action_input(self):
+        self.lineEdit_newAction_name.clear()
+        # fsm
+        self.radioButton_newAction_fsm.setChecked(False)
+
+        # actionlib
+        self.radioButton_newAction_actionlib.setChecked(False)
+        self.lineEdit_newAction_default_actionlib_msgType.clear()
+        self.lineEdit_newAction_default_actionlib_topic.clear()
+        self.textEdit_newAction_default_actionlib_goal.clear()
+        self.lineEdit_newAction_actionlib_pddlParam.clear()
+        self.tableView_newAction_actionlib_paramValues.selectionModel().reset()
+        self.tableView_model_newAction_actionlib.removeRows(0, self.tableView_model_newAction_actionlib.rowCount())
+
+        # service
+        self.radioButton_newAction_service.setChecked(False)
+        self.lineEdit_newAction_default_service_type.clear()
+        self.lineEdit_newAction_default_service.clear()
+        self.textEdit_newAction_default_service_request.clear()
+        self.textEdit_newAction_default_service_response.clear()
+        self.lineEdit_newAction_service_pddlParam.clear()
+        self.tableView_newAction_service_paramValues.selectionModel().reset()
+        self.tableView_model_newAction_service.removeRows(0, self.tableView_model_newAction_service.rowCount())
+
+    def clear_add_state_input(self):
+        self.lineEdit_addState_name.clear()
+
+        # fsm
+        self.radioButton_addState_fsm.setChecked(False)
+
+        # actionlib
+        self.radioButton_addState_actionlib.setChecked(False)
+        self.lineEdit_addState_default_actionlib_msgType.clear()
+        self.lineEdit_addState_default_actionlib_topic.clear()
+        self.textEdit_addState_default_actionlib_goal.clear()
+        self.lineEdit_addState_actionlib_pddlParam.clear()
+        self.lineEdit_addState_actionlib_transition_suceeded_toState.clear()
+        self.lineEdit_addState_actionlib_transition_suceeded_effect.clear()
+        self.lineEdit_addState_actionlib_transition_failed1_toState.clear()
+        self.lineEdit_addState_actionlib_transition_failed1_effect.clear()
+        self.lineEdit_addState_actionlib_transition_failed2_toState.clear()
+        self.lineEdit_addState_actionlib_transition_failed2_effect.clear()
+        self.tableView_addState_actionlib_paramValues.selectionModel().reset()
+        self.tableView_model_addState_actionlib.removeRows(0, self.tableView_model_addState_actionlib.rowCount())
+
+        # service
+        self.radioButton_addState_service.setChecked(False)
+        self.lineEdit_addState_default_service_type.clear()
+        self.lineEdit_addState_default_service.clear()
+        self.textEdit_addState_default_service_request.clear()
+        self.textEdit_addState_default_service_response.clear()
+        self.lineEdit_addState_service_pddlParam.clear()
+        self.lineEdit_addState_service_transition_suceeded_toState.clear()
+        self.lineEdit_addState_service_transition_suceeded_effect.clear()
+        self.lineEdit_addState_service_transition_failed1_toState.clear()
+        self.lineEdit_addState_service_transition_failed1_effect.clear()
+        self.lineEdit_addState_service_transition_failed2_toState.clear()
+        self.lineEdit_addState_service_transition_failed2_effect.clear()
+        self.tableView_addState_service_paramValues.selectionModel().reset()
+        self.tableView_model_addState_service.removeRows(0, self.tableView_model_addState_service.rowCount())
+
+        # Popups
+        self.popup_actionlib.param_values_data = []
+        self.popup_service.param_values_data = []
+
+    def fill_params_tableView(self, param_values):
+        for param_value in param_values:  # go through the umber of parameter sets
+            text = ""
+            if param_value['values'] is not None:
+                text += yaml.dump(param_value['values'])[1:-2]
+            it = QStandardItem(text)
+            self.view_model.appendRow(it)  # append text with corresponding number i for each seat on tableview
+
+    # -----------------------------------------------------------------------------------
+    # -------------------- Further Utilities --------------------------------------------
+    # -----------------------------------------------------------------------------------
 
     #remove all empty dictionary and empty entries
     def strip_empties_from_list(self, data):
@@ -1089,189 +1302,6 @@ class ActionConfigWidget(QMainWindow):
             if v not in (None, str(), list(), dict(),):
                 new_data[k] = v
         return new_data
-
-    #show actionlib popup window
-    def _handle_newAction_actionlib_popup(self):
-        self.popup_actionlib.clearInput()
-        self.tableView = self.tableView_newAction_actionlib_paramValues
-        self.popup_actionlib.show()
-
-    #show service popup window
-    def _handle_newAction_service_popup(self):
-        self.popup_service.clearInput()
-        self.tableView = self.tableView_newAction_service_paramValues
-        self.popup_service.show()
-
-    #show actionlib popup window
-    def _handle_addState_actionlib_popup(self):
-        self.popup_actionlib.clearInput()
-        self.tableView = self.tableView_addState_actionlib_paramValues
-        self.popup_actionlib.show()
-
-    #show service popup window
-    def _handle_addState_service_popup(self):
-        self.popup_service.clearInput()
-        self.tableView = self.tableView_addState_service_paramValues
-        self.popup_service.show()
-
-    #popup windows save button callback
-    def _handle_popup_save(self):
-        if self.tableView == self.tableView_newAction_actionlib_paramValues: #new action actionlib tableview
-            self.tableView.selectionModel().reset()
-            self.tableView_model_newAction_actionlib.removeRows(0, self.tableView_model_newAction_actionlib.rowCount())
-            self.view_model = self.tableView_model_newAction_actionlib
-            tableView_entry = self.popup_actionlib.param_values_data
-
-        elif self.tableView == self.tableView_newAction_service_paramValues: #new action service tableview
-            self.tableView.selectionModel().reset()
-            self.tableView_model_newAction_service.removeRows(0, self.tableView_model_newAction_service.rowCount())
-            self.view_model = self.tableView_model_newAction_service
-            tableView_entry = self.popup_service.param_values_data
-
-        elif self.tableView == self.tableView_addState_actionlib_paramValues: #add state actionlib tableview
-            self.tableView.selectionModel().reset()
-            self.tableView_model_addState_actionlib.removeRows(0, self.tableView_model_addState_actionlib.rowCount())
-            self.view_model = self.tableView_model_addState_actionlib
-            tableView_entry = self.popup_actionlib.param_values_data
-
-        elif self.tableView == self.tableView_addState_service_paramValues: #add state service tableview
-            self.tableView.selectionModel().reset()
-            self.tableView_model_addState_service.removeRows(0, self.tableView_model_addState_service.rowCount())
-            self.view_model = self.tableView_model_addState_service
-            tableView_entry = self.popup_service.param_values_data
-
-        self.fill_params_tableView(tableView_entry)
-
-    #fill corresponding tableview with inputed entries
-    def fill_params_tableView(self, param_values):
-        for param_value in param_values: #go through the umber of parameter sets
-            text = ""
-            if param_value['values'] is not None:
-                text += yaml.dump(param_value['values'])[1:-2]
-            it = QStandardItem(text)
-            self.view_model.appendRow(it) #append text with corresponding number i for each seat on tableview
-
-    # ------------- refill tableView for update ---------------------
-
-    # callback function when parameter set in tableview actionlib is double clicked
-    def _handle_tableView_actionlib_doubleClicked(self):
-        internal_data_entry_level = self.get_internal_data_entry_level()
-        param_values = internal_data_entry_level['parameter_values']
-        indexes = self.tableView.selectionModel().selectedRows()
-        selectedIndex = 0
-        for index in sorted(indexes):
-            selectedIndex = index.row() #return the row number of selected item on tableview
-        refill_list = param_values[selectedIndex]
-        values = refill_list.get('values', '')
-        if values is None:
-            self.popup_actionlib.lineEdit_popup_actionlib_values.setText("")
-        else:
-            self.popup_actionlib.lineEdit_popup_actionlib_values.setText(yaml.dump(values)[1:-2])
-        self.popup_actionlib.lineEdit_popup_actionlib_msgType.setText(refill_list.get('actionlib_msg_type', ''))
-        self.popup_actionlib.lineEdit_popup_actionlib_topic.setText(refill_list.get('actionlib_topic', ''))
-        actionlib_goal = refill_list.get('actionlib_goal', '')
-        if actionlib_goal is None:
-            self.popup_actionlib.textEdit_popup_actionlib_goal.setText("")
-        else:
-            self.popup_actionlib.textEdit_popup_actionlib_goal.setText(yaml.dump(actionlib_goal,
-                                                                       default_flow_style=False))
-        self.popup_actionlib.show()
-
-    #same as above but for tableview service
-    def _handle_tableView_service_doubleClicked(self):
-        internal_data_entry_level = self.get_internal_data_entry_level()
-        param_values = internal_data_entry_level['parameter_values']
-        selectedIndex = 0
-        indexes = self.tableView.selectionModel().selectedRows()
-        for index in sorted(indexes):
-            selectedIndex = index.row()
-        refill_list = param_values[selectedIndex]
-        values = refill_list.get('values', '')
-        if values is None:
-            self.popup_service.lineEdit_popup_service_values.setText("")
-        else:
-            self.popup_service.lineEdit_popup_service_values.setText(yaml.dump(values)[1:-2])
-        self.popup_service.lineEdit_popup_service_type.setText(refill_list.get('service_type', ''))
-        self.popup_service.lineEdit_popup_service.setText(refill_list.get('service', ''))
-        service_request = refill_list.get('service_request', '')
-        if service_request is None:
-            self.popup_service.textEdit_popup_service_request.setText("")
-        else:
-            self.popup_service.textEdit_popup_service_request.setText(yaml.dump(service_request,
-                                                                   default_flow_style=False))
-
-        service_response = refill_list.get('service_response', '')
-        if service_response is None:
-            self.popup_service.textEdit_popup_service_response.setText("")
-        else:
-            self.popup_service.textEdit_popup_service_response.setText(yaml.dump(service_response,
-                                                                               default_flow_style=False))
-        self.popup_service.show()
-
-    #delete selected item in tableview
-    def _handle_tableView_delete(self):
-        internal_data_entry_level = self.get_internal_data_entry_level()
-        indexes = self.tableView.selectionModel().selectedRows()
-        selected_index = 0
-        for index in sorted(indexes):
-            selected_index = index.row()
-        internal_data_entry_level['parameter_values'].pop(selected_index)
-        self.tableView.selectionModel().reset()
-        self.view_model.removeRows(0, self.view_model.rowCount())
-        self.fill_params_tableView(internal_data_entry_level['parameter_values'])
-
-    def _handle_export_file(self):
-        data = self.internal_data
-        self.strip_empties_from_list(data)
-        final_data = {'actions': self.new_data}
-        file = open('action_config.yaml', 'w+')
-        yaml.safe_dump(final_data, file, encoding='utf-8', allow_unicode=True, default_flow_style=False)
-
-    def _handle_import_file(self):
-        config_file = QFileDialog.getOpenFileName(self, "yaml file", expanduser("~"), "yaml (*.yaml)")
-        if len(config_file[0]) > 0:
-            with open(config_file[0], 'r') as stream:
-                self.internal_data = yaml.safe_load(stream)["actions"]
-
-            self.treeView_overview.blockSignals(True)
-            self.treeView_overview.selectionModel().reset()
-            self.model_overview.removeRows(0, self.model_overview.rowCount())
-            self.treeView_overview.blockSignals(False)
-            self.fill_model_overview(self.model_overview.invisibleRootItem(), self.internal_data, 0)
-
-    def _handle_print_FSM(self):
-        graph = "digraph actions_configs { \n compound=true; \n"
-        graph += "subgraph cluster_no_name { \n"
-
-        internal_data_entry_level = self.get_internal_data_entry_level()
-        if internal_data_entry_level.has_key('states'):
-            # Continue only if a fsm child was selected
-            for state in internal_data_entry_level['states']:
-                # Create node
-                graph += state["name"] + "[label=\"" + state["name"] + "\"]; \n"
-
-                # Create transitions
-                if state.has_key("transitions"):
-                    for transition in state["transitions"]["succeeded"]:
-                        # Only if the to_state tag has an input
-                        if len(transition["to_state"]) > 0:
-                            graph += state["name"] + "->" + transition["to_state"] + \
-                                     "[label=\"succeeded\" ]; \n"
-                    for idx, transition in enumerate(state["transitions"]["failed"]):
-                        # Only if the to_state tag has an input
-                        if len(transition["to_state"]) > 0:
-                            graph += state["name"] + "->" + transition["to_state"] + \
-                                     "[label=\"failed_" + str(idx) + "\" ]; \n"
-
-        graph += "{rank=source start_state;} \n {rank=sink goal_state;} \n"
-        graph += "}\n}\n"
-
-        text_file = open(os.path.expanduser('~/fsm_printed_from_the_gui.dot'), "w")
-        text_file.write(graph)
-        text_file.close()
-
-        os.system('dot -Tpdf ~/fsm_printed_from_the_gui.dot > ~/fsm_printed_from_the_gui.pdf && '
-                  'evince ~/fsm_printed_from_the_gui.pdf')
 
     def check_state_name_present_in_fsm_states(self, state_name):
         current_index = self.get_current_index()

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>880</width>
-    <height>643</height>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -399,7 +399,7 @@ color: rgb(0, 84, 159);</string>
           <item row="0" column="0">
            <widget class="QStackedWidget" name="stackedWidget_newAction_addState">
             <property name="currentIndex">
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="page3_stackedWidget_addState">
              <layout class="QGridLayout" name="gridLayout_4">
@@ -499,6 +499,19 @@ color: rgb(0, 84, 159);</string>
                       </property>
                      </widget>
                     </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="label_add_state_name_error">
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(170, 0, 0);</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
                     <item row="3" column="0">
                      <widget class="QLabel" name="label_addState_interfaceType">
                       <property name="text">
@@ -557,19 +570,6 @@ color: rgb(0, 84, 159);</string>
                       </layout>
                      </widget>
                     </item>
-                    <item row="2" column="1">
-                     <widget class="QLabel" name="label_add_state_name_error">
-                      <property name="styleSheet">
-                       <string notr="true">color: rgb(170, 0, 0);</string>
-                      </property>
-                      <property name="text">
-                       <string/>
-                      </property>
-                      <property name="alignment">
-                       <set>Qt::AlignCenter</set>
-                      </property>
-                     </widget>
-                    </item>
                    </layout>
                   </widget>
                  </item>
@@ -582,7 +582,7 @@ color: rgb(0, 84, 159);</string>
                     </size>
                    </property>
                    <property name="currentIndex">
-                    <number>1</number>
+                    <number>0</number>
                    </property>
                    <widget class="QWidget" name="page_stackedWidget_addState_setting_actionlib">
                     <layout class="QFormLayout" name="formLayout_4">
@@ -755,7 +755,7 @@ color: rgb(252, 16, 16);</string>
                        <property name="minimumSize">
                         <size>
                          <width>0</width>
-                         <height>10</height>
+                         <height>15</height>
                         </size>
                        </property>
                        <property name="frameShape">
@@ -815,7 +815,7 @@ color: rgb(252, 16, 16);</string>
                        <property name="minimumSize">
                         <size>
                          <width>100</width>
-                         <height>50</height>
+                         <height>80</height>
                         </size>
                        </property>
                        <property name="frameShape">
@@ -862,6 +862,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="0" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_suceeded_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -876,6 +882,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="1" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed1_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -903,6 +915,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="2" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed2_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -933,7 +951,14 @@ color: rgb(252, 16, 16);</string>
                       </widget>
                      </item>
                      <item row="4" column="1">
-                      <widget class="QTextEdit" name="textEdit_addState_default_actionlib_goal"/>
+                      <widget class="QTextEdit" name="textEdit_addState_default_actionlib_goal">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>150</height>
+                        </size>
+                       </property>
+                      </widget>
                      </item>
                     </layout>
                    </widget>
@@ -973,21 +998,43 @@ color: rgb(252, 16, 16);</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="4" column="0">
-                      <widget class="QLabel" name="label_addState_default_service_request">
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_addState_default_service_response">
                        <property name="text">
-                        <string>Default Service Request:</string>
+                        <string>Default Service Response:</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="6" column="0">
+                     <item row="6" column="1">
+                      <widget class="QTextEdit" name="textEdit_addState_default_service_response">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
                       <widget class="QLabel" name="label_addState_service_pddlParam">
                        <property name="text">
                         <string>Pddl Parameters:</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="6" column="1">
+                     <item row="7" column="1">
                       <widget class="QLineEdit" name="lineEdit_addState_service_pddlParam">
                        <property name="styleSheet">
                         <string notr="true">background-color: rgb(255, 255, 255);</string>
@@ -997,14 +1044,27 @@ color: rgb(252, 16, 16);</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="7" column="0">
+                     <item row="8" column="0">
                       <widget class="QLabel" name="label_addState_service_paramValues">
                        <property name="text">
                         <string>Parameters Values:</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="8" column="0" colspan="2">
+                     <item row="8" column="1">
+                      <widget class="QTableView" name="tableView_addState_service_paramValues">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="9" column="0" colspan="2">
                       <widget class="QFrame" name="frame_addState_service_addDelete">
                        <property name="minimumSize">
                         <size>
@@ -1100,12 +1160,12 @@ color: rgb(252, 16, 16);</string>
                        </layout>
                       </widget>
                      </item>
-                     <item row="9" column="0" colspan="2">
+                     <item row="10" column="0" colspan="2">
                       <widget class="QFrame" name="frame_addState_service_transition_settingHolder">
                        <property name="minimumSize">
                         <size>
                          <width>0</width>
-                         <height>10</height>
+                         <height>15</height>
                         </size>
                        </property>
                        <property name="frameShape">
@@ -1160,12 +1220,12 @@ color: rgb(252, 16, 16);</string>
                        </layout>
                       </widget>
                      </item>
-                     <item row="10" column="0" colspan="2">
+                     <item row="11" column="0" colspan="2">
                       <widget class="QFrame" name="frame_addState_service_transition_setting_layout">
                        <property name="minimumSize">
                         <size>
                          <width>100</width>
-                         <height>50</height>
+                         <height>80</height>
                         </size>
                        </property>
                        <property name="frameShape">
@@ -1212,6 +1272,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="0" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_service_transition_suceeded_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -1226,6 +1292,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="1" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed1_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -1253,6 +1325,12 @@ color: rgb(252, 16, 16);</string>
                         </item>
                         <item row="2" column="1">
                          <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed2_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
                           <property name="styleSheet">
                            <string notr="true">background-color: rgb(255, 255, 255);</string>
                           </property>
@@ -1269,31 +1347,28 @@ color: rgb(252, 16, 16);</string>
                        </layout>
                       </widget>
                      </item>
-                     <item row="7" column="1">
-                      <widget class="QTableView" name="tableView_addState_service_paramValues">
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_addState_default_service_request">
+                       <property name="text">
+                        <string>Default Service Request:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QTextEdit" name="textEdit_addState_default_service_request">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
                        <property name="maximumSize">
                         <size>
                          <width>16777215</width>
                          <height>100</height>
                         </size>
                        </property>
-                       <property name="styleSheet">
-                        <string notr="true">background-color: rgb(255, 255, 255);</string>
-                       </property>
                       </widget>
-                     </item>
-                     <item row="4" column="1">
-                      <widget class="QTextEdit" name="textEdit_addState_default_service_request"/>
-                     </item>
-                     <item row="5" column="0">
-                      <widget class="QLabel" name="label_addState_default_service_response">
-                       <property name="text">
-                        <string>Default Service Response:</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="5" column="1">
-                      <widget class="QTextEdit" name="textEdit_addState_default_service_response"/>
                      </item>
                     </layout>
                    </widget>
@@ -1652,7 +1727,7 @@ color: rgb(252, 16, 16);</string>
                     </size>
                    </property>
                    <property name="currentIndex">
-                    <number>1</number>
+                    <number>0</number>
                    </property>
                    <widget class="QWidget" name="page_stackedWidget_newAction_setting_actionlib">
                     <layout class="QFormLayout" name="formLayout_2">
