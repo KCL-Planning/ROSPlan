@@ -18,6 +18,12 @@
   <!-- use problem.pddl or receive problem from topic -->
   <arg name="use_problem_topic" default="true" />
 
+  <!-- command to run the planner -->
+  <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
+
+  <!-- interface to the planning system -->
+  <arg name="planner_interface" default="popf_planner_interface" />
+
   <!-- :::end of arguments::: -->
 
   <!-- knowledge base -->
@@ -45,7 +51,8 @@
     <arg name="domain_path"          value="$(arg domain_path)" />
     <arg name="problem_path"         value="$(arg autom_gen_problem_path)" />
     <arg name="data_path"            value="$(arg data_path)" />
-    <arg name="planner_command"      value="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
+    <arg name="planner_command"      value="$(arg planner_command)" />
+    <arg name="planner_interface"    value="$(arg planner_interface)" />
   </include>
 
   <!-- plan parsing -->
