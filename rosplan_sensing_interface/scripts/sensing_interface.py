@@ -282,7 +282,8 @@ class RosplanSensing:
                 return i
         return None
 
-    def subs_callback(self, msg, (pred_name, pred_info)):
+    def subs_callback(self, msg, predicate):
+        pred_name, pred_info = predicate
         if 'operation' in pred_info:  # pred_info is of type self.cfg_topics[pred_name]
             python_string = pred_info['operation']
         else:  # Call the method from the scripts.py file
