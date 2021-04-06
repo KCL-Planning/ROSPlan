@@ -112,11 +112,11 @@ class ActionInterfaceManager(object):
     def parse_config(self):
         for action in self.cfg_actions:
             if action["interface_type"] == "actionlib":
-                self._action_interfaces[ai.get_action_name()] = ActionlibActionInterface(action_config)
+                self._action_interfaces[action["name"]] = ActionlibActionInterface(action)
             if action["interface_type"] == "service":
-                self._action_interfaces[ai.get_action_name()] = ServiceActionInterface(action_config)
+                self._action_interfaces[action["name"]] = ServiceActionInterface(action)
             if action["interface_type"] == "fsm":
-                self._action_interfaces[ai.get_action_name()] = FSMActionInterface(action_config)
+                self._action_interfaces[action["name"]] = FSMActionInterface(action)
 
 if __name__ == '__main__':
     rospy.init_node('RPStateMachine')
