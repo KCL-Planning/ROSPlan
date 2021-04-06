@@ -47,8 +47,8 @@ class State(object):
 
 class FSMActionInterface(BaseActionInterface):
 
-    def __init__(self, action_config, parent_ai, action_feedback_pub):
-        BaseActionInterface.__init__(self, action_config, parent_ai, action_feedback_pub)
+    def __init__(self, action_config, action_feedback_pub):
+        BaseActionInterface.__init__(self, action_config, action_feedback_pub)
         # 'Static' data
         self._states = {}
 
@@ -57,23 +57,26 @@ class FSMActionInterface(BaseActionInterface):
         self._transition_value = {}
         self._to_start_state = {}
         self._transitions_counters = {}
-        # ToDo: Where and how to clear the dynamic data after the actions were executed
 
+        # TODO: Where and how to clear the dynamic data after the actions were executed
+
+        # Parse states
         for state_config in action_config["states"]:
             if state_config["interface_type"] == "actionlib":
-                ai = ActionlibActionInterface(state_config, self, self._action_feedback_pub)
+                ai = ActionlibActionInterface(state_config)
                 transitions = self.parse_transitions(state_config)
 
             if state_config["interface_type"] == "service":
-                ai = ServiceActionInterface(state_config, self, self._action_feedback_pub)
+                ai = ServiceActionInterface(state_config)
                 transitions = self.parse_transitions(state_config)
 
             if state_config["interface_type"] == "fsm":
-                ai = FSMActionInterface(state_config, self, self._action_feedback_pub)
+                ai = FSMActionInterface(state_config)
                 transitions = self.parse_transitions(state_config)
 
             self._states[state_config["name"]] = State(state_config["name"], ai, transitions)
 
+    # TODO replace with FSM logic
     def pass_child_action_finished_cb(self, transition_value, dispatch_msg):
         self._transition_value[dispatch_msg.plan_id][dispatch_msg.action_id] = transition_value
 
@@ -96,8 +99,8 @@ class FSMActionInterface(BaseActionInterface):
             self._transition_value[dispatch_msg.plan_id] = {}
             self._to_start_state[dispatch_msg.plan_id] = {}
             self._transitions_counters[dispatch_msg.plan_id] = {}
-
         if dispatch_msg.action_id not in self._running_state[dispatch_msg.plan_id]:
+
             self._running_state[dispatch_msg.plan_id][dispatch_msg.action_id] = None
             self._transition_value[dispatch_msg.plan_id][dispatch_msg.action_id] = None
             self._to_start_state[dispatch_msg.plan_id][dispatch_msg.action_id] = False
@@ -177,69 +180,25 @@ class FSMActionInterface(BaseActionInterface):
                 # If this function was called from the goal state of the fsm
                 elif transition.get_to_state() == "goal_state":
 
-                    # If this fsm is also a state in another fsm pass the status
-                    if self._parent_ai is not None:
-                        self._parent_ai.pass_child_action_finished_cb("succeeded", dispatch_msg)
-                    else:
-                        # If this action interface has a parent interface
-                        rospy.loginfo('KCL: ({}) Plan {} Action {}: State machine {} finished to goal state'.format(rospy.get_name(),
-                                                                                                     dispatch_msg.plan_id,
-                                                                                                     dispatch_msg.action_id,
-                                                                                                     self.get_action_name()))
-                        # Apply the end effects
-                        self._kb_link.kb_apply_action_effects(dispatch_msg, 1)
-
-                        # Publish feedback: action succeeded to goal state
-                        fb = ActionFeedback()
-                        fb.action_id = dispatch_msg.action_id
-                        fb.plan_id = dispatch_msg.plan_id
-                        fb.status = ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE
-                        self._action_feedback_pub.publish(fb)
-
-                    # Break the while True loop
+                    rospy.loginfo('KCL: ({}) Plan {} Action {}: ActionLib {} finished to goal state'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+                    self._action_status[plan_action_id] = ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE
                     fsm_execution_completed = True
 
                 # If this function was called from the start state of the fsm
                 elif transition.get_to_state() == "start_state":
 
-                    # If this fsm is also a state in another fsm pass the status
-                    # ToDo: Check what should be passed to a higher level fsm
-                    if self._parent_ai is not None:
-                        self._parent_ai.pass_child_action_finished_cb("succeeded", dispatch_msg)
-                    else:
-                        # Otherwise, if this fsm is on the highest level, set the final status
-                        rospy.loginfo('KCL: ({}) Plan {} Action {}: State machine {} finished to start state'.format(rospy.get_name(),
-                                                                                                     dispatch_msg.plan_id,
-                                                                                                     dispatch_msg.action_id,
-                                                                                                     self.get_action_name()))
-                        # Apply the end effects
-                        self._kb_link.kb_undo_action_effects(dispatch_msg, 0)
-
-                        # Publish feedback: action succeeded to start state
-                        fb = ActionFeedback()
-                        fb.action_id = dispatch_msg.action_id
-                        fb.plan_id = dispatch_msg.plan_id
-                        fb.status = ActionFeedback.ACTION_SUCCEEDED_TO_START_STATE
-                        self._action_feedback_pub.publish(fb)
-
-                    # Break the while True loop
+                    rospy.loginfo('KCL: ({}) Plan {} Action {}: ActionLib {} finished to start state'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+                    self._action_status[plan_action_id] = ActionFeedback.ACTION_SUCCEEDED_TO_START_STATE
                     fsm_execution_completed = True
+
+                    # undo the start effects
+                    self._kb_link.kb_undo_action_effects(dispatch_msg, RPKnowledgeBaseLink.AT_START)
 
                 # If this function was called from an error state of the fsm
                 elif transition.get_to_state() == "error_state":
-                    rospy.logwarn(
-                        'KCL: ({}) Plan {} Action {}: State machine {} error. Human intervention needed'.format(rospy.get_name(),
-                                                                                                       dispatch_msg.plan_id,
-                                                                                                       dispatch_msg.action_id,
-                                                                                                       self.get_action_name()))
-
+                    rospy.logwarn('KCL: ({}) Plan {} Action {}: State machine {} error. Human intervention needed'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
                 else:
-                    rospy.logwarn(
-                        'KCL: ({}) Plan {} Action {}: State machine {} error: Transition to unknown state'.format(
-                            rospy.get_name(),
-                            dispatch_msg.plan_id,
-                            dispatch_msg.action_id,
-                            self.get_action_name()))
+                    rospy.logwarn('KCL: ({}) Plan {} Action {}: State machine {} error: Transition to unknown state'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
 
 
     def parse_transitions(self, state):
