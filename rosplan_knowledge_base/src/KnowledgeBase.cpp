@@ -429,16 +429,39 @@ namespace KCL_rosplan {
 			}
 
 			// check if function already exists
+            bool function_exists = false;
 			std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pit;
 			for(pit=model_functions.begin(); pit!=model_functions.end(); pit++) {
 				if(KnowledgeComparitor::containsKnowledge(msg, *pit)) {
-					ROS_INFO("KCL: (%s) Updating function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), msg.function_value);
-					pit->function_value = msg.function_value;
-					return;
+            		switch(msg.assign_op) {
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_ASSIGN:
+    					ROS_INFO("KCL: (%s) Updating function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), msg.function_value);
+                        pit->function_value = msg.function_value;
+                        break;                        
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_SCALE_UP:
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_INCREASE:
+                        pit->function_value = pit->function_value + msg.function_value;
+    					ROS_INFO("KCL: (%s) Increasing function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), pit->function_value);
+                        break;
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_SCALE_DOWN:
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_DECREASE:
+                        pit->function_value = pit->function_value - msg.function_value;
+    					ROS_INFO("KCL: (%s) Decreasing function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), pit->function_value);
+                        break;
+                    case rosplan_knowledge_msgs::KnowledgeItem::AP_ASSIGN_CTS:
+    					ROS_WARN("KCL: (%s) Continuous numeric effects not implemented in function updating.", ros::this_node::getName().c_str());
+                        break;
+                    }
+					function_exists = true;
+                    break;
 				}
 			}
-			ROS_INFO("KCL: (%s) Adding function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), msg.function_value);
-			model_functions.push_back(msg);
+            if (!function_exists && msg.assign_op==rosplan_knowledge_msgs::KnowledgeItem::AP_ASSIGN) {
+    			ROS_INFO("KCL: (%s) Adding function (= (%s%s) %f)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str(), msg.function_value);
+	    		model_functions.push_back(msg);
+            } else if (!function_exists) {
+    			ROS_INFO("KCL: (%s) Ignoring function update (%s%s) function does not exist", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str());
+            }
 		}
 		break;
 
