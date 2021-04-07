@@ -170,7 +170,7 @@ namespace KCL_rosplan {
 		// send feedback (enabled)
 		rosplan_dispatch_msgs::ActionFeedback fb;
 		fb.action_id = msg->action_id;
-		fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_ENABLED;
+		fb.status = "action enabled";
 		action_feedback_pub.publish(fb);
 
 		{
@@ -281,13 +281,13 @@ namespace KCL_rosplan {
 				ROS_INFO("KCL: (%s) failed to update PDDL model in knowledge base", params.name.c_str());
 
 			// publish feedback (achieved)
-			fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_SUCCEEDED_TO_GOAL_STATE;
+			fb.status = "action achieved";
 			action_feedback_pub.publish(fb);
 
 		} else {
 
 			// publish feedback (failed)
-			fb.status = rosplan_dispatch_msgs::ActionFeedback::ACTION_FAILED;
+			fb.status = "action failed";
 			action_feedback_pub.publish(fb);
 		}
 	}
