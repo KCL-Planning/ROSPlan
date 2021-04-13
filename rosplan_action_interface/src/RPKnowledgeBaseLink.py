@@ -80,7 +80,7 @@ class RPKnowledgeBaseLink():
         operator_name = pddl_action_msg.name.split(" ")[0]
         operator_details = self.get_kb_operator_details(operator_name)
         if not operator_details:
-            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(operator_name))
+            rospy.logerr('KCL: ({}) error fetching operator details from KB: {}'.format(rospy.get_name(), operator_name))
             return
 
         # set up operator parameters for use in effects
@@ -125,7 +125,7 @@ class RPKnowledgeBaseLink():
         operator_name = pddl_action_msg.name.split(" ")[0]
         operator_details = self.get_kb_operator_details(operator_name)
         if not operator_details:
-            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(operator_name))
+            rospy.logerr('KCL: ({}) error fetching operator details from KB: {}'.format(rospy.get_name(), operator_name))
             return
 
         # set up operator parameters for use in effects
@@ -187,19 +187,23 @@ class RPKnowledgeBaseLink():
             try:
                 self.update_kb_srv.call(knowledge_update_service_request)
             except Exception as e:
-                rospy.logerr("KCL Failed to update knowledge base: %s" % e.message)
+                rospy.logerr('KCL: ({}) Failed to update knowledge base: {}'.format(rospy.get_name(), e.message))
 
     # =============================== #
     # request data from knowldge base #
     # =============================== #
 
     def get_kb_attribute(self, attribute_name):
-        # TODO error catching
         request = GetAttributeServiceRequest(attribute_name)
-        ret = self.get_state_propositions_srv.call(request)
-        if len(ret.attributes) > 0:
-            return ret.attributes
-        return self.get_state_functions_srv.call(request).attributes
+        try: 
+            # call service
+            ret = self.get_state_propositions_srv.call(request)
+            if len(ret.attributes) > 0:
+                return ret.attributes
+            return self.get_state_functions_srv.call(request).attributes
+        except rospy.ServiceException as exc:
+            rospy.logwarn('KCL: ({}) Failed to fetch attribute from knowledge base: {}'.format(rospy.get_name(), str(exc)))
+            return None
 
     def get_kb_operator_details(self, operator_name):
         request = GetDomainOperatorDetailsServiceRequest(operator_name)
@@ -208,34 +212,48 @@ class RPKnowledgeBaseLink():
             ret = self.get_operator_details_srv.call(request)
             return ret.op
         except rospy.ServiceException as exc:
+            rospy.logwarn('KCL: ({}) Failed to fetch operator from knowledge base: {}'.format(rospy.get_name(), str(exc)))
             return None
 
     def get_kb_predicate_details(self, predicate_name):
         request = GetDomainPredicateDetailsServiceRequest(predicate_name)
         try:
+            # call service
             ret = self.get_predicates_srv.call(request)
         except rospy.ServiceException as exc:
-            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching predicate details from KB: {}'.format(str(exc)))
+            rospy.logerr('KCL: ({}) error fetching predicate details from KB: {}'.format(rospy.get_name(), str(exc)))
             return None
         return ret
 
 
     def get_kb_function_details(self, predicate_name):
-        # TODO error catching
         request = GetDomainPredicateDetailsServiceRequest(predicate_name)
-        ret = self.get_functions_srv.call(request)
+        try:
+            # call service
+            ret = self.get_functions_srv.call(request)
+        except rospy.ServiceException as exc:
+            rospy.logerr('KCL: ({}) error fetching function details from KB: {}'.format(rospy.get_name(), str(exc)))
+            return None
         return ret
 
     def get_kb_function_parameters(self, func_name):
-        # TODO error catching
-        functions = self.get_functions_srv.call()
-        for i in functions.items:
-            if i.name == func_name:
-                return i
+        try:
+            # call service
+            functions = self.get_functions_srv.call()
+            for i in functions.items:
+                if i.name == func_name:
+                    return i
+        except rospy.ServiceException as exc:
+            rospy.logerr('KCL: ({}) error fetching functions from KB: {}'.format(rospy.get_name(), str(exc)))
         return None
 
     def get_kb_instances(self, type_name):
-        # TODO error catching
         request = GetInstanceServiceRequest(type_name)
-        ret = self.get_instances_srv.call()
+        try:
+            # call service
+            ret = self.get_instances_srv.call()
+        except rospy.ServiceException as exc:
+            rospy.logerr('KCL: ({}) error fetching instances from KB: {}'.format(rospy.get_name(), str(exc)))
+            return None
         return ret.instances
+
