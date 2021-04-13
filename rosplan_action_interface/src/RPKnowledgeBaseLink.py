@@ -80,7 +80,7 @@ class RPKnowledgeBaseLink():
         operator_name = pddl_action_msg.name.split(" ")[0]
         operator_details = self.get_kb_operator_details(operator_name)
         if not operator_details:
-            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(e.message))
+            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(operator_name))
             return
 
         # set up operator parameters for use in effects
@@ -125,7 +125,7 @@ class RPKnowledgeBaseLink():
         operator_name = pddl_action_msg.name.split(" ")[0]
         operator_details = self.get_kb_operator_details(operator_name)
         if not operator_details:
-            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(e.message))
+            rospy.logerr('KCL: (RPKnowledgeBaseLink) error fetching operator details from KB: {}'.format(operator_name))
             return
 
         # set up operator parameters for use in effects
@@ -187,7 +187,7 @@ class RPKnowledgeBaseLink():
             try:
                 self.update_kb_srv.call(knowledge_update_service_request)
             except Exception as e:
-                rospy.logerr("KCL (SensingInterface) Failed to update knowledge base: %s" % e.message)
+                rospy.logerr("KCL Failed to update knowledge base: %s" % e.message)
 
     # =============================== #
     # request data from knowldge base #
@@ -202,10 +202,13 @@ class RPKnowledgeBaseLink():
         return self.get_state_functions_srv.call(request).attributes
 
     def get_kb_operator_details(self, operator_name):
-        # TODO error catching
         request = GetDomainOperatorDetailsServiceRequest(operator_name)
-        ret = self.get_operator_details_srv.call(request)
-        return ret.op
+        try: 
+            # call service
+            ret = self.get_operator_details_srv.call(request)
+            return ret.op
+        except rospy.ServiceException as exc:
+            return None
 
     def get_kb_predicate_details(self, predicate_name):
         request = GetDomainPredicateDetailsServiceRequest(predicate_name)

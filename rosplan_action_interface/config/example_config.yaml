@@ -45,5 +45,14 @@ actions:
       # Default service arguments for this action.
       default_service: /move_base/clear_costmaps
       default_service_type: std_srvs/Empty
-      # default_service_request (none)
+
+# EXAMPLE of additional service arguments for default and parameter-based
+# requests and expected response.
+#     default_service_request (none)
+#     default_service_response (none)
+#      pddl_parameters: [label1 label2]
+#       parameter_values:
+#       - values: [param1 param2]
+#         service_request (none)
+#         service_response (none)
 

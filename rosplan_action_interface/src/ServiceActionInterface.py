@@ -15,6 +15,7 @@ class ServiceActionInterface(BaseActionInterface):
         self._has_default_topic = ("default_service" in action_config)
         self._has_default_msg_type = ("default_service_type" in action_config)
         self._has_default_request = ("default_service_request" in action_config)
+        self._has_default_response = ("default_service_response" in action_config)
 
     def run(self, dispatch_msg):
         # Run on a new thread
@@ -50,8 +51,8 @@ class ServiceActionInterface(BaseActionInterface):
                         goal_msg_type = self.parse_config_string(config["service_type"], dispatch_msg)[0]
                     if "service_request" in config:
                         override_request = config["service_request"]
-                    if "service_result" in config:
-                        override_result = config["service_result"]
+                    if "service_response" in config:
+                        override_result = config["service_response"]
 
         # import goal msg type
         i = goal_msg_type.find('/')
@@ -88,13 +89,22 @@ class ServiceActionInterface(BaseActionInterface):
 
         if result:
 
-            # Check results
+            # check default expected results
             results_correct = True
-            if override_result:
+            if self._has_default_response:
+                for param in self._action_config["default_service_response"]:
+                    if not override_result or not param in override_result:
+                        value = self._action_config["default_service_response"][param]
+                        results_correct = self.check_result_msg(result, param, value, dispatch_msg)
+                        if not results_correct:     
+                            break
+
+            # check override expected results
+            if results_correct and override_result:
                 for param in override_result:
                     value = override_result[param]
-                    if not self.check_result_msg(result, param, value, dispatch_msg):
-                        results_correct = False
+                    results_correct = self.check_result_msg(result, param, value, dispatch_msg)
+                    if not results_correct:
                         break
 
             if results_correct:
