@@ -119,6 +119,6 @@ class ActionInterfaceManager(object):
                 self._action_interfaces[action["name"]] = FSMActionInterface(action)
 
 if __name__ == '__main__':
-    rospy.init_node('RPStateMachine')
+    rospy.init_node('RPActionInterfaceManager')
     aim = ActionInterfaceManager()
     rospy.spin()
