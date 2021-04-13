@@ -15,6 +15,7 @@ class ActionlibActionInterface(BaseActionInterface):
         self._has_default_topic = ("default_actionlib_topic" in action_config)
         self._has_default_msg_type = ("default_actionlib_msg_type" in action_config)
         self._has_default_goal = ("default_actionlib_goal" in action_config)
+        self._has_default_result = ("default_actionlib_result" in action_config)
 
         self._action_client = {}
 
@@ -101,14 +102,25 @@ class ActionlibActionInterface(BaseActionInterface):
 
 
     def action_finished_cb(self, override_result, dispatch_msg, status, result):
-        # Check results
+
+        # check default expected results
         results_correct = True
-        if override_result is not None:
+        if self._has_default_result:
+            for param in self._action_config["default_actionlib_result"]:
+                if not override_result or not param in override_result:
+                    value = self._action_config["default_actionlib_result"][param]
+                    results_correct = self.check_result_msg(result, param, value, dispatch_msg)
+                    if not results_correct:
+                        break
+
+        # check override expected results
+        if results_correct and override_result is not None:
             for param in override_result:
                 value = override_result[param]
-                if not self.check_result_msg(result, param, value, dispatch_msg):
-                    results_correct = False
+                results_correct = self.check_result_msg(result, param, value, dispatch_msg)
+                if not results_correct:
                     break
+
 
         plan_action_id = (dispatch_msg.plan_id, dispatch_msg.action_id)
         if status == actionlib.GoalStatus.SUCCEEDED and results_correct:

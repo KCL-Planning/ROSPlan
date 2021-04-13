@@ -27,6 +27,7 @@ actions:
           target_pose.pose.position.x: ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[0]
           target_pose.pose.position.y: ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[1]
           target_pose.pose.orientation.w: 1
+#     default_actionlib_result (none)
 
 # EXAMPLE override defaults: the following would override
 # the default_actionlib_goal when (pddl param ?to == wp0).
@@ -38,6 +39,7 @@ actions:
 #          target_pose.pose.position.x: 0
 #          target_pose.pose.position.y: 0
 #          target_pose.pose.orientation.w: 1
+#        actionlib_result (none)
 
     # EXAMPLE service interface
     - name: clear_costmap
