@@ -20,6 +20,8 @@ class BaseActionInterface:
         self._action_dispatch_msg = {}
         self._action_status = {}
 
+    def get_action_name(self):
+        return self._action_name
 
     @staticmethod
     def params_match(config, pddl_params, dispatch_msg):
