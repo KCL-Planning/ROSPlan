@@ -95,7 +95,7 @@ class ActionlibActionInterface(BaseActionInterface):
                 value = override_goal[param]
                 self.populate_goal_msg(goal_msg, param, value, dispatch_msg)
 
-        # call siple action client
+        # call simple action client
         rospy.loginfo('KCL: ({}) Plan {} Action {}: Calling action server {}'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, action_server))
         callback_lambda = lambda status, result: self.action_finished_cb(override_result, dispatch_msg, status, result)
         self._action_client[plan_action_id].send_goal(goal_msg, done_cb=callback_lambda)
