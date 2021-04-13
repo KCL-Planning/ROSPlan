@@ -5,7 +5,7 @@
 
 # special terms:
 # ($pddlparam [parameter name]) to use the parameter value directly in an assignment, e.g.
-#     default_actionlib_topic: /($pddlparam robot)/move_base/goal
+#     default_actionlib_topic: /($pddlparam robot)/move_base
 # ($rosparam [parameter name]) to load the value from parameter server, e.g.
 #     target_pose.pose.position.x = ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[0]
 #     target_pose.pose.position.y = ($rosparam /rosplan_demo_waypoints/wp/($pddlparam to))[1]
