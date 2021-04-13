@@ -83,7 +83,7 @@ class ServiceActionInterface(BaseActionInterface):
             # call service
             result = srv_proxy(request)
         except rospy.ServiceException as exc:
-            rospy.logwarn('KCL: ({}) Plan {} Action {}: ActionLib {} failed to call service'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+            rospy.logwarn('KCL: ({}) Plan {} Action {}: Service {} failed to call service'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
             self._action_status[plan_action_id] = ActionFeedback.ACTION_FAILED
             return
 
@@ -108,12 +108,12 @@ class ServiceActionInterface(BaseActionInterface):
                         break
 
             if results_correct:
-                rospy.loginfo('KCL: ({}) Plan {} Action {}: ActionLib {} finished to goal state'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+                rospy.loginfo('KCL: ({}) Plan {} Action {}: Service {} finished to goal state'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
                 self._action_status[plan_action_id] = ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE
             else:
-                rospy.loginfo('KCL: ({}) Plan {} Action {}: ActionLib {} failed'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+                rospy.loginfo('KCL: ({}) Plan {} Action {}: Service {} failed'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
                 self._action_status[plan_action_id] = ActionFeedback.ACTION_FAILED
 
         else:
-            rospy.loginfo('KCL: ({}) Plan {} Action {}: ActionLib {} failed'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
+            rospy.loginfo('KCL: ({}) Plan {} Action {}: Service {} failed'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
             self._action_status[plan_action_id] = ActionFeedback.ACTION_FAILED
