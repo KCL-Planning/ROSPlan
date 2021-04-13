@@ -20,14 +20,6 @@ class BaseActionInterface:
         self._action_dispatch_msg = {}
         self._action_status = {}
 
-    def get_action_name(self):
-        return self._action_name
-
-    def get_interface_type(self):
-        return self._interface_type
-
-    def get_plan_id(self):
-        pass
 
     @staticmethod
     def params_match(config, pddl_params, dispatch_msg):
