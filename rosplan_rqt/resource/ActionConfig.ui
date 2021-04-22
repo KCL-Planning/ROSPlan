@@ -1,0 +1,2213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>880</width>
+    <height>733</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
+  </property>
+  <widget class="QWidget" name="centralwidget_MainWondow_layout">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="frame_logoBar">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>60</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 84, 159);</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_logo">
+         <property name="maximumSize">
+          <size>
+           <width>170</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap>:/logo/igmr_logo.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_spaceHolder_logoBar">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_sideBar_workspace">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QFrame" name="frame_sideBar">
+         <property name="maximumSize">
+          <size>
+           <width>500</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <property name="spacing">
+           <number>20</number>
+          </property>
+          <property name="topMargin">
+           <number>20</number>
+          </property>
+          <property name="bottomMargin">
+           <number>20</number>
+          </property>
+          <item>
+           <widget class="QFrame" name="frame_overview_grouping">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(232, 232, 232);</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QLabel" name="label_overview">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: rgb(0, 84, 159);</string>
+               </property>
+               <property name="text">
+                <string>Overview</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTreeView" name="treeView_overview">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);
+color: rgb(0, 84, 159);</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_15">
+              <property name="topMargin">
+               <number>5</number>
+              </property>
+              <property name="bottomMargin">
+               <number>5</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_new_action">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);
+color: rgb(0, 84, 159);</string>
+                </property>
+                <property name="text">
+                 <string>New Action</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_add_state">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);
+color: rgb(48, 48, 48);</string>
+                </property>
+                <property name="text">
+                 <string>Add State</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_overview_delete">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);
+color: rgb(0, 84, 159);</string>
+                </property>
+                <property name="text">
+                 <string>Delete</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_14">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetDefaultConstraint</enum>
+              </property>
+              <property name="topMargin">
+               <number>5</number>
+              </property>
+              <property name="rightMargin">
+               <number>5</number>
+              </property>
+              <property name="bottomMargin">
+               <number>5</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="pushButton_import">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);
+color: rgb(0, 84, 159);</string>
+                </property>
+                <property name="text">
+                 <string>Import</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_export">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);
+color: rgb(0, 84, 159);</string>
+                </property>
+                <property name="text">
+                 <string>Export</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_print_fsm">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Print FSM</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_separator">
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::VLine</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_workspace">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QStackedWidget" name="stackedWidget_newAction_addState">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="page3_stackedWidget_addState">
+             <layout class="QGridLayout" name="gridLayout_4">
+              <item row="0" column="0">
+               <widget class="QFrame" name="frame_addState_layout">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QFrame" name="frame_addState_name_interfaceType_layout">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout_3">
+                    <property name="fieldGrowthPolicy">
+                     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                    </property>
+                    <property name="horizontalSpacing">
+                     <number>30</number>
+                    </property>
+                    <property name="verticalSpacing">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item row="0" column="0" colspan="2">
+                     <widget class="QLabel" name="label_addState_title">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>State</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_addState_name">
+                      <property name="text">
+                       <string>Name:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="lineEdit_addState_name">
+                      <property name="styleSheet">
+                       <string notr="true">background-color: rgb(255, 255, 255);</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="label_add_state_name_error">
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(170, 0, 0);</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_addState_interfaceType">
+                      <property name="text">
+                       <string>Interface Type:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QFrame" name="frame_addState_radioButtons_layout">
+                      <property name="frameShape">
+                       <enum>QFrame::NoFrame</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_6">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>5</number>
+                       </property>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_addState_fsm">
+                         <property name="text">
+                          <string>FSM</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_addState_actionlib">
+                         <property name="text">
+                          <string>Actionlib</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_addState_service">
+                         <property name="text">
+                          <string>Service</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QStackedWidget" name="stackedWidget_addState_setting">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="currentIndex">
+                    <number>0</number>
+                   </property>
+                   <widget class="QWidget" name="page_stackedWidget_addState_setting_actionlib">
+                    <layout class="QFormLayout" name="formLayout_4">
+                     <property name="fieldGrowthPolicy">
+                      <enum>QFormLayout::ExpandingFieldsGrow</enum>
+                     </property>
+                     <property name="verticalSpacing">
+                      <number>4</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>17</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_addState_default_actionlib_msgType">
+                       <property name="text">
+                        <string>Default Actionlib Msg Type:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_default_actionlib_msgType">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_addState_default_actionlib_topic">
+                       <property name="text">
+                        <string>Default Actionlib Topic:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_default_actionlib_topic">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_addState_default_actionlib_goal">
+                       <property name="text">
+                        <string>Default Actionlib Goal:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_addState_actionlib_pddlParam">
+                       <property name="text">
+                        <string>Pddl Parameters:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_actionlib_pddlParam">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="0">
+                      <widget class="QLabel" name="label_addState_actionlib_paramValues">
+                       <property name="text">
+                        <string>Parameters Values:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="9" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_actionlib_addDelete">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>25</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_7">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_addState_actionlib_spaceHolder_addDelete">
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_addState_actionlib_addParam">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <family>Sans Serif</family>
+                            <pointsize>14</pointsize>
+                            <weight>9</weight>
+                            <italic>false</italic>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 14pt &quot;Sans Serif&quot;;
+color: rgb(26, 125, 9);
+</string>
+                          </property>
+                          <property name="text">
+                           <string>+</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_addState_actionlib_deleteParam">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 24pt &quot;Sans Serif&quot;;
+color: rgb(252, 16, 16);</string>
+                          </property>
+                          <property name="text">
+                           <string>-</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="10" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_actionlib_transition_settingHolder">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>15</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_9">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_addSate_actionlib_transition">
+                          <property name="text">
+                           <string>Transition:</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_addState_actionlib_effect">
+                          <property name="text">
+                           <string>           To State</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_addState_actionlib_transition_toState">
+                          <property name="text">
+                           <string>Effect</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="11" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_actionlib_transition_setting_layout">
+                       <property name="minimumSize">
+                        <size>
+                         <width>100</width>
+                         <height>80</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QGridLayout" name="gridLayout_5">
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="horizontalSpacing">
+                         <number>55</number>
+                        </property>
+                        <property name="verticalSpacing">
+                         <number>7</number>
+                        </property>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_addState_actionlib_transition_failed">
+                          <property name="text">
+                           <string>       Failed</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_addState_actionlib_transition_delete">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>0</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string>       Suceeded:</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_suceeded_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_suceeded_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed1_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed1_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="0">
+                         <widget class="QLabel" name="label_addState_actionlib_transition_spaceHolder">
+                          <property name="minimumSize">
+                           <size>
+                            <width>101</width>
+                            <height>0</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed2_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_actionlib_transition_failed2_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);
+</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="8" column="1">
+                      <widget class="QTableView" name="tableView_addState_actionlib_paramValues">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QTextEdit" name="textEdit_addState_default_actionlib_goal">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>150</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="page_stackedWidget_addState_setting_service">
+                    <layout class="QFormLayout" name="formLayout_5">
+                     <property name="verticalSpacing">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>17</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_addState_default_service_type">
+                       <property name="text">
+                        <string>Default Service Tpye:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_default_service_type">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_addState_default_service">
+                       <property name="text">
+                        <string>Default Service:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_default_service">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_addState_default_service_response">
+                       <property name="text">
+                        <string>Default Service Response:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QTextEdit" name="textEdit_addState_default_service_response">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>0</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
+                      <widget class="QLabel" name="label_addState_service_pddlParam">
+                       <property name="text">
+                        <string>Pddl Parameters:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="QLineEdit" name="lineEdit_addState_service_pddlParam">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="0">
+                      <widget class="QLabel" name="label_addState_service_paramValues">
+                       <property name="text">
+                        <string>Parameters Values:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="1">
+                      <widget class="QTableView" name="tableView_addState_service_paramValues">
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="9" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_service_addDelete">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>25</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_10">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_addState_service_spaceHolder_addDelete">
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_addState_service_addParam">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <family>Sans Serif</family>
+                            <pointsize>14</pointsize>
+                            <weight>9</weight>
+                            <italic>false</italic>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 14pt &quot;Sans Serif&quot;;
+color: rgb(26, 125, 9);
+</string>
+                          </property>
+                          <property name="text">
+                           <string>+</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_addState_service_deleteParam">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 24pt &quot;Sans Serif&quot;;
+color: rgb(252, 16, 16);</string>
+                          </property>
+                          <property name="text">
+                           <string>-</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="10" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_service_transition_settingHolder">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>15</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_11">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_addSate_service_transition">
+                          <property name="text">
+                           <string>Transition:</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_addState_service_effect">
+                          <property name="text">
+                           <string>           To State</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_addState_service_transition_toState">
+                          <property name="text">
+                           <string>Effect</string>
+                          </property>
+                          <property name="alignment">
+                           <set>Qt::AlignCenter</set>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="11" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_addState_service_transition_setting_layout">
+                       <property name="minimumSize">
+                        <size>
+                         <width>100</width>
+                         <height>80</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QGridLayout" name="gridLayout_8">
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="horizontalSpacing">
+                         <number>55</number>
+                        </property>
+                        <property name="verticalSpacing">
+                         <number>7</number>
+                        </property>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_addState_service_transition_failed">
+                          <property name="text">
+                           <string>       Failed</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_addState_service_transition_delete">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>0</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string>       Suceeded:</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_suceeded_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_suceeded_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed1_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed1_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="0">
+                         <widget class="QLabel" name="label_addState_service_transition_spaceHolder">
+                          <property name="minimumSize">
+                           <size>
+                            <width>101</width>
+                            <height>0</height>
+                           </size>
+                          </property>
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="1">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed2_toState">
+                          <property name="minimumSize">
+                           <size>
+                            <width>0</width>
+                            <height>20</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="2">
+                         <widget class="QLineEdit" name="lineEdit_addState_service_transition_failed2_effect">
+                          <property name="styleSheet">
+                           <string notr="true">background-color: rgb(255, 255, 255);
+</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_addState_default_service_request">
+                       <property name="text">
+                        <string>Default Service Request:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QTextEdit" name="textEdit_addState_default_service_request">
+                       <property name="sizePolicy">
+                        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                        </sizepolicy>
+                       </property>
+                       <property name="maximumSize">
+                        <size>
+                         <width>16777215</width>
+                         <height>100</height>
+                        </size>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="page_stackedWidget_addState_setting_empty">
+                    <layout class="QGridLayout" name="gridLayout_7">
+                     <item row="0" column="0">
+                      <widget class="QFrame" name="frame_stackedWidget_addState_setting_empty">
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFrame" name="frame_addState_save_delete_layout">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_8">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>5</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>5</number>
+                    </property>
+                    <item>
+                     <widget class="QLabel" name="label_placeHolder_save_delete">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_addState_save">
+                      <property name="minimumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Save</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_addState_cancel">
+                      <property name="minimumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Cancel</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="page_stackedWidget_newAction_addState_empty">
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="0">
+               <widget class="QFrame" name="frame_stackedWidget_newAction_addState_empty">
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_13">
+                 <item>
+                  <widget class="QTreeView" name="treeView_main_data">
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="page_stackedWidget_newAction">
+             <layout class="QGridLayout" name="gridLayout_3">
+              <property name="verticalSpacing">
+               <number>0</number>
+              </property>
+              <item row="2" column="0">
+               <widget class="QFrame" name="frame_newAction_spaceHolder_button">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>50</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QFrame" name="frame_newAction_spaceHolder_top">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>50</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QFrame" name="frame_newAction">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color: rgb(232, 232, 232);</string>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_4">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QFrame" name="frame_newAction_name_interfaceType">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout">
+                    <property name="fieldGrowthPolicy">
+                     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                    </property>
+                    <property name="horizontalSpacing">
+                     <number>30</number>
+                    </property>
+                    <property name="verticalSpacing">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item row="0" column="0" colspan="2">
+                     <widget class="QLabel" name="label_newAction_title">
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
+                      <property name="text">
+                       <string>Action</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_newAction_name">
+                      <property name="text">
+                       <string>Name:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QLineEdit" name="lineEdit_newAction_name">
+                      <property name="styleSheet">
+                       <string notr="true">background-color: rgb(255, 255, 255);</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QLabel" name="label_new_action_name_error">
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>14</height>
+                       </size>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">color: rgb(170, 0, 0);</string>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_newAction_interfaceType">
+                      <property name="text">
+                       <string>Interface Type:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QFrame" name="frame_newAction_radioButton_holder">
+                      <property name="frameShape">
+                       <enum>QFrame::NoFrame</enum>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Raised</enum>
+                      </property>
+                      <layout class="QHBoxLayout" name="horizontalLayout_3">
+                       <property name="spacing">
+                        <number>0</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>5</number>
+                       </property>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_newAction_fsm">
+                         <property name="text">
+                          <string>FSM</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_newAction_actionlib">
+                         <property name="text">
+                          <string>Actionlib</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QRadioButton" name="radioButton_newAction_service">
+                         <property name="text">
+                          <string>Service</string>
+                         </property>
+                         <property name="autoExclusive">
+                          <bool>false</bool>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QStackedWidget" name="stackedWidget_newAction_setting">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="currentIndex">
+                    <number>0</number>
+                   </property>
+                   <widget class="QWidget" name="page_stackedWidget_newAction_setting_actionlib">
+                    <layout class="QFormLayout" name="formLayout_2">
+                     <property name="fieldGrowthPolicy">
+                      <enum>QFormLayout::ExpandingFieldsGrow</enum>
+                     </property>
+                     <property name="verticalSpacing">
+                      <number>5</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>17</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_newAction_default_actionlib_msgType">
+                       <property name="text">
+                        <string>Default Actionlib Msg Type:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_default_actionlib_msgType">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_newAction_default_actionlib_topic">
+                       <property name="text">
+                        <string>Default Actionlib Topic:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_default_actionlib_topic">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_newAction_default_actionlib_goal">
+                       <property name="text">
+                        <string>Default Actionlib Goal:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="0">
+                      <widget class="QLabel" name="label_newAction_actionlib_pddlParam">
+                       <property name="text">
+                        <string>Pddl Parameters:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_actionlib_pddlParam">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                       <property name="placeholderText">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
+                      <widget class="QLabel" name="label_newAction_actionlib_paramValues">
+                       <property name="text">
+                        <string>Parameters Values:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="QTableView" name="tableView_newAction_actionlib_paramValues">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_newAction_actionlib_ParamValues_holder_addDelete">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>25</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_5">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_newAction_spaceHolder_addDelete">
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_newAction_actionlib_paramValues_add">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <family>Sans Serif</family>
+                            <pointsize>14</pointsize>
+                            <weight>9</weight>
+                            <italic>false</italic>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 14pt &quot;Sans Serif&quot;;
+color: rgb(26, 125, 9);
+</string>
+                          </property>
+                          <property name="text">
+                           <string>+</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_newAction_actionlib_paramValues_delete">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 24pt &quot;Sans Serif&quot;;
+color: rgb(252, 16, 16);</string>
+                          </property>
+                          <property name="text">
+                           <string>-</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QTextEdit" name="textEdit_newAction_default_actionlib_goal"/>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="page_stackedWidget_newAction_setting_service">
+                    <layout class="QFormLayout" name="formLayout_6">
+                     <property name="verticalSpacing">
+                      <number>10</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>17</number>
+                     </property>
+                     <item row="0" column="0">
+                      <widget class="QLabel" name="label_newAction_default_service_type">
+                       <property name="text">
+                        <string>Default Service Type:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="0" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_default_service_type">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_default_service">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="label_newAction_default_service_request">
+                       <property name="text">
+                        <string>Default Service Request:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="QTextEdit" name="textEdit_newAction_default_service_request"/>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_newAction_default_service_response">
+                       <property name="text">
+                        <string>Default Service Response:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="QTextEdit" name="textEdit_newAction_default_service_response"/>
+                     </item>
+                     <item row="6" column="0">
+                      <widget class="QLabel" name="label_newAction_service_pddlParam">
+                       <property name="text">
+                        <string>Pddl Parameters:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QLineEdit" name="lineEdit_newAction_service_pddlParam">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                       <property name="text">
+                        <string/>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
+                      <widget class="QLabel" name="label_newAction_service_paramValues">
+                       <property name="text">
+                        <string>Parameters Values:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="QTableView" name="tableView_newAction_service_paramValues">
+                       <property name="styleSheet">
+                        <string notr="true">background-color: rgb(255, 255, 255);</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="0" colspan="2">
+                      <widget class="QFrame" name="frame_newAction_service_frameHolder_addDelete">
+                       <property name="minimumSize">
+                        <size>
+                         <width>0</width>
+                         <height>25</height>
+                        </size>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                       <layout class="QHBoxLayout" name="horizontalLayout_12">
+                        <property name="spacing">
+                         <number>0</number>
+                        </property>
+                        <property name="leftMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="topMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="rightMargin">
+                         <number>0</number>
+                        </property>
+                        <property name="bottomMargin">
+                         <number>0</number>
+                        </property>
+                        <item>
+                         <widget class="QLabel" name="label_newAction_service_spaceHolder_addDelete">
+                          <property name="text">
+                           <string/>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_newAction_service_paramValues_add">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="font">
+                           <font>
+                            <family>Sans Serif</family>
+                            <pointsize>14</pointsize>
+                            <weight>9</weight>
+                            <italic>false</italic>
+                            <bold>false</bold>
+                           </font>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 14pt &quot;Sans Serif&quot;;
+color: rgb(26, 125, 9);
+</string>
+                          </property>
+                          <property name="text">
+                           <string>+</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QPushButton" name="pushButton_newAction_service_paramValues_delete">
+                          <property name="minimumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="maximumSize">
+                           <size>
+                            <width>22</width>
+                            <height>22</height>
+                           </size>
+                          </property>
+                          <property name="styleSheet">
+                           <string notr="true">font: 75 24pt &quot;Sans Serif&quot;;
+color: rgb(252, 16, 16);</string>
+                          </property>
+                          <property name="text">
+                           <string>-</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="label_newAction_default_service">
+                       <property name="text">
+                        <string>Default Service:</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="page_newAction_setting_empty">
+                    <layout class="QGridLayout" name="gridLayout_9">
+                     <item row="0" column="0">
+                      <widget class="QFrame" name="frame_newAction_setting_empty">
+                       <property name="frameShape">
+                        <enum>QFrame::NoFrame</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFrame" name="frame_newAction_save_cancel">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                   <property name="frameShape">
+                    <enum>QFrame::NoFrame</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>5</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>5</number>
+                    </property>
+                    <item>
+                     <widget class="QLabel" name="label_newAction_spaceHolder_save_cancel">
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_newAction_save">
+                      <property name="minimumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Save</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="pushButton_newAction_cancel">
+                      <property name="minimumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>90</width>
+                        <height>25</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Cancel</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

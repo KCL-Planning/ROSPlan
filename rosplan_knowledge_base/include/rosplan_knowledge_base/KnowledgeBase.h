@@ -132,6 +132,7 @@ namespace KCL_rosplan {
 		bool clearKnowledge(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
 
 		/* service methods for fetching the domain details */
+        void getSubtypes(std::string &type, std::vector<std::string> &subtypes);
 		virtual bool getDomainName(rosplan_knowledge_msgs::GetDomainNameService::Request  &req, rosplan_knowledge_msgs::GetDomainNameService::Response &res) =0;
 		virtual bool getTypes(rosplan_knowledge_msgs::GetDomainTypeService::Request  &req, rosplan_knowledge_msgs::GetDomainTypeService::Response &res) =0;
 		virtual bool getPredicates(rosplan_knowledge_msgs::GetDomainAttributeService::Request  &req, rosplan_knowledge_msgs::GetDomainAttributeService::Response &res) =0;

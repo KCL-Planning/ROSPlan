@@ -326,16 +326,16 @@ namespace KCL_rosplan {
      */
     void EsterelPlanDispatcher::feedbackCallback(const rosplan_dispatch_msgs::ActionFeedback::ConstPtr& msg) {
 
-        ROS_INFO("KCL: (%s) Feedback received [%i, %s]", ros::this_node::getName().c_str(), msg->action_id, msg->status.c_str());
+        ROS_INFO("KCL: (%s) Feedback received [%i, %d]", ros::this_node::getName().c_str(), msg->action_id, msg->status);
 
         // action enabled
-        if(!action_received[msg->action_id] && (0 == msg->status.compare("action enabled"))) {
+        if(!action_received[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_ENABLED) {
             action_received[msg->action_id] = true;
             state_changed = true;
         }
 
         // action completed (successfuly)
-        if(!action_completed[msg->action_id] && 0 == msg->status.compare("action achieved")) {
+        if(!action_completed[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_SUCCEEDED_TO_GOAL_STATE) {
 
             // check action is part of current plan
             if(!action_received[msg->action_id]) {
@@ -355,7 +355,7 @@ namespace KCL_rosplan {
         }
 
         // action completed (failed)
-        if(!action_completed[msg->action_id] && 0 == msg->status.compare("action failed")) {
+        if(!action_completed[msg->action_id] && 0 == msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_FAILED) {
 
             // check action is part of current plan
             if(!action_received[msg->action_id]) {

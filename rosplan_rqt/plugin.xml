@@ -63,4 +63,20 @@
       <statustip>ROSPlan esterel plan viewer.</statustip>
     </qtgui>
   </class>
+
+  <class name="ActionConfig" type="rosplan_rqt.action_config.ActionConfig" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin for ai planning configuration
+    </description>
+    <qtgui>
+      <group>
+        <icon type="theme">folder</icon>
+        <label>ROSPlan</label>
+        <statustip>Plugins related to the ROSPlan PDDL planning system.</statustip>
+      </group>
+      <label>ROSPlan Action Interface Editor</label>
+      <icon type="theme">applications-science</icon>
+      <statustip>ROSPlan Action Interface Editor.</statustip>
+    </qtgui>
+  </class>
 </library>
