@@ -528,7 +528,13 @@ namespace KCL_rosplan {
 
             // fetch types
             std::vector<string> alltypes;
-            getSubtypes(req.type_name, alltypes);
+            if (req.include_subtypes) {
+                // request type and subtypes
+                getSubtypes(req.type_name, alltypes);
+            } else {
+                // request type only
+                alltypes.push_back(req.type_name);
+            }
 
             // add instances of all (sub)types
             std::map<std::string,std::vector<std::string> >::iterator iit;
