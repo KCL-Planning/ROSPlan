@@ -15,7 +15,7 @@ Several demos are available in the [rosplan_demos repository](https://github.com
 
 ## Installation
 
-ROSPlan supports kinetic and melodic ROS distributions and is developed under Ubuntu 16.04 / 18.04, being linux Ubuntu 18.04 + melodic the recommended setup.
+ROSPlan supports by default noetic ROS1 distribution and is developed under Ubuntu 20.04.
 
 Install dependencies:
 ```sh
