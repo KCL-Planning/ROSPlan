@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import rospy
@@ -51,8 +51,8 @@ class ActionDispatchWidget(QWidget):
                     label_list.append(param.key)
                 self._parameter_type_list[op.name] = param_list
                 self._parameter_label_list[op.name] = label_list
-        except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
+        except rospy.ServiceException as e:
+            rospy.logerr(f'Service call failed: {e}')
         self._handle_operator_name_changed(0)
 
         # connect components
