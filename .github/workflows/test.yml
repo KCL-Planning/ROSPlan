@@ -3,11 +3,11 @@ name: test
 on: [push, pull_request]
 
 env:
-  ROS_VERSION: melodic
+  ROS_VERSION: noetic
 jobs:
   build-and-test:
     runs-on: ubuntu-latest    
-    container: ros:melodic
+    container: ros:noetic
     steps:
       - name: Prepare docker
         run: |
