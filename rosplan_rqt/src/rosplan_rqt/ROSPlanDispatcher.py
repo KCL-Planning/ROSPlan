@@ -278,7 +278,6 @@ class PlanViewWidget(QWidget):
             except rospy.ServiceException as e:
                 rospy.logerr(f'Service call failed: {e}')
         for element in product(*parameters):
-            print(element)
             pred = ''
             for single_element in element:
                 pred += f'{single_element} '
