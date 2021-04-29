@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from geometry_msgs.msg import PoseStamped
 from math import sqrt
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from geometry_msgs.msg import PoseStamped
 from math import sqrt
 
@@ -59,5 +59,5 @@ def req_docked():
     return SetBoolRequest(data=False)
 
 def docked(res, params):  # params is a list with all the parameters - fully instantiated for services!
-    print params
+    print(params)
     return int(res.message.split(' ')[3])%2 == 0

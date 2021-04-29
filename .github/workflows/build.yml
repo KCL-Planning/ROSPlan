@@ -7,12 +7,12 @@ on:
     branches-ignore: gh-pages
 
 env:
-  ROS_VERSION: melodic
+  ROS_VERSION: noetic
 jobs:
   build:
     runs-on: ubuntu-latest    
     container:
-      image: ros:melodic
+      image: ros:noetic
     steps:
       - name: Prepare docker
         run: |
@@ -20,7 +20,7 @@ jobs:
           APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=true apt-key adv --keyserver keyserver.ubuntu.com --recv-key E1DD270288B4E6030699E45FA1715D88E1DF1F24 2>&1
           echo "deb http://ppa.launchpad.net/git-core/ppa/ubuntu bionic main" | tee /etc/apt/sources.list.d/git.list 
           sudo apt update -qq
-          sudo apt install python-catkin-tools git -y -qq
+          sudo apt install python3-catkin-tools python3-osrf-pycommon git -y -qq
       - name: Create ROS workspace
         run: |
           source /opt/ros/$ROS_VERSION/setup.bash
