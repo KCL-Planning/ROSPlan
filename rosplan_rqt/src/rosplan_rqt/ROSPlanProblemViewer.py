@@ -6,7 +6,6 @@ import rospkg
 import sys
 
 from itertools import product
-from string import join, split
 
 from std_msgs.msg import *
 from diagnostic_msgs.msg import KeyValue
