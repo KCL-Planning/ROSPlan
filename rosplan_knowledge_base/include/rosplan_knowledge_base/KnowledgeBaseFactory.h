@@ -19,7 +19,8 @@ namespace KCL_rosplan {
             PDDL,
             PPDDL,
             RDDL,
-            HDDL
+            HDDL,
+            CHIMP
         };
 
         static KnowledgeBasePtr createKB(KB kb_type, ros::NodeHandle& n);
