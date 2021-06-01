@@ -9,7 +9,7 @@ from rosplan_dispatch_msgs.msg import EsterelPlan
 
 
 """
-Read plan as a string from the planner output topic and publish it again as an esterel message.
+Read yaml-string representing a esterel plan from the planner output topic and publish it again as an esterel message.
 """
 class DirectEsterelParser:
 
