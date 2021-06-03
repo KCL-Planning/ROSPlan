@@ -14,6 +14,8 @@
 
   <build_depend>flex</build_depend>
   <build_depend>bison</build_depend>
+  <build_depend>java</build_depend>
+  <exec_depend>java</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
