@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-    <!-- Unit tests launch file for ROSPlan planner interface -->
+    <!-- Unit tests launch file for Contingent-FF planner interface -->
 
     <!-- arguments -->
     <arg name="common_path" default="$(find rosplan_planning_system)/test/pddl/test_domain"/>
@@ -13,8 +13,8 @@
     <arg name="problem_topic"        default="/rosplan_problem_interface/problem_instance" />
     <arg name="planner_topic"        default="/rosplan_planner_interface/planner_output" />
     <arg name="data_path"            default="$(find rosplan_planning_system)/test/pddl/test_domain/"/>
-    <arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/popf DOMAIN PROBLEM" />
-    <arg name="planner_interface"    default="popf_planner_interface" />
+    <arg name="planner_command"      default="timeout 10 $(find rosplan_planning_system)/common/bin/Contingent-FF -o DOMAIN -f PROBLEM" />
+    <arg name="planner_interface"    default="cff_planner_interface" />
 
     <!-- planner interface -->
     <node name="$(arg node_name)" pkg="rosplan_planning_system" type="$(arg planner_interface)" output="screen">
@@ -35,6 +35,6 @@
         <param name="planner_command" value="$(arg planner_command)" />
     </node>
 
-    <test test-name="PlannerInterfaceTests" pkg="rosplan_planning_system" type="PlannerInterfaceTests" time-limit="100.0" />
+    <test test-name="CffPlannerInterfaceTests" pkg="rosplan_planning_system" type="CffPlannerInterfaceTests" time-limit="100.0" />
 
 </launch>

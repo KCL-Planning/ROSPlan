@@ -23,14 +23,19 @@ namespace KCL_rosplan {
 
 	PDDLSimplePlanParser::~PDDLSimplePlanParser()
 	{
-
 	}
 
 	void PDDLSimplePlanParser::reset() {
+        
 		action_list.clear();
 	}
 
 	void PDDLSimplePlanParser::publishPlan() {
+        
+		ROS_INFO("KCL: (%s) Plan published.", ros::this_node::getName().c_str());    
+		ROS_INFO("KCL: (%s) Is plan empty?: %d", ros::this_node::getName().c_str(), action_list.size() == 0);
+ 		ROS_DEBUG("KCL: (%s) Num actions: %d", ros::this_node::getName().c_str(), action_list.size());
+        
 		rosplan_dispatch_msgs::CompletePlan msg;
 		msg.plan = action_list;
 		plan_publisher.publish(msg);
@@ -142,28 +147,28 @@ namespace KCL_rosplan {
 	}
 } // close namespace
 
-	/*-------------*/
-	/* Main method */
-	/*-------------*/
+/*-------------*/
+/* Main method */
+/*-------------*/
 
-	int main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
-		ros::init(argc,argv,"rosplan_plan_parser");
-		ros::NodeHandle nh("~");
+    ros::init(argc,argv,"rosplan_plan_parser");
+    ros::NodeHandle nh("~");
 
-		KCL_rosplan::PDDLSimplePlanParser pp(nh);
-	
-		// subscribe to planner output
-		std::string planTopic = "planner_output";
-		nh.getParam("planner_topic", planTopic);
-		ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::PlanParser::plannerCallback, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
-	
-		// start the plan parsing services
-		ros::ServiceServer service1 = nh.advertiseService("parse_plan", &KCL_rosplan::PlanParser::parsePlan, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
-		ros::ServiceServer service2 = nh.advertiseService("parse_plan_from_file", &KCL_rosplan::PlanParser::parsePlanFromFile, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
+    KCL_rosplan::PDDLSimplePlanParser pp(nh);
 
-		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
-		ros::spin();
+    // subscribe to planner output
+    std::string planTopic = "planner_output";
+    nh.getParam("planner_topic", planTopic);
+    ros::Subscriber plan_sub = nh.subscribe(planTopic, 1, &KCL_rosplan::PlanParser::plannerCallback, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
 
-		return 0;
-	}
+    // start the plan parsing services
+    ros::ServiceServer service1 = nh.advertiseService("parse_plan", &KCL_rosplan::PlanParser::parsePlan, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
+    ros::ServiceServer service2 = nh.advertiseService("parse_plan_from_file", &KCL_rosplan::PlanParser::parsePlanFromFile, dynamic_cast<KCL_rosplan::PlanParser*>(&pp));
+
+    ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
+    ros::spin();
+
+    return 0;
+}

@@ -8,6 +8,7 @@ namespace KCL_rosplan {
 
 	void PlannerInterface::problemCallback(const std_msgs::String& problemInstance) {
 		ROS_INFO("KCL: (%s) Problem received.", ros::this_node::getName().c_str());
+		ROS_INFO("KCL: (%s) Is problem empty? %d", ros::this_node::getName().c_str(), problemInstance.data.size() == 0);
 		problem_instance_received = true;
 		problem_instance_time = ros::WallTime::now().toSec();
 		problem_instance = problemInstance.data;
@@ -68,7 +69,7 @@ namespace KCL_rosplan {
 	 * planning system; prepares planning; calls planner; parses plan.
 	 */
 	bool PlannerInterface::runPlanningServer(std::string domainPath, std::string problemPath, std::string dataPath, std::string plannerCommand, bool useProblemTopic) {
-
+        
 		// save parameters
 		data_path = dataPath;
 		domain_path = domainPath;
@@ -76,9 +77,9 @@ namespace KCL_rosplan {
 		planner_command = plannerCommand;
 		use_problem_topic = useProblemTopic;
 
-        // check if data_path ends in "/" and add "/" if not
-        const char *last_char = &data_path.back();
-        if (strcmp(last_char,"/") != 0)data_path = data_path + "/";
+ 		// check if data_path ends in "/" and add "/" if not
+		const char *last_char = &data_path.back();
+		if (strcmp(last_char,"/") != 0)data_path = data_path + "/";
 		
 		// set problem name for ROS_INFO
 		std::size_t lastDivide = problem_path.find_last_of("/\\");
@@ -97,6 +98,7 @@ namespace KCL_rosplan {
 
 		// publish planner output
 		if(success) {
+			ROS_INFO("KCL: (%s) Plan published.", ros::this_node::getName().c_str());
 			std_msgs::String planMsg;
 			planMsg.data = planner_output;
 			plan_publisher.publish(planMsg);
