@@ -471,12 +471,23 @@ namespace KCL_rosplan {
         }
     }
 
-    std::vector<rosplan_knowledge_msgs::KnowledgeItem> RDDLUtils::getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs) {
+    std::vector<rosplan_knowledge_msgs::KnowledgeItem> RDDLUtils::getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs,
+                                                                           const std::vector<LogicalExpression *> &SACs) {
         std::vector<rosplan_knowledge_msgs::KnowledgeItem> ret;
         for (auto it = CPFs.begin(); it != CPFs.end(); ++it) {
             if (it->first->variableName == "goal") {
                 std::map<std::string, std::string> ass;
                 return getGoals(it->second, false, ass);
+            }
+        }
+        for (auto it = SACs.begin(); it != SACs.end(); ++it) {
+            auto exp_con = dynamic_cast<const Connective *>(*it);
+            if (exp_con != nullptr) {
+                auto aux = dynamic_cast<const Negation *>(exp_con->exprs[0])->expr;
+                if (dynamic_cast<const ParametrizedVariable *>(aux)->variableName == "goal") {
+                    std::map<std::string, std::string> ass;
+                    return getGoals(exp_con->exprs[1], false, ass);
+                }
             }
         }
         return ret;

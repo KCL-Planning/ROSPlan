@@ -78,7 +78,8 @@ namespace KCL_rosplan {
         static vectorDA getOperatorAssignEffects(const rosplan_knowledge_msgs::DomainFormula &op_head,
                                                  const std::map<ParametrizedVariable *, LogicalExpression *> &CPFs);
 
-        static vectorKI getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs);
+        static vectorKI getGoals(const std::map<ParametrizedVariable*, LogicalExpression*>& CPFs,
+                                 const std::vector<LogicalExpression *> &SACs);
     };
 }
 
