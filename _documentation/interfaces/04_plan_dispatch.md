@@ -43,11 +43,11 @@ An example launch file showing all the parameters is shown below:
 
 ## Services
 
-Topic: **dispatch_plan**  
-Type: *std_srvs/Empty*  
+Service: **dispatch_plan**  
+Type: *rosplan_dispatch_msgs/DispatchService*  
 Begins the execution of the last plan message that was recieved on the *plan_topic*. The service returns when the plan has completed successfuly, or has failed.
 
-Topic: **cancel_plan**  
+Service: **cancel_plan**  
 Type: *std_srvs/Empty*  
 Attempt to cancel the plan execution currently underway.
 
