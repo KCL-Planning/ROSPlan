@@ -105,7 +105,7 @@ namespace KCL_rosplan {
 			}
 
 			// First iteration line will be like   0: got_place C1
-			while (line.find("Total cost") == line.npos and line.find("time spend") == line.npos and line.size() > 0) {
+			while (line.find("plan cost") == line.npos and line.find("Total cost") == line.npos and line.find("time spend") == line.npos and line.size() > 0) {
 				std::stringstream ss(line); // To trim whitespaces
 				std::string aux;
 				// Read the action number X:
