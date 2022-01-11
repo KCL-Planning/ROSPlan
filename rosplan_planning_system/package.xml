@@ -34,6 +34,13 @@
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>rostest</run_depend>
+  <run_depend>python-yaml</run_depend> 
+  <!-- python-yaml is only for python2, for python 3 it owul dbe python3-ymal
+    It would be better if we swtich to version 2 of the package format. 
+    Then we could use the following:
+    <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-yaml</exec_depend> 
+    <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-yaml</exec_depend>
+  -->
 
   <export></export>
 </package>

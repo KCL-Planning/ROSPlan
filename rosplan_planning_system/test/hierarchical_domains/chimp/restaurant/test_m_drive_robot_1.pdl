@@ -1,0 +1,78 @@
+# Already there. Do nothing.
+
+(Problem
+
+(ArgumentSymbols
+  mug1 mug2
+  nothing
+  placingAreaEastRightCounter1 placingAreaWestLeftTable1 placingAreaWestRightTable1
+  placingAreaEastLeftTable1 placingAreaEastRightTable1
+  placingAreaNorthLeftTable2 placingAreaNorthRightTable2
+  placingAreaSouthLeftTable2 placingAreaSouthRightTable2
+  trayArea1 
+  manipulationAreaEastCounter1 preManipulationAreaEastCounter1
+  manipulationAreaNorthTable1 manipulationAreaSouthTable1
+  preManipulationAreaNorthTable1 preManipulationAreaSouthTable1
+  manipulationAreaWestTable2 manipulationAreaEastTable2
+  preManipulationAreaWestTable2 preManipulationAreaEastTable2
+  floorAreaTamsRestaurant1
+  preManipulationAreaEastCounterOS1 placingAreaEastRightCounterOS1 manipulationAreaEastCounterOS1
+  sittingAreaWestTable1 sittingAreaEastTable1
+  sittingAreaNorthTable2 sittingConstraintSouthTable2
+  table1 table2 counter1
+  guest1 guest2
+  leftArm1 rightArm1
+  ArmTuckedPosture ArmUnTuckedPosture ArmToSidePosture ArmUnnamedPosture ArmCarryPosture
+  TorsoUpPosture TorsoDownPosture TorsoMiddlePosture
+  coffeeJug1 milkPot1 sugarPot1 sugarPot2
+  Milk Coffee Sugar Mug Peppermill
+  n)
+
+(Instances ManipulationArea
+	   manipulationAreaEastCounter1
+    	   manipulationAreaNorthTable1 manipulationAreaSouthTable1
+	   manipulationAreaWestTable2 manipulationAreaEastTable2)
+
+(Fluent c0 Connected(placingAreaEastRightCounter1 manipulationAreaEastCounter1 preManipulationAreaEastCounter1))
+(Constraint Release[0,0](c0))
+(Fluent c1 Connected(placingAreaWestLeftTable1 manipulationAreaNorthTable1 preManipulationAreaNorthTable1))
+(Constraint Release[0,0](c1))
+(Fluent c2 Connected(placingAreaEastLeftTable1 manipulationAreaSouthTable1 preManipulationAreaSouthTable1))
+(Constraint Release[0,0](c2))
+(Fluent c3 Connected(placingAreaWestRightTable1 manipulationAreaSouthTable1 preManipulationAreaSouthTable1))
+(Constraint Release[0,0](c3))
+(Fluent c4 Connected(placingAreaEastRightTable1 manipulationAreaNorthTable1 preManipulationAreaNorthTable1))
+(Constraint Release[0,0](c4))
+(Fluent c5 Connected(placingAreaNorthLeftTable2 manipulationAreaEastTable2  preManipulationAreaEastTable2))
+(Constraint Release[0,0](c5))
+(Fluent c6 Connected(placingAreaNorthRightTable2 manipulationAreaWestTable2 preManipulationAreaWestTable2))
+(Constraint Release[0,0](c6))
+(Fluent c7 Connected(placingAreaSouthLeftTable2 manipulationAreaWestTable2 preManipulationAreaWestTable2))
+(Constraint Release[0,0](c7))
+(Fluent c8 Connected(placingAreaSouthRightTable2 manipulationAreaEastTable2 preManipulationAreaEastTable2))
+(Constraint Release[0,0](c8))
+
+
+(Fluent f1 RobotAt(preManipulationAreaEastCounter1))
+(Constraint Release[0,0](f1))
+
+(Fluent f2 Holding(leftArm1 nothing))
+(Constraint Release[0,0](f2))
+
+(Fluent f3 Holding(rightArm1 nothing))
+(Constraint Release[0,0](f3))
+
+(Fluent f4 HasArmPosture(leftArm1 ArmUnTuckedPosture))
+(Constraint Release[0,0](f4))
+
+(Fluent f5 HasArmPosture(rightArm1 ArmUnTuckedPosture))
+(Constraint Release[0,0](f5))
+
+(Fluent f6 HasTorsoPosture(TorsoUpPosture))
+(Constraint Release[0,0](f6))
+
+(Task t0 drive_robot(preManipulationAreaNorthTable1))
+(Constraint Release[1,1](t0))
+
+
+)
