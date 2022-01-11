@@ -152,7 +152,7 @@ class RosplanSensing:
 
         kb_params = []
         for p in kb_info.typed_parameters:
-            instances = self.get_instances_srv.call(GetInstanceServiceRequest(p.value)).instances
+            instances = self.get_instances_srv.call(GetInstanceServiceRequest(p.value, True)).instances
             kb_params.append(instances)
 
         if 'params' in predicate_info:

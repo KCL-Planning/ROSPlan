@@ -482,8 +482,33 @@ namespace KCL_rosplan {
     /* fetching items */
     /*----------------*/
 
-    bool KnowledgeBase::getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res) {
+    void KnowledgeBase::getSubtypes(std::string &type, std::vector<std::string> &subtypes) {
 
+        // fetch types
+        rosplan_knowledge_msgs::GetDomainTypeService::Request  treq;
+        rosplan_knowledge_msgs::GetDomainTypeService::Response tres;
+        getTypes(treq,tres);
+
+        // produce type map
+        std::map<std::string, std::string> typemap;
+        for (int i=0; i<tres.types.size(); i++)
+            typemap[tres.types[i]] = tres.super_types[i];
+        
+        // loop to resolve types
+        bool finished = false;
+        while (!finished) {
+            finished = true;
+            for (int i=0; i<tres.types.size(); i++) {
+                if (tres.super_types[i]==type) subtypes.push_back(tres.types[i]);
+                typemap[tres.types[i]] = typemap[tres.super_types[i]];
+                if (""!=typemap[tres.types[i]]) finished = false;
+            }
+        }
+        subtypes.push_back(type);
+    }
+
+    bool KnowledgeBase::getInstances(rosplan_knowledge_msgs::GetInstanceService::Request  &req, rosplan_knowledge_msgs::GetInstanceService::Response &res) {
+    
         // fetch the instances of the correct type
         if(""==req.type_name) {
             std::map<std::string,std::vector<std::string> >::iterator iit;
@@ -493,23 +518,42 @@ namespace KCL_rosplan {
                     res.instances.push_back(iit->second[j]);
             }
             // constants
-            for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
-                for(size_t j=0; j<iit->second.size(); j++)
-                    res.instances.push_back(iit->second[j]);
+            if (req.include_constants) {
+                for(iit=domain_constants.begin(); iit != domain_constants.end(); iit++) {
+                    for(size_t j=0; j<iit->second.size(); j++)
+                        res.instances.push_back(iit->second[j]);
+                }
             }
         } else {
-            std::map<std::string,std::vector<std::string> >::iterator iit;
-            // objects
-            iit = model_instances.find(req.type_name);
-            if(iit != model_instances.end()) {
-                for(size_t j=0; j<iit->second.size(); j++)
-                    res.instances.push_back(iit->second[j]);
+
+            // fetch types
+            std::vector<string> alltypes;
+            if (req.include_subtypes) {
+                // request type and subtypes
+                getSubtypes(req.type_name, alltypes);
+            } else {
+                // request type only
+                alltypes.push_back(req.type_name);
             }
-            // constants
-            iit = domain_constants.find(req.type_name);
-            if(iit != domain_constants.end()) {
-                for(size_t j=0; j<iit->second.size(); j++)
-                    res.instances.push_back(iit->second[j]);
+
+            // add instances of all (sub)types
+            std::map<std::string,std::vector<std::string> >::iterator iit;
+            for(auto tit = alltypes.begin(); tit!=alltypes.end(); tit++) {
+
+                // objects
+                iit = model_instances.find(*tit);
+                if(iit != model_instances.end()) {
+                    for(size_t j=0; j<iit->second.size(); j++)
+                        res.instances.push_back(iit->second[j]);
+                }
+                // constants
+                if (req.include_constants) {
+                    iit = domain_constants.find(*tit);
+                    if(iit != domain_constants.end()) {
+                        for(size_t j=0; j<iit->second.size(); j++)
+                            res.instances.push_back(iit->second[j]);
+                    }
+                }
             }
         }
 
