@@ -24,8 +24,8 @@ execute_process(COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} submodule update --fo
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ippc_server/include ippc_server/cpp-base64 ppddl_parser/include ppddl_parser/src
-        LIBRARIES val_kcl rddl_parser ippc_server ppddl_parser
+        INCLUDE_DIRS ${catkin_INCLUDE_DIRS} VAL/include rddl_parser ippc_server/include ippc_server/cpp-base64 ppddl_parser/include ppddl_parser/src hddl_parser/include
+        LIBRARIES val_kcl rddl_parser ippc_server ppddl_parser hddl_parser
         CATKIN_DEPENDS roscpp rosplan_knowledge_msgs
         DEPENDS
 )
@@ -33,6 +33,45 @@ catkin_package(
 # COMMON FLAGS
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -fomit-frame-pointer -DNDEBUG")
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+## HDDL PARSER
+########################################################################################################################
+message(STATUS "[${PROJECT_NAME}] Preparing HDDL parser dependency...")
+
+###########
+## Build ##
+###########
+
+# Lexer and parser
+find_package(BISON 3.0.4 REQUIRED)
+find_package(FLEX REQUIRED)
+
+# make directory ${CATKIN_DEVEL_PREFIX}/include, CATKIN_DEVEL_PREFIX=$HOME/ros_ws/.../devel/.private/rosplan_dependencies
+add_custom_target(foo ALL COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/include/hddl_parser)
+
+BISON_TARGET(HDDL_PARSER hddl_parser/src/hddl_parser.yacc
+             ${CATKIN_DEVEL_PREFIX}/include/hddl_parser/hddl_parser.tab.cpp)
+FLEX_TARGET(HDDL_SCANNER hddl_parser/src/hddl_scanner.lex
+             ${CATKIN_DEVEL_PREFIX}/include/hddl_parser/hddl_scanner.yacc.cpp)
+ADD_FLEX_BISON_DEPENDENCY(HDDL_SCANNER HDDL_PARSER)
+
+set(HDDL_PARSER_SOURCES hddl_parser/src/hddl_parser.cpp)
+include_directories(hddl_parser/include)
+include_directories(${CATKIN_DEVEL_PREFIX}/include/hddl_parser)
+
+add_library(hddl_parser ${BISON_HDDL_PARSER_OUTPUTS} ${FLEX_HDDL_SCANNER_OUTPUTS} ${HDDL_PARSER_SOURCES})
+add_dependencies(hddl_parser ${catkin_EXPORTED_TARGETS})
+
+#############
+## Install ##
+#############
+
+# hddl parser is already installed under devel using the lines above
+# BISON_TARGET & FLEX_TARGET
+# see : $HOME/ros_ws/.../devel/.private/rosplan_dependencies/include/hddl_parser
 
 ########################################################################################################################
 ########################################################################################################################
@@ -280,5 +319,31 @@ install(DIRECTORY ippc_server/include/ ippc_server/cpp-base64/
         PATTERN ".svn" EXCLUDE)
 
 
+
+
 ########################################################################################################################
 ########################################################################################################################
+########################################################################################################################
+## CHIMP
+########################################################################################################################
+
+###########
+## Build ##
+###########
+
+if (ROSPLAN_COMPILE_CHIMP)
+    message(STATUS "[${PROJECT_NAME}] Preparing chimp dependency...")
+    message(STATUS "[${PROJECT_NAME}] Compiling CHIMP...")
+    execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/chimp/gradlew build WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/chimp/)
+    message(STATUS "[${PROJECT_NAME}] Done!")
+else (ROSPLAN_COMPILE_CHIMP)
+    message(STATUS "[${PROJECT_NAME}] ROSPLAN_COMPILE_CHIMP is not set: CHIMP will not be compiled")
+endif(ROSPLAN_COMPILE_CHIMP)
+
+#############
+## Install ##
+#############
+
+########################################################################################################################
+########################################################################################################################
+

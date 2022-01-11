@@ -8,6 +8,7 @@
 #include "ProblemGenerator.h"
 #include "PDDLProblemGenerator.h"
 #include "RDDLProblemGenerator.h"
+#include "CHIMPProblemGenerator.h"
 
 namespace KCL_rosplan {
     typedef std::unique_ptr<ProblemGenerator> ProblemGeneratorPtr;
@@ -16,7 +17,8 @@ namespace KCL_rosplan {
     public:
         enum ProbGen {
             PDDL,
-            RDDL
+            RDDL,
+            CHIMP
         };
 
         static ProblemGeneratorPtr createProblemGenerator(ProbGen pg_type, const std::string& kb);

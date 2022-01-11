@@ -64,7 +64,7 @@ namespace KCL_rosplan {
                     }
                 }
                 break;
-                
+
             case rosplan_knowledge_msgs::KnowledgeItem::FUNCTION:
                 {
                     // check if function exists and has the correct value
@@ -197,7 +197,7 @@ namespace KCL_rosplan {
 
             updateKnowledge(srv.request, srv.response);
             res.success = res.success && srv.response.success;
-        }       
+        }
 
         rosplan_knowledge_msgs::StatusUpdate update_msg;
         update_msg.last_update_time = ros::Time::now();
@@ -264,7 +264,7 @@ namespace KCL_rosplan {
                 if(name.compare(msg.instance_name)==0 || msg.instance_name.compare("")==0) {
                     // remove instance from knowledge base
                     ROS_INFO("KCL: (%s) Removing instance (%s, %s)",
-                            ros::this_node::getName().c_str(), 
+                            ros::this_node::getName().c_str(),
                             msg.instance_type.c_str(),
                             (msg.instance_name.compare("")==0) ? "ALL" : msg.instance_name.c_str());
                     iit = model_instances[msg.instance_type].erase(iit);
@@ -366,7 +366,7 @@ namespace KCL_rosplan {
      * add an instance, fact, or function to the knowledge base
      */
     void KnowledgeBase::addKnowledge(rosplan_knowledge_msgs::KnowledgeItem &msg) {
-        
+
         switch(msg.knowledge_type) {
 
         case rosplan_knowledge_msgs::KnowledgeItem::INSTANCE:
@@ -464,7 +464,7 @@ namespace KCL_rosplan {
                 return;
             }
         }
-        
+
         // add goal
         ROS_INFO("KCL: (%s) Adding mission goal (%s%s)", ros::this_node::getName().c_str(), msg.attribute_name.c_str(), param_str.c_str());
         model_goals.push_back(msg);
@@ -678,7 +678,7 @@ int main(int argc, char **argv) {
     std::string extension = (domainPath.size() > 5)? domainPath.substr(domainPath.find_last_of('.')) : "";
     KCL_rosplan::KnowledgeBaseFactory::KB kb_type;
     if (extension == ".pddl") {
-        kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::PDDL;
             ROS_INFO("KCL: (%s) Starting a PDDL Knowledge Base", ros::this_node::getName().c_str());
         }
         else if (extension == ".ppddl") {
@@ -691,8 +691,12 @@ int main(int argc, char **argv) {
             VAL1_2::parse_category::recoverWriteController(); // This avoids a segfault on finish when PDDL kb is not used
             ROS_INFO("KCL: (%s) Starting a RDDL Knowledge Base", ros::this_node::getName().c_str());
         }
+        else if (extension == ".hddl") {
+            kb_type = KCL_rosplan::KnowledgeBaseFactory::HDDL;
+            ROS_INFO("KCL: (%s) Starting a HDDL Knowledge Base", ros::this_node::getName().c_str());
+        }
         else {
-            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL)", ros::this_node::getName().c_str(), extension.c_str());
+            ROS_ERROR("KCL: (%s) Unexpected domain file extension %s (expected PDDL/RDDL/HDDL)", ros::this_node::getName().c_str(), extension.c_str());
             ros::shutdown();
         }
 
@@ -707,4 +711,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-

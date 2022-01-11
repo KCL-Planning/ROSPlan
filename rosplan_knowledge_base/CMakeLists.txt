@@ -33,7 +33,7 @@ find_package(Boost REQUIRED COMPONENTS
 ## Declare things to be passed to dependent projects
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs geometry_msgs diagnostic_msgs visualization_msgs tf
+  CATKIN_DEPENDS roscpp rospy std_msgs std_srvs rosplan_knowledge_msgs nav_msgs geometry_msgs diagnostic_msgs visualization_msgs tf rosplan_dependencies
   DEPENDS
 )
 
@@ -45,6 +45,7 @@ catkin_package(
 include_directories(src)
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${rosplan_dependencies_DEVEL_PREFIX}/include/hddl_parser)
 
 ## val sources
 add_definitions(-Wno-deprecated-declarations) # Disable deprecated declarations warning (about std::auto_ptr)
@@ -62,6 +63,7 @@ set(KNOWLEDGE_SOURCES
     src/PDDLDomainParser.cpp
     src/PDDLProblemParser.cpp
     src/PDDLKnowledgeBase.cpp
+    src/HDDLKnowledgeBase.cpp
     src/RDDLTaskParser.cpp
     src/RDDLKnowledgeBase.cpp
     src/RDDLExprUtils.cpp

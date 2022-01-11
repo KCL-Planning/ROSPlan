@@ -77,6 +77,7 @@ class RosplanSensing:
 
         ################################################################################################################
         # Load scripts
+        self.scripts = None
         if self.functions_path:
             self.scripts = imp.load_source('sensing_scripts', self.functions_path)
             # Declare tools in the scripts module:
@@ -286,7 +287,7 @@ class RosplanSensing:
         pred_name, pred_info = predicate
         if 'operation' in pred_info:  # pred_info is of type self.cfg_topics[pred_name]
             python_string = pred_info['operation']
-        else:  # Call the method from the scripts.py file
+        elif self.scripts:  # Call the method from the scripts.py file
             if not pred_name in dir(self.scripts):
                 rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
                 return None
@@ -294,6 +295,9 @@ class RosplanSensing:
                 python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']], pred_info['publisher'])"
             else:
                 python_string = "self.scripts." + pred_name + "(msg, self.params[pred_name][pred_info['sub_idx']])"
+        else:
+            rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
+            return None
 
         self.mutex.acquire(True)
         result = eval(python_string, globals(), locals())
@@ -338,7 +342,9 @@ class RosplanSensing:
         pkg_name = ros_msg_string[:i]
         msg_name = ros_msg_string[i+1:]
         exec('from ' + pkg_name + ".msg import " + msg_name, globals())
-        exec('self.scripts.' + msg_name + " = " + msg_name, globals(), locals())
+        if self.scripts:
+            exec('self.scripts.' + msg_name + " = " + msg_name, globals(), locals())
+        return msg_name
 
     # Import a ros srv type of type pkg_name/MessageName
     def import_srv(self, ros_srv_string):
@@ -347,21 +353,22 @@ class RosplanSensing:
         pkg_name = ros_srv_string[:i]
         srv_name = ros_srv_string[i + 1:]
         exec ('from ' + pkg_name + ".srv import " + srv_name + ", " + srv_name + "Request", globals())
-        exec ('self.scripts.' + srv_name + " = " + srv_name, globals(), locals())
-        exec ('self.scripts.' + srv_name + "Request = " + srv_name + "Request", globals(), locals())
+        if self.scripts:
+            exec ('self.scripts.' + srv_name + " = " + srv_name, globals(), locals())
+            exec ('self.scripts.' + srv_name + "Request = " + srv_name + "Request", globals(), locals())
         return srv_name
 
     # To be run in its own thread
     def call_services(self):
         rospy.loginfo("Waiting for services to become available...")
-        for i in xrange(len(self.service_names)):
+        for i in range(len(self.service_names)):
             rospy.loginfo('   Waiting for %s', self.service_names[i])
             rospy.wait_for_service(self.service_names[i], 20)
         rospy.loginfo('All services are ready.')
 
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
-            for i in xrange(len(self.service_clients)):
+            for i in range(len(self.service_clients)):
                 now = rospy.Time.now()
                 if (now-self.last_called_time[i]) < rospy.Duration(self.time_between_calls[i]):
                     continue
@@ -370,12 +377,14 @@ class RosplanSensing:
                 # Get request
                 if self.request_src[i]:
                     python_string = self.request_src[i]
-                else:  # Call the method from the scripts.py file
+                elif self.scripts:  # Call the method from the scripts.py file
                     if not ('req_' + pred_name) in dir(self.scripts):
-                        rospy.logerr(
-                            'KCL: (RosplanSensing) Predicate "%s" does not have either a Request creation method' % pred_name)
+                        rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a Request creation method' % pred_name)
                         continue
                     python_string = "self.scripts." + 'req_' + pred_name + "()"
+                else:
+                    rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a Request creation method' % pred_name)
+                    continue
 
                 req = eval(python_string, globals(), locals())
 
@@ -389,12 +398,14 @@ class RosplanSensing:
                 # Process response
                 if self.response_process_src[i]:
                     python_string = self.response_process_src[i]
-                else:  # Call the method from the scripts.py file
+                elif self.scripts:  # Call the method from the scripts.py file
                     if not pred_name in dir(self.scripts):
-                        rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' %
-                            pred_name)
+                        rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
                         continue
                     python_string = "self.scripts." + pred_name + "(res, self.params[pred_name][self.clients_sub_idx[i]])"
+                else:
+                    rospy.logerr('KCL: (RosplanSensing) Predicate "%s" does not have either a function or processing information' % pred_name)
+                    continue
 
                 result = eval(python_string, globals(), locals())
                 changed = False
