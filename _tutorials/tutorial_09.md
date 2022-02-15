@@ -10,7 +10,7 @@ This tutorial will cover the ROSPlan **Knowledge Base** node service for queryin
 
 ## 2. Prior Setup
 
-This tutorial assumes that you have have already followed [Tutorial 01: Problem Generation](../01_problem_generation/tutorial_01.html), and will use the same launch files and scripts.
+This tutorial assumes that you have have already followed [Tutorial 01: Problem Generation](../01_problem_generation/tutorial_01), and will use the same launch files and scripts.
 
 Change directory to the  ROSPlan workspace.
 
