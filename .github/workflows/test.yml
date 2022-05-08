@@ -41,7 +41,9 @@ jobs:
           rosdep install --from-paths src/rosplan --ignore-src -q -r -y
         shell: bash
       - name: Build workspace
-        run: catkin build --summarize --no-status
+        run: |
+          export JAVA_HOME=/usr/lib/jvm/default-java
+          catkin build --summarize --no-status -DROSPLAN_COMPILE_CHIMP=TRUE
       - name: Run tests
         run: |
           source /opt/ros/$ROS_VERSION/setup.bash

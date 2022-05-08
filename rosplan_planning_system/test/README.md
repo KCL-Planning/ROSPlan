@@ -16,6 +16,10 @@ Planner Interface tests:
 
         rostest rosplan_planning_system planner_interface.test --text
 
+CHIMP Planner Interface tests:
+
+        rostest rosplan_planning_system chimp_planner_interface.test --text
+
 Problem Interface tests:
 
         rostest rosplan_planning_system problem_interface.test --text

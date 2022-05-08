@@ -15,3 +15,9 @@
 	url = https://github.com/gerardcanal/PPDDL_determinization.git
 	branch = stable
 	ignore = dirty
+[submodule "rosplan_dependencies/hddl_parser"]
+	path = rosplan_dependencies/hddl_parser
+	url = https://github.com/oscar-lima/hddl_parser.git
+[submodule "rosplan_dependencies/chimp"]
+	path = rosplan_dependencies/chimp
+	url = https://github.com/sebastianstock/chimp.git
