@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from rosplan_dispatch_msgs.msg import ActionDispatch, ActionFeedback
