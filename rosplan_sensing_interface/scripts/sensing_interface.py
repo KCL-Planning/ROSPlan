@@ -7,6 +7,7 @@ import threading
 import numpy as np
 from threading import Lock
 import importlib
+from functools import reduce
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
 from rosplan_knowledge_msgs.srv import GetDomainPredicateDetailsService, GetDomainPredicateDetailsServiceRequest
 from rosplan_knowledge_msgs.srv import GetDomainAttributeService
