@@ -55,6 +55,8 @@ Run an interactive bash shell inside the docker, ready to run ROSPlan:
 docker run -it --rm kclplanning/rosplan bash
 ```
 
+## ROSPlan KB GUI
+There is a newly developed interface to interact with ROSPlan's Knowledge Base. It was built by Eden Jia, using `tkinter` in Python. You can find it and use it [here](https://github.com/H0PP3R/rosplan_gui).
 
 ## Related repositories:
 
