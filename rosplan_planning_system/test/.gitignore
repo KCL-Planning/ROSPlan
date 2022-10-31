@@ -1,0 +1,7 @@
+# automatically generated pddl problem
+pddl/turtlebot/problem.pddl
+pddl/amazon/generated_test_problem.pddl
+
+# popf generated plan
+pddl/turtlebot/plan.pddl
+pddl/test_domain/plan.pddl

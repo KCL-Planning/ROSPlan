@@ -1,0 +1,36 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Mergetool
+*.orig
+
+#python
+*.pyc
+
+#gedit
+*~
+
+# temporary plan files
+rosplan_planning_system/common/plan*
+
+# build directory for vscode
+build

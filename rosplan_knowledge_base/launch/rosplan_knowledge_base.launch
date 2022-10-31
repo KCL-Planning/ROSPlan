@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- NOTE: This is an example launch file, please do not modify! -->
+
+  <arg name="domain_path" default="$(find rosplan_planning_system)/test/pddl/turtlebot/domain.pddl"/>
+  <arg name="use_unknowns" default="false"/>
+  <arg name="kb_rate" default="100"/>
+
+  <!-- rosplan knowledge base -->
+  <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+    <param name="domain_path" value="$(arg domain_path)" />
+    <!-- conditional planning flags -->
+    <param name="use_unknowns" value="$(arg use_unknowns)" />
+    <param name="kb_rate" value="$(arg kb_rate)" />
+  </node>
+
+</launch>

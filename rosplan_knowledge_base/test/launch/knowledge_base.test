@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(find rosplan_planning_system)/test/pddl/amazon/domain.pddl" />
+        <param name="problem_path" value="$(find rosplan_planning_system)/test/pddl/amazon/problem.pddl" />
+        <!-- conditional planning flags -->
+        <param name="use_unknowns" value="false" />
+    </node>
+
+    <test test-name="KnowledgeBaseTests" pkg="rosplan_knowledge_base" type="KnowledgeBaseTests" />
+
+</launch>

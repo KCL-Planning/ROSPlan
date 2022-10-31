@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+	<name>rosplan</name>
+	<version>0.0.0</version>
+	<description>ROSPlan metapackage</description>
+	<maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
+	<license>BSD</license>
+	<url type="website">https://github.com/KCL-Planning/ROSPlan</url>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+	<run_depend>rosplan_knowledge_msgs</run_depend>
+	<run_depend>rosplan_dispatch_msgs</run_depend>
+	<run_depend>rosplan_dependencies</run_depend>
+	<run_depend>rosplan_planning_system</run_depend>
+	<run_depend>rosplan_knowledge_base</run_depend>
+	<run_depend>rosplan_sensing_interface</run_depend>
+	<run_depend>rosplan_action_interface</run_depend>
+
+	<export><metapackage/></export>
+</package>

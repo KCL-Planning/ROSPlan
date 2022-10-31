@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="pddl_action_name" />
+	<arg name="action_duration"		default="0.0" />
+	<arg name="action_duration_stddev"		default="0.0" />
+	<arg name="action_probability"	default="1.0" />
+	<arg name="knowledge_base"		default="rosplan_knowledge_base" />
+	<arg name="action_dispatch_topic"	default="/rosplan_plan_dispatcher/action_dispatch" />
+	<arg name="action_feedback_topic"	default="/rosplan_plan_dispatcher/action_feedback" />
+
+	<!-- simulated action -->
+	<node name="rosplan_interface_$(arg pddl_action_name)" pkg="rosplan_planning_system" type="simulatedAction" respawn="false" output="screen">
+		<param name="knowledge_base"		 value="$(arg knowledge_base)" />
+		<param name="pddl_action_name"		 value="$(arg pddl_action_name)" />
+		<param name="action_duration"		 value="$(arg action_duration)" />
+		<param name="action_duration_stddev" value="$(arg action_duration_stddev)" />
+		<param name="action_probability"	 value="$(arg action_probability)" />
+		<param name="action_dispatch_topic"  value="$(arg action_dispatch_topic)" />
+		<param name="action_feedback_topic"  value="$(arg action_feedback_topic)" />
+	</node>
+
+</launch>
+
+

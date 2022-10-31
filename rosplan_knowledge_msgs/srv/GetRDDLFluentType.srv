@@ -1,0 +1,4 @@
+# Get all values of the enumeration type with the name 'typeName'.
+string fluent_name
+---
+string type

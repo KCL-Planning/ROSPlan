@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="main_rate"   default="10"/>
+
+    <node name="rosplan_sensing_interface" pkg="rosplan_sensing_interface" type="sensing_interface.py" respawn="false" output="screen">
+        <rosparam command="load" file="$(find rosplan_sensing_interface)/example.yaml" />
+        <param name="main_rate"  value="$(arg main_rate)" />
+    </node>
+
+</launch>

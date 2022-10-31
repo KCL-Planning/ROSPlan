@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<package>
+  <name>rosplan_planning_system</name>
+  <version>0.0.0</version>
+  <description>Deliberative layer of ROSPlan.  Deals with automatic problem generation, planning, dispatch, and replanning.</description>
+  <maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
+  <license>BSD</license>
+  <url type="website">https://github.com/KCL-Planning/ROSPlan</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>flex</build_depend>
+  <build_depend>glut</build_depend>
+  <build_depend>rosplan_dispatch_msgs</build_depend>
+  <build_depend>rosplan_knowledge_msgs</build_depend>
+  <build_depend>rosplan_dependencies</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rostest</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>flex</run_depend>
+  <run_depend>glut</run_depend>
+  <run_depend>rosplan_dispatch_msgs</run_depend>
+  <run_depend>rosplan_knowledge_msgs</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rostest</run_depend>
+  <run_depend>python-yaml</run_depend> 
+  <!-- python-yaml is only for python2, for python 3 it owul dbe python3-ymal
+    It would be better if we swtich to version 2 of the package format. 
+    Then we could use the following:
+    <exec_depend condition="$ROS_PYTHON_VERSION == 2">python-yaml</exec_depend> 
+    <exec_depend condition="$ROS_PYTHON_VERSION == 3">python3-yaml</exec_depend>
+  -->
+
+  <export></export>
+</package>

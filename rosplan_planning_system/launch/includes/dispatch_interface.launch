@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="node_name"                default="rosplan_plan_dispatcher" />
+	<arg name="knowledge_base"           default="rosplan_knowledge_base" />
+	<arg name="plan_topic"               default="/rosplan_parsing_interface/complete_plan" />
+	<arg name="action_dispatch_topic"    default="action_dispatch" />
+	<arg name="action_feedback_topic"    default="action_feedback" />
+	<!-- visualize edges with colors: interference edge, conditional edge, etc -->
+	<arg name="display_edge_type"        default="false" />
+    <arg name="timeout_actions"          default="false" />
+    <arg name="action_timeout_fraction"  default="0" />
+
+
+	<!-- plan dispatching -->
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="pddl_esterel_plan_dispatcher" respawn="false" output="screen">
+		<param name="knowledge_base"        value="$(arg knowledge_base)" />
+		<param name="plan_topic"            value="$(arg plan_topic)" />
+		<param name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+		<param name="action_feedback_topic" value="$(arg action_feedback_topic)" />
+		<param name="display_edge_type"     value="$(arg display_edge_type)" />
+        <param name="timeout_actions"         value="$(arg timeout_actions)" />
+        <param name="action_timeout_fraction" value="$(arg action_timeout_fraction)" />
+	</node>
+
+</launch>

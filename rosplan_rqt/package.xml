@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+	<name>rosplan_rqt</name>
+	<version>0.0.0</version>
+	<description>The rosplan_rqt package</description>
+	<maintainer email="michael.cashmore@kcl.ac.uk">michael</maintainer>
+	<license>BSD</license>
+	<url type="website">https://github.com/KCL-Planning/ROSPlan</url>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+	<run_depend>python-rospkg</run_depend>
+	<run_depend>rqt_gui</run_depend>
+	<run_depend>rqt_gui_py</run_depend>
+	<run_depend>std_msgs</run_depend>
+	<run_depend>rqt_graph</run_depend>
+
+	<export>
+		<rqt_gui plugin="${prefix}/plugin.xml"/>
+	</export>
+</package>

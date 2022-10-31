@@ -1,0 +1,6 @@
+# Fetching the Domain (1/3):
+# Get all types in the domain.
+
+---
+string[] types
+string[] super_types

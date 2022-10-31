@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments -->
+	<arg name="node_name" 	     default="rosplan_problem_interface" />
+	<arg name="knowledge_base"   default="rosplan_knowledge_base" />
+	<arg name="domain_path"      default="$(find rosplan_planning_system)/test/pddl/turtlebot/domain.pddl" />
+	<arg name="problem_path"     default="$(find rosplan_planning_system)/test/pddl/turtlebot/problem.pddl" />
+	<arg name="problem_topic"    default="problem_instance" />
+	<arg name="planning_language" default="PDDL" /> <!-- Can be RDDL, PPDDL or PDDL -->
+
+	<!-- problem generation -->
+	<node name="$(arg node_name)" pkg="rosplan_planning_system" type="problemInterface" respawn="false" output="screen">
+		<param name="knowledge_base" value="$(arg knowledge_base)" />
+		<param name="domain_path"    value="$(arg domain_path)" />
+		<param name="problem_path"   value="$(arg problem_path)" />
+		<param name="problem_topic"  value="$(arg problem_topic)" />
+		<param name="planning_language"  value="$(arg planning_language)" />
+	</node>
+
+</launch>

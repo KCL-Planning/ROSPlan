@@ -1,0 +1,5 @@
+rosplan_knowledge_msgs/KnowledgeItem[] knowledge
+---
+bool all_true
+bool[] results
+rosplan_knowledge_msgs/KnowledgeItem[] false_knowledge

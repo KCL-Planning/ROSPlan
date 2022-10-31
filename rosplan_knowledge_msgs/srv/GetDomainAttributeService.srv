@@ -1,0 +1,5 @@
+# Fetching the Domain (3/3):
+# Get all predicates or functions in the domain.
+
+---
+rosplan_knowledge_msgs/DomainFormula[] items

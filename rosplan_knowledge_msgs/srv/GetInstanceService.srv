@@ -1,0 +1,7 @@
+# PDDL problem generation; service(1/3):
+# Get all instances of the type with the name 'typeName'.
+string type_name
+bool include_constants
+bool include_subtypes
+---
+string[] instances

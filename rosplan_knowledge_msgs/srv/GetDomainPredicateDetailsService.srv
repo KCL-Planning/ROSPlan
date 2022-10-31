@@ -1,0 +1,6 @@
+# Fetching the Domain (1.5/3):
+# Get all details of a specific predicate in the domain.
+string name
+---
+rosplan_knowledge_msgs/DomainFormula predicate
+bool is_sensed

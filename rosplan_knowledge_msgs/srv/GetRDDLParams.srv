@@ -1,0 +1,5 @@
+---
+int32 horizon
+float32 discount_factor
+int32 max_nondef_actions
+

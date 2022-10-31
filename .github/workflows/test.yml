@@ -1,0 +1,54 @@
+name: test
+
+on: [push, pull_request]
+
+env:
+  ROS_VERSION: melodic
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest    
+    container: ros:melodic
+    steps:
+      - name: Prepare docker
+        run: |
+          # Install newer git from ppa to prevent https://github.com/actions/checkout/issues/126
+          APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=true apt-key adv --keyserver keyserver.ubuntu.com --recv-key E1DD270288B4E6030699E45FA1715D88E1DF1F24 2>&1
+          echo "deb http://ppa.launchpad.net/git-core/ppa/ubuntu bionic main" | tee /etc/apt/sources.list.d/git.list 
+          sudo apt update -qq
+          sudo apt install python-catkin-tools git -y -qq
+      - name: Create ROS workspace
+        run: |
+          source /opt/ros/$ROS_VERSION/setup.bash
+          mkdir src
+          catkin init
+          catkin build --summarize  --no-status
+        shell: bash
+      - name: "Checkout source"
+        uses: actions/checkout@v2
+        with:
+          path: src/rosplan
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          cd src/rosplan
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      - name: Install dependencies
+        run: |
+          source devel/setup.bash
+          rosdep update
+          rosdep install --from-paths src/rosplan --ignore-src -q -r -y
+        shell: bash
+      - name: Build workspace
+        run: |
+          export JAVA_HOME=/usr/lib/jvm/default-java
+          catkin build --summarize --no-status -DROSPLAN_COMPILE_CHIMP=TRUE
+      - name: Run tests
+        run: |
+          source /opt/ros/$ROS_VERSION/setup.bash
+          catkin run_tests --no-status
+          catkin_test_results --verbose
+        shell: bash
+
+

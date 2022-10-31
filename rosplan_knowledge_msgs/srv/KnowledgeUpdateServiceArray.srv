@@ -1,0 +1,14 @@
+# Knowledge building; extra service:
+# Add or remove knowledge from the current state using an array to save time.
+
+uint8 ADD_KNOWLEDGE = 0
+uint8 ADD_GOAL = 1
+uint8 REMOVE_KNOWLEDGE = 2
+uint8 REMOVE_GOAL = 3
+uint8 ADD_METRIC = 4
+uint8 REMOVE_METRIC = 5
+
+uint8[] update_type
+rosplan_knowledge_msgs/KnowledgeItem[] knowledge
+---
+bool success

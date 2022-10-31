@@ -1,0 +1,7 @@
+# PDDL problem generation; service(2/3):
+# Get all facts (or functions) by predicate name (or function name).
+# The results are passed as an array of KnowledgeItems
+# The array of initial_time is used for TILs and TIFs not yet active
+string predicate_name
+---
+rosplan_knowledge_msgs/KnowledgeItem[] attributes

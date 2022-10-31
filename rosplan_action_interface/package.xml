@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosplan_action_interface</name>
+  <version>0.0.0</version>
+  <description>This package contains node(s) that can be used to subscribe to the PDDL action dispatch of the planning system plan execution, and send goals to external components.</description>
+
+  <maintainer email="bezrucav@igmr.rwth-aachen.de">Stefan Bezrucav</maintainer>
+  <maintainer email="michael.cashmore@strath.ac.uk">michael</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>actionlib_msgs</depend>
+
+  <export></export>
+
+</package>

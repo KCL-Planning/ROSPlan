@@ -1,0 +1,35 @@
+# Already there. Do nothing.
+
+(Problem
+
+(ArgumentSymbols
+  n)
+
+(Instances ManipulationArea
+	   manipulationAreaEastCounter1
+    	   manipulationAreaNorthTable1 manipulationAreaSouthTable1
+	   manipulationAreaWestTable2 manipulationAreaEastTable2)
+
+(Fluent f1 RobotAt(preManipulationAreaEastCounter1))
+(Constraint Release[0,0](f1))
+
+(Fluent f2 Holding(leftArm1 nothing))
+(Constraint Release[0,0](f2))
+
+(Fluent f3 Holding(rightArm1 nothing))
+(Constraint Release[0,0](f3))
+
+(Fluent f4 HasArmPosture(leftArm1 ArmUnTuckedPosture))
+(Constraint Release[0,0](f4))
+
+(Fluent f5 HasArmPosture(rightArm1 ArmUnTuckedPosture))
+(Constraint Release[0,0](f5))
+
+(Fluent f6 HasTorsoPosture(TorsoUpPosture))
+(Constraint Release[0,0](f6))
+
+(Task t0 get_object(mug2))
+(Constraint Release[1,1](t0))
+
+
+)

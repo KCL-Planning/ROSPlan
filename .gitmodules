@@ -1,0 +1,23 @@
+[submodule "rosplan_dependencies/VAL"]
+	path = rosplan_dependencies/VAL
+	url = https://github.com/KCL-Planning/VAL.git
+	ignore = dirty
+[submodule "rosplan_dependencies/rddl_parser"]
+	path = rosplan_dependencies/rddl_parser
+	url = https://github.com/gerardcanal/rddl_parser.git
+  ignore = dirty
+[submodule "rosplan_dependencies/rddlsim"]
+	path = rosplan_dependencies/rddlsim
+	url = https://github.com/ssanner/rddlsim.git
+	ignore = dirty
+[submodule "rosplan_dependencies/ppddl_parser"]
+	path = rosplan_dependencies/ppddl_parser
+	url = https://github.com/gerardcanal/PPDDL_determinization.git
+	branch = stable
+	ignore = dirty
+[submodule "rosplan_dependencies/hddl_parser"]
+	path = rosplan_dependencies/hddl_parser
+	url = https://github.com/oscar-lima/hddl_parser.git
+[submodule "rosplan_dependencies/chimp"]
+	path = rosplan_dependencies/chimp
+	url = https://github.com/sebastianstock/chimp.git
