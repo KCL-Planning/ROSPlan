@@ -36,6 +36,8 @@ namespace KCL_rosplan {
 		/* visitor methods */
 		virtual void visit_proposition(VAL1_2::proposition *);
 		virtual void visit_operator_(VAL1_2::operator_ *);
+    	virtual void visit_action(VAL1_2::action * s);
+    	virtual void visit_durative_action(VAL1_2::durative_action * s);
 
 		virtual void visit_simple_goal(VAL1_2::simple_goal *);
 		virtual void visit_qfied_goal(VAL1_2::qfied_goal *);
