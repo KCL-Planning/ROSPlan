@@ -39,29 +39,34 @@ RDDLExprUtils::getExpression(const LogicalExpression *expr, const std::map<std::
 }
 
 rosplan_knowledge_msgs::ExprComposite RDDLExprUtils::getExpression(const Connective *expr, const std::map<std::string, std::string>& assign) {
-    assert(expr->exprs.size() == 2); // Assuming two operands in each
     rosplan_knowledge_msgs::ExprComposite ret;
 
-    rosplan_knowledge_msgs::ExprBase base;
-    base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
+    for (int i = 0; i < expr->exprs.size()-1; ++i) {
+        rosplan_knowledge_msgs::ExprBase base;
+        base.expr_type = rosplan_knowledge_msgs::ExprBase::OPERATOR;
 
-    // Check type
-    if (dynamic_cast<const Multiplication*>(expr) != nullptr || dynamic_cast<const Conjunction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::MUL;
-    else if (dynamic_cast<const Addition*>(expr) != nullptr || dynamic_cast<const Disjunction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::ADD;
-    else if (dynamic_cast<const Subtraction*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::SUB;
-    else if (dynamic_cast<const Division*>(expr) != nullptr)  base.op = rosplan_knowledge_msgs::ExprBase::DIV;
-    else {
-        NOT_IMPLEMENTED_EXPR;
-        return ret;
+        // Check type
+        if (dynamic_cast<const Multiplication *>(expr) != nullptr ||
+            dynamic_cast<const Conjunction *>(expr) != nullptr)
+            base.op = rosplan_knowledge_msgs::ExprBase::MUL;
+        else if (dynamic_cast<const Addition *>(expr) != nullptr ||
+                 dynamic_cast<const Disjunction *>(expr) != nullptr)
+            base.op = rosplan_knowledge_msgs::ExprBase::ADD;
+        else if (dynamic_cast<const Subtraction *>(expr) != nullptr) base.op = rosplan_knowledge_msgs::ExprBase::SUB;
+        else if (dynamic_cast<const Division *>(expr) != nullptr) base.op = rosplan_knowledge_msgs::ExprBase::DIV;
+        else {
+            NOT_IMPLEMENTED_EXPR;
+            return ret;
+        }
+        ret.tokens.push_back(base);
+
+        rosplan_knowledge_msgs::ExprComposite operand = getExpression(expr->exprs[i], assign);
+        join(ret.tokens, operand.tokens);
     }
-    ret.tokens.push_back(base);
 
-    rosplan_knowledge_msgs::ExprComposite operand1 = getExpression(expr->exprs[0], assign);
-    rosplan_knowledge_msgs::ExprComposite operand2 = getExpression(expr->exprs[1], assign);
-    //ret.tokens.insert(ret.tokens.end(), std::make_move_iterator(operand1.tokens.begin()), std::make_move_iterator(operand1.tokens.end()));
-    join(ret.tokens, operand1.tokens);
-    //ret.tokens.insert(ret.tokens.end(), std::make_move_iterator(operand2.tokens.begin()), std::make_move_iterator(operand2.tokens.end()));
-    join(ret.tokens, operand2.tokens);
+    // Add last
+    rosplan_knowledge_msgs::ExprComposite operand = getExpression(expr->exprs[expr->exprs.size()-1], assign);
+    join(ret.tokens, operand.tokens);
     return ret;
 }
 
