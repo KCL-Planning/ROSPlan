@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import rospkg
@@ -6,7 +6,8 @@ import re
 import threading
 import numpy as np
 from threading import Lock
-import imp
+import importlib
+from functools import reduce
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
 from rosplan_knowledge_msgs.srv import GetDomainPredicateDetailsService, GetDomainPredicateDetailsServiceRequest
 from rosplan_knowledge_msgs.srv import GetDomainAttributeService
@@ -79,7 +80,7 @@ class RosplanSensing:
         # Load scripts
         self.scripts = None
         if self.functions_path:
-            self.scripts = imp.load_source('sensing_scripts', self.functions_path)
+            self.scripts = importlib.machinery.SourceFileLoader('sensing_scripts', self.functions_path).load_module()
             # Declare tools in the scripts module:
             self.scripts.get_kb_attribute = self.get_kb_attribute
             self.scripts.rospy = rospy
@@ -93,7 +94,7 @@ class RosplanSensing:
         ######
         # Subscribe to all the topics
         self.offset = {}  # Offset for reading cfg
-        for predicate_name, predicate_info in self.cfg_topics.iteritems():
+        for predicate_name, predicate_info in self.cfg_topics.items():
             if type(predicate_info) is list:  # We have nested elements in the predicate
                 for i, pi in enumerate(predicate_info):
                     pi['sub_idx'] = i
@@ -118,7 +119,7 @@ class RosplanSensing:
         self.request_src = []
         self.response_process_src = []
         self.clients_sub_idx = []
-        for predicate_name, predicate_info in self.cfg_service.iteritems():
+        for predicate_name, predicate_info in self.cfg_service.items():
             if type(predicate_info) is list:
                 for i, pi in enumerate(predicate_info):
                     pi['sub_idx'] = i
@@ -152,7 +153,7 @@ class RosplanSensing:
 
         kb_params = []
         for p in kb_info.typed_parameters:
-            instances = self.get_instances_srv.call(GetInstanceServiceRequest(p.value, True)).instances
+            instances = self.get_instances_srv.call(GetInstanceServiceRequest(p.value, True, True)).instances
             kb_params.append(instances)
 
         if 'params' in predicate_info:
@@ -457,7 +458,7 @@ class RosplanSensing:
         sensed_predicates.update(self.sensed_services.copy())
         self.srv_mutex.release()
 
-        for predicate, (val, changed, updated) in sensed_predicates.iteritems():
+        for predicate, (val, changed, updated) in sensed_predicates.items():
             if updated:
                 continue
 
@@ -518,7 +519,7 @@ class RosplanSensing:
             self.srv_mutex.acquire(True)
 
             # Dump cache, it will be reloaded in the next update
-            for predicate, (val, changed, updated) in self.sensed_topics.iteritems():
+            for predicate, (val, changed, updated) in self.sensed_topics.items():
                 self.sensed_topics[predicate] = (val, changed, False)
             self.sensed_services.clear()
 

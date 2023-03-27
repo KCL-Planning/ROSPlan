@@ -15,11 +15,11 @@ Several demos are available in the [rosplan_demos repository](https://github.com
 
 ## Installation
 
-ROSPlan supports kinetic and melodic ROS distributions and is developed under Ubuntu 16.04 / 18.04, being linux Ubuntu 18.04 + melodic the recommended setup.
+ROSPlan supports by default noetic ROS1 distribution and is developed under Ubuntu 20.04.
 
 Install dependencies:
 ```sh
-sudo apt install flex bison freeglut3-dev libbdd-dev python-catkin-tools ros-$ROS_DISTRO-tf2-bullet
+sudo apt install flex bison freeglut3-dev libbdd-dev python3-osrf-pycommon python3-catkin-tools
 ```
 
 Select or create a [catkin workspace](http://wiki.ros.org/catkin/Tutorials/create_a_workspace):
