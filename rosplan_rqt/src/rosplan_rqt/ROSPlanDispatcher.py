@@ -183,7 +183,7 @@ class PlanViewWidget(QWidget):
         self.instanceView.clear()
         for typename in self._type_list:
             instance_client = rospy.ServiceProxy('rosplan_knowledge_base/state/instances', GetInstanceService)
-            resp = instance_client(typename)
+            resp = instance_client(type_name=typename)
             item = QTreeWidgetItem(self.instanceView)
             item.setText(0, typename)
             for instancename in resp.instances:
@@ -273,7 +273,7 @@ class PlanViewWidget(QWidget):
         for param_type in self._predicate_param_type_list[predName]:
             try:
                 predicates_client = rospy.ServiceProxy('rosplan_knowledge_base/state/instances', GetInstanceService)
-                resp = predicates_client(param_type)
+                resp = predicates_client(type_name=param_type)
                 parameters.append(resp.instances)
             except rospy.ServiceException as e:
                 rospy.logerr(f'Service call failed: {e}')
