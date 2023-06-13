@@ -43,12 +43,14 @@ namespace KCL_rosplan {
         std::vector<std::string> pred_funcs = getPredicatesFunctions();
         std::set<std::string> fluents, non_fluents;
         getAllFluents(pred_funcs, fluents, non_fluents);
+        std::map<std::string, std::string> fluent_types;
+        getFluentTypes(fluents, non_fluents, fluent_types);
         pFile << "// Auto-generated problem file by ROSPlan" << std::endl;
-        makeNonFluents(pFile, non_fluents);
-        makeInstance(pFile, fluents);
+        makeNonFluents(pFile, non_fluents, fluent_types);
+        makeInstance(pFile, fluents, fluent_types);
     }
 
-    void RDDLProblemGenerator::makeNonFluents(std::ofstream &pFile, const std::set<std::string>& nonfluents) {
+    void RDDLProblemGenerator::makeNonFluents(std::ofstream &pFile, const std::set<std::string>& nonfluents, const std::map<std::string, std::string> &fluent_types) {
         pFile << "non-fluents "<< _non_fluents_name << " {" << std::endl;
         pFile << "\tdomain = " << _domain_name << ";" << std::endl;
 
@@ -86,20 +88,20 @@ namespace KCL_rosplan {
 
         // Print non-fluents
         pFile << "\tnon-fluents {" << std::endl;
-        printGenericFluentList(pFile, nonfluents);
+        printGenericFluentList(pFile, nonfluents, fluent_types);
         pFile << "\t};" << std::endl;
         pFile << "}" << std::endl;
     }
 
 
-    void RDDLProblemGenerator::makeInstance(std::ofstream &pFile, const std::set<std::string> &fluents) {
+    void RDDLProblemGenerator::makeInstance(std::ofstream &pFile, const std::set<std::string> &fluents, const std::map<std::string, std::string> &fluent_types) {
         pFile << "instance " << _domain_name << "__generated_instance {" << std::endl;
         pFile << "\tdomain = " << _domain_name << ";" << std::endl;
         pFile << "\tnon-fluents = " << _non_fluents_name << ";" << std::endl;
 
         // Initial state
         pFile << "\tinit-state {" << std::endl;
-        printGenericFluentList(pFile, fluents);
+        printGenericFluentList(pFile, fluents, fluent_types);
         pFile << "\t};" << std::endl;
 
         std::string srv_name = "/" + knowledge_base + "/state/rddl_parameters";
@@ -210,6 +212,27 @@ namespace KCL_rosplan {
         }
     }
 
+    void RDDLProblemGenerator::getFluentTypes(const std::set<std::string> &fluents, const std::set<std::string> &nonfluents, std::map<std::string, std::string> &fluent_types) {
+        for (auto pfit = fluents.begin(); pfit != fluents.end(); ++pfit) {
+            rosplan_knowledge_msgs::GetRDDLFluentType gft;
+            gft.request.fluent_name = *pfit;
+            if (!_get_fluent_type.call(gft)) {
+                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", _get_fluent_type.getService().c_str(), gft.request.fluent_name.c_str());
+                return;
+            }
+            fluent_types[*pfit] = gft.response.type;
+        }
+        for (auto pfit = nonfluents.begin(); pfit != nonfluents.end(); ++pfit) {
+            rosplan_knowledge_msgs::GetRDDLFluentType gft;
+            gft.request.fluent_name = *pfit;
+            if (!_get_fluent_type.call(gft)) {
+                ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s", _get_fluent_type.getService().c_str(), gft.request.fluent_name.c_str());
+                return;
+            }
+            fluent_types[*pfit] = gft.response.type;
+        }
+    }
+
     std::vector<std::string> RDDLProblemGenerator::getPredicatesFunctions() {
         std::vector<std::string> pred_funcs;
 
@@ -233,66 +256,66 @@ namespace KCL_rosplan {
     }
 
     void RDDLProblemGenerator::printGenericFluentElement(std::ofstream &pFile,
-                                                         const std::vector<rosplan_knowledge_msgs::KnowledgeItem> &elem) {
-        for (auto pfit = elem.begin(); pfit != elem.end(); ++pfit) {
-            pFile << "\t\t" << pfit->attribute_name;
+                                                         std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator pfit, 
+                                                         const std::map<std::string, std::string> &fluent_types) {
+        pFile << "\t\t" << pfit->attribute_name;
 
-            // Parameters if any
-            if (pfit->values.size() > 0) {
-                pFile << "(";
-                bool comma = false;
-                for (auto it = pfit->values.begin(); it != pfit->values.end(); ++it) {
-                    if (comma) pFile << ", ";
-                    else comma = true;
-                    pFile << it->value;
-                }
-                pFile << ")";
+        // Parameters if any
+        if (pfit->values.size() > 0) {
+            pFile << "(";
+            bool comma = false;
+            for (auto it = pfit->values.begin(); it != pfit->values.end(); ++it) {
+                if (comma) pFile << ", ";
+                else comma = true;
+                pFile << it->value;
             }
-
-            // Value
-            pFile << " = ";
-            if (pfit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
-                pFile << ((pfit->is_negative == 0)? "true" : "false");
-            }
-            else { // FUNCTION
-                rosplan_knowledge_msgs::GetRDDLFluentType gft;
-                gft.request.fluent_name = pfit->attribute_name;
-                if (!_get_fluent_type.call(gft)) {
-                    ROS_ERROR("KCL: (PDDLProblemGenerator) Failed to call service %s: %s",
-                              _get_fluent_type.getService().c_str(), gft.request.fluent_name.c_str());
-                    return;
-                }
-                auto enum_type = _enumeration_types.find(gft.response.type);
-                if (enum_type != _enumeration_types.end()) {
-                    pFile << enum_type->second[pfit->function_value];
-                }
-                else pFile << pfit->function_value;
-            }
-            pFile << ";" << std::endl;
+            pFile << ")";
         }
+
+        // Value
+        pFile << " = ";
+        if (pfit->knowledge_type == rosplan_knowledge_msgs::KnowledgeItem::FACT) {
+            pFile << ((pfit->is_negative == 0)? "true" : "false");
+        }
+        else { // FUNCTION
+            auto enum_type = _enumeration_types.find(fluent_types.at(pfit->attribute_name));
+            if (enum_type != _enumeration_types.end()) {
+                pFile << enum_type->second[pfit->function_value];
+            }
+            else pFile << pfit->function_value;
+        }
+        pFile << ";" << std::endl;
     }
 
-    void RDDLProblemGenerator::printGenericFluentList(std::ofstream &pFile, const std::set<std::string> &fluentlist) {
+    void RDDLProblemGenerator::printGenericFluentList(std::ofstream &pFile, const std::set<std::string> &fluentlist, const std::map<std::string, std::string> &fluent_types) {
         ros::ServiceClient getPropsClient = _nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(state_proposition_service);
         ros::ServiceClient getFuncsClient = _nh.serviceClient<rosplan_knowledge_msgs::GetAttributeService>(state_function_service);
-        for (auto it = fluentlist.begin(); it != fluentlist.end(); ++it) {
-            rosplan_knowledge_msgs::GetAttributeService attrSrv;
-            attrSrv.request.predicate_name = *it;
-            if (!getPropsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
-                          state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
-                continue;
-            }
-
-            // If it was not a proposition, try functions
-            if (attrSrv.response.attributes.size() == 0 and !getFuncsClient.call(attrSrv)) {
-                ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
-                          state_proposition_service.c_str(), attrSrv.request.predicate_name.c_str());
-                continue;
-            }
-            printGenericFluentElement(pFile, attrSrv.response.attributes);
+         
+        rosplan_knowledge_msgs::GetAttributeService prop_attrSrv; // Get all the propositions to prevent multiple calls
+        if (!getPropsClient.call(prop_attrSrv)) {
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
+                        state_proposition_service.c_str(), prop_attrSrv.request.predicate_name.c_str());
         }
 
+        rosplan_knowledge_msgs::GetAttributeService func_attrSrv; // Get all the functions to prevent multiple calls
+        if (!getFuncsClient.call(func_attrSrv)) {
+            ROS_ERROR("KCL: (RDDLProblemGenerator) Failed to call service %s: %s",
+                        state_proposition_service.c_str(), func_attrSrv.request.predicate_name.c_str());
+        }
+
+        // Check propositions
+        for (auto pit = prop_attrSrv.response.attributes.begin(); pit != prop_attrSrv.response.attributes.end(); ++pit) {
+            for (auto it = fluentlist.begin(); it != fluentlist.end(); ++it) {
+                if (pit->attribute_name == *it) printGenericFluentElement(pFile, pit, fluent_types);
+            }
+        }
+
+        // Check functions
+        for (auto pit = func_attrSrv.response.attributes.begin(); pit != func_attrSrv.response.attributes.end(); ++pit) {
+            for (auto it = fluentlist.begin(); it != fluentlist.end(); ++it) {
+                if (pit->attribute_name == *it) printGenericFluentElement(pFile, pit, fluent_types);
+            }
+        }
     }
 
 }
