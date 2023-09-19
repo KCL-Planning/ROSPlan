@@ -52,19 +52,20 @@ add_executable(problemInterface src/ProblemGeneration/ProblemInterface.cpp src/P
                                                                            src/ProblemGeneration/CHIMPProblem.cpp
                                                                            src/ProblemGeneration/CHIMPProblemGenerator.cpp
                                                                            src/ProblemGeneration/ProblemGeneratorFactory.cpp)
-add_executable(popf_planner_interface src/PlannerInterface/POPFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(panda_planner_interface src/PlannerInterface/PANDAPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(ff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(rddlsim_planner_interface src/PlannerInterface/RDDLSIMPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(metricff_planner_interface src/PlannerInterface/FFPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(smt_planner_interface src/PlannerInterface/SMTPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(fd_planner_interface src/PlannerInterface/FDPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(tfd_planner_interface src/PlannerInterface/TFDPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(lpg_planner_interface src/PlannerInterface/LPGPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(upm_planner_interface src/PlannerInterface/UPMPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(pprp_planner_interface src/PlannerInterface/PPRPPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(chimp_planner_interface src/PlannerInterface/CHIMPPlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
-add_executable(online_planner_interface src/PlannerInterface/OnlinePlannerInterface.cpp src/PlannerInterface/PlannerInterface.cpp)
+add_executable(main src/PlannerInterface/main.cpp src/PlannerInterface/POPFPlannerInterface.cpp
+						  src/PlannerInterface/PANDAPlannerInterface.cpp
+						  src/PlannerInterface/FFPlannerInterface.cpp
+						  src/PlannerInterface/RDDLSIMPlannerInterface.cpp
+						  src/PlannerInterface/FFPlannerInterface.cpp
+						  src/PlannerInterface/SMTPlannerInterface.cpp
+						  src/PlannerInterface/FDPlannerInterface.cpp
+						  src/PlannerInterface/TFDPlannerInterface.cpp
+						  src/PlannerInterface/LPGPlannerInterface.cpp
+						  src/PlannerInterface/UPMPlannerInterface.cpp
+						  src/PlannerInterface/PPRPPlannerInterface.cpp
+						  src/PlannerInterface/CHIMPPlannerInterface.cpp
+						  src/PlannerInterface/OnlinePlannerInterface.cpp
+						  src/PlannerInterface/PlannerInterface.cpp)			
 add_executable(pddl_simple_plan_parser src/PlanParsing/PDDLSimplePlanParser.cpp src/PlanParsing/PlanParser.cpp)
 add_executable(pddl_esterel_plan_parser src/PlanParsing/PDDLEsterelPlanParser.cpp src/PlanParsing/PlanParser.cpp)
 add_executable(pddl_simple_plan_dispatcher src/PlanDispatch/SimplePlanDispatcher.cpp src/PlanDispatch/PlanDispatcher.cpp)
@@ -74,19 +75,7 @@ add_executable(simulatedAction src/ActionInterface/RPSimulatedActionInterface.cp
 
 ## Add dependencies
 add_dependencies(problemInterface ${catkin_EXPORTED_TARGETS})
-add_dependencies(popf_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(panda_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(ff_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(rddlsim_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(metricff_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(smt_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(fd_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(tfd_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(lpg_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(upm_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(pprp_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(online_planner_interface ${catkin_EXPORTED_TARGETS})
-add_dependencies(chimp_planner_interface ${catkin_EXPORTED_TARGETS})
+add_dependencies(main ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_esterel_plan_parser ${catkin_EXPORTED_TARGETS})
 add_dependencies(pddl_simple_plan_dispatcher ${catkin_EXPORTED_TARGETS})
@@ -96,19 +85,7 @@ add_dependencies(simulatedAction ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries against which to link a library or executable target
 target_link_libraries(problemInterface ${catkin_LIBRARIES})
-target_link_libraries(popf_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(panda_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(ff_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(rddlsim_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(metricff_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(smt_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(fd_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(tfd_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(lpg_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(upm_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(pprp_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(online_planner_interface ${catkin_LIBRARIES})
-target_link_libraries(chimp_planner_interface ${catkin_LIBRARIES})
+target_link_libraries(main ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_esterel_plan_parser ${catkin_LIBRARIES})
 target_link_libraries(pddl_simple_plan_dispatcher ${catkin_LIBRARIES})

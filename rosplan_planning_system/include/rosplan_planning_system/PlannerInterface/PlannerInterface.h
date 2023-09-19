@@ -10,6 +10,13 @@
 #include "rosplan_dispatch_msgs/PlanningService.h"
 #include "rosplan_dispatch_msgs/PlanAction.h"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <ctime>
+#include <string>
+#include <streambuf>
+
 /**
  * This file contains an interface to the planner.
  */
@@ -43,7 +50,24 @@ namespace KCL_rosplan {
 		/* planning */
 		virtual bool runPlanner() =0;
 
+		/* runs external commands */
+		std::string runCommand(std::string cmd);
+
+		/* saves problem to file */
+		void saveProblem();
+
+		/* prepares the planner command line */
+		std::string prepareCommand();
+
+		/* calls the planner */
+		void callPlanner(std::string & commandString);
+
+		void solvedMessages(bool & solved);
+
 	public:
+
+		PlannerInterface(ros::NodeHandle& nh);
+		virtual ~PlannerInterface();
 
 		void problemCallback(const std_msgs::String& problemInstance);
 

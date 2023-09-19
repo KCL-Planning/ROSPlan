@@ -22,9 +22,6 @@ namespace KCL_rosplan {
 	{
 	private:
 
-		/* runs external commands */
-		std::string runCommand(std::string cmd);
-
 	protected:
 
 		bool runPlanner();

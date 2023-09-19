@@ -19,9 +19,6 @@ namespace KCL_rosplan {
 	{
 	private:
 
-		/* runs external commands */
-		std::string runCommand(std::string cmd);
-
 	protected:
 
         std::string input_problem_path;
