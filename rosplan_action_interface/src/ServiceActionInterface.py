@@ -105,6 +105,7 @@ class ServiceActionInterface(BaseActionInterface):
                     value = override_result[param]
                     results_correct = self.check_result_msg(result, param, value, dispatch_msg)
                     if not results_correct:
+                        rospy.logwarn('KCL: ({}) Plan {} Action {}: Service {} failed to match result'.format(rospy.get_name(), dispatch_msg.plan_id, dispatch_msg.action_id, self.get_action_name()))
                         break
 
             if results_correct:

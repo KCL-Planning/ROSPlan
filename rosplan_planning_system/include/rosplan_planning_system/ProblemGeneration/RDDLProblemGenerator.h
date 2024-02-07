@@ -18,8 +18,8 @@ namespace KCL_rosplan {
     private:
         inline void makeProblem(std::ofstream &pFile) override;
 
-        void makeNonFluents(std::ofstream &pFile, const std::set<std::string>& nonfluents);
-        void makeInstance(std::ofstream &pFile, const std::set<std::string>& fluents);
+        void makeNonFluents(std::ofstream &pFile, const std::set<std::string>& nonfluents, const std::map<std::string, std::string> &fluent_types);
+        void makeInstance(std::ofstream &pFile, const std::set<std::string>& fluents, const std::map<std::string, std::string> &fluent_types);
 
         /* returns map of type -> list of instances of that type */
         std::map<std::string, std::vector<std::string>> getInstances();
@@ -29,8 +29,10 @@ namespace KCL_rosplan {
                            std::set<std::string> &found_nonfluents);
         std::vector<std::string> getPredicatesFunctions();
         void printGenericFluentElement(std::ofstream &pFile,
-                                       const std::vector<rosplan_knowledge_msgs::KnowledgeItem> &elem);
-        void printGenericFluentList(std::ofstream &pFile, const std::set<std::string>& fluentlist);
+                                       std::vector<rosplan_knowledge_msgs::KnowledgeItem>::iterator fluent, const std::map<std::string, std::string> &fluent_types);
+        void printGenericFluentList(std::ofstream &pFile, const std::set<std::string>& fluentlist, const std::map<std::string, std::string> &fluent_types);
+
+        void getFluentTypes(const std::set<std::string> &fluents, const std::set<std::string> &nonfluents, std::map<std::string, std::string> &fluent_types);
 
         std::string _domain_name;
         std::string _non_fluents_name;
