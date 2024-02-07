@@ -87,7 +87,8 @@ class ActionInterfaceManager(object):
                 
             # iterate through interfaces and send feedback
             for interface in self._action_interfaces.values():
-                for act in interface._action_status.keys():
+                keys = list(interface._action_status.keys()) # copy keys to avoid dict size change during iteration
+                for act in keys:
 
                     # action successful
                     if interface._action_status[act] == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE:
@@ -96,7 +97,7 @@ class ActionInterfaceManager(object):
 
                     # action completed (achieved or failed)
                     if interface._action_status[act] == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE or interface._action_status[act] == ActionFeedback.ACTION_FAILED:
-                        rospy.loginfo('KCL: ({}) Reporting action complete: {} {}'.format(rospy.get_name(), act, interface._action_name))
+                        rospy.loginfo('KCL: ({}) Reporting action complete: {} {}. Action {}.'.format(rospy.get_name(), act, interface._action_name, "succeeded" if interface._action_status[act] == ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE else "failed"))
                         # publish feedback msg
                         self.publish_feedback(act[0], act[1], interface._action_status[act])
                         # remove completed action data from interface
