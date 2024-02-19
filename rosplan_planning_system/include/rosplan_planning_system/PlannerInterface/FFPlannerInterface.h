@@ -20,9 +20,6 @@ namespace KCL_rosplan {
 
 		bool use_ffha;
 
-		/* runs external commands */
-		std::string runCommand(std::string cmd);
-
 	protected:
 
 		bool runPlanner();

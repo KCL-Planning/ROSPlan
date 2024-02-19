@@ -2,12 +2,83 @@
 
 namespace KCL_rosplan {
 
+	/*-------------*/
+	/* constructor */
+	/*-------------*/
+
+	PlannerInterface::PlannerInterface(ros::NodeHandle& nh) {
+		node_handle = &nh;
+
+		plan_server = new actionlib::SimpleActionServer<rosplan_dispatch_msgs::PlanAction>((*node_handle), "start_planning", boost::bind(&PlannerInterface::runPlanningServerAction, this, _1), false);
+
+		// publishing raw planner output
+		std::string plannerTopic = "planner_output";
+		node_handle->getParam("planner_topic", plannerTopic);
+		plan_publisher = node_handle->advertise<std_msgs::String>(plannerTopic, 1, true);
+
+		// start planning action server
+		plan_server->start();
+	}
+
+	PlannerInterface::~PlannerInterface(){
+		delete plan_server;
+	}
+
+	/**
+     	* Runs external commands
+     	*/
+	std::string PlannerInterface::runCommand(std::string cmd) {
+		std::string data;
+		FILE *stream;
+		char buffer[1000];
+		stream = popen(cmd.c_str(), "r");
+		while ( fgets(buffer, 1000, stream) != NULL )
+			data.append(buffer);
+		pclose(stream);
+		return data;
+	}
+
+	/*------------------*/
+	/* Plan and process */
+	/*------------------*/
+
+	void PlannerInterface::saveProblem(){	
+		if(use_problem_topic && problem_instance_received) {
+			ROS_INFO("ROSPlan: (%s) (%s) Writing problem to file.", ros::this_node::getName().c_str(), problem_name.c_str());
+			std::ofstream dest;
+			dest.open((problem_path).c_str());
+			dest << problem_instance;
+			dest.close();
+		}
+	}
+
+	std::string PlannerInterface::prepareCommand() {
+		std::string str = planner_command;
+		std::size_t dit = str.find("DOMAIN");
+		if(dit!=std::string::npos) str.replace(dit,6,domain_path);
+		std::size_t pit = str.find("PROBLEM");
+		if(pit!=std::string::npos) str.replace(pit,7,problem_path);
+
+		return str;
+	}
+
+	void PlannerInterface::callPlanner(std::string & commandString){	
+		ROS_INFO("ROSPlan: (%s) (%s) Running: %s", ros::this_node::getName().c_str(), problem_name.c_str(),  commandString.c_str());
+		std::string plan = runCommand(commandString.c_str());
+		ROS_INFO("ROSPlan: (%s) (%s) Planning complete", ros::this_node::getName().c_str(), problem_name.c_str());
+	}
+
+	void PlannerInterface::solvedMessages(bool & solved){
+		if(!solved) ROS_INFO("ROSPlan: (%s) (%s) Plan was unsolvable.", ros::this_node::getName().c_str(), problem_name.c_str());
+		else ROS_INFO("ROSPlan: (%s) (%s) Plan was solved.", ros::this_node::getName().c_str(), problem_name.c_str());	
+	}
+
 	/*----------------------*/
 	/* Problem subscription */
 	/*----------------------*/
 
 	void PlannerInterface::problemCallback(const std_msgs::String& problemInstance) {
-		ROS_INFO("KCL: (%s) Problem received.", ros::this_node::getName().c_str());
+		ROS_INFO("ROSPlan: (%s) Problem received.", ros::this_node::getName().c_str());
 		problem_instance_received = true;
 		problem_instance_time = ros::WallTime::now().toSec();
 		problem_instance = problemInstance.data;
@@ -89,7 +160,7 @@ namespace KCL_rosplan {
 		}
 
 		if(use_problem_topic && !problem_instance_received) {
-			ROS_INFO("KCL: (%s) (%s) Problem was not published yet.", ros::this_node::getName().c_str(), problem_name.c_str());
+			ROS_INFO("ROSPlan: (%s) (%s) Problem was not published yet.", ros::this_node::getName().c_str(), problem_name.c_str());
 			return false;
 		}
 

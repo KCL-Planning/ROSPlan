@@ -20,14 +20,6 @@ namespace KCL_rosplan {
 	{
 	private:
 
-		/* runs external commands */
-		std::string runCommand(std::string cmd);
-
-		/* create command line for the planner */
-		std::string prepareCommand();
-		/* write the problem instance to problem_path file */
-		void writeProblemToFile();
-
 	protected:
 
 		bool runPlanner();

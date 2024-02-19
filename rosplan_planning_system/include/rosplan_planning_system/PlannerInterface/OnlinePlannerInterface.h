@@ -16,7 +16,7 @@ namespace KCL_rosplan {
     private:
 
         /* runs external commands */
-        std::string runCommand(std::string cmd);
+	std::string runCommand(std::string cmd);
         std::thread planner;
         bool planner_running;
 
