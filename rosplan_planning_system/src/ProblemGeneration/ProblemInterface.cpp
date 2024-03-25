@@ -134,6 +134,7 @@ namespace KCL_rosplan {
 		// publish problem
 		std::ifstream problemIn(problem_path.c_str());
 		if(problemIn) {
+			ROS_DEBUG("KCL: (%s) (%s) Publish problem.", ros::this_node::getName().c_str(), problem_name.c_str());
 			std_msgs::String problemMsg;
 			problemMsg.data = std::string(std::istreambuf_iterator<char>(problemIn), std::istreambuf_iterator<char>());
 			problem_publisher.publish(problemMsg);
@@ -143,25 +144,25 @@ namespace KCL_rosplan {
 	}
 } // close namespace
 
-	/*-------------*/
-	/* Main method */
-	/*-------------*/
+/*-------------*/
+/* Main method */
+/*-------------*/
 
-	int main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
-		srand (static_cast <unsigned> (time(0)));
+    srand (static_cast <unsigned> (time(0)));
 
-		ros::init(argc,argv,"rosplan_problem_interface");
-		ros::NodeHandle nh("~");
+    ros::init(argc,argv,"rosplan_problem_interface");
+    ros::NodeHandle nh("~");
 
-		KCL_rosplan::ProblemInterface ProblemInterface(nh);
+    KCL_rosplan::ProblemInterface ProblemInterface(nh);
 
-		// start the planning services
-		ros::ServiceServer service1 = nh.advertiseService("problem_generation_server", &KCL_rosplan::ProblemInterface::runProblemServerDefault, &ProblemInterface);
-		ros::ServiceServer service2 = nh.advertiseService("problem_generation_server_params", &KCL_rosplan::ProblemInterface::runProblemServerParams, &ProblemInterface);
+    // start the planning services
+    ros::ServiceServer service1 = nh.advertiseService("problem_generation_server", &KCL_rosplan::ProblemInterface::runProblemServerDefault, &ProblemInterface);
+    ros::ServiceServer service2 = nh.advertiseService("problem_generation_server_params", &KCL_rosplan::ProblemInterface::runProblemServerParams, &ProblemInterface);
 
-		ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
-		ros::spin();
+    ROS_INFO("KCL: (%s) Ready to receive", ros::this_node::getName().c_str());
+    ros::spin();
 
-		return 0;
-	}
+    return 0;
+}
