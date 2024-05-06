@@ -4,7 +4,8 @@
 rosplan_knowledge_msgs/DomainFormula formula
 
 # (2) duration constraint
-
+bool instant_action
+rosplan_knowledge_msgs/DomainInequality duration
 
 # (3) effect lists
 rosplan_knowledge_msgs/DomainFormula[] at_start_add_effects

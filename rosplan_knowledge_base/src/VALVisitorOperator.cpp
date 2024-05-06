@@ -4,6 +4,7 @@
 namespace KCL_rosplan {
 
     /* encoding state */
+    bool parsing_duration;
     bool cond_neg;
     bool eff_neg;
     VAL1_2::time_spec cond_time;
@@ -13,6 +14,19 @@ namespace KCL_rosplan {
     /*-----------*/
     /* operators */
     /*-----------*/
+
+    void VALVisitorOperator::visit_durative_action(VAL1_2::durative_action * op) {
+        visit_operator_(op);
+        parsing_duration = true;
+        msg.instant_action = false;
+        op->dur_constraint->visit(this);
+        parsing_duration = false;
+    }
+
+    void VALVisitorOperator::visit_action(VAL1_2::action * op) {
+        visit_operator_(op);
+        msg.instant_action = true;
+    }
 
     /**
      * Visit an operator to pack into ROS message
@@ -51,6 +65,7 @@ namespace KCL_rosplan {
         op->effects->visit(this);
 
         // conditions
+        parsing_duration = false;
         if (op->precondition) op->precondition->visit(this);
     }
 
@@ -143,6 +158,10 @@ namespace KCL_rosplan {
             case VAL1_2::E_EQUALS:  ineq.comparison_type = rosplan_knowledge_msgs::DomainInequality::EQUALS; break;
         }
 
+        if(parsing_duration) {
+            msg.duration = ineq;
+            return;
+        }
         switch(cond_time) {
             case VAL1_2::E_AT_START: msg.at_start_comparison.push_back(ineq); break;
             case VAL1_2::E_AT_END: msg.at_end_comparison.push_back(ineq); break;

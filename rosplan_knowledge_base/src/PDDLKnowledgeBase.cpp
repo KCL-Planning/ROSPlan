@@ -118,7 +118,7 @@ namespace KCL_rosplan {
         VAL1_2::operator_list* operators = domain_parser.domain->ops;
         for (VAL1_2::operator_list::const_iterator ci = operators->begin(); ci != operators->end(); ci++) {
             if((*ci)->name->symbol::getName() == req.name) {
-                op_visitor.visit_operator_(*ci);
+                (*ci)->visit(&op_visitor);
                 res.op = op_visitor.msg;
                 return true;
             }
