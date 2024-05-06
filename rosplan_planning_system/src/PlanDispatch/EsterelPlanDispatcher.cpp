@@ -355,7 +355,7 @@ namespace KCL_rosplan {
         }
 
         // action completed (failed)
-        if(!action_completed[msg->action_id] && 0 == msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_FAILED) {
+        if(!action_completed[msg->action_id] && msg->status == rosplan_dispatch_msgs::ActionFeedback::ACTION_FAILED) {
 
             // check action is part of current plan
             if(!action_received[msg->action_id]) {
